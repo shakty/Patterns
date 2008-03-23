@@ -1,0 +1,13 @@
+.patterns-form-key, .patterns-form-value {
+  display: inline;
+}
+.patterns-form {
+  margin: 20px;
+}
+.patterns-form-title {
+  font-weight: bold;
+  margin: 0 0 10px;
+}
+.alert {
+  color: red;
+}

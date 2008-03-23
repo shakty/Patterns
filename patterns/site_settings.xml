@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<pattern>
+  <info>
+    <title>Settings</title>
+    <description>Basic site settings</description>
+  </info>
+  <actions>
+    <!-- Ensure required modules are installed -->
+    <pattern>core_modules</pattern>
+    
+    <variables>
+      <!-- clean urls -->
+      <variable name="clean_url">true</variable>
+      
+      <variable name="date_default_timezone">-28800</variable>
+      <variable name="configurable_timezones">1</variable>
+	    
+      <!-- date formats -->
+      <variable name="date_format_short">m/d/Y - g:ia</variable>
+      <variable name="date_format_medium">D, m/d/Y - g:ia</variable>
+      <variable name="date_format_long">l, F j, Y - g:ia</variable>
+	    
+      <!--first day is sunday -->
+      <variable name="date_first_day">0</variable>
+	    
+      <variable name="file_directory_path">sites/@confpath@/files</variable>
+    </variables>
+  </actions>
+</pattern>

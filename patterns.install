@@ -1,0 +1,22 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function patterns_install() {
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      db_query("CREATE TABLE {patterns} (
+        pid int(10) unsigned NOT NULL default '0' PRIMARY KEY,
+        name varchar(55) NOT NULL default '' UNIQUE KEY,
+        status int(1) unsigned NOT NULL default '0',
+        file varchar(255) NOT NULL default '0',
+        updated varchar(10) NOT NULL default '0',
+        title varchar(255) NOT NULL default '0',
+        description text NOT NULL default '',
+        pattern text NOT NULL default ''
+      ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
+    break;
+  }
+}

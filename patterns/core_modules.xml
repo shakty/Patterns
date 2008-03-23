@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<pattern>
+  <info>
+    <title>Core Modules</title>
+    <description>Setup settings common to all site installs</description>
+  </info>
+   <modules>
+    <!-- default core modules -->
+    <module>block</module>
+    <module>color</module>
+    <module>comment</module>
+    <module>filter</module>
+    <module>help</module>
+    <module>menu</module>
+    <module>watchdog</module>
+    <module>taxonomy</module>
+    <module>system</module>
+    <module>node</module>
+    <module>user</module>
+    
+    <!-- additional core modules -->
+    <module>contact</module>
+    <module>path</module>
+    <module>poll</module>
+    <module>profile</module>
+    <module>search</module>
+    <module>statistics</module>
+    <module>upload</module>
+    <module>blog</module>
+    <module>blogapi</module>
+    
+    <!-- other -->
+    <module>auto_nodetitle</module>
+    <module>forward</module>
+    <module>image</module>
+    <module>panels</module>
+    <module>pathauto</module>
+    <module>simplemenu</module>
+    <module>logintoboggan</module>
+    <module>token</module>
+    <module>devel</module>
+    
+    <!-- CCK -->
+    <module>content</module>
+    <module>content_copy</module>
+    <module>date</module>
+    <module>date_api</module>
+    <module>email</module>
+    <module>fieldgroup</module>
+    <module>filefield</module>
+    <module>imagefield</module>
+    <module>link</module>
+    <module>nodereference</module>
+    <module>number</module>
+    <module>optionwidgets</module>
+    <module>text</module>
+    <module>userreference</module>
+    
+    <!-- imagecache -->
+    <module>imagecache</module>
+    
+    <!-- views -->
+    <module>views</module>
+    <module>views_rss</module>
+    <module>views_ui</module>
+    <module>calendar</module>
+		
+  </modules>
+</pattern>
