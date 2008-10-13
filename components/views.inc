@@ -47,10 +47,10 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
     // Prepare data for views-centric structure
     case 'prepare':
       $data['name'] = strtolower($data['name']);
-      
+
       // Map some base tags
       $mappings = views_patterns_mappings('base');
-      
+
       foreach($data as $key => $value) {
         if ($mappings[$key]) {
           $data[$mappings[$key]] = $value;
@@ -71,7 +71,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
           $data[$type] = 1;
         }
       }
-        
+
       if ($data['exposed']) {
         $data['exposed_filter'] = $data['exposed'];
         unset($data['exposed']);

@@ -6,7 +6,7 @@ function system_patterns($op, $id = null, &$data = null) {
   switch($op) {
     // Return the valid tags that this component can prepare and process
     case 'tags':
-      return array('modules', 'form', 'variables', 'variable');
+      return array('modules', 'form', 'variables', 'variable', 'theme');
     break;
     
     // Return a list of forms/actions this component can handle
@@ -15,7 +15,7 @@ function system_patterns($op, $id = null, &$data = null) {
         'system_modules' => t('Enable/Disable Module'),
         'variables' => t('Configure Variables'),
         'variable' => t('Set a variable'),
-        
+        'system_themes' => t('Set active theme'),
       );
     break;
     
@@ -48,6 +48,9 @@ function system_patterns($op, $id = null, &$data = null) {
         case 'variable':
           return t('Setting variable %var', array('%var' => $data['name']));
         break;
+        case 'system_themes':
+          return t('Setting theme to %name', array('%name' => $data['value']));
+        break;
       }
     break;
     
@@ -75,6 +78,18 @@ function system_patterns($op, $id = null, &$data = null) {
         $data = array($data);
       }
       
+      if ($id == 'variables') {
+      	for($i=0;$i<count($data);$i++) {
+      		$item = &$data[$i];
+          
+          if (!$item['value']) {
+          	$value = $item;
+            unset($value['name']);
+            $item = array('name' => $item['name'], 'value' => $value);
+          }
+      	}
+      }
+
       if ($id == 'modules') {
         // Make a <modules>modulename</modules> style tag work
         if (is_string($data) || ($data['value'] && !$data[0])) {
@@ -88,6 +103,13 @@ function system_patterns($op, $id = null, &$data = null) {
             $data[$i] = array('value' => $item);
           }
         }
+      }
+      
+      if ($id == 'theme') {
+      	if ($data['value']) {
+      		$data['theme_default'] = $data['value'];
+          $data['status'][$data['value']] = $data['value'];
+      	}
       }
     break;
     
@@ -130,7 +152,13 @@ function system_patterns($op, $id = null, &$data = null) {
             }
           }
         }
-      }  
+      }
+      else if ($id == 'theme') {
+      	$themes = system_theme_data();
+        if (!array_key_exists($data['theme_default'], $themes)) {
+        	return t('%theme is not a valid theme.', array('%theme' => $data['theme_default']));
+        }
+      }
     break;
     
     // Return the form_id('s) for each action
@@ -140,6 +168,9 @@ function system_patterns($op, $id = null, &$data = null) {
       }
       else if ($id == 'variables' || $id == 'variable') {
         return 'variables';
+      }
+      else if ($id == 'theme') {
+      	return 'system_themes';
       }
     break;
     
@@ -191,6 +222,10 @@ function system_patterns($op, $id = null, &$data = null) {
         }
         
         return t('Variables %vars updated.', array('%vars' => implode(', ', $names)));
+      }
+      else if ($id == 'system_themes') {
+        $data['op'] = t('Save configuration');
+      	return $data;
       }
     break;
     

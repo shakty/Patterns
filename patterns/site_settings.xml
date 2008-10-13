@@ -3,10 +3,14 @@
   <info>
     <title>Settings</title>
     <description>Basic site settings</description>
+    <author>Chris Bryant</author>
+    <author_email>chris@graviteklabs.com></author_email>
+    <version>0.1</version>
+    <author_date>09.11.2008</author_date>
+    <category>Settings</category>
+    <compatibility>5x</compatibility>      
   </info>
   <actions>
-    <!-- Ensure required modules are installed -->
-    <pattern>core_modules</pattern>
     
     <variables>
       <!-- clean urls -->
@@ -23,7 +27,24 @@
       <!--first day is sunday -->
       <variable name="date_first_day">0</variable>
 	    
-      <variable name="file_directory_path">sites/@confpath@/files</variable>
+      <variable name="file_directory_path">@confpath@/files</variable>
+      
+      <!-- Common Node Settings -->
+      <!-- Comments oldest first -->
+      <variable name="comment_default_order">1</variable>
+      <!-- Disable subject field -->
+      <variable name="comment_subject_field">0</variable>
+      <!-- Display RSS feeds using full node text -->
+      <variable name="feed_item_length">fulltext</variable>
+
     </variables>
+    
+    <menu>
+	    <parent>Primary Links</parent>
+	    <title>Home</title>
+	    <path>home</path>
+	    <weight>-9</weight>
+    </menu>
+
   </actions>
 </pattern>

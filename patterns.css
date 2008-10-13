@@ -11,3 +11,43 @@
 .alert {
   color: red;
 }
+
+.item-list ul.pattern-list {
+  padding: 0;
+  margin: 0;
+}
+.item-list ul.pattern-list li {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+/*
+.pattern {
+  clear: both;
+}
+.pattern-cell {
+  line-height: 30px;
+  padding-right: 10px;
+  
+  display: table-cell;
+}
+.pattern-select .form-item {
+  display: inline;
+}
+.pattern-title {
+  width: 220px;
+}
+.pattern-status {
+  width: 60px;
+}
+.pattern-version {
+  width: 40px;
+}
+.pattern-info {
+  clear:both;
+}
+*/
+
+.pattern-links {
+  text-align: right;
+}

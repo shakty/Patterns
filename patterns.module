@@ -41,14 +41,24 @@ function patterns_menu($may_cache) {
       'description' => t('Administer patterns available for your site'),
       'access' => user_access('administer patterns'),  
       'title' => t('Patterns'),
-      'callback' => 'patterns_admin',
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('patterns_list'), 
       'type' => MENU_NORMAL_ITEM
     );
     $items[] = array('path' => 'admin/build/patterns/list',
-      'title' => t('Available Patterns'),
-      'callback' => 'patterns_admin',
-      'type' => MENU_DEFAULT_LOCAL_TASK
+      'title' => t('List'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('patterns_list'),      
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'weight' => -10
     );
+    $items[] = array('path' => 'admin/build/patterns/settings',
+      'title' => t('Settings'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('patterns_settings'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 10
+    );    
     $items[] = array('path' => 'admin/build/patterns/configure',
       'title' => t('Configure Pattern'),
       'callback' => 'drupal_get_form',
@@ -61,6 +71,11 @@ function patterns_menu($may_cache) {
       'callback arguments' => array('patterns_edit'),
       'type' => MENU_CALLBACK
     );
+    $items[] = array('path' => 'admin/build/patterns/info',
+      'title' => t('Pattern Details'),
+      'callback' => 'patterns_info',
+      'type' => MENU_CALLBACK
+    );    
     $items[] = array('path' => 'admin/build/patterns/enable',
       'access' => user_access('administer patterns'),
       'title' => t('Enable Pattern'),
@@ -89,7 +104,7 @@ function patterns_menu($may_cache) {
     );
     $items[] = array('path' => 'admin/build/patterns/import',
       'access' => user_access('administer patterns'),
-      'title' => t('Import Patterns'),
+      'title' => t('Import'),
       'callback' => 'drupal_get_form',
       'callback arguments' => array('patterns_import_source'),
       'type' => MENU_LOCAL_TASK
@@ -104,6 +119,20 @@ function patterns_menu($may_cache) {
       'title' => t('Import via XML File'),
       'callback' => 'drupal_get_form',
       'callback arguments' => array('patterns_import_file'),
+      'type' => MENU_LOCAL_TASK
+    );
+    $items[] = array('path' => 'admin/build/patterns/import/xmlurl',
+      'access' => user_access('administer patterns'),
+      'title' => t('Import via XML URL'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('patterns_import_url'),
+      'type' => MENU_LOCAL_TASK
+    );
+    $items[] = array('path' => 'admin/build/patterns/import/server',
+      'access' => user_access('administer patterns'),
+      'title' => t('Import via Patterns Server'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('patterns_import_server'),
       'type' => MENU_LOCAL_TASK
     );
   }
@@ -137,6 +166,20 @@ function patterns_import_source() {
 }
 
 /**
+ * Display the pattern settings form
+ */
+function patterns_settings() {
+  drupal_set_message('This feature not implemented yet.');
+}
+
+/**
+ * Display the import pattern from server form
+ */
+function patterns_import_server() {
+  drupal_set_message('This feature not implemented yet.');
+}
+
+/**
  * Display the import pattern file form
  */
 function patterns_import_file() {
@@ -156,20 +199,52 @@ function patterns_import_file() {
   return $form;
 }
 
+/**
+ * Display the import pattern url form
+ */
+function patterns_import_url() {
+  $form['xmlurl'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Specify an XML url'),
+    '#description' => t('Import a pattern from a remote URL. Imported patterns are not executed until you run them manually.'),
+    '#size' => 48
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit')
+  );
+  $form['#base'] = 'patterns_import';
+  
+  return $form;
+}
+
 function patterns_import_validate($form_id, $values) {
   global $form_values;
-  
+
   if ($file = file_check_upload('xmlfile')) {
     $form_values['xmlsource'] = file_get_contents($file->filepath);
   }
   else if (isset($values['xmlfile'])) {
     form_set_error('xmlfile', t('Error uploading XML file.'));
   }
-  
+  else if  ($values['xmlurl']) {
+    if (!ini_get('allow_url_fopen')) {
+      form_set_error('xmlsource', t('allow_url_fopen must be enabled in your php configuration in order to use this feature.'));
+      return;
+    }
+
+    if (!($form_values['xmlsource'] = file_get_contents($values['xmlurl']))) {
+      form_set_error('xmlsource', t('Failed to retreive the pattern specified.'));
+      return;
+    }
+    
+    $form_values['xmlname'] = preg_replace('/\.[^\.]*$/', '', basename($form_values['xmlurl']));
+  }
+
   if (strpos($form_values['xmlsource'], '<?xml') !== 0) {
     $form_values['xmlsource'] = '<?xml version="1.0" encoding="ISO-8859-1"?>' . $form_values['xmlsource'];
   }
-  
+
   if ($form_values['xmlname'] && preg_match('/[^a-zA-Z0-9_]/', $form_values['xmlname'])) {
     form_set_error('xmlname', t('You can only include letters, numbers, and underscores in the pattern identifier.'));
   }
@@ -208,19 +283,47 @@ function patterns_import_submit($form_id, $form_values) {
   return 'admin/build/patterns';
 }
 
-function patterns_admin() {
-  patterns_load();
-  
-  $headers = array(t('Enabled'), t('Title'), t('Description'), t('Actions'));
-  // List all patterns with "Enable/Disable" and "Configure" options
-  $rows = array();
-  
+function patterns_list() {
+
+  drupal_add_css(drupal_get_path('module', 'patterns') .'/patterns.css');
+  drupal_add_js(drupal_get_path('module', 'patterns') .'/patterns.js');
+
+  $form = array(); 
+  $form['bulk_actions'] = array('#type' => 'fieldset',
+    '#title' => t('Bulk Actions'),
+    '#prefix' => '<div class="container-inline">',
+    '#suffix' => '</div>',
+  );
+  $options = array(
+    'execute' => 'Process (Execute)',
+    'delete' => 'Delete',
+    'public' => 'Make Public',
+    'get_update' => 'Get Update',
+    'send_update' => 'Send Update'
+  );
+  $form['bulk_actions']['operation'] = array(
+    '#type' => 'select',
+    '#options' => $options,
+    '#default_value' => 'run'
+  );
+  $form['bulk_actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Apply')
+  ); 
+
+  patterns_load();  
   $patterns = patterns_get_patterns();
-  uasort($patterns, create_function('$a', 'return ($a->status == 1) ? 1 : -1;'));
   
   foreach($patterns as $pid => $pattern) {
-    $actions = array();
-    
+    $checkboxes[$pid] = '';
+    $form['title'][$pid] =  array('#value' => '<a href="#" class="pattern-title" id="pid-'. $pid .'">'. $pattern->title .'</a>');
+    $form['description'][$pid] =  array('#value' => $pattern->description);
+    $form['category'][$pid] =  array('#value' => $pattern->info['category'] ? $pattern->info['category'] : t('Other'));
+    $form['status'][$pid] =  array('#value' => $pattern->status ? t('Enabled') : t('Disabled'));
+    $form['version'][$pid] =  array('#value' => $pattern->info['compatibility']);
+    $form['public'][$pid] =  array('#value' => $pattern->public ?  t('Yes') : t('No'));
+
+    $actions = array();   
     if (!$pattern->status) {
       $actions[] =  l(t('Run'), 'admin/build/patterns/enable/'. $pid);
     }
@@ -237,17 +340,153 @@ function patterns_admin() {
     
     $actions = implode('&nbsp;&nbsp;', $actions);
     
-    $cells = array();
-    $cells[] = $pattern->status ? t('Yes') : t('No');
-    $cells[] = $pattern->title;
-    $cells[] = $pattern->description;
-    $cells[] = $actions;
-    //$cells[] = l(t('Configure'), 'admin/build/patterns/configure/'. $pid);
-    $rows[] = $cells;
-  } 
+    $form['actions'][$pid] =  array('#value' => $actions);
+  }
   
-  return theme('table', $headers, $rows);
+  $form['select'] = array(
+    '#type' => 'checkboxes',
+    '#options' => $checkboxes
+  );
+
+  return $form;
+  
+//   $headers = array(t('Enabled'), t('Title'), t('Description'), t('Actions'));
+//   // List all patterns with "Enable/Disable" and "Configure" options
+//   $rows = array();
+//     
+//   uasort($patterns, create_function('$a', 'return ($a->status == 1) ? 1 : -1;'));
+//   
+//   foreach($patterns as $pid => $pattern) {
+//     $actions = array();
+//     
+//     if (!$pattern->status) {
+//       $actions[] =  l(t('Run'), 'admin/build/patterns/enable/'. $pid);
+//     }
+//     else if ($pattern->enabled >= $pattern->updated) {
+//       $actions[] =  l(t('Re-Run'), 'admin/build/patterns/enable/'. $pid);
+//     }
+//     else {
+//       $actions[] = l(t('Run Update'), 'admin/build/patterns/enable/'. $pid);
+//     }
+//     
+//     $actions[] = l(t('Edit'), 'admin/build/patterns/edit/'. $pid);
+//     //$actions[] = $pattern->status ? l(t('Disable'), 'admin/build/patterns/disable/'. $pid) : l(t('Run'), 'admin/build/patterns/enable/'. $pid);
+//     //$actions[] = t('Configure(todo)');
+//     
+//     $actions = implode('&nbsp;&nbsp;', $actions);
+//     
+//     $cells = array();
+//     $cells[] = $pattern->status ? t('Yes') : t('No');
+//     $cells[] = $pattern->title;
+//     $cells[] = $pattern->description;
+//     $cells[] = $actions;
+//     //$cells[] = l(t('Configure'), 'admin/build/patterns/configure/'. $pid);
+//     $rows[] = $cells;
+//   } 
+//   
+//   return theme('table', $headers, $rows);
 }
+
+function theme_patterns_list($form) { 
+  $output = drupal_render($form['bulk_actions']);
+  
+  $header = array(t('Select'), t('Title'), t('Status'), t('Version'), t('Public'), t('Actions'));
+  
+//   $header = '<span class="pattern-cell pattern-select">'. t('Select') .'</span>';
+//   $header .= '<span class="pattern-cell pattern-title">'. t('Title') .'</span>';
+//   $header .= '<span class="pattern-cell pattern-status">'. t('Status') .'</span>';
+//   $header .= '<span class="pattern-cell pattern-version">'. t('Version') .'</span>';
+//   $header .= '<span class="pattern-cell pattern-public">'. t('Public') .'</span>';
+//   $header .= '<span class="pattern-cell pattern-action">'. t('Actions') .'</span>';
+//   $output .= '<div class="patterns-header">'. $header .'</div>';
+  
+  $rows = array();
+
+  if (isset($form['title']) && is_array($form['title'])) {
+    foreach (element_children($form['title']) as $key) {
+      $cells = array();
+      $title = drupal_render($form['category'][$key]);
+      $cells[] = drupal_render($form['select'][$key]);
+      $cells[] = drupal_render($form['title'][$key]);
+//      $cells[] = drupal_render($form['category'][$key]);
+      $cells[] = drupal_render($form['status'][$key]);
+      $cells[] = drupal_render($form['version'][$key]);
+      $cells[] = drupal_render($form['public'][$key]);
+      $cells[] = drupal_render($form['actions'][$key]);
+      //$rows[] = array('data' => $cells, 'id' => 'pid-'. $key);
+      $rows[$title][] = $cells;
+      //$rows[] = array(array('data' => '', 'colspan' => 7));
+      //$rows[$title][] = array();
+      $cells = array();
+      $cells[] = '';
+      $info = drupal_render($form['description'][$key]);
+      $info .= '<div class="pattern-links">'. l(t('View details'), 'admin/build/patterns/info/'. $key) .'</div>';
+      $cells[] = array('data' => $info, 'colspan' => 5);
+      $rows[$title][] = array('data' => $cells, 'id' => 'pid-'. $key .'-info', 'class' => 'pattern-info');
+      
+      
+      
+//       $top = '<span class="pattern-cell pattern-select">'. drupal_render($form['select'][$key]) .'</span>';
+//       $top .= '<span class="pattern-cell pattern-title">'. drupal_render($form['title'][$key]) .'</span>';
+//       //$item .= drupal_render($form['category'][$key]);
+//       $top .= '<span class="pattern-cell pattern-status">'. drupal_render($form['status'][$key]) .'</span>';
+//       $top .= '<span class="pattern-cell pattern-version">'. drupal_render($form['version'][$key]) .'</span>';
+//       $top .= '<span class="pattern-cell pattern-public">'. drupal_render($form['public'][$key]) .'</span>';
+//       $top .= '<span class="pattern-cell pattern-action">'. drupal_render($form['actions'][$key]) .'</span>';
+//       $top = '<div class="pattern-top">'. $top .'</div>';
+//       
+//       $info = '<div class="pattern-description">'. drupal_render($form['description'][$key]) .'</div>'; 
+//       $info .= '<div class="pattern-links">'. l(t('View details'), 'admin/build/patterns/info/'. $key) .'</div>';
+//       $info = '<div id="pid-'. $key .'-info" class="pattern-info">'. $info .'</div>';
+//       
+//       $items[drupal_render($form['category'][$key])][] = '<div class="pattern">'. $top . $info .'</div>';
+    }
+//     ksort($items);
+    ksort($rows);
+//     foreach ($items as $title => $category) {
+    foreach ($rows as $title => $category) {     
+      $fieldset = array(
+        '#title' => t($title),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+//         '#value' => theme('item_list', $category, NULL, 'ul', array('class' => 'pattern-list')),
+        '#value' => theme('table', $header, $category),
+      );
+      $output .= theme('fieldset', $fieldset);      
+    }  
+  }
+  else  {
+    $rows[] = array(array('data' => t('No patterns available.'), 'colspan' => '6'));
+//     $output .= t('No patterns available.');
+  }
+  //$output .= theme('table', $header, $rows);
+
+  $output .= drupal_render($form);
+
+  return $output;
+}
+
+function patterns_list_validate($form_id, $form_values) {
+  $patterns = array_filter($form_values['patterns']);
+  if (count($patterns) == 0) {
+    form_set_error('', t('No items selected.'));
+  }
+}
+
+function patterns_list_submit($form_id, $form_values) {
+  $patterns = array_filter($form_values['patterns']);
+  $function = $form_values['operation'];
+
+  if (function_exists($function)) {
+    $args = array($patterns);
+    call_user_func_array($function, $args);
+    drupal_set_message(t('The update has been performed.'));    
+  }
+  else {
+    drupal_set_message("Sorry, this functionality is not yet implemented.", 'error');
+  }
+}
+
 
 /**
  * Menu callback to undo a patterns update changes
@@ -273,6 +512,19 @@ function patterns_revert($pid) {
   }
   
   drupal_goto('admin/build/patterns');
+}
+
+/**
+ * Menu callback to display patterns details page
+ */
+function patterns_info($pid = null) {
+  if (!is_numeric($pid)) {
+    drupal_set_message(t('You must specify a pattern.'));
+    return;
+  }
+  
+  $pattern = patterns_get_pattern($pid);
+  return '<pre>'. print_r($pattern, true) .'</pre>';
 }
 
 /**
@@ -378,7 +630,6 @@ function patterns_edit_submit($form_id, $form_values) {
  * List the modules used by a particular pattern
  */
 function patterns_modules_page($pid) {
-  drupal_add_css(drupal_get_path('module', 'patterns') .'/patterns.css');
   $pattern = patterns_get_pattern($pid);
   
   drupal_set_title($pattern->title .' '. t('(Pattern Modules)'));
@@ -527,7 +778,17 @@ function patterns_get_patterns($reset = true) {
   
   while ($pattern = db_fetch_object($result)) {
     $patterns[$pattern->pid] = $pattern;
-    $patterns[$pattern->pid]->pattern = unserialize($patterns[$pattern->pid]->pattern);
+    $data = unserialize($patterns[$pattern->pid]->pattern);
+    $patterns[$pattern->pid]->pattern = $data;
+    foreach ($data as $key => $section) {
+      if ($data[$key]['tag'] == 'info') {       
+        $patterns[$pattern->pid]->info = array();
+        array_shift($section);
+        foreach($section as $property) {
+          $patterns[$pattern->pid]->info[$property['tag']] = $property['value'];
+        }
+      }  
+    }
   }
   
   return $patterns;
@@ -1127,7 +1388,7 @@ function _patterns_rearrange_data($data, $parent = '') {
 
 
 function patterns_form_alter($form_id, &$form) {
-  if (variable_get('patterns_form_helper', true)) {
+  if (user_access('administer patterns') && variable_get('patterns_form_helper', true)) {
     $form['#after_build'][] = 'patterns_form_helper';
   }
 }
