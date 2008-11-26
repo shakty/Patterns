@@ -16,6 +16,7 @@ function system_patterns($op, $id = null, &$data = null) {
         'variables' => t('Configure Variables'),
         'variable' => t('Set a variable'),
         'system_themes' => t('Set active theme'),
+        'form' => t('Execute a form call')
       );
     break;
     
@@ -50,6 +51,9 @@ function system_patterns($op, $id = null, &$data = null) {
         break;
         case 'system_themes':
           return t('Setting theme to %name', array('%name' => $data['value']));
+        break;
+        case 'form':
+          return t('Executing form: %name', array('%name' => $data['form_id']));
         break;
       }
     break;
@@ -159,6 +163,11 @@ function system_patterns($op, $id = null, &$data = null) {
         	return t('%theme is not a valid theme.', array('%theme' => $data['theme_default']));
         }
       }
+      else if ($id == 'form') {
+      	if (!array_key_exists('form_id', $data)) {
+      		return t('form tag must specify a form_id.');
+      	}
+      }
     break;
     
     // Return the form_id('s) for each action
@@ -171,6 +180,9 @@ function system_patterns($op, $id = null, &$data = null) {
       }
       else if ($id == 'theme') {
       	return 'system_themes';
+      }
+      else if ($id == 'form') {
+      	return $data['form_id'];
       }
     break;
     
@@ -225,6 +237,9 @@ function system_patterns($op, $id = null, &$data = null) {
       }
       else if ($id == 'system_themes') {
         $data['op'] = t('Save configuration');
+      	return $data;
+      }
+      else if ($data['form_id']) {
       	return $data;
       }
     break;

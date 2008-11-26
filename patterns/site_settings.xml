@@ -8,7 +8,7 @@
     <version>0.1</version>
     <author_date>09.11.2008</author_date>
     <category>Settings</category>
-    <compatibility>5x</compatibility>      
+    <core>5.x</core>      
   </info>
   <actions>
     

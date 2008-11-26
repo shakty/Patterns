@@ -70,7 +70,7 @@ function user_patterns($op, $id = null, &$data = null) {
         $permissions = array();
         foreach (module_list(FALSE, FALSE, TRUE) as $module) {
           if ($p = module_invoke($module, 'perm')) {
-            $permissions = $permissions + $p;
+            $permissions = array_merge($permissions, $p);
           }
         }
         
@@ -286,6 +286,10 @@ function user_patterns($op, $id = null, &$data = null) {
           unset($old_q);
         }
       }
+      else if ($id == 'user_edit') {
+        static $old_q;        
+        $_GET['q'] = $old_q;
+      }
     break;
     
     // Reverse actions when disabling a pattern
@@ -310,10 +314,12 @@ function user_patterns($op, $id = null, &$data = null) {
       return $data;
     break;
     
-    case 'cleanup':
-      if ($id == 'user_edit') {
-        static $old_q;        
-        $_GET['q'] = $old_q;
+    // Return the primary ID if possible from this action
+    case 'identifier':
+      switch($id) {
+      	case 'user_admin_role':
+          return db_result(db_query('SELECT rid FROM {role} WHERE name = "%s"', $data['name']));
+        break;
       }
     break;
   }
