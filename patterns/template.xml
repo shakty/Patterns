@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<pattern>
+  <info>
+    <title>Drupal6 Template</title>
+    <description>Used as template/sample for creating your own patterns.</description>
+    <author>Vaish</author>
+    <author_email>vnd@graviteklabs.com></author_email>
+    <version>0.1</version>
+    <category>Template</category>
+    <core>6.x</core>    
+  </info>
+  
+  <!-- Enable required modules. -->
+
+  <modules>
+    <module>content</module>
+    <module>taxonomy</module>
+    <module>views</module>
+    <module>nodereference</module>
+    <module>menu</module>
+    <module>user</module> 
+  </modules>
+  
+  <actions>
+
+    <content>
+      <name>Sample Content Type</name>
+      <type>example</type>
+      <description>Put your content type description here.</description>
+      <status>status</status>
+      <promote>true</promote>
+      <title_label>Name</title_label>
+      <comment>1</comment>
+      <upload>0</upload>
+    </content>
+
+
+    <group>
+      <type>example</type>
+      <name>patterns_test</name>
+      <label>Patterns Test Group</label>
+      <weight>-4</weight>
+      <form>
+        <style>fieldset_collapsible</style>
+	      <description>This description goes to the node form</description>
+      </form>
+      <display>
+        <description>This description goes to the node display</description>
+      </display>
+    </group>
+
+    <group>
+      <delete>1</delete>
+      <type>complex</type>
+      <name>patterns_test</name>
+    </group>
+
+    <field>
+    	<type>example</type>
+    	<name>country</name>
+    	<label>Country</label>
+     	<option>text</option>
+      <widget>text_textfield</widget>
+    	<size>80</size>
+    	<weight>-2</weight>
+    	<group>patterns_test</group>
+    	<max_length>128</max_length>
+    	<text_processing>0</text_processing>
+    </field>
+
+    <field>
+    	<type>example</type>
+    	<name>bio</name>
+    	<label>Biography</label>
+     	<option>text</option>
+      <widget>text_textarea</widget>
+    	<weight>6</weight>
+    	<group>patterns_test</group>
+     	<rows>2</rows>
+    	<text_processing>1</text_processing>
+    </field>
+
+    <field>
+      <delete>1</delete>
+    	<type>complex</type>
+    	<name>field_name</name>
+    </field>
+
+    <display>
+      <type>example</type>
+      <field>field_bio</field>
+      <label>inline</label>
+      <teaser>trimmed</teaser>
+      <full>trimmed</full>
+      <rss>
+        <format>plain</format>
+        <exclude>1</exclude>
+      </rss>
+    </display>
+
+    <display>
+      <type>example</type>
+      <group>patterns_test</group>
+      <label>hidden</label>
+      <teaser>no_style</teaser>
+      <full>fieldset_collapsible</full>
+      <rss>
+        <format>hidden</format>
+        <exclude>1</exclude>
+      </rss>
+    </display>
+
+    <imagecache_preset>
+      <name>small_thumbs</name>
+    </imagecache_preset>
+
+    <imagecache_action>
+      <preset>small_thumbs</preset>
+      <name>imagecache_crop</name>
+	    <width>97px</width>
+	    <height>35px</height>
+	    <xoffset>bottom</xoffset>
+	    <yoffset>left</yoffset>
+	    <weight>10</weight>
+    </imagecache_action>
+
+    <imagecache_action>
+      <preset>small_thumbs</preset>
+      <name>imagecache_scale</name>
+	    <width>115px</width>
+	    <height>145px</height>
+    </imagecache_action>
+
+    <imagecache_action delete="1">
+      <preset>small_thumbs</preset>
+      <name>imagecache_crop</name>
+    </imagecache_action>
+
+    <menu>
+      <menu_name>my-test-menu</menu_name>
+      <title>My Test Menu</title>
+      <description>This is a test to see if menu component is working.</description>
+    </menu>
+
+    <menu>
+      <delete>1</delete>
+      <menu_name>menu-test</menu_name>
+    </menu>
+
+    <menu_item>
+      <title>My First Link</title>
+      <path>node/1</path>
+      <menu>Primary Links</menu>
+    </menu_item>
+
+    
+    <!-- For edit/update action mlid MUST be specified, otherwise component will assume that we are trying to add new menu item -->
+    
+    <menu_item>
+      <enable>1</enable>
+      <title>My First Menu Item</title>
+      <path>node/2</path>
+      <menu>Primary Links</menu>
+    </menu_item>   
+
+    <role>testrole</role>
+    
+    <user>
+	    <name>perry</name>
+	    <password>securepassword</password>
+	    <mail>testemail@domain.com</mail>
+	    <roles>
+		    <testrole />
+	    </roles>
+    </user>
+
+    <user>
+	    <name>john</name>
+	    <mail>john@domain.com</mail>
+	    <status>0</status>
+	    <contact>0</contact>
+	    <roles>
+		    <testrole />
+	    </roles>
+    </user> 
+
+    <permissions role="authenticated user">
+	    <value>access administration menu</value>
+	    <value>administer blocks</value>
+	    <value>access comments</value>
+    </permissions>
+
+    <permissions role="testrole">
+	    <value>administer blocks</value>
+    </permissions>
+
+    <vocabulary>
+      <name>Company Type</name>
+      <hierarchy>0</hierarchy>
+      <nodes>
+        <blog />
+      </nodes>
+    </vocabulary>
+
+    <term vocabulary="Company Type">Lead</term>
+    <term vocabulary="Company Type">Client</term>
+    <term vocabulary="Company Type">Vendor</term>
+
+    <block id="devel-2">
+	    <theme>garland</theme>
+	    <status>1</status>
+	    <weight>5</weight>
+	    <region>right</region>
+    </block>
+
+    <block id="user-3">
+	    <theme>garland</theme>
+	    <status>1</status>
+	    <weight>-4</weight>
+	    <region>right</region>
+    </block>
+
+    <block id="menu-devel">
+	    <theme>garland</theme>
+	    <status>1</status>
+	    <weight>-10</weight>
+	    <region>right</region>
+	    <title>Custom block title</title>
+    </block>
+
+    <block id="user-1">
+	    <theme>garland</theme>
+	    <status>0</status>
+	    <weight>40</weight>
+    </block>    
+
+    <variables>
+      <variable name="site_name">Patterns Demo Site</variable>
+      <variable name="site_email">name@example.com</variable>
+      <variable name="site_slogan">Project Management System - Drupal Patterns Demo</variable>
+      <variable name="site_mission">Porting Patterns module to Drupal 6.</variable>
+      <variable name="site_footer">footer message</variable>
+    </variables>
+
+    <view>
+      <name>import_test_view_1</name>
+      <type>node</type>
+      <description>This is a description for our first test view.</description>
+      <view_tag>profiles</view_tag>            
+      <import>1</import>
+      <import_code>
+        $view = new view;
+        $view->name = 'test_nodes';
+        $view->description = 'description';
+        $view->tag = '';
+        $view->view_php = '';
+        $view->base_table = 'node';
+        $view->is_cacheable = FALSE;
+        $view->api_version = 2;
+        $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+        $handler = $view->new_display('default', 'Defaults', 'default');
+        $handler->override_option('fields', array(
+          'title' => array(
+            'label' => '',
+            'link_to_node' => 0,
+            'exclude' => 0,
+            'id' => 'title',
+            'table' => 'node',
+            'field' => 'title',
+            'relationship' => 'none',
+          ),
+          'name' => array(
+            'label' => 'Posted by',
+            'link_to_user' => 1,
+            'exclude' => 0,
+            'id' => 'name',
+            'table' => 'users',
+            'field' => 'name',
+            'relationship' => 'none',
+          ),
+        ));
+        $handler->override_option('sorts', array(
+          'timestamp' => array(
+            'order' => 'DESC',
+            'granularity' => 'second',
+            'id' => 'timestamp',
+            'table' => 'node_revisions',
+            'field' => 'timestamp',
+            'relationship' => 'none',
+          ),
+        ));
+        $handler->override_option('filters', array(
+          'type' => array(
+            'operator' => 'in',
+            'value' => array(
+              'simplenews' => 'simplenews',
+              'krishna_talk' => 'krishna_talk',
+            ),
+            'group' => '0',
+            'exposed' => FALSE,
+            'expose' => array(
+              'operator' => FALSE,
+              'label' => '',
+            ),
+            'id' => 'type',
+            'table' => 'node',
+            'field' => 'type',
+            'relationship' => 'none',
+          ),
+        ));
+        $handler->override_option('access', array(
+          'type' => 'none',
+        ));
+        $handler->override_option('title', 'Test View');
+        $handler->override_option('use_pager', '0');
+        $handler->override_option('style_plugin', 'list');
+        $handler->override_option('style_options', array(
+          'grouping' => '',
+          'type' => 'ul',
+        ));
+        $handler = $view->new_display('page', 'Page', 'page_1');
+        $handler->override_option('use_pager', '1');
+        $handler->override_option('path', 'test');
+        $handler->override_option('menu', array(
+          'type' => 'none',
+          'title' => '',
+          'weight' => 0,
+          'name' => 'navigation',
+        ));
+        $handler->override_option('tab_options', array(
+          'type' => 'none',
+          'title' => '',
+          'weight' => 0,
+        ));
+        $handler = $view->new_display('block', 'Block', 'block_1');
+        $handler->override_option('title', 'Test View Title for Block');
+        $handler->override_option('header', 'This header text comes only within the block display.');
+        $handler->override_option('header_format', '2');
+        $handler->override_option('header_empty', 0);
+        $handler->override_option('items_per_page', 5);
+        $handler->override_option('offset', 1);
+        $handler->override_option('use_pager', FALSE);
+        $handler->override_option('block_description', 'block description for admins');
+        $handler->override_option('block_caching', -1);      
+      </import_code>
+    </view>
+
+  </actions>  
+</pattern>
