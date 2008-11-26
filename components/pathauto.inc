@@ -65,6 +65,7 @@ function pathauto_patterns($op, $id = null, &$data = null) {
     
     // Return the form_id('s) for each action
     case 'form_id':
+      module_load_include('inc', 'pathauto', 'pathauto.admin');
       return 'pathauto_admin_settings';
     break;
     
@@ -90,9 +91,9 @@ function pathauto_patterns($op, $id = null, &$data = null) {
     break;
     
     // Reverse actions when disabling a pattern
-    case 'reverse':
-      $data['reset'] = true;
-    break;
+//     case 'reverse':
+//       $data['reset'] = true;
+//     break;
     
     // Cleanup any global settings after the action runs
     case 'cleanup':

@@ -4,20 +4,35 @@
  * Implementation of hook_install().
  */
 function patterns_install() {
-  switch ($GLOBALS['db_type']) {
-    case 'mysql':
-    case 'mysqli':
-      db_query("CREATE TABLE {patterns} (
-        pid int(10) unsigned NOT NULL default '0' PRIMARY KEY,
-        name varchar(55) NOT NULL default '' UNIQUE KEY,
-        status int(1) unsigned NOT NULL default '0',
-        file varchar(255) NOT NULL default '0',
-        updated varchar(10) NOT NULL default '0',
-        enabled varchar(10) NOT NULL default '0',
-        title varchar(255) NOT NULL default '0',
-        description text NOT NULL default '',
-        pattern text NOT NULL default ''
-      ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
-    break;
-  }
+  drupal_install_schema('patterns');
+}
+
+/**
+* Implementation of hook_schema().
+*/
+function patterns_schema() {
+  $schema['patterns'] = array(
+    'fields' => array(
+      'pid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'name' => array('type' => 'varchar', 'length' => 55, 'default' => ''),
+      'status' => array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'file' => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''),
+      'updated' => array('type' => 'varchar', 'length' => 10, 'not null' => TRUE, 'default' => 0),
+      'enabled' => array('type' => 'varchar', 'length' => 10, 'not null' => TRUE, 'default' => 0),
+      'title' => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''),
+      'description' => array('type' => 'text', 'not null' => TRUE, 'default' => ''),
+      'pattern' => array('type' => 'text', 'not null' => TRUE, 'default' => '')
+    ),
+    'primary key' => array('pid'),
+    'unique keys' => array('name' => array('name'))
+  );
+  
+  return $schema;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function patterns_uninstall() {
+  drupal_uninstall_schema('patterns');
 }

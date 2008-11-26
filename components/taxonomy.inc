@@ -12,8 +12,7 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
       return array(
         'taxonomy_form_vocabulary' => t('Save/update vocabularies'),
         'taxonomy_vocabulary_confirm_delete' => t('Delete a vocabulary'),
-        'taxonomy_form_term' => t('Save/update taxonomy terms'),
-        'taxonomy_term_confirm_delete' => t('Delete a taxonomy term')
+        'taxonomy_form_term' => t('Save/update/delete taxonomy terms'),
       );
     break;
     
@@ -36,16 +35,19 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
           return t('Delete vocabulary %vocab', array('%vocab' => $data['name']));
         break;
         case 'taxonomy_form_term':
-          if (!taxonomy_get_term_by_name($data['name'])) {
-            return t('Create category term %cat for vocabulary %vocab', array('%cat' => $data['name'], '%vocab' => $data['vocabulary']));
+          if ($data['delete']) {
+            return t('Delete category %cat from vocabulary %vocab', array('%cat' => $data['name'], '%vocab' => $data['vocabulary']));
           }
+          else if (!taxonomy_get_term_by_name($data['name'])) {
+            return t('Create category term %cat for vocabulary %vocab', array('%cat' => $data['name'], '%vocab' => $data['vocabulary']));
+          } 
           else {
             return t('Edit category %cat in vocabular %vocab', array('%cat' => $data['name'], '%vocab' => $data['vocabulary']));
           }
         break;
-        case 'taxonomy_term_confirm_delete':
-          return t('Delete category %cat from vocabulary %vocab', array('%cat' => $data['name'], '%vocab' => $data['vocabulary']));
-        break;
+//         case 'taxonomy_form_term':
+//           return t('Delete category %cat from vocabulary %vocab', array('%cat' => $data['name'], '%vocab' => $data['vocabulary']));
+//         break;
       }
     break;
     
@@ -82,15 +84,15 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
     case 'form_id':
       if ($data['delete'] && $id == 'term') {
         if ($term = taxonomy_get_term($data['tid'])) {
-          return 'taxonomy_term_confirm_delete';
+          return 'taxonomy_form_term';
         }
         else {
           return;
         }
       }
       else if ($data['delete'] && $id == 'vocabulary') {
-        if ($vocab = taxonomy_get_vocabulary($data['vid'])) {
-          return 'taxonomy_term_confirm_delete';
+        if ($vocab = taxonomy_vocabulary_load($data['vid'])) {
+          return 'taxonomy_vocabulary_confirm_delete';
         }
         else {
           return;
@@ -106,10 +108,11 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
     
     // Prepare for valid processing of this type of component
     case 'build':
-      if ($id == 'taxonomy_term_confirm_delete' || $id == 'taxonomy_term_confirm_delete') {
+      module_load_include('inc', 'taxonomy', 'taxonomy.admin');
+      if (($id == 'taxonomy_form_term' || $id == 'taxonomy_vocabulary_confirm_delete') && $data['delete']) {
         $data['confirm'] = 1;
       }
-      else if ($id == 'taxonomy_form_term' || $id == 'taxonomy_term_confirm_delete') {
+      else if ($id == 'taxonomy_form_term') {
         if ($data['vocabulary'] && !$data['vid']) {
           $vocabs = taxonomy_get_vocabularies();
           
@@ -155,37 +158,39 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
       if ($id == 'taxonomy_vocabulary_confirm_delete') {
         return $data['vid'];
       }
-      else if ($id == 'taxonomy_term_confirm_delete') {
-        return $data['tid'];
+      else if ($id == 'taxonomy_form_term' && $data['delete']) {
+        $vocab = taxonomy_vocabulary_load($data['vid']);
+        return array($vocab, $data);
       }
       else if ($id == 'taxonomy_form_vocabulary') {
         return array($data);
       }
       else if ($id == 'taxonomy_form_term') {
-        return array($data['vid'], $data);
+        $vocab = taxonomy_vocabulary_load($data['vid']);
+        return array($vocab, $data);
       }
     break;
     
     // Reverse actions when disabling a pattern
-    case 'reverse':
-      if (!$data['delete'] && !$data['reset'] && !$data['disable']) {
-        $data['delete'] = true;
-      }
-      else if ($data['disable']) {
-        unset($data['disable']);
-      }
-      else if ($data['reset']) {
-        drupal_set_message(t('Unable to reverse <menu> tags that have %reset set.', array('%reset' => t('reset'))));
-      }
-      else if ($data['enable']) {
-        $data['disable'] = true;
-        unset($data['enable']);
-      }
-      else if ($data['delete']) {
-        unset($data['delete']);
-      }
-      return $data;
-    break;
+//     case 'reverse':
+//       if (!$data['delete'] && !$data['reset'] && !$data['disable']) {
+//         $data['delete'] = true;
+//       }
+//       else if ($data['disable']) {
+//         unset($data['disable']);
+//       }
+//       else if ($data['reset']) {
+//         drupal_set_message(t('Unable to reverse <menu> tags that have %reset set.', array('%reset' => t('reset'))));
+//       }
+//       else if ($data['enable']) {
+//         $data['disable'] = true;
+//         unset($data['enable']);
+//       }
+//       else if ($data['delete']) {
+//         unset($data['delete']);
+//       }
+//       return $data;
+//     break;
     
     // Cleanup any global settings after the action runs
     case 'cleanup':

@@ -64,6 +64,7 @@ function profile_patterns($op, $id = null, &$data = null) {
     
     // Prepare for valid processing of this type of component
     case 'build':
+      module_load_include('inc', 'profile', 'profile.admin');
       if ($id == 'profile_field_delete') {
         $data['confirm'] = 1;
       }

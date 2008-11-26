@@ -11,10 +11,10 @@ function user_patterns($op, $id = null, &$data = null) {
     case 'actions':
       return array(
         'user_register' => t('Create new user'),
-        'user_edit' => t('Edit existing user'),
-        'user_confirm_delete' => t('Delete existing user'),
-        'user_admin_role' => t('Add/remove user roles'),
-        'user_admin_perm' => t('Change user role\'s permissions')
+        'user_profile_form' => t('Edit existing user'), //pages
+        'user_confirm_delete' => t('Delete existing user'),//pages
+        'user_admin_role' => t('Add/remove user roles'),//admin
+        'user_admin_perm' => t('Change user role\'s permissions')//admin
       );
     break;
     
@@ -28,7 +28,7 @@ function user_patterns($op, $id = null, &$data = null) {
         case 'user_register':
           return t('Create user %user', $variables);
         break;
-        case 'user_edit':
+        case 'user_profile_form':
           return t('Edit user account %user', $variables);
         break;
         case 'user_confirm_delete':
@@ -78,7 +78,7 @@ function user_patterns($op, $id = null, &$data = null) {
           $data['rid'] = $data['role'];
         }
         unset($data['role']);
-        
+
         if ($data['rid']) {
           if (is_string($data['value'])) {
             $perms = explode(',', $data['value']);
@@ -118,10 +118,10 @@ function user_patterns($op, $id = null, &$data = null) {
         if ($data['uid'] === 0) {
           return t('Cannot modify anonymous user account.');
         }
-        else if ($data['uid'] == 1 && $data['delete']) {
+        else if ($data['_account']->uid == 1 && $data['delete']) {
           return t('Cannot delete super-user account. Please modify pattern and try again.');
         }
-        else if ($data['uid'] == $user->uid && $data['delete']) {
+        else if ($data['_account']->uid == $user->uid && $data['delete']) {
           return t('You cannot delete the current users account. Please login with a different account and try again.');
         }
       }
@@ -142,11 +142,22 @@ function user_patterns($op, $id = null, &$data = null) {
       if ($id == 'user') {
         // Check if the user needs updating
         if ($data['uid'] && db_result(db_query('SELECT uid FROM {users} WHERE uid = "%d"', $data['uid']))) {
-          return $data['delete'] ? 'user_confirm_delete' : 'user_edit';
+          return $data['delete'] ? 'user_confirm_delete' : 'user_profile_form';
         }
         else if (db_result(db_query('SELECT uid FROM {users} WHERE name = "%s"', $data['name']))) {
-          return $data['delete'] ? 'user_confirm_delete' : 'user_edit'; 
+          return $data['delete'] ? 'user_confirm_delete' : 'user_profile_form'; 
         }
+//         if ($data['uid']) {
+//           $account = db_query('SELECT * FROM {users} WHERE uid = %d', $data['uid']);
+//           if ($account->uid) $data['_account'] = $account;
+//         }
+//         else if ($data['name']) {
+//           $account = db_query('SELECT * FROM {users} WHERE name = "%s"', $data['name']);
+//           if ($account->uid) $data['_account'] = $account;
+//         }
+//         if ($data['uid']) {
+//           return $data['delete'] ? 'user_confirm_delete' : 'user_profile_form';
+//         }
         else {
           return 'user_register';
         }
@@ -182,7 +193,8 @@ function user_patterns($op, $id = null, &$data = null) {
           unset($data['uid']);
         }
       }
-      else if ($id == 'user_edit') {
+      else if ($id == 'user_profile_form') {
+        module_load_include('inc', 'user', 'user.pages');
         if (!$data['uid']) {
           $data['uid'] = db_result(db_query('SELECT uid FROM {users} WHERE name = "%s"', $data['name']));
         }
@@ -192,9 +204,11 @@ function user_patterns($op, $id = null, &$data = null) {
         $_GET['q'] = 'user/'. $data['uid'] .'/edit';
       }
       else if ($id == 'user_confirm_delete') {
+        module_load_include('inc', 'user', 'user.pages');
         $data['confirm'] = 1;
       }
       else if ($id == 'user_admin_role') {
+        module_load_include('inc', 'user', 'user.admin');
         static $old_q;
         $old_q = $_GET['q'];
         if ($data['id']) {
@@ -217,6 +231,7 @@ function user_patterns($op, $id = null, &$data = null) {
         unset($data['id']);
       }
       else if ($id == 'user_admin_perm') {
+        module_load_include('inc', 'user', 'user.admin');
         if (is_string($data['rid'])) {
           $rid = db_result(db_query('SELECT rid FROM {role} WHERE name = "%s"', $data['rid']));
           $role = $data['rid'];
@@ -269,8 +284,8 @@ function user_patterns($op, $id = null, &$data = null) {
     
     // Build a patterns actions and parameters
     case 'params':
-      if ($id == 'user_confirm_delete') {
-        return array($data['name'], $data['uid']);
+      if ($id == 'user_confirm_delete' || $id == 'user_profile_form') {
+        return array(user_load($data['uid']));
       }
       else if ($id == 'user_admin_perm') {
         return $data['rid'];
@@ -286,33 +301,33 @@ function user_patterns($op, $id = null, &$data = null) {
           unset($old_q);
         }
       }
-      else if ($id == 'user_edit') {
+      else if ($id == 'user_profile_form') {
         static $old_q;        
         $_GET['q'] = $old_q;
       }
     break;
     
     // Reverse actions when disabling a pattern
-    case 'reverse':
-      if ($id == 'user') {
-        if ($data['delete']) {
-          unset($data['delete']);
-        }
-        else {
-          $data['delete'] = true;
-        }
-      }
-      else if ($id == 'role') {
-        if ($data['delete']) {
-          unset($data['delete']);
-        }
-        else {
-          $data['delete'] = true;
-        }
-      }
-      
-      return $data;
-    break;
+//     case 'reverse':
+//       if ($id == 'user') {
+//         if ($data['delete']) {
+//           unset($data['delete']);
+//         }
+//         else {
+//           $data['delete'] = true;
+//         }
+//       }
+//       else if ($id == 'role') {
+//         if ($data['delete']) {
+//           unset($data['delete']);
+//         }
+//         else {
+//           $data['delete'] = true;
+//         }
+//       }
+//       
+//       return $data;
+//     break;
     
     // Return the primary ID if possible from this action
     case 'identifier':

@@ -15,7 +15,7 @@ function system_patterns($op, $id = null, &$data = null) {
         'system_modules' => t('Enable/Disable Module'),
         'variables' => t('Configure Variables'),
         'variable' => t('Set a variable'),
-        'system_themes' => t('Set active theme'),
+        'system_themes_form' => t('Set active theme'),
         'form' => t('Execute a form call')
       );
     break;
@@ -49,7 +49,7 @@ function system_patterns($op, $id = null, &$data = null) {
         case 'variable':
           return t('Setting variable %var', array('%var' => $data['name']));
         break;
-        case 'system_themes':
+        case 'system_themes_form':
           return t('Setting theme to %name', array('%name' => $data['value']));
         break;
         case 'form':
@@ -133,7 +133,7 @@ function system_patterns($op, $id = null, &$data = null) {
             foreach((array)$modules_info[$module]->info['dependents'] as $dependent) {
               if (array_key_exists($dependent, $modules)) {
                 array_splice($data, $i, 1);
-                drupal_set_message(t('Warning: Could not disable %module because modules depend on it.', array('%module' => $module)));
+                drupal_set_message(t('Warning: Could not disable %module because other modules depend on it.', array('%module' => $module)));
                 break;
               }
             }
@@ -179,7 +179,7 @@ function system_patterns($op, $id = null, &$data = null) {
         return 'variables';
       }
       else if ($id == 'theme') {
-      	return 'system_themes';
+      	return 'system_themes_form';
       }
       else if ($id == 'form') {
       	return $data['form_id'];
@@ -190,6 +190,7 @@ function system_patterns($op, $id = null, &$data = null) {
     case 'build':
 
       if ($id == 'system_modules') {
+        module_load_include('inc', 'system', 'system.admin');
         $modules = module_list();
         
         $data['status'] = $modules;
@@ -235,7 +236,7 @@ function system_patterns($op, $id = null, &$data = null) {
         
         return t('Variables %vars updated.', array('%vars' => implode(', ', $names)));
       }
-      else if ($id == 'system_themes') {
+      else if ($id == 'system_themes_form') {
         $data['op'] = t('Save configuration');
       	return $data;
       }
@@ -254,33 +255,33 @@ function system_patterns($op, $id = null, &$data = null) {
     break;
     
     // Reverse actions when disabling a pattern
-    case 'reverse':
-      if ($id == 'modules') {
-        for($i=0;$item=$data[$i];$i++) {
-          if ($data[$i]['delete']) {
-            unset($data[$i]['delete']);
-          } 
-          else {
-            $data[$i]['delete'] = true;
-          }
-        }
-      }
-      else if ($id == 'variables') {
-        for($i=0;$variable=$data[$i];$i++) {
-          if ($variable['delete']) {
-            unset($data[$i]['delete']);
-          }
-          else {
-            $data[$i]['delete'] = true;
-          }
-        }
-      }
-      else {
-        return false;
-      }
-      
-      return $data;
-    break;
+//     case 'reverse':
+//       if ($id == 'modules') {
+//         for($i=0;$item=$data[$i];$i++) {
+//           if ($data[$i]['delete']) {
+//             unset($data[$i]['delete']);
+//           } 
+//           else {
+//             $data[$i]['delete'] = true;
+//           }
+//         }
+//       }
+//       else if ($id == 'variables') {
+//         for($i=0;$variable=$data[$i];$i++) {
+//           if ($variable['delete']) {
+//             unset($data[$i]['delete']);
+//           }
+//           else {
+//             $data[$i]['delete'] = true;
+//           }
+//         }
+//       }
+//       else {
+//         return false;
+//       }
+//       
+//       return $data;
+//     break;
     
   }
 }
