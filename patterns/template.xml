@@ -2,9 +2,9 @@
 <pattern>
   <info>
     <title>Drupal6 Template</title>
-    <description>Used as template/sample for creating your own patterns.</description>
+    <description>Template/sample for creating your own patterns.</description>
     <author>Vaish</author>
-    <author_email>vnd@graviteklabs.com></author_email>
+    <author_email>vnd@graviteklabs.com</author_email>
     <version>0.1</version>
     <category>Template</category>
     <core>6.x</core>    
