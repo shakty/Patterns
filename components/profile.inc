@@ -10,7 +10,7 @@ function profile_patterns($op, $id = null, &$data = null) {
     // Return a list of forms/actions this component can handle
     case 'actions':
       return array(
-        'profile_field_form' => t('Create new profile field'),
+        'profile_field_form' => t('Create/Update profile field'),
         'profile_field_delete' => t('Delete profile field')
       );
     break;
@@ -27,6 +27,7 @@ function profile_patterns($op, $id = null, &$data = null) {
     
     // Prepare data for processing
     case 'prepare':
+    
       $fid = db_result(db_query('SELECT fid FROM {profile_fields} WHERE name = "%s"', $data['name']));
       
       if ($data['delete'] && !$data['fid']) {
@@ -38,12 +39,25 @@ function profile_patterns($op, $id = null, &$data = null) {
       else if ($data['fid'] && !$fid) {
         unset($data['fid']);
       }
+
+      if ($data['type'] == 'selection') {
+        if (!empty($data['options']) && is_array($data['options'])) {
+          $options = implode("\r\n", $data['options']);
+          $data['options'] = $options;
+        }
+      }
+      else {
+        unset($data['options']);
+      }
     break;
     
     // Pre validate actions
     case 'pre-validate':
       if (!$data['name']) {
         return t('<profile> actions require a <name> for the profile field.');
+      }
+      if ($data['type'] == 'selection' && empty($data['options'])) {
+        return t('<options> tag is required for "selection" type of profile field.');
       }
     break;
     
@@ -73,7 +87,7 @@ function profile_patterns($op, $id = null, &$data = null) {
           static $old_q;
           $old_q = $_GET['q'];
           $_GET['q'] = 'admin/user/profile/edit/'. $data['fid'];
-        }
+        }        
       }
       return $data;
     break;
@@ -109,18 +123,5 @@ function profile_patterns($op, $id = null, &$data = null) {
         unset($old_q);
       }
     break;
-    
-    // Reverse actions when disabling a pattern
-    case 'reverse':
-      if ($data['delete']) {
-        unset($data['delete']);
-      }
-      else {
-        $data['delete'] = true;
-      }
-      
-      return $data;
-    break;
-    
   }
 }
