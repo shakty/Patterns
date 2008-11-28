@@ -52,7 +52,7 @@ function pathauto_patterns($op, $id = null, &$data = null) {
           $new = 'pathauto_'. $key;
         }
         
-        if (strpos($key, 'pathauto_') === FALSE) {
+        if (strpos($key, 'pathauto_') === FALSE && $key != 'reset') {
           $data[$new] = $value;
           unset($data[$key]);
         }
@@ -71,12 +71,13 @@ function pathauto_patterns($op, $id = null, &$data = null) {
     
     // Prepare for valid processing of this type of component
     case 'build':
-      if ($data['reset']) {
-        foreach($data as $key => $value) {
-          $data[$key] = '';
+      if ($data['reset']) {       
+        $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'pathauto_%'");
+        while ($var = db_fetch_array($result)) {
+          variable_del($var['name']);
         }
-        
-        unset($data['reset']);
+        cache_clear_all('variables', 'cache');
+        return;
       }
       
       return $data;
@@ -89,11 +90,6 @@ function pathauto_patterns($op, $id = null, &$data = null) {
     // Build a patterns actions and parameters
     case 'params':
     break;
-    
-    // Reverse actions when disabling a pattern
-//     case 'reverse':
-//       $data['reset'] = true;
-//     break;
     
     // Cleanup any global settings after the action runs
     case 'cleanup':
