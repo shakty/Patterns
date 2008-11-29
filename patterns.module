@@ -720,6 +720,8 @@ function patterns_get_pattern($id) {
     $pattern = db_fetch_object(db_query('SELECT * FROM {patterns} WHERE name = "%s"', $id));
   }
   
+  if (!$pattern) return FALSE;
+  
   // Get the actual data. Data is stored in serialized form in the db.
   $pattern->pattern = unserialize($pattern->pattern);
   

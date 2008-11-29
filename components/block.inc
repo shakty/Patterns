@@ -33,16 +33,31 @@ function block_patterns($op, $id = null, &$data = null) {
       }
       
       if ($data['delete'] && $data['module'] == 'block') {
-        $data['info'] = db_query('SELECT info FROM {boxes} WHERE bid = "%d"', $data['delta']);
+        $data['info'] = db_result(db_query('SELECT info FROM {boxes} WHERE bid = "%d"', $data['delta']));
       }
       
-      if ($data['roles']) {
+      if (!empty($data['roles']) && is_array($data['roles'])) {
+        // convert role names to role IDs and get rid of all invalid entries
         foreach($data['roles'] as $key => $role) {
           if (is_string($role)) {
-            $data['roles'][$key] = db_result(db_query('SELECT rid FROM {role} WHERE name = "%s"', $role));
+            $rid = db_result(db_query('SELECT rid FROM {role} WHERE name = "%s"', $role));
+            $roles[$rid] = $rid;
           }
         }
+        $data['roles'] = $roles;
       }
+      
+      if (!empty($data['pages']) && is_array($data['pages'])) {
+        $pages = implode("\r\n", $data['pages']);
+        $data['pages'] = str_replace('[front]', '<front>', $pages);
+      }
+      else {
+        $data['pages'] = '';
+      }
+      
+      if (!($data['module'] && $data['delta']) && $data['info']) {
+        $data['module'] = 'block';
+      }   
     break;
     
     // Pre validate actions
@@ -62,7 +77,7 @@ function block_patterns($op, $id = null, &$data = null) {
       if (!($data['module'] && $data['delta']) && $data['info']) {
         return array(
           'block_add_block_form',
-          'block_admin_configure'
+          'block_admin_display_form'
         );
       }
       else if ($data['delete']) {
@@ -71,19 +86,17 @@ function block_patterns($op, $id = null, &$data = null) {
       else if (empty($diff)) {
         return 'block_admin_display_form';
       }
-      else if (count($diff) == count($data) - 2) {
-        return 'block_admin_configure';
-      }
       else {
         return array(
-          'block_admin_display_form',
-          'block_admin_configure'
+          'block_admin_configure',
+          'block_admin_display_form'
         );
       }
     break;
     
     // Prepare for valid processing of this type of component
     case 'build':
+      module_load_include('inc', 'block', 'block.admin');
       if ($id == 'block_box_delete') {
         $data['op'] = t('Delete');
         $data['confirm'] = 1;
@@ -91,19 +104,23 @@ function block_patterns($op, $id = null, &$data = null) {
       else if ($id == 'block_admin_display_form') {
         if (isset($data['status']) && $data['status'] == 0) $data['region'] = -1;
         // Fetch and sort blocks
-        $blocks = _block_rehash();
-        module_load_include('inc', 'block', 'block.admin');
+        $blocks = _block_rehash();        
         usort($blocks, '_block_compare');
         $block = $data;
         $data = array();
         
+        // make sure delta is defined even for blocks that have just been created within the same action 
+        if ($block['module'] == 'block' && empty($block['delta'])) {
+          // we can do this because block descriptions are always unique
+          $block['delta'] = db_result(db_query("SELECT bid FROM {boxes} WHERE info = '%s'", $block['info']));
+        }
+        
         foreach($blocks as $i => $v) {
           if ($v['module'] == $block['module'] && $v['delta'] == $block['delta']) {
             $data[$block['module'] .'_'. $block['delta']] = $block;
-//             dpm($data);
             break;
           }
-        }
+        }   
       }
       
       return $data;
@@ -119,26 +136,16 @@ function block_patterns($op, $id = null, &$data = null) {
         return array($data['module'], $data['delta']);
       }
       else if ($id == 'block_admin_display_form') {
-//         $blocks = _block_rehash();
-//         module_load_include('inc', 'block', 'block.admin');
-//         usort($blocks, '_block_compare');
-        $b = reset($data);
-//         dpm($blocks);
-//         $blocks = $blocks + $data;
-//         dpm($blocks);
-        return array($data, $b['theme']);
+        $block = reset($data);
+        return array($data, $block['theme']);
       }
       else if ($id == 'block_box_delete') {
         return $data['delta'];
       }
     break;
-    
-    // Reverse actions when disabling a pattern
-//     case 'reverse':
-//     break;
   }
 }
 
 function _block_patterns_display_keys() {
-  return array('module', 'delta', 'theme', 'weight', 'region');
+  return array('module', 'delta', 'theme', 'weight', 'region', 'status');
 }
