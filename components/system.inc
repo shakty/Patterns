@@ -60,60 +60,92 @@ function system_patterns($op, $id = null, &$data = null) {
     
     // Prepare data for processing
     case 'prepare':
-      // Turn <variable>value</variable> style tag function the same as <variables>
-      if ($id == 'variable') {
-        $id = 'variables';
-        $data = array($data);
-      }
-      
-      // Make a <variables>modulename</variables> style tag work
-      if ($id == 'variables' && !$data[0]) {
-        if ($data['variable']) {
-          $data = $data['variable'];
-          unset($data['variable']);
-        }
-        else {
-          $temp = $data;
-          $data[0] = $temp;
-          unset($data['id'], $data['value'], $data['delete']);          
-        }
-      }
-      else if ($id == 'modules' && is_string($data)) {
-        $data = array($data);
-      }
-      
-      if ($id == 'variables') {
-      	for($i=0;$i<count($data);$i++) {
-      		$item = &$data[$i];
-          
-          if (!$item['value']) {
-          	$value = $item;
-            unset($value['name']);
-            $item = array('name' => $item['name'], 'value' => $value);
-          }
-      	}
-      }
-
-      if ($id == 'modules') {
-        // Make a <modules>modulename</modules> style tag work
-        if (is_string($data) || ($data['value'] && !$data[0])) {
+      switch($id) {
+        case 'variable':
+          // Turn <variable>value</variable> style tag function the same as <variables>
+          $id = 'variables';
           $data = array($data);
-        }
-
-        // Ensure that modules with a tags like <module>modulename</module
-        // are represented as an array instead of a string
-        for($i=0;$item=$data[$i];$i++) {
-          if (is_string($item)) {
-            $data[$i] = array('value' => $item);
+        case 'variables':
+          // Make a <variables>modulename</variables> style tag work
+          if (!$data[0]) {
+            if ($data['variable'] && isset($data['variable'][0])) {
+              $data = $data['variable'];
+              unset($data['variable']);
+            }
+            elseif ($data['variable'] && isset($data['variable']['value'])) {
+              $data[0] = $data['variable'];
+              unset($data['variable']);            
+            }
+            else {
+              $temp = $data;
+              $data[0] = $temp;
+              unset($data['id'], $data['value'], $data['delete']);          
+            }
           }
-        }
-      }
-      
-      if ($id == 'theme') {
-      	if ($data['value']) {
-      		$data['theme_default'] = $data['value'];
-          $data['status'][$data['value']] = $data['value'];
-      	}
+   
+        	for($i=0;$i<count($data);$i++) {
+        		$item = &$data[$i];
+            
+            if (!$item['value'] && !$item['delete']) {
+            	$value = $item;
+              unset($value['name']);
+              $item = array('name' => $item['name'], 'value' => $value);
+            }
+        	}                    
+        break;
+        case 'modules':
+          // Make a <modules>modulename</modules> style tag work
+          if (is_string($data) || ($data['value'] && !$data[0])) {
+            $data = array($data);
+          }
+          
+          // Ensure proper data format for cases when "delete" (disable module) option is used
+          // or when <modules> tag contains only single <module> tag
+          if (!empty($data['module']) && is_array($data['module']) && count($data) == 1) {
+            if (isset($data['module'][0])) {
+              $data = $data['module'];
+            }
+            elseif (isset($data['module']['value'])) {
+              $data[0] = $data['module'];
+            }
+            unset($data['module']);
+          }
+          elseif (!empty($data['module']) && is_string($data['module']) && count($data) == 1) {
+            $data[0]['value'] = $data['module'];
+            unset($data['module']);
+          }
+  
+          // Ensure that modules with tags like <module>modulename</module>
+          // are represented as an array instead of a string
+          for($i=0;$item=$data[$i];$i++) {
+            if (is_string($item)) {
+              $data[$i] = array('value' => $item);
+            }
+          }        
+        break;
+        case 'theme':
+        	if ($data['value']) {
+        		$data['theme_default'] = $data['value'];
+            $data['status'][$data['value']] = $data['value'];
+        	}        
+        break;
+        case 'form':
+          // attempt to load required include file if callback function is not defined
+          if (!function_exists($data['form_id'])) {
+            if (!empty($data['include_file']) && is_file($data['include_file'])) {
+              require_once $data['include_file'];
+            }
+            elseif (!empty($data['module']) && is_string($data['module'])) {
+              $modules = module_list();
+              if (in_array($data['module'], $modules)) {
+                // try most common include file names
+                module_load_include('inc', $data['module']);
+                module_load_include('inc', $data['module'], $data['module'] .'.admin');
+                module_load_include('inc', $data['module'], $data['module'] .'.page');
+              }   
+            }
+          }
+        break;                                  
       }
     break;
     
@@ -124,7 +156,7 @@ function system_patterns($op, $id = null, &$data = null) {
           $modules_info = module_rebuild_cache();
         }
         
-        $modules = module_list();
+        $modules = module_list();  
         for($i=0;$item=$data[$i];$i++) {
           $module = $item['value'];
           
@@ -132,7 +164,7 @@ function system_patterns($op, $id = null, &$data = null) {
           if ($item['delete'] && array_key_exists($module, $modules)) {
             foreach((array)$modules_info[$module]->info['dependents'] as $dependent) {
               if (array_key_exists($dependent, $modules)) {
-                array_splice($data, $i, 1);
+                $remove[] = $i;
                 drupal_set_message(t('Warning: Could not disable %module because other modules depend on it.', array('%module' => $module)));
                 break;
               }
@@ -152,9 +184,15 @@ function system_patterns($op, $id = null, &$data = null) {
             
             if (!empty($required)) {
               return t('%module can not be installed because the module or its dependencies are missing. Please download them and try again.', array('%module' => $module)) .
-                     t('!title%dependencies', array('!title' => '<br /><b>'. t('Missing: ') .'</b>', '%dependencies' => implode(', ', $required)));
+                     t('!title%dependencies', array('!title' => '<br /><b>'. t('Missing module(s): ') .'</b>', '%dependencies' => implode(', ', $required)));
             }
           }
+        }
+        if (!empty($remove)) {
+          foreach ($data as $key => $item) {
+            if (!in_array($key, $remove)) $result[] = $item;
+          }
+          $data = $result;
         }
       }
       else if ($id == 'theme') {
@@ -166,6 +204,9 @@ function system_patterns($op, $id = null, &$data = null) {
       else if ($id == 'form') {
       	if (!array_key_exists('form_id', $data)) {
       		return t('form tag must specify a form_id.');
+      	}
+      	if (!function_exists($data['form_id'])) {
+          return t("Couldn't load the form %form. Check if all required modules are enabled and try to define 'include_file' or 'module' tag for this action.", array('%form' => $data['form_id']));
       	}
       }
     break;
@@ -188,7 +229,6 @@ function system_patterns($op, $id = null, &$data = null) {
     
     // Prepare for valid processing of this type of component
     case 'build':
-
       if ($id == 'system_modules') {
         module_load_include('inc', 'system', 'system.admin');
         $modules = module_list();
@@ -228,9 +268,16 @@ function system_patterns($op, $id = null, &$data = null) {
             variable_del($variable['name']);
           }
           else {
-            variable_set($variable['name'], $variable['value']);
+            $var = variable_get($variable['name'], NULL);
+            if (is_array($var)) {
+              // make sure we don't loose parts of the array that were not defined by pattern's action
+              $var = array_merge($var, $variable['value']);
+              variable_set($variable['name'], $var);
+            }
+            else {
+              variable_set($variable['name'], $variable['value']);
+            } 
           }
-          
           $names[] = $variable['name'];
         }
         
@@ -238,6 +285,7 @@ function system_patterns($op, $id = null, &$data = null) {
       }
       else if ($id == 'system_themes_form') {
         $data['op'] = t('Save configuration');
+        module_load_include('inc', 'system', 'system.admin');
       	return $data;
       }
       else if ($data['form_id']) {
@@ -247,41 +295,10 @@ function system_patterns($op, $id = null, &$data = null) {
     
     // Validate the values for an action before running the pattern
     case 'validate':
-      
     break;
     
     // Build a patterns actions and parameters
     case 'params':
     break;
-    
-    // Reverse actions when disabling a pattern
-//     case 'reverse':
-//       if ($id == 'modules') {
-//         for($i=0;$item=$data[$i];$i++) {
-//           if ($data[$i]['delete']) {
-//             unset($data[$i]['delete']);
-//           } 
-//           else {
-//             $data[$i]['delete'] = true;
-//           }
-//         }
-//       }
-//       else if ($id == 'variables') {
-//         for($i=0;$variable=$data[$i];$i++) {
-//           if ($variable['delete']) {
-//             unset($data[$i]['delete']);
-//           }
-//           else {
-//             $data[$i]['delete'] = true;
-//           }
-//         }
-//       }
-//       else {
-//         return false;
-//       }
-//       
-//       return $data;
-//     break;
-    
   }
 }

@@ -956,7 +956,7 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
       $errors[$data['tag']][] = t('Invalid Pattern: <%tag> is not a valid tag', array('%tag' => $data['tag']));
     }
     else {
-      $error = patterns_invoke($data, 'pre-validate');
+      $error = patterns_invoke($actions[$key], 'pre-validate');
       if ($error) {
         $errors[$data['tag']][] = t('Invalid Pattern: !msg', array('!msg' => $error));
       }
