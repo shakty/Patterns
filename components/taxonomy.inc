@@ -45,9 +45,6 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
             return t('Edit category %cat in vocabular %vocab', array('%cat' => $data['name'], '%vocab' => $data['vocabulary']));
           }
         break;
-//         case 'taxonomy_form_term':
-//           return t('Delete category %cat from vocabulary %vocab', array('%cat' => $data['name'], '%vocab' => $data['vocabulary']));
-//         break;
       }
     break;
     
@@ -69,33 +66,28 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
           unset($data['vocabulary']);
         }
       }
-      else if ($id == 'vocabulary') {
-        
-      }
     break;
     
     // Pre validate actions
     // Need to check for required tags etc...
     case 'pre-validate':
-      
+      if ($id = 'vocabulary') {
+        if (!empty($data['vid']) && !taxonomy_vocabulary_load($data['vid'])) {
+          return t("Invalid vid: %vid. This vocabulary doesn't exist", array('%vid' => $data['vid']));
+        }
+      }
     break;
     
     // Return the form_id('s) for each action
     case 'form_id':
       if ($data['delete'] && $id == 'term') {
         if ($term = taxonomy_get_term($data['tid'])) {
-          return 'taxonomy_form_term';
-        }
-        else {
-          return;
+          return 'taxonomy_term_confirm_delete';
         }
       }
       else if ($data['delete'] && $id == 'vocabulary') {
         if ($vocab = taxonomy_vocabulary_load($data['vid'])) {
           return 'taxonomy_vocabulary_confirm_delete';
-        }
-        else {
-          return;
         }
       }
       else if ($id == 'term') {
@@ -125,42 +117,94 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
         }
         
         if ($data['vid'] && !$data['tid'] && ($terms = taxonomy_get_term_by_name($data['name']))) {
+          // @TODO make sure this works even when there are multiple terms returned
           foreach($terms as $term) {
             if ($term->vid == $data['vid']) {
               $data['tid'] = $term->tid;
             }
           }
         }
-      }
-      else if ($id == 'taxonomy_form_vocabulary' || $id == 'taxonomy_vocabulary_confirm_delete') {
-        if (!$data['vid']) {
-          $vocabs = taxonomy_get_vocabularies();
-          
-          foreach($vocabs as $vid => $vocab) {
-            if (strtolower($vocab->name) == strtolower($data['name'])) {
-              $data['vid'] = $vid;
-              break;
+        
+        // <parent> and <relations> should be proccessed in exactly the same way
+        $tags = array('parent', 'relations');
+        
+        foreach($tags as $tag) {
+          if (!empty($data[$tag])) {
+            // handle the case of empty <parent> tag first
+            if ($data[$tag] == $tag) {
+              $data[$tag] = array();
             }
-          }
+            // for now we support only term names
+//             elseif (is_numeric($data[$tag])) {
+//               $data[$tag][$data[$tag]] = $data[$tag]; 
+//             }
+            elseif (is_string($data[$tag])) {
+              $new = array();
+              if ($terms = taxonomy_get_term_by_name($data[$tag])) {
+                foreach($terms as $term) {
+                  if ($term->vid == $data['vid']) {
+                    $new[$term->tid] = $term->tid;
+                  }
+                }
+              }
+              $data[$tag] = $new;
+            }
+            elseif (is_array($data[$tag])) {
+              $new = array();
+              foreach($data[$tag] as $key => $name) {
+                // check if TIDs are passed instead of term names
+                // this wouldn't work if term name is a number
+                // so for now we support only term names
+//                 if (is_numeric($name) && taxonomy_get_term($name)) {
+//                   $new[$name] = $name;
+//                   continue;
+//                 }
+                if ($terms = taxonomy_get_term_by_name($name)) {
+                  foreach($terms as $term) {
+                    if ($term->vid == $data['vid']) {
+                      $new[$term->tid] = $term->tid;
+                    }
+                  }
+                }
+              }
+              $data[$tag] = $new;
+            }
+          }        
+        }
+        
+        if (!empty($data['synonyms']) && is_array($data['synonyms'])) {
+          $data['synonyms'] = implode("\n", $data['synonyms']);
         }
       }
-
+      else if ($id == 'taxonomy_form_vocabulary' || $id == 'taxonomy_vocabulary_confirm_delete') {
+//         if (!$data['vid']) {
+//           $vocabs = taxonomy_get_vocabularies();
+//           
+//           foreach($vocabs as $vid => $vocab) {
+//             if (strtolower($vocab->name) == strtolower($data['name'])) {
+//               $data['vid'] = $vid;
+//               break;
+//             }
+//           }
+//         }
+      }
       return $data;
     break;
     
     // Validate the values for an action before running the pattern
     case 'validate':
-      
+      if ($id == 'taxonomy_form_term') {
+        // we can't procede without valid vocabulary ID
+        if (empty($data['vid'])) {
+          return t("This action requires vocabulary to be defined. Make sure that vocabulary %vocab does exist or select another one.", array('%vocab' => $data['vocabulary']));
+        }
+      }
     break;
     
     // Build a patterns actions and parameters
     case 'params':
       if ($id == 'taxonomy_vocabulary_confirm_delete') {
         return $data['vid'];
-      }
-      else if ($id == 'taxonomy_form_term' && $data['delete']) {
-        $vocab = taxonomy_vocabulary_load($data['vid']);
-        return array($vocab, $data);
       }
       else if ($id == 'taxonomy_form_vocabulary') {
         return array($data);
@@ -169,29 +213,11 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
         $vocab = taxonomy_vocabulary_load($data['vid']);
         return array($vocab, $data);
       }
+      else if ($id == 'taxonomy_term_confirm_delete') {
+        return array($data['tid']);
+      }
     break;
-    
-    // Reverse actions when disabling a pattern
-//     case 'reverse':
-//       if (!$data['delete'] && !$data['reset'] && !$data['disable']) {
-//         $data['delete'] = true;
-//       }
-//       else if ($data['disable']) {
-//         unset($data['disable']);
-//       }
-//       else if ($data['reset']) {
-//         drupal_set_message(t('Unable to reverse <menu> tags that have %reset set.', array('%reset' => t('reset'))));
-//       }
-//       else if ($data['enable']) {
-//         $data['disable'] = true;
-//         unset($data['enable']);
-//       }
-//       else if ($data['delete']) {
-//         unset($data['delete']);
-//       }
-//       return $data;
-//     break;
-    
+
     // Cleanup any global settings after the action runs
     case 'cleanup':
       unset($_POST['op']);
