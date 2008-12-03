@@ -991,6 +991,14 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
     // Build the action
     foreach($form_ids as $form_id) {
       $clone = $data;
+
+      // If tokens are enabled, apply tokens to the action values
+      // before processing
+      if (module_exists('token')) {
+        _patterns_recurse_tokens($clone, $identifiers);
+        //array_walk($clone, '_patterns_replace_tokens', $identifiers);
+      }
+
       $error = patterns_invoke($clone, 'validate', $form_id);
       
       if ($error) {
@@ -1008,13 +1016,6 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
         
         
         return;
-      }
-      
-      // If tokens are enabled, apply tokens to the action values
-      // before processing
-      if (module_exists('token')) {
-        _patterns_recurse_tokens($clone, $identifiers);
-        //array_walk($clone, '_patterns_replace_tokens', $identifiers);
       }
 
       // Get the form data for the action

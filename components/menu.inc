@@ -14,7 +14,6 @@ function menu_patterns($op, $id = null, &$data = null) {
         'menu_delete_menu_confirm' => t('Delete menu'), 
         'menu_edit_item' => t('Add/edit menu item'),
         'menu_item_delete_form' => t('Delete a menu item'),
-        'menu_overview_form' => t('Configure menu item'),
       );
     break;
     
@@ -30,9 +29,6 @@ function menu_patterns($op, $id = null, &$data = null) {
         case 'menu_item_delete_form':
         
         break;
-        case 'menu_overview_form':
-        
-        break;
         case 'menu_delete_menu_confirm':
         
         break;
@@ -41,45 +37,21 @@ function menu_patterns($op, $id = null, &$data = null) {
     
     // Prepare data for processing
     case 'prepare':
-//       // Automatically enabled when saved...
-//       unset($data['enable']);
       switch ($id) {
         case 'menu':
-          if (empty($data['menu_name']) && !empty($data['title']) && $menu_name = db_result(db_query("SELECT menu_name FROM {menu_custom} WHERE title = '%s'", $data['title']))) {
-            $data['menu_name'] = $menu_name;
+          if (empty($data['menu_name']) && !empty($data['name'])) {
+            $data['menu_name'] = $data['name'];
+            unset($data['name']);
           }
+
           if (empty($data['menu_name']) && !empty($data['title'])) {
             $data['menu_name'] = strtolower(preg_replace('/[^a-zA-Z0-9\-]/', '-', $data['title']));
           }
         break;
         case 'menu_item':
-          
-          dpm($data);
-        
-          if (empty($data['menu_name']) && !empty($data['menu']) && $menu_name = db_result(db_query("SELECT menu_name FROM {menu_custom} WHERE title = '%s'", $data['menu']))) {
-            $data['menu_name'] = $menu_name;
-            unset($data['menu']);
-          }
-          
-          if (is_numeric($data['id'])) {
+          if (!empty($data['id'])) {
             $data['mlid'] = $data['id'];
             unset($data['id']);
-          }
-          
-          if (is_string($data['parent']) && !empty($data['menu_name']) && $plid = db_result(db_query("SELECT plid FROM {menu_links} WHERE menu_name = '%s' AND link_title = '%s'", $data['menu_name'], $data['parent']))) {
-            $data['parent'] = $data['menu_name'] .':'. $plid; 
-          }
-          else if (is_numeric($data['parent']) && !empty($data['menu_name']) && db_result(db_query("SELECT mlid FROM {menu_links} WHERE menu_name = '%s' AND mlid = %d", $data['menu_name'], $data['parent']))) {
-            $data['parent'] = $data['menu_name'] .':'. $data['parent'];
-          }
-          else if (empty($data['mlid']) && empty($data['parent']) && !empty($data['title']) && !empty($data['path'])) {
-            $data['parent'] = $data['menu_name'] .':0';
-          }
-          
-          dpm($data);
-          
-          if (($data['delete'] || $data['disable'] || $data['enable']) && empty($data['mlid'])) {
-            $data['mlid'] = db_result(db_query("SELECT mlid FROM {menu_links} WHERE menu_name = '%s' AND link_path = '%s' AND link_title = '%s'", $data['menu_name'], $data['path'], $data['title']));
           }
 
           if (!empty($data['path'])) $data['link_path'] = $data['path'];
@@ -87,43 +59,31 @@ function menu_patterns($op, $id = null, &$data = null) {
           if (!empty($data['title'])) $data['link_title'] = $data['title'];
           unset($data['title']);
           
-          dpm($data);
+          if (!empty($data['link_path'])) $data['link_path'] = str_replace(array('[', ']'), array('<', '>'), $data['link_path']);
+          
         break;
       }
     break;
     
     // Pre validate actions
     case 'pre-validate':
-      // @todo all errors should be collected and displayed at once to the user (instead of exiting at first encountered error)
       switch ($id) {
         case 'menu':
           if ($data['delete'] && empty($data['menu_name'])) {
             return t('"menu_name" is required.');
           }
+          if (!empty($data['menu_name']) && preg_match('/[^a-z0-9\-]/', $data['menu_name'])) {
+            return t('The menu name may only consist of lowercase letters, numbers, and hyphens: %menu', array('%menu' => $data['menu_name']));
+          }
         break;
-        case 'menu_item':
-          if (empty($data['mlid']) && empty($data['menu_name'])) {
-            return t('"menu_name" is required.');
-          }
-          if (!empty($data['parent'])) {
-            list($menu_name, $mlid) = explode(':', $data['parent']);
-            if ($mlid != 0 && !db_result(db_query("SELECT count(*) FROM {menu_links} WHERE menu_name = '%s' AND mlid = %d", $menu_name, $mlid))) {
-              return t('parent is not valid.');
-            }
-          }
-          else if (empty($data['mlid'])) {
-            return t('"parent" is required.');
-          }
+        case 'menu_item':          
           if (empty($data['mlid'])) {
             if(empty($data['link_path'])) {
               return t('"path" is required.');
             }
             if(empty($data['link_title'])) {
               return t('"title" is required.');
-            }
-//             if ($data['delete']) {
-//               return t('You have to supply more information in order to determine which menu itme needs to be deleted. Either provide "mlid" or all three following fields: "menu_name", "path", "title"');
-//             }                   
+            }                 
           }
         break;
       }  
@@ -143,9 +103,6 @@ function menu_patterns($op, $id = null, &$data = null) {
         if ($data['delete']) {
           return 'menu_item_delete_form';
         }
-        else if ($data['disable'] || $data['enable']) {
-          return 'menu_overview_form';
-        }
 //         else if ($data['reset']) {
 //           return 'menu_reset_item_confirm';
 //         }        
@@ -161,45 +118,73 @@ function menu_patterns($op, $id = null, &$data = null) {
       if ($id == 'menu_item_delete_form' || $id == 'menu_delete_menu_confirm') {
         $data['confirm'] = 1;        
       }
-      else if ($id == 'menu_overview_form') {
-        if ($data['disable']) {
-          $data['hidden'] = 0;
-          unset($data['disable']);          
-        }
-        else if ($data['enable']) {
-          $data['hidden'] = 1;
-          unset($data['enable']);        
-        }
-//         list( ,$data['plid']) = explode(':', $data['parent']); 
-//         unset($data['link_path'], $data['link_title'], $data['parent']);
-        $d = array();
-        $d['mlid:'. $data['mlid']] = $data;
-        $data = $d;        
-      }
       else if ($id == 'menu_reset_item_confirm') {
-      
+        // @TODO
       }      
-      else if ($id == 'menu_edit_item') {
+      else if ($id == 'menu_edit_item') {        
         $data['customized'] = 1;
         $data['module'] = 'menu';
         if ($data['disable']) {
           $data['enabled'] = 0;
           unset($data['disable']);
         }
+        elseif ($data['enable']) {
+          $data['enabled'] = 1;
+          unset($data['enable']);        
+        }
         $d = array();
         $d['menu'] = $data;
         $data = $d; 
       }
-      dpm($data);
       return $data;
     break;
     
     // Validate the values for an action before running the pattern
     case 'validate':
-//       if ($data['mid'] && !($item = db_fetch_array(db_query('SELECT * FROM {menu} WHERE mid = %d', $data['mid'])))) {
-//         unset($data[$mid]);
-//         drupal_set_message(t('ID #!mid for menu item %title does not exist.', array('!mid' => $mid, '%title' => $data['title'])));
-//       }
+      switch ($id) {
+        case 'menu_edit_item':
+
+          if (empty($data['menu_name']) && !empty($data['menu'])) {
+            if ($count = db_result(db_query("SELECT COUNT(*) FROM {menu_custom} WHERE title = '%s'", $data['menu']))) {
+              if ($count == 1) {
+                $data['menu_name'] = db_result(db_query("SELECT menu_name FROM {menu_custom} WHERE title = '%s'", $data['menu']));
+                unset($data['menu']);
+              }
+              else {
+                return t("Menu name couldn't be determined accurately because more then one menu has exactly the same title. You need to provide menu_name instead of the title: '%title'", array('%title' => $data['menu']));
+              }        
+            }
+          }
+          
+          if ((empty($data['mlid']) || isset($data['parent'])) && empty($data['menu_name'])) {
+            return t('"menu_name" is required.');
+          }
+          
+          if ($data['parent'] == '0') {
+            $data['parent'] = $data['menu_name'] .':0';
+          }
+          else if (is_numeric($data['parent']) && !empty($data['menu_name']) && db_result(db_query("SELECT mlid FROM {menu_links} WHERE menu_name = '%s' AND mlid = %d", $data['menu_name'], $data['parent']))) {
+            $data['parent'] = $data['menu_name'] .':'. $data['parent'];
+          }
+          // @TODO this may not work if there is more then one menu item with the same title within the same menu        
+          else if (is_string($data['parent']) && !empty($data['menu_name']) && $plid = db_result(db_query("SELECT mlid FROM {menu_links} WHERE menu_name = '%s' AND link_title = '%s'", $data['menu_name'], $data['parent']))) {
+            $data['parent'] = $data['menu_name'] .':'. $plid;   
+          } 
+          else if (empty($data['mlid']) && empty($data['parent']) && !empty($data['link_title']) && !empty($data['link_path'])) {
+            $data['parent'] = $data['menu_name'] .':0';
+          }
+ 
+          if (!empty($data['parent'])) {
+            list($menu_name, $mlid) = explode(':', $data['parent']);
+            if ($mlid != 0 && !db_result(db_query("SELECT count(*) FROM {menu_links} WHERE menu_name = '%s' AND mlid = %d", $menu_name, $mlid))) {
+              return t('parent is not valid.');
+            }
+          }
+          else if (empty($data['mlid'])) {
+            return t('"parent" is required.');
+          }
+        break;
+      }
     break;
     
     // Build a patterns actions and parameters
@@ -218,7 +203,6 @@ function menu_patterns($op, $id = null, &$data = null) {
           return array(menu_load($data['menu_name']));
         break;
         case 'menu_edit_item':
-          dpm($data);
           if (!$data['menu']['mlid']) {
             return array('add', NULL, menu_load($data['menu']['menu_name']));
           }
@@ -228,12 +212,6 @@ function menu_patterns($op, $id = null, &$data = null) {
         break;
         case 'menu_item_delete_form':
           return array(menu_link_load($data['mlid']));
-        break;
-        case 'menu_overview_form':
-          $item = reset($data);
-          dpm($item);
-          dpm(menu_load($item['menu_name']));
-          return array(menu_load($item['menu_name']));
         break;
       }
     break;
@@ -251,17 +229,14 @@ function menu_patterns($op, $id = null, &$data = null) {
       if ($id == 'menu_edit_menu') {
         return $data['menu_name'];        
       }
-      else if ($id == 'menu_edit_item' || $id == 'menu_overview_form') {
+      else if ($id == 'menu_edit_item') {
         $data = reset($data);
         if ($data['mlid']) {
           return $data['mlid'];
         }
-        else if ($data['link_path']) {
-          return db_result(db_query('SELECT mlid FROM {menu_links} WHERE link_path = "%s" AND menu_name = "%s"', $data['link_path'], $data['menu_name']));
+        else if ($mlid = db_result(db_query("SELECT mlid FROM {menu_links} WHERE menu_name = '%s' AND link_path = '%s' AND link_title = '%s' ORDER BY mlid DESC", $data['menu_name'], $data['link_path'], $data['link_title']))) {
+          return $mlid;
         }
-        else if ($data['link_title']) {
-          return db_result(db_query('SELECT mlid FROM {menu_links} WHERE link_title = "%s" AND menu_name = "%s"', $data['link_title'], $data['menu_name']));
-        }              
       }
     break;
   }
