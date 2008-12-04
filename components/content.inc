@@ -15,7 +15,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
         'content_field_overview_form' => t('Add Fieldtype or Fieldgroup'),
         'content_field_remove_form' => t('Delete Fieldtype'),
         'content_field_edit_form' => t('Update Fieldtype'),
-        'content_display_overview_form'=> t('Content fields display'),
+        'display'=> t('Content fields display'),
         'fieldgroup_group_edit_form' => t('Edit a Fieldgroup'),
         'fieldgroup_remove_group' => t('Delete a Fieldgroup')
       );
@@ -40,10 +40,14 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
             unset($data[$old]);
           }
         }
-        
-        if ($data['group'] && strpos('group_', $data['group']) !== 0) {
+
+        if (!empty($data['group']) && !preg_match('/^group_/i', $data['group'])) {
           $data['group'] = 'group_'. $data['group'];
-        }    
+        }
+        
+        if (!empty($data['allowed_values']) && is_array($data['allowed_values'])) {
+          $data['allowed_values'] = implode("\n", $data['allowed_values']);
+        }       
       }
       else if ($id == 'display') {
         static $type;
@@ -70,8 +74,10 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
           if (is_string($data['rss'])) {
             $data[key($build_modes_tabs['rss']['build modes'])] = check_plain($data['rss']);
           }
-          else if (is_array($data['rss']) && !empty($data['rss']['format'])) {
-            $data[key($build_modes_tabs['rss']['build modes'])]['format'] = check_plain($data['rss']['format']);
+          else if (is_array($data['rss'])) {
+            if (!empty($data['rss']['format'])) {
+              $data[key($build_modes_tabs['rss']['build modes'])]['format'] = check_plain($data['rss']['format']);
+            }
             if (is_numeric($data['rss']['exclude'])) {
               $data[key($build_modes_tabs['rss']['build modes'])]['exclude'] = check_plain($data['rss']['exclude']);
             }
@@ -80,13 +86,12 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
         }
         
         if (!empty($data['label'])) {
-          if ($group) {
+          if ($data['is_group']) {
             $data[$data['field']]['label'] = check_plain($data['label']);
           }
           else {
             $data[$data['field']]['label']['format'] = check_plain($data['label']);
           }
-          
           unset($data['label']); 
         }
         
@@ -97,16 +102,17 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
           if (is_string($value)) {
             $data[$data['field']][$key]['format'] = check_plain($value);
             $data[$data['field']][$key]['exclude'] = 0;
-            unset($data[$key]);
           }
-          else if (is_array($value) && !empty($value['format'])) {
-            $data[$data['field']][$key]['format'] = check_plain($value['format']);
+          else if (is_array($value)) {
+            if (!empty($value['format'])) {
+              $data[$data['field']][$key]['format'] = check_plain($value['format']);
+            }
             if (is_numeric($value['exclude'])) {
               $data[$data['field']][$key]['exclude'] = check_plain($value['exclude']);
             }
-            unset($data[$key]);
           }
-        }  
+          unset($data[$key]);
+        }      
       }
       else if ($id == 'group') {
         if ($data['name']) {
@@ -122,17 +128,34 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
         if (!$data['group_name'] && $data['label']) {
           $data['group_name'] = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $data['label']));
         }
-        
-        if ($data['group_name'] && strpos('group_', $data['group_name']) !== 0) {
+
+        if (!empty($data['group_name']) && !preg_match('/^group_/i', $data['group_name'])) {
           $data['group_name'] = 'group_'. $data['group_name'];
         }
-        
-        $fields = array('type_name', 'label', 'weight', 'group_name', 'group_type', 'group_option', 'settings', 'parent', 'hidden_name', 'delete');
-        foreach($data as $key => $value) {
-          if (!in_array($key, $fields)) {
-            $data['settings'][$key] = $value;
-            unset($data[$key]);
+
+        if (is_array($data['form'])) {
+          $data['settings']['form'] = $data['form'];
+          unset($data['form']);
+        }
+        else {
+          if (!empty($data['style'])) {
+            $data['settings']['form']['style'] = $data['style'];
+            unset($data['style']);            
           }
+          if (!empty($data['form_description'])) {
+            $data['settings']['form']['description'] = $data['form_description'];
+            unset($data['form_description']);            
+          }          
+        }
+        if (is_array($data['display'])) {
+          $data['settings']['display'] = $data['display'];
+          unset($data['display']);
+        }
+        else {
+          if (!empty($data['display_description'])) {
+            $data['settings']['display']['description'] = $data['display_description'];
+            unset($data['display_description']);            
+          }          
         }
       }
     break;
@@ -159,6 +182,10 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
         if (empty($data['type_name'])) {
           return t('Missing tag &lt;type&gt; inside of &lt;group&gt;');
         }
+        else if (preg_match('/[^a-z0-9_]/', $data['type_name'])) {
+          return t('Invalid tag &lt;type&gt; inside of &lt;group&gt;');
+        }
+        
         if (empty($data['group_name'])) {
           return t('Missing tag &lt;name&gt; inside of &lt;group&gt;');
         }
@@ -179,20 +206,47 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
       }
     break;
     
-    // Ask the user if its ok to do certain tasks
-//     case 'confirmation form':
-//       if ($id == 'content') {
-//         if ($data['delete'] && content_types($data['type'])) {
-//           return array('message' => array(
-//             '#type' => 'markup',
-//             '#value' => t('Is it ok to delete %type content type?', array('%type' => $data['type']))
-//           ));
-//         }
-//       }
-//     break;
-    
     // Validate action before processing
     case 'validate':
+        if ($id == 'display') {
+          static $type;
+        }
+
+        if (!empty($data['type_name']) || $id == 'display') {
+          _content_type_info(true);
+          $type_name = $id == 'display' ? $type : $data['type_name'];
+          $content_type = content_types($type_name);     
+          if ($content_type['type'] != $type_name) {
+            return t('Invalid tag &lt;type&gt; %type', array('%type' => $type_name));
+          }
+        }
+        
+        if ($id == 'content_field_remove_form') {          
+          static $field;
+          
+          if (!$field) {
+            return t("Field %field doesn't exist within %type content type.", array('%field' => $data['field_name'], '%type' => $data['type_name']));
+          }
+        }
+        else if ($id == 'content_field_overview_form') {
+          if (!empty($data['group'])) {
+            $groups = fieldgroup_groups($data['type_name'], FALSE, TRUE);
+            if (!$groups[$data['group']]) {
+              return t('Group %group is not available in %type content type.', array('%group' => $data['group'], '%type' => $data['type_name']));
+            }
+          }  
+        }
+        else if ($id == 'display') {
+          if ($data['is_group']) {
+            $groups = fieldgroup_groups($type, FALSE, TRUE);
+            if (!$groups[$data['field']]) {
+              return t('Group %group is not available in %type content type.', array('%group' => $data['field'], '%type' => $type));
+            }
+          }
+          else if (!content_fields($data['field'], $type)) {
+            return t("Field %field doesn't exist within %type content type.", array('%field' => $data['field'], '%type' => $type));
+          }
+        }        
     break;
     
     // Return the form id or determine if the action does not need processing
@@ -214,98 +268,103 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
         _content_type_info(true);
         node_get_types('types', NULL, true);
         
-        if ($data['delete']) {
-          // @todo make sure that field can be deleted only if it exists within specified content type - do that within pre-validate  
+        static $field;
+        $field = content_fields($data['field_name'], $data['type_name']);
+        
+        if ($data['delete']) {  
           return 'content_field_remove_form';
         }
-        else {
-          $field = content_fields($data['field_name'], $data['type_name']);
-          if ($field) {
-            // @todo field_name and type can not be changed after field was created 
+        
+        if ($field) {
+          // update existing field
+          if (empty($data['widget_type'])) {
+             $data['widget_type'] = $field['widget']['type'];
+          }
+          
+          // field type cannot be changed after the field was created
+          // so set the correct value and prevent any potential errors 
+          $data['type'] = $field['type'];
 
+          if (!empty($data['group'])) {
+            $data[$data['field_name']] = array(
+              'parent' => $data['group'],
+              'hidden_name' => $data['field_name'] 
+            );
+            $forms[] = 'content_field_overview_form';
+          }
+          
+          if ((!empty($data['label']) && $data['label'] != $field['widget']['label']) || (!empty($data['widget_type']) && $data['widget_type'] != $field['widget']['type'])) {
+            $forms[] = 'content_field_basic_form';
+          }
+          
+          $forms[] = 'content_field_edit_form';
+          return $forms;
+          
+        }
+        else {
+          $field = content_fields($data['field_name']);
+          // add existing field
+          if ($field) {
             if (empty($data['widget_type'])) {
                $data['widget_type'] = $field['widget']['type'];
             }
-            if (empty($data['type'])) {
-               $data['type'] = $field['type'];
-            }    
-
-            if (!empty($data['group'])) {
-              $data[$data['field_name']] = array(
-                'parent' => $data['group'],
-                'hidden_name' => $data['field_name'] 
-              );
-              unset($data['group']);
-              $forms[] = 'content_field_overview_form';
-            }
-            if ((!empty($data['label']) && $data['label'] != $field['widget']['label']) || (!empty($data['widget_type']) && $data['widget_type'] != $field['widget']['type'])) {
-              $forms[] = 'content_field_basic_form';
-            }
-            $forms[] = 'content_field_edit_form';
-            return $forms;
             
+            $data['type'] = $field['type']; 
+
+            if (empty($data['label'])) {
+               $data['label'] = $field['widget']['label'];
+            }
+
+            $data['_add_existing_field'] = array(
+              'label' => $data['label'],
+              'field_name' => $data['field_name'],
+              'widget_type' => $data['widget_type'],
+              'hidden_name' => '_add_existing_field'
+            );
+            if (!empty($data['weight'])) {
+              $data['_add_existing_field']['weight'] = $data['weight'];
+            }
+            if (!empty($data['group'])) {
+              $data['_add_existing_field']['parent'] = $data['group'];
+            }              
+            
+            $forms[] = 'content_field_overview_form';
+
+            $fields = array('type_name', 'label', 'field_name', 'type', 'widget_type', '_add_existing_field');
+            $extra_fields = array_diff(array_keys($data), $fields); 
+            if (!empty($extra_fields)) {
+              $forms[] = 'content_field_edit_form';
+            }
+            
+            return $forms;              
           }
-          else {
-            $field = content_fields($data['field_name']);
-            if ($field) {
-              if (empty($data['widget_type'])) {
-                 $data['widget_type'] = $field['widget']['type'];
-              }
-              if (empty($data['type'])) {
-                 $data['type'] = $field['type'];
-              } 
+          // add new field
+          else {              
+            $data['_add_new_field'] = array(
+              'label' => $data['label'],
+              'field_name' => $data['field_name'],
+              'type' => $data['type'],
+              'widget_type' => $data['widget_type'],
+              'hidden_name' => '_add_new_field'
+            );
 
-              $data['_add_existing_field'] = array(
-                'label' => $data['label'],
-                'field_name' => $data['field_name'],
-                'widget_type' => $data['widget_type'],
-                'hidden_name' => '_add_existing_field'
-              );
-              if (!empty($data['weight'])) {
-                $data['_add_existing_field']['weight'] = $data['weight'];
-              }
-              if (!empty($data['group'])) {
-                $data['_add_existing_field']['parent'] = $data['group'];
-              }              
-              
-              $forms[] = 'content_field_overview_form';
-
-              $fields = array('type_name', 'label', 'field_name', 'type', 'widget_type', '_add_existing_field');
-              $extra_fields = array_diff(array_keys($data), $fields); 
-              if (!empty($extra_fields)) {
-                $forms[] = 'content_field_edit_form';
-              }
-              
-              return $forms;              
+            if (!empty($data['weight'])) {
+              $data['_add_new_field']['weight'] = $data['weight'];
+              unset($data['weight']);
             }
-            else {              
-              $data['_add_new_field'] = array(
-                'label' => $data['label'],
-                'field_name' => $data['field_name'],
-                'type' => $data['type'],
-                'widget_type' => $data['widget_type'],
-                'hidden_name' => '_add_new_field'
-              );
+            
+            if (!empty($data['group'])) {
+              $data['_add_new_field']['parent'] = $data['group'];
+            }                  
+            $forms[] = 'content_field_overview_form';
 
-              if (!empty($data['weight'])) {
-                $data['_add_new_field']['weight'] = $data['weight'];
-                unset($data['weight']);
-              }
-              if (!empty($data['group'])) {
-                $data['_add_new_field']['parent'] = $data['group'];
-                unset($data['group']);
-              }                  
-              
-              $forms[] = 'content_field_overview_form';
-
-              $fields = array('type_name', 'label', 'field_name', 'type', 'widget_type', '_add_new_field');
-              $extra_fields = array_diff(array_keys($data), $fields); 
-              if (!empty($extra_fields)) {
-                $forms[] = 'content_field_edit_form';
-              }
-              
-              return $forms;
+            $fields = array('type_name', 'label', 'field_name', 'type', 'widget_type', '_add_new_field');
+            $extra_fields = array_diff(array_keys($data), $fields); 
+            if (!empty($extra_fields)) {
+              $forms[] = 'content_field_edit_form';
             }
+            
+            return $forms;
           }
         }
       }
@@ -345,13 +404,6 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
             $forms[] = 'fieldgroup_group_edit_form';
           }
 
-//           $display_settings = array_diff(array_keys($data['settings']['display']), array('description'));
-//           if (!empty($display_settings)) {
-//             $data[$data['group_name']] = $data['settings']['display'];
-// 
-//             $forms[] = 'content_display_overview_form';
-//           }
-          
           return $forms;
         }
         else if ($group) {
@@ -373,21 +425,16 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
         $name = $data['name'];
         $types = content_types($type);
 
-        if (!$types) {
+        if (!$types['type']) {
           // Set the name of the new content type if missing
           if (!$data['name']) {
             $data['name'] = $type;
           }
           
           $defaults = _node_type_set_defaults($data);
-          
-          foreach($defaults as $key => $value) {
-            if (!isset($data[$key])) {
-              $data[$key] = $value;
-            }
-          }
+          $data = array_merge($defaults, $data);
         }
-        
+
         $node_options = array('status', 'published', 'promote', 'moderate');
         $default_options = variable_get('node_options_'. $type, null);
         
@@ -406,6 +453,10 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
             unset($data[$key]);
           }
         }
+        
+        if (isset($data['has_body']) && !$data['has_body']) {
+          $data['body_label'] = '';
+        } 
       }
       else if ($id == 'node_type_delete_confirm') {
         module_load_include('inc', 'node', 'content_types');
@@ -429,7 +480,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
             content_field_instance_update($field);
           }
         }
-        return t('Your settings have been saved.');  
+        return t('Your settings have been saved.');
       }           
 
       return $data;
@@ -437,11 +488,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
     
     // Create extra parameters needed for a pattern execution
     case 'params':
-  
-      if ($id == 'node_type_delete_confirm') {
-        // Make sure data is cached
-//         node_get_types('type', $type);
-        
+      if ($id == 'node_type_delete_confirm') {       
         $type = (object)content_types($data['type']);
         return array($type);
       }
@@ -460,10 +507,6 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
       }
       else if ($id == 'fieldgroup_group_edit_form' || $id == 'fieldgroup_remove_group') {
         return array($data['type_name'], $data['group_name']);
-      }
-      else if ($id == 'content_display_overview_form') {
-        // @todo add support for other contexts (like RSS, token, ...)
-        return array($data['type_name'], 'basic');
       }
     break;
     
