@@ -10,14 +10,14 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
     // Return a list of forms/actions this component can handle
     case 'actions':
       return array(
-        'node_type_form' => t('Create/Update Content Type'),
-        'node_type_delete_confirm' => t('Delete Content Type'),
-        'content_field_overview_form' => t('Add Fieldtype or Fieldgroup'),
-        'content_field_remove_form' => t('Delete Fieldtype'),
-        'content_field_edit_form' => t('Update Fieldtype'),
-        'display'=> t('Content fields display'),
-        'fieldgroup_group_edit_form' => t('Edit a Fieldgroup'),
-        'fieldgroup_remove_group' => t('Delete a Fieldgroup')
+        'node_type_form' => t('CCK: Create or Edit Content Type'),
+        'node_type_delete_confirm' => t('CCK: Delete Content Type'),
+        'content_field_overview_form' => t('CCK: Add Field or Group'),
+        'content_field_remove_form' => t('CCK: Delete Field'),
+        'content_field_edit_form' => t('CCK: Update Field'),
+        'display'=> t("CCK: Configure field's display settings"),
+        'fieldgroup_group_edit_form' => t('CCK: Edit Group'),
+        'fieldgroup_remove_group' => t('CCK: Delete Group')
       );
     break;
     
@@ -217,7 +217,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
           $type_name = $id == 'display' ? $type : $data['type_name'];
           $content_type = content_types($type_name);     
           if ($content_type['type'] != $type_name) {
-            return t('Invalid tag &lt;type&gt; %type', array('%type' => $type_name));
+            return t("Invalid tag &lt;type&gt;. '%type' is not a valid content type name or such content type doesn't exist.", array('%type' => $type_name));
           }
         }
         
@@ -246,7 +246,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
           else if (!content_fields($data['field'], $type)) {
             return t("Field %field doesn't exist within %type content type.", array('%field' => $data['field'], '%type' => $type));
           }
-        }        
+        }       
     break;
     
     // Return the form id or determine if the action does not need processing

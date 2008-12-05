@@ -10,13 +10,13 @@ function imagecache_patterns($op, $id = null, &$data = null) {
     // Return a list of forms/actions this component can handle
     case 'actions':
       return array(
-        'imagecache_ui_preset_add_form' => t('Add new preset'),
-        'imagecache_ui_preset_form' => t('Edit preset'),
-        'imagecache_ui_preset_flush_form' => t('Flush preset'),
-        'imagecache_ui_preset_delete_form' => t('Delete preset'),
-        'imagecache_ui_action_add_form' => t('Add action'),
-        'imagecache_ui_action_form' => t('Edit action'),
-        'imagecache_ui_action_delete_form' => t('Delete action'),
+        'imagecache_ui_preset_add_form' => t('Imagecache: Add preset'),
+        'imagecache_ui_preset_form' => t('Imagecache: Edit preset'),
+        'imagecache_ui_preset_flush_form' => t('Imagecache: Flush preset'),
+        'imagecache_ui_preset_delete_form' => t('Imagecache: Delete preset'),
+        'imagecache_ui_action_add_form' => t('Imagecache: Add action'),
+        'imagecache_ui_action_form' => t('Imagecache: Configure action'),
+        'imagecache_ui_action_delete_form' => t('Imagecache: Delete action'),
       );
     break;
     

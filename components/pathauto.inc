@@ -10,7 +10,7 @@ function pathauto_patterns($op, $id = null, &$data = null) {
     // Return a list of forms/actions this component can handle
     case 'actions':
       return array(
-        'pathauto_admin_settings' => t('Setup pathauto'),
+        'pathauto_admin_settings' => t('Pathauto: Configure pathauto settings'),
       );
     break;
     

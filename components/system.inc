@@ -12,11 +12,11 @@ function system_patterns($op, $id = null, &$data = null) {
     // Return a list of forms/actions this component can handle
     case 'actions':
       return array(
-        'system_modules' => t('Enable/Disable Module'),
-        'variables' => t('Configure Variables'),
-        'variable' => t('Set a variable'),
-        'system_themes_form' => t('Set active theme'),
-        'form' => t('Execute a form call')
+        'system_modules' => t('System: Enable or disable module'),
+        'variables' => t('System: Set or delete variables'),
+        'variable' => t('System: Set or delete variable'),
+        'system_themes_form' => t('System: Set active theme'),
+        'form' => t('System: Execute form')
       );
     break;
     

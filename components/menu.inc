@@ -10,10 +10,10 @@ function menu_patterns($op, $id = null, &$data = null) {
     // Return a list of forms/actions this component can handle
     case 'actions':
       return array(
-        'menu_edit_menu' => t('Add/edit menu'),
-        'menu_delete_menu_confirm' => t('Delete menu'), 
-        'menu_edit_item' => t('Add/edit menu item'),
-        'menu_item_delete_form' => t('Delete a menu item'),
+        'menu_edit_menu' => t('Menu: Add or edit menu'),
+        'menu_delete_menu_confirm' => t('Menu: Delete menu'), 
+        'menu_edit_item' => t('Menu: Add or edit menu item'),
+        'menu_item_delete_form' => t('Menu: Delete menu item'),
       );
     break;
     

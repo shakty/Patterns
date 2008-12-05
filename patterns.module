@@ -953,21 +953,19 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
   // Pre validate tags with their appropriate components
   foreach($actions as $key => $data) {
     if (!array_key_exists($data['tag'], $tag_modules)) {
-      $errors[$data['tag']][] = t('Invalid Pattern: <%tag> is not a valid tag', array('%tag' => $data['tag']));
+      $errors[] = t('Action #%num (%tag): <%tag> is not a valid tag', array('%num' => $key+1, '%tag' => $data['tag']));
     }
     else {
       $error = patterns_invoke($actions[$key], 'pre-validate');
       if ($error) {
-        $errors[$data['tag']][] = t('Invalid Pattern: !msg', array('!msg' => $error));
+        $errors[] = t('Action #%num (%tag): !msg', array('!msg' => $error, '%num' => $key+1, '%tag' => $data['tag']));
       }
     }
   }
   
   if (count($errors)) {
-    foreach($errors as $error) {
-      drupal_set_message(implode('<br>', $error), 'error');
-    }
-    
+    $message = t('Errors encountered during pre-processing:') .'<br>'. implode('<br>', $errors);
+    drupal_set_message($message, 'error');    
     return;
   }
   
@@ -988,6 +986,8 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
       $form_ids = $return;
     }
     
+    $action_descriptions = patterns_invoke($data, 'actions');
+    
     // Build the action
     foreach($form_ids as $form_id) {
       $clone = $data;
@@ -1002,6 +1002,7 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
       $error = patterns_invoke($clone, 'validate', $form_id);
       
       if ($error) {
+        drupal_set_message(t('An error occured while validating action #%num (%action)', array('%num' => $key+1, '%action' => $action_descriptions[$form_id])), 'error');
         if (is_array($error)) {
           foreach($error as $msg) {
             drupal_set_message($msg, 'error');
@@ -1037,10 +1038,8 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
         // Execute action
         patterns_execute_action($form_id, $values, $params);
                 
-        if (form_get_errors()) {
-          $descriptions = patterns_invoke($clone, 'actions');
-          
-          drupal_set_message(t('An error occured running action #%num (%action)', array('%num' => $key+1, '%action' => $descriptions[$form_id])), 'error');
+        if (form_get_errors()) {          
+          drupal_set_message(t('An error occured while executing action #%num (%action)', array('%num' => $key+1, '%action' => $action_descriptions[$form_id])), 'error');
           $error = true;
           break;
         }

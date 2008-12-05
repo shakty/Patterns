@@ -10,7 +10,7 @@ function patterns_patterns($op, $id = null, &$data = null) {
     // Return a list of forms/actions this component can handle
     case 'actions':
       return array(
-        'patterns_enable_pattern' => t('Enable pattern'),
+        'patterns_enable_pattern' => t('Patterns: Enable pattern'),
       );
     break;
     

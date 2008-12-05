@@ -10,8 +10,8 @@ function profile_patterns($op, $id = null, &$data = null) {
     // Return a list of forms/actions this component can handle
     case 'actions':
       return array(
-        'profile_field_form' => t('Create/Update profile field'),
-        'profile_field_delete' => t('Delete profile field')
+        'profile_field_form' => t('Profile: Add or edit field'),
+        'profile_field_delete' => t('Profile: Delete field')
       );
     break;
     

@@ -10,10 +10,10 @@ function block_patterns($op, $id = null, &$data = null) {
     // Return a list of forms/actions this component can handle
     case 'actions':
       return array(
-        'block_admin_display_form' => t('Block region/display setup'),
-        'block_admin_configure' => t('Configure a block'),
-        'block_add_block_form' => t('Add new block'),
-        'block_box_delete' => t('Delete a block')
+        'block_admin_display_form' => t('Block: Change the region or order of a block'),
+        'block_admin_configure' => t('Block: Configure block'),
+        'block_add_block_form' => t('Block: Add block'),
+        'block_box_delete' => t('Block: Delete block')
       );
     break;
     

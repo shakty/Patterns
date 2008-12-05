@@ -10,11 +10,11 @@ function user_patterns($op, $id = null, &$data = null) {
     // Return a list of forms/actions this component can handle
     case 'actions':
       return array(
-        'user_register' => t('Create new user'),
-        'user_profile_form' => t('Edit existing user'),
-        'user_confirm_delete' => t('Delete existing user'),
-        'user_admin_role' => t('Add/remove user roles'),
-        'user_admin_perm' => t('Change user role\'s permissions')
+        'user_register' => t('User: Add user'),
+        'user_profile_form' => t('User: Edit user'),
+        'user_confirm_delete' => t('User: Delete user'),
+        'user_admin_role' => t('User: Add, edit or remove role'),
+        'user_admin_perm' => t('User: Configure permissions')
       );
     break;
     

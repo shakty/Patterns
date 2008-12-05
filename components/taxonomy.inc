@@ -10,9 +10,10 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
     // Return a list of forms/actions this component can handle
     case 'actions':
       return array(
-        'taxonomy_form_vocabulary' => t('Save/update vocabularies'),
-        'taxonomy_vocabulary_confirm_delete' => t('Delete a vocabulary'),
-        'taxonomy_form_term' => t('Save/update/delete taxonomy terms'),
+        'taxonomy_form_vocabulary' => t('Taxonomy: Add or edit vocabulary'),
+        'taxonomy_vocabulary_confirm_delete' => t('Taxonomy: Delete vocabulary'),
+        'taxonomy_form_term' => t('Taxonomy: Add or edit taxonomy term'),
+        'taxonomy_term_confirm_delete' => t('Taxonomy: Delete taxonomy term'),
       );
     break;
     
