@@ -157,7 +157,7 @@ function user_patterns($op, $id = null, &$data = null) {
         if (DRUPAL_ANONYMOUS_RID == $data['id'] || DRUPAL_AUTHENTICATED_RID == $data['id']) {
           return t('The authenticated or anonymous roles cannot be updated or deleted.');
         }
-        if (!db_result(db_query("SELECT COUNT(*) FROM {role} WHERE rid = %d", $data['id']))) {
+        if (!empty($data['id']) && !db_result(db_query("SELECT COUNT(*) FROM {role} WHERE rid = %d", $data['id']))) {
           return t('Invalid role id: %rid', array('%rid' => $data['id']));
         }
       }

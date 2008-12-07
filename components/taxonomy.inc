@@ -50,7 +50,7 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
     break;
     
     // Prepare data for processing
-    case 'prepare':
+    case 'prepare':    
       if ($id == 'term') {
         if ($data['value']) {
           $data['name'] = $data['value'];
@@ -178,16 +178,16 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
         }
       }
       else if ($id == 'taxonomy_form_vocabulary' || $id == 'taxonomy_vocabulary_confirm_delete') {
-//         if (!$data['vid']) {
-//           $vocabs = taxonomy_get_vocabularies();
-//           
-//           foreach($vocabs as $vid => $vocab) {
-//             if (strtolower($vocab->name) == strtolower($data['name'])) {
-//               $data['vid'] = $vid;
-//               break;
-//             }
-//           }
-//         }
+        if (!$data['vid'] && !empty($data['name'])) {
+          $vocabs = taxonomy_get_vocabularies();
+          
+          foreach($vocabs as $vid => $vocab) {
+            if (strtolower($vocab->name) == strtolower($data['name'])) {
+              $data['vid'] = $vid;
+              break;
+            }
+          }
+        }
       }
       return $data;
     break;
@@ -195,6 +195,16 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
     // Validate the values for an action before running the pattern
     case 'validate':
       if ($id == 'taxonomy_form_term') {
+        if (!$data['vid'] && !empty($data['vocabulary'])) {
+          $vocabs = taxonomy_get_vocabularies();
+          
+          foreach($vocabs as $vid => $vocab) {
+            if (strtolower($vocab->name) == strtolower($data['vocabulary'])) {
+              $data['vid'] = $vid;
+              break;
+            }
+          }
+        }      
         // we can't procede without valid vocabulary ID
         if (empty($data['vid'])) {
           return t("This action requires vocabulary to be defined. Make sure that vocabulary %vocab does exist or select another one.", array('%vocab' => $data['vocabulary']));
