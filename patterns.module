@@ -647,8 +647,6 @@ function patterns_get_patterns($reset = true) {
         continue;
       }
       
-      $pattern = patterns_load_xml($file->filename);
-      
       // Load and save pattern
       if ($pattern = patterns_load_xml($file->filename)) {
         patterns_save_pattern($pattern, $file->filename);
