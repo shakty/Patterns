@@ -138,7 +138,7 @@ function user_patterns($op, $id = null, &$data = null) {
         }
         
         if (empty($data['uid']) && (empty($data['name']) || empty($data['mail']))) {
-          return t("Possible causes:<br>1. you didn't supply enough data for creation of the new account (both name and mail are required)<br>2. account you are trying to update doesn't exist (invalid uid or name).");
+          return t("<br>1. you didn't supply enough data for creation of the new account (both name and mail are required)<br>or<br>2. account you are trying to update doesn't exist (invalid uid or name).");
         }
         
         if (!empty($data['roles']) && !is_array($data['roles'])) {
