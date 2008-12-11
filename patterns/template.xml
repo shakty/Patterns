@@ -17,8 +17,7 @@
     <module>taxonomy</module>
     <module>views</module>
     <module>nodereference</module>
-    <module>menu</module>
-    <module>user</module> 
+    <module>menu</module> 
   </modules>
   
   <actions>
