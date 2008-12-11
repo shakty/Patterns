@@ -752,7 +752,7 @@ function patterns_from_source($xml) {
   xml_parse_into_struct($parse, $xml, $vals, $index);
   
   // Create a multi-dimensional array representing the XML structure
-  $pattern = current(_patterns_parse_tag($vals, 0));
+  $pattern = current(_patterns_parse_tag($vals));
   
   return $pattern;
 }
@@ -761,7 +761,7 @@ function patterns_from_source($xml) {
  * Recurse through the values of a parsed xml file to create a
  * multi-dimensional representation of the data.
  */
-function _patterns_parse_tag($data, $index) {
+function _patterns_parse_tag($data, &$index = 0) {
   $pattern = array();
   
   while ($current = $data[$index]) {
@@ -782,7 +782,7 @@ function _patterns_parse_tag($data, $index) {
     switch($type) {
       case 'open':
         $index++;
-        $current += _patterns_parse_tag($data, &$index);
+        $current += _patterns_parse_tag($data, $index);
         $pattern[] = $current;
       break;
       case 'close':
