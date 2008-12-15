@@ -927,8 +927,17 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
     array_splice($actions, 0, $jump);
   }
   
+  // TODO Finish basic setup and execution of the 'config' operation
+  // TODO Make a better streamlined config framework process. For instance collect form_ids
+  // from here and give the form_id and matching data to the 'build' process
+  foreach($actions as $key => &$data) {
+    if (($config = patterns_invoke($actions[$key], 'config')) && !empty($config)) {
+      patterns_config_data($data, $config);
+    }
+  }
+  
   // Prepare actions for validation/processing
-  foreach($actions as $key => $data) {
+  foreach($actions as $key => &$data) {
     patterns_invoke($actions[$key], 'prepare');
   }
   
@@ -1017,34 +1026,52 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
         return;
       }
 
-      // Get the form data for the action
-      $values = patterns_invoke($clone, 'build', $form_id);
+      // Get the form data for the action. This can either just be the form values,
+      // or it can be the full form_state object
+      $form_obj = patterns_invoke($clone, 'build', $form_id);
       
       // Dont execute the action if a string was returned, indicating the pattern component
       // most likely handled the action on its own and this is the message to display.
-      if (is_string($values)) {
-        drupal_set_message($values);
+      if (is_string($form_obj)) {
+        drupal_set_message($form_obj);
       }
       else {
+        // We check for the 'storage' and 'submitted' values in the object to see
+        // if it is a form_state instead of form_values. There could be a better way
+        // to do this.
+        if (array_key_exists('submitted', (array)$form_obj) && array_key_exists('storage', (array)$form_obj)) {
+          $form_state = $form_obj;
+        }
+        else {
+          $form_state = array(
+            'storage' => null,
+            'submitted' => false,
+            'values' => $form_obj
+          );
+        }
+
         // Get any extra parameters required for the action
-        $params = patterns_invoke($clone, 'params', $form_id, $values);
+        $params = patterns_invoke($clone, 'params', $form_id, $form_state);
         
+        // A single, simple value can be returned as a parameter, which is then
+        // put into an array here.
         if (isset($params) && !is_array($params)) {
           $params = array($params);
         }
       
         // Execute action
-        patterns_execute_action($form_id, $values, $params);
+        patterns_execute_action($form_id, $form_state, $params);
                 
         if (form_get_errors()) {          
           drupal_set_message(t('An error occured while executing action #%num (%action)', array('%num' => $key+1, '%action' => $action_descriptions[$form_id])), 'error');
           $error = true;
           break;
         }
+        
+        // Let a component cleanup after each action
+        patterns_invoke($clone, 'cleanup', $form_id, $form_state);
       }
-      
-      patterns_invoke($clone, 'cleanup', $form_id);
-      
+
       // Clear the cache in case it causes problems
       cache_clear_all();
     }
@@ -1091,7 +1118,7 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
 /**
  * Execute an action
  */
-function patterns_execute_action($form_id, $values, $params) {
+function patterns_execute_action($form_id, $form_state, $params) {
   // Make sure we always have a clear cache for everything
   $result = db_query('SHOW TABLES LIKE "cache_%"');
   
@@ -1100,7 +1127,7 @@ function patterns_execute_action($form_id, $values, $params) {
     cache_clear_all(null, $table);
   }
   
-  $args = array($form_id, array('values' => $values));
+  $args = array($form_id, &$form_state);
   
   if (is_array($params)) {
     $args = array_merge($args, $params);
@@ -1111,8 +1138,18 @@ function patterns_execute_action($form_id, $values, $params) {
   //$form = call_user_func_array('drupal_retrieve_form', $args);
   //$form['#post'] = $values;
   //$return = drupal_process_form($form_id, $form);
-//dpm($args);  
-  $return = call_user_func_array('drupal_execute', $args);
+  //dpm($args);
+  
+  // drupal_execute fails to keep $form_state in-sync through the
+  // whole FAPI process. Issue http://drupal.org/node/346244  
+  //$return = call_user_func_array('drupal_execute', $args);
+  
+  // Copy of drupal_execute until above issue is fixed
+  $form = call_user_func_array('drupal_retrieve_form', $args);
+  $form['#post'] = $form_state['values'];
+  drupal_prepare_form($form_id, $form, $form_state);
+  drupal_process_form($form_id, $form, $form_state);
+  
   
   patterns_executing(false);
   
@@ -1282,7 +1319,7 @@ function patterns_form_alter(&$form, &$form_state, $form_id) {
 function patterns_form_helper($form, $form_state) {
   static $form_id;
 
-  if (!$form_id && $form_state['submitted']) {   
+  if (!$form_id && $form_state['submitted'] && !form_get_errors()) {   
     $form_id = $form_state['values']['form_id'];
     $_SESSION['patterns_form_helper'] = array('form_id' => $form_id, 'form_values' => $form_state['values']);
   }
@@ -1431,4 +1468,316 @@ function patterns_theme() {
       'forms' => NULL
     )
   );
+}
+
+/**
+ * Take a $data and $config object and adjust $data
+ * based on the supplied configuration
+ * 
+ * TODO Look for ways to optimize and increase performance
+ */
+function patterns_config_data(&$data, $configs) {
+  foreach($configs as $path => $config) {
+    // An alias key requires multiple paths
+    // for each alias and then a #real set
+    // to change all of them to the same key
+    // TODO test #alias
+    if ($config['#alias'] && is_array($config['#alias'])) {
+      $tokens = array_slice(preg_split('/(?<!=)\/(?![a-z]*\])/', $path), 1);
+      $real = end($tokens);
+      
+      // Check for the real key
+      $matches = patterns_array_fetch($path, $data);
+      
+      // If the real key was not found, get the aliases
+      if (empty($matches)) {
+        if (!$config['#key']) {
+          $config['#key'] = $real;
+        }
+        foreach($config['#alias'] as $alias) {
+          $tokens[count($tokens)-1] = $alias;
+          $matches += patterns_array_fetch('/'. implode('/', $tokens), $data);
+        }
+      }
+    }
+    else {
+      $matches = patterns_array_fetch($path, $data);
+    }
+
+    // If no matches were found and it is a required element
+    // return an error
+    if (empty($matches) && $config['#required']) {
+      $error = true;
+    }
+  
+    foreach($matches as &$match) {
+      // Collect form_ids here.
+      // TODO Think of a better way to migrate components form_id operations here
+      if ($config['#form_id']) {
+        patterns_config_form_ids($data['tag'], $config['#form_id'], $match);
+      }
+
+      // Make sure values that should be arrays are set as such
+      if ($config['#array'] && !array_key_exists(0, $match['item'])) {
+        if (is_null($match['item']) || (is_array($match['item'] && empty($match['item'])))) {
+          $match['item'] = array();
+        }
+        else {
+          $match['item'] = array($match['item']);
+        }
+        
+        // Update the context object to reflect new changes
+        $match = _patterns_array_context($match['item'], $match);
+      }
+      
+      // Change the key of this match. Can get the key value via xpath as well.
+      // Any duplicate keys will return an error
+      if ($config['#key']) {
+        // Check that a single match is found via this xpath and that the resulting value is scalar
+        if ($config['#key']{0} == '/' && ($sub_matches = patterns_array_fetch($config['#key'], $match['item'], $match)) && count($sub_matches) == 1 && is_scalar($sub_matches[0]['item'])) {
+          // an xpath from the matched item is used to get the key value
+          $new_key = $sub_matches[0]['item'];
+        }
+        else if ($config['#default key']) {
+          $new_key = $config['#default key'];
+        }
+        else if ($config['#key']{0} == '/') {
+          // Could not find the appropriate key value from the xpath
+          $error = true;
+        }
+        else {
+          // Set the key to a static value. Typically used for allowing more user readable keys
+          $new_key = $config['#key'];
+        }
+
+        if ($new_key && array_key_exists($new_key, $match['parent']['item'])) {
+          // The new key already exists.
+          $error = true;
+        }
+        else if ($new_key) {
+          $key = $match['key'];
+          $match['parent']['item'][$new_key] = $match['item'];
+          // TODO This is buggy. Skip for now.
+          if(is_int($key) && false) {
+            array_splice($match['parent']['item'], $key, 1);
+          }
+          else {
+            unset($match['parent']['item'][$key]);
+          }
+
+          // Update the parent context object to reflect new changes
+          $match['parent'] = _patterns_array_context($match['parent']['item'], $match['parent']);
+          
+          // Update to the new current match
+          for($i=0;$i<count($match['parent']);$i++) {
+            if ($match['parent'][$i]['key'] == $new_key) {
+              $match = &$match['parent'][$i];
+              break;
+            }
+          }
+        }
+      }
+      
+      // Create empty key elements if they don't exist but should (and are not required)
+      // This is useful when using 'move' to ensure that the destination exists 
+      if ($config['#create'] && is_array($match['item']) && !array_key_exists($config['#create'], $match['item'])) {
+        $match['item'][$config['#create']] = $config['#create value'];
+      }
+      
+      // Move(or copy) this match to somewhere else in the object. If more than one destination
+      // match is found, this value is copied to each one
+      // TODO Make move automatically create the destination if it doesn't exist
+      // TODO Support move in (put inside array) and move to (replace) actions
+      if (!empty($match['parent']) && ($config['#move']{0} == '/' && ($dest_path = $config['#move']) && ($op = 'move')) ||
+                                     ($config['#copy']{0} == '/' && ($dest_path = $config['#copy']) && ($op = 'copy'))) {
+        $dests = patterns_array_fetch($dest_path, $match['item'], $match);
+        $parent = &$match['parent'];
+        $obj = $match['item'];
+
+        foreach($dests as $dest) {
+          // Can't move to items that are not an array
+          if (!is_array($dest['item'])) {
+            continue;
+          }
+          if (!is_int($match['key'])) {
+            $dest['item'][$match['key']] = $obj;
+          }
+          else {
+            $dest['item'][] = $obj;
+          }
+
+          // Update the dest object to reflect the change
+          $dest = _patterns_array_context($dest['item'], $dest);
+        }
+        
+        if ($op == 'move') {
+          if (!is_int($match['key'])) {
+            unset($parent['item'][$match['key']]);
+          }
+          else {
+            array_splice($parent['item'], $match['key'], 1);
+          }
+          
+          // Update the parent object to reflect the change (removal)
+          $parent = _patterns_array_context($parent['item'], $parent);
+          unset($match);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Find parts of an array based on
+ * a semi-compatible xpath syntax.
+ * 
+ * Returns an array of constructs that includes the
+ * references 'item' and 'parent' from the matching values
+ * in the $data object along with extra keys 'key' for the key
+ * of the current match and 'trace' for a full list of keys 
+ * till the root of the $data object
+ * 
+ * Loosely based off of Cake function Set::extract
+ * 
+ * @Note: Ensure this always only returns matches from a single level
+ * in the array. Changes made to matches in different levels can possibly
+ * mess up the above-level matches. To this end, you cannot change the keys
+ * of a current match because the other matches cannot change their keys as well
+ * to sync with the new parent array.
+ * @TODO: Think of a solution for the above note (BROKEN RIGHT NOW)
+ */
+function patterns_array_fetch($path, &$data, $context = null) {
+  if (!$context && (empty($data) || !is_array($data))) {
+      return array();
+  }
+  if ($path === '/') {
+      return $data;
+  }
+   
+  // Construct our contexts object that allows us to traverse the array
+  if(!$context) {
+    $context = _patterns_array_context($data);
+  }
+  
+  // Make our context actually a list of contexts
+  $context = array($context);
+
+  // Create a list of tokens based on the supplied path
+  $tokens = array_slice(preg_split('/(?<!=)\/(?![a-z]*\])/', $path), 1);
+
+  while(!empty($tokens)) {
+      $token = array_shift($tokens);
+
+      // TODO Implement better conditionals for each token
+      // Currently only supports element=value conditions
+      $conditions = array();
+      if (preg_match('/(=)(.*)/', $token, $m)) {
+        $conditions[$m[1]] = $m[2];
+        $token = substr($token, 0, strpos($token, $m[1]));
+      }
+
+      $matches = array();
+      foreach ($context as &$piece) {
+        if ($token === '..') {
+            $matches[] = &$piece['parent'];
+            continue;
+        }
+        $match = false;
+        if (is_array($piece['item']) && ($token == '*' || array_key_exists($token, $piece['item']))) {
+          $i=0;
+          while(isset($piece[$i])) {
+            if ($piece[$i]['key'] === $token) {
+              $matches[] = &$piece[$i];
+              break;
+            }
+            else if ($token === '*') {
+              $matches[] = &$piece[$i];
+            }
+            $i++;
+          }
+        }
+        else if ($token === '.') {
+          $matches[] = &$piece;
+        }
+      }
+
+      // Filter matches from the matches list based on our conditions
+      foreach($conditions as $operator => $value) {
+        _patterns_array_filter($matches, $operator, $value);
+      }
+
+      // Update the context area to the next set of matches to dig into
+      $context = $matches;
+  }
+
+  // Return the list of matches containing references to their respective data objects
+  return $matches;
+}
+
+/**
+ * Helper function to create a context array based on the supplied object
+ * Supplying a parent object will set the parent for this context
+ */
+function _patterns_array_context(&$obj, &$current = null) {
+  // If a current context is set, use it's parent and key values
+  if (!($trace = $current['trace'])) {
+    $trace = array();
+  }
+  if (!($key = $current['key'])) {
+    $key = null;
+  }
+  if (!($parent = &$current['parent'])) {
+    $parent = null;
+  }
+  $context = array('trace' => $trace, 'key' => $key, 'item' => &$obj, 'parent' => &$parent);
+  $refs = array(&$context);
+
+  while (!empty($refs)) {
+    $ref = &$refs[0];
+    $parent = &$ref['item'];
+    array_splice($refs, 0, 1);
+
+    if (is_array($parent) && !empty($parent)) {
+      $i = 0;
+      foreach($parent as $index => &$child) {
+        // TODO possible optimizations can be done here (with the parent trace)
+        $ref[$i] = array('trace' => _patterns_array_trace($ref), 'key' => $index, 'item' => &$child, 'parent' => &$ref);
+        array_unshift($refs, &$ref[$i++]);
+      }
+    }
+  }
+
+  return $context;
+}
+
+/**
+ * Helper function to filter values of the list of matches
+ */
+function _patterns_array_filter(&$matches, $operator, $value = null) {
+  for($i=count($matches)-1;$i>=0;$i--) {
+    $match = &$matches[$i];
+    
+    switch($operator) {
+      case '=':
+        if ($match['item'] != $value) {
+          array_splice($matches, $i, 1);
+        }
+      break;
+    }
+  }
+}
+
+/**
+ * Helper function to create a list of parent keys given a context item
+ */
+function _patterns_array_trace($obj) {
+  // Loop back up through the parents to fill in the trace value.
+  $up = &$obj;
+  $trace = array();
+  while(isset($up['parent'])) {
+    array_unshift($trace, $up['key']);
+    $up = &$up['parent'];
+  }
+  
+  return $trace;
 }
