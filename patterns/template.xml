@@ -375,12 +375,12 @@
     </permissions>
     
     <!-- permissions can also be specified as a comma separated string-->
-    <permissions rid="4">access comments, administer blocks</permissions>  
+    <permissions role="content editor">access comments, administer blocks</permissions>  
 
     <!-- overwirte will cause all other permissions for rid 4 
         (except those defined within this action) to be reset/disabled
     -->
-    <permissions rid="4" overwrite="1">access comments, administer blocks, administer filters, post comments</permissions>
+    <permissions rid="content editor" overwrite="1">access comments, administer blocks, administer filters, post comments</permissions>
 
     <!-- remove permissions -->
     <permissions role="content editor" delete="1">
