@@ -958,7 +958,7 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
   }
   
   // Pre validate tags with their appropriate components
-  foreach($actions as $key => $data) {
+  foreach($actions as $key => &$data) {
     if (!array_key_exists($data['tag'], $tag_modules)) {
       $errors[] = t('Action #%num (%tag): <%tag> is not a valid tag', array('%num' => $key+1, '%tag' => $data['tag']));
     }
@@ -977,7 +977,7 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
   }
   
   // Build and execute a list of actions
-  foreach($actions as $key => $data) {
+  foreach($actions as $key => &$data) {
     // Prepare actions for processing, ensure smooth pattern executions, and return form ids for execution
     $return = patterns_invoke($data, 'form_id');
     
