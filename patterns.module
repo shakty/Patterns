@@ -852,8 +852,8 @@ function patterns_enable_pattern_submit($form, &$form_state) {
   patterns_load_components();
   $pattern = patterns_get_pattern($pid);
   
-  if (patterns_execute_pattern($pattern, false, true)) {
-    
+  if ($pattern && patterns_execute_pattern($pattern, false, true)) {
+    drupal_set_message(t('Pattern ran successfully.'));
   }
   $form_state['redirect'] = 'admin/build/patterns';
 }
@@ -869,7 +869,13 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
       return false;
     }
   }
-  
+ 
+  $missing = patterns_check_dependencies($pattern);
+  if (!empty($missing)) {
+    drupal_set_message(t('Following modules required to run this pattern are missing: %modules', array('%modules' => implode(', ', $missing))), 'error');
+    return FALSE;
+  } 
+
   $errors = $action_list = $identifiers = array();
   $error = true;
   
@@ -898,7 +904,7 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
   // was not created correctly.
   if (empty($actions) && empty($modules)) {
     drupal_set_message(t('Could not recognize pattern %title, aborting.', array('%title' => $title)), 'error');
-    return true;
+    return FALSE;
   }
   
   if ($modules && (!$interact || ($interact && !$jump))) {
@@ -973,7 +979,7 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
   if (count($errors)) {
     $message = t('Errors encountered during pre-processing:') .'<br>'. implode('<br>', $errors);
     drupal_set_message($message, 'error');    
-    return;
+    return FALSE;
   }
   
   // Build and execute a list of actions
@@ -1021,9 +1027,7 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
           drupal_set_message($error, 'error');
           $errors[$clone['tag']] = t('Broken Pattern: %msg', array('%msg' => $error));
         }
-        
-        
-        return;
+        return FALSE;
       }
 
       // Get the form data for the action. This can either just be the form values,
@@ -1065,7 +1069,7 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
         if (form_get_errors()) {          
           drupal_set_message(t('An error occured while executing action #%num (%action)', array('%num' => $key+1, '%action' => $action_descriptions[$form_id])), 'error');
           $error = true;
-          break;
+          return FALSE;
         }
         
         // Let a component cleanup after each action
@@ -1075,9 +1079,9 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
       // Clear the cache in case it causes problems
       cache_clear_all();
     }
-    if ($error) {
-      break;
-    }
+//    if ($error) {
+//      break;
+//    }
     
     // Get any primary identifiers from the action for further actions to take advantage of
     $id = null;
@@ -1087,32 +1091,28 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
     }
   }
   
-  if (empty($errors)) {
-    if ($reverse) {
-      if ($modules) {
-        // Modules need to be disabled last so the rest of the pattern
-        // can reverse itself properly
-        $error = patterns_execute_pattern($modules, $reverse, $interact);
-      }
-      
-      // Mark pattern as disabled
-      if ($pid) {
-        db_query('UPDATE {patterns} SET status = 0 WHERE pid = %d', $pid);
-      }
-      
-      drupal_set_message(t('Pattern reversed successfully.'));
+  if ($reverse) {
+    if ($modules) {
+      // Modules need to be disabled last so the rest of the pattern
+      // can reverse itself properly
+      $error = patterns_execute_pattern($modules, $reverse, $interact);
     }
-    else {
-      // Mark pattern as enabled
-      if ($pid) {
-        db_query('UPDATE {patterns} SET status = 1, enabled = "%s" WHERE pid = %d', time(), $pid);
-      }
-      
-      drupal_set_message(t('Pattern ran successfully.'));
+    
+    // Mark pattern as disabled
+    if ($pid) {
+      db_query('UPDATE {patterns} SET status = 0 WHERE pid = %d', $pid);
+    }
+    
+    drupal_set_message(t('Pattern reversed successfully.'));
+  }
+  else {
+    // Mark pattern as enabled
+    if ($pid) {
+      db_query('UPDATE {patterns} SET status = 1, enabled = "%s" WHERE pid = %d', time(), $pid);
     }
   }
   
-  return !$error;
+  return TRUE;
 }
 
 /**
@@ -1780,4 +1780,34 @@ function _patterns_array_trace($obj) {
   }
   
   return $trace;
+}
+
+/*
+ * Check if all the module dependencies are available
+ * // @TODO check also dependencies of required modules
+ * 
+ * @param $pattern
+ *   pattern object
+ * @return
+ *   empty array if all dependencies are available
+ *   array of missing module's names if some dependencies are not available
+ *  
+ */
+function patterns_check_dependencies($pattern) {
+  $modules = patterns_modules($pattern);
+  $modules_info = module_rebuild_cache();
+  $modules_list = module_list();
+  
+  $result = array();
+
+  if (empty($modules)) return array();
+  
+  foreach($modules as $module) {
+    $delete = is_array($module) ? $module['delete'] : false;
+    $module = is_array($module) ? $module['value'] : $module;
+    if (!array_key_exists($module, $modules_info)) {
+      $result[] = $module;
+    }
+  }
+  return $result;
 }
