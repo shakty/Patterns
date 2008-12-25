@@ -28,7 +28,7 @@
  */
 function patterns_perm() {
   return array('administer patterns');
-} 
+}
 
 function patterns_init() {
   drupal_add_css(drupal_get_path('module', 'patterns') .'/patterns.css');
@@ -36,10 +36,10 @@ function patterns_init() {
 
 /**
  * Implementation of hook_menu().
- */ 
+ */
 function patterns_menu() {
   $items = array();
-  
+
   $items['admin/build/patterns'] = array(
     'title' => 'Patterns',
     'description' => 'Administer patterns available for your site',
@@ -66,33 +66,33 @@ function patterns_menu() {
     'type' => MENU_CALLBACK
   );
 
-//     $items[] = array('path' => 'admin/build/patterns/settings',
-//       'title' => t('Settings'),
-//       'callback' => 'drupal_get_form',
-//       'callback arguments' => array('patterns_settings'),
-//       'type' => MENU_LOCAL_TASK,
-//       'weight' => 10
-//     );    
-//     $items[] = array('path' => 'admin/build/patterns/configure',
-//       'title' => t('Configure Pattern'),
-//       'callback' => 'drupal_get_form',
-//       'callback arguments' => array('patterns_configure_pattern'),
-//       'type' => MENU_CALLBACK
-//     );
+  //     $items[] = array('path' => 'admin/build/patterns/settings',
+  //       'title' => t('Settings'),
+  //       'callback' => 'drupal_get_form',
+  //       'callback arguments' => array('patterns_settings'),
+  //       'type' => MENU_LOCAL_TASK,
+  //       'weight' => 10
+  //     );
+  //     $items[] = array('path' => 'admin/build/patterns/configure',
+  //       'title' => t('Configure Pattern'),
+  //       'callback' => 'drupal_get_form',
+  //       'callback arguments' => array('patterns_configure_pattern'),
+  //       'type' => MENU_CALLBACK
+  //     );
 
-//     $items[] = array('path' => 'admin/build/patterns/info',
-//       'title' => t('Pattern Details'),
-//       'callback' => 'patterns_info',
-//       'type' => MENU_CALLBACK
-//     );    
+  //     $items[] = array('path' => 'admin/build/patterns/info',
+  //       'title' => t('Pattern Details'),
+  //       'callback' => 'patterns_info',
+  //       'type' => MENU_CALLBACK
+  //     );
 
-//     $items[] = array('path' => 'admin/build/patterns/disable',
-//       'access' => user_access('administer patterns'),
-//       'title' => t('Disable Pattern'),
-//       'callback' => 'drupal_get_form',
-//       'callback arguments' => array('patterns_disable_pattern'),
-//       'type' => MENU_CALLBACK
-//     );
+  //     $items[] = array('path' => 'admin/build/patterns/disable',
+  //       'access' => user_access('administer patterns'),
+  //       'title' => t('Disable Pattern'),
+  //       'callback' => 'drupal_get_form',
+  //       'callback arguments' => array('patterns_disable_pattern'),
+  //       'type' => MENU_CALLBACK
+  //     );
 
   $items['admin/build/patterns/modules'] = array(
     'title' => 'Pattern Modules',
@@ -100,15 +100,15 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
-    
-//     $items[] = array('path' => 'admin/build/patterns/revert',
-//       'access' => user_access('administer patterns'),
-//       'title' => t('Revert Pattern'),
-//       'callback' => 'patterns_revert',
-//       'type' => MENU_CALLBACK
-//     );
-    
-    
+
+  //     $items[] = array('path' => 'admin/build/patterns/revert',
+  //       'access' => user_access('administer patterns'),
+  //       'title' => t('Revert Pattern'),
+  //       'callback' => 'patterns_revert',
+  //       'type' => MENU_CALLBACK
+  //     );
+
+
   $items['admin/build/patterns/import'] = array(
     'title' => 'Import',
     'page callback' => 'drupal_get_form',
@@ -135,14 +135,14 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),    
     'type' => MENU_LOCAL_TASK
   );
-  
-//     $items[] = array('path' => 'admin/build/patterns/import/server',
-//       'access' => user_access('administer patterns'),
-//       'title' => t('Import via Patterns Server'),
-//       'callback' => 'drupal_get_form',
-//       'callback arguments' => array('patterns_import_server'),
-//       'type' => MENU_LOCAL_TASK
-//     );
+
+  //     $items[] = array('path' => 'admin/build/patterns/import/server',
+  //       'access' => user_access('administer patterns'),
+  //       'title' => t('Import via Patterns Server'),
+  //       'callback' => 'drupal_get_form',
+  //       'callback arguments' => array('patterns_import_server'),
+  //       'type' => MENU_LOCAL_TASK
+  //     );
 
   return $items;
 }
@@ -174,10 +174,10 @@ function patterns_import_source(&$form_state) {
     '#type' => 'submit',
     '#value' => t('Submit')
   );
-  
+
   $form['#validate'][] = 'patterns_import_validate';
   $form['#submit'][] = 'patterns_import_submit';
-  
+
   return $form;
 }
 
@@ -206,7 +206,7 @@ function patterns_import_file(&$form_state) {
 
   $form['#validate'][] = 'patterns_import_validate';
   $form['#submit'][] = 'patterns_import_submit';
-  
+
   return $form;
 }
 
@@ -227,7 +227,7 @@ function patterns_import_url(&$form_state) {
 
   $form['#validate'][] = 'patterns_import_validate';
   $form['#submit'][] = 'patterns_import_submit';
-  
+
   return $form;
 }
 
@@ -245,7 +245,7 @@ function patterns_import_validate($form, &$form_state) {
     $form_state['pattern_file']->destination = $path;
   }
   else if (isset($form_state['values']['xmlfile'])) {
-    form_set_error('files[xmlfile]', t('Error uploading XML file.'));    
+    form_set_error('files[xmlfile]', t('Error uploading XML file.'));
     return;
   }
   else if ($form_state['values']['xmlurl']) {
@@ -263,9 +263,9 @@ function patterns_import_validate($form, &$form_state) {
       form_set_error('xmlurl', t('Failed to retreive the pattern specified: '. $form_state['values']['xmlurl']) .'. Check your URL and try again.');
       return;
     }
-   
+     
     $pattern = array('/\.[^\.]*$/', '/[^a-zA-Z0-9_]/');
-    $replacement = array('', '_'); 
+    $replacement = array('', '_');
     $form_state['values']['xmlname'] = preg_replace($pattern, $replacement, basename($form_state['values']['xmlurl']));
   }
 
@@ -279,7 +279,7 @@ function patterns_import_validate($form, &$form_state) {
   else if ($form_state['values']['xmlname'] && preg_match('/^_/', $form_state['values']['xmlname'])) {
     form_set_error('xmlname', t('You cannot start the pattern identifier with an underscore.'));
   }
-  
+
   // @TODO validate XML and don't allow import if validation fails
   $parse = xml_parser_create();
   $success = xml_parse_into_struct($parse, $form_state['values']['xmlsource'], $vals, $index);
@@ -298,7 +298,7 @@ function patterns_import_submit($form, &$form_state) {
   else if ($form_state['values']['xmlsource']) {
     $saved = file_save_data($form_state['values']['xmlsource'], variable_get('patterns_save_xml', 'patterns') .'/'. $form_state['values']['xmlname'] .'.xml', FILE_EXISTS_REPLACE);
   }
-  
+
   if ($saved) {
     // Reload patterns
     patterns_get_patterns(true);
@@ -314,17 +314,17 @@ function patterns_list() {
 
   drupal_add_js(drupal_get_path('module', 'patterns') .'/patterns.js');
 
-  patterns_load_components();  
+  patterns_load_components();
   $patterns = patterns_get_patterns();
   if (empty($patterns)) return t('No patterns available.');
-  
-//   $header = array(t('Title'), t('Status'), t('Version'), t('Public'), t('Actions'));
+
+  //   $header = array(t('Title'), t('Status'), t('Version'), t('Public'), t('Actions'));
   $header = array(t('Title'), t('Status'), t('Version'), t('Actions'));
 
   // List all patterns
   $rows = array();
   foreach($patterns as $pid => $pattern) {
-    $actions = array();   
+    $actions = array();
     if (!$pattern->status) {
       $actions[] =  l(t('Run'), 'admin/build/patterns/enable/'. $pid);
     }
@@ -333,40 +333,40 @@ function patterns_list() {
     }
     else {
       $actions[] = l(t('Run Update'), 'admin/build/patterns/enable/'. $pid);
-    }    
+    }
     $actions[] = l(t('Edit'), 'admin/build/patterns/edit/'. $pid);
     $actions = implode('&nbsp;&nbsp;', $actions);
-    
+
     $cells = array();
-//      $title = l($pattern->title, 'admin/build/patterns/info/'. $pid, array('attributes' => array('class' => 'pattern-title', 'id' => 'pid-'. $pid)));
+    //      $title = l($pattern->title, 'admin/build/patterns/info/'. $pid, array('attributes' => array('class' => 'pattern-title', 'id' => 'pid-'. $pid)));
     $title = '<span id="pid-'. $pid .'" class="pattern-title">'. $pattern->title .'</span>';
-//     $view_more = '<div>'. t('Clik on pattern title to see more details.') .'</div>';
+    //     $view_more = '<div>'. t('Clik on pattern title to see more details.') .'</div>';
     $info = array();
     $info[] = t('Author: ') . $pattern->info['author'];
     $info[] = t('Email: ') . $pattern->info['author_email'];
     $info[] = t('Web: ') . $pattern->info['author_website'];
-    $author = theme('item_list', $info);  
+    $author = theme('item_list', $info);
     $title .= '<div id="pid-'. $pid .'-info" class="pattern-info">'. $author . $pattern->description . $view_more .'</div>';
     $cells[] = $title;
     $cells[] = $pattern->status ? t('Enabled') : t('Disabled');
     $cells[] = $pattern->info['version'];
-//     $cells[] = $pattern->public ?  t('Yes') : t('No');
+    //     $cells[] = $pattern->public ?  t('Yes') : t('No');
     $cells[] = $actions;
     $category = $pattern->info['category'] ? $pattern->info['category'] : t('Other');
     $rows[$category][] = $cells;
   }
-  
+
   ksort($rows);
-  foreach ($rows as $title => $category) {     
+  foreach ($rows as $title => $category) {
     $fieldset = array(
       '#title' => t($title),
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
       '#value' => theme('table', $header, $category),
     );
-    $output .= theme('fieldset', $fieldset);      
+    $output .= theme('fieldset', $fieldset);
   }
-  
+
   return $output;
 }
 
@@ -382,7 +382,7 @@ function patterns_list() {
 //     drupal_set_message(t('The pattern you specified does not exist.'), 'error');
 //     drupal_goto('admin/build/patterns');
 //   }
-//   
+//
 //   if (file_exists($path)) {
 //     if (file_move($path, $new, FILE_EXISTS_REPLACE)) {
 //       drupal_set_message(t('This pattern was reverted to the state it was at when it was enabled.'));
@@ -392,7 +392,7 @@ function patterns_list() {
 //   else {
 //     drupal_set_message(t('The patterns enabled-state was not saved properly, therefore it cannot be reverted.'), 'error');
 //   }
-//   
+//
 //   drupal_goto('admin/build/patterns');
 // }
 
@@ -404,9 +404,9 @@ function patterns_list() {
 //     drupal_set_message(t('You must specify a pattern.'));
 //     return;
 //   }
-//   
+//
 //   $pattern = patterns_get_pattern($pid);
-//   
+//
 //   $output = '';
 //   return $output;
 // }
@@ -419,21 +419,21 @@ function patterns_edit(&$form_state, $pid = null) {
     drupal_set_message(t('You must specify a pattern to edit.'));
     return;
   }
-  
+
   $pattern = patterns_get_pattern($pid);
-  
+
   // TODO: Turn php into xml here.
-  
-  // For now just allow modifying the original xml, which 
+
+  // For now just allow modifying the original xml, which
   // means the modification cannot be further modified
-  
+
   if (!$pattern->file) {
     drupal_set_message(t('This pattern does not seem to have an XML source file to base the modifications off of.'), 'error');
     return;
   }
-  
+
   $xml = file_get_contents($pattern->file);
-  
+
   $form['name'] = array(
     '#type' => 'value',
     '#value' => $pattern->name
@@ -442,12 +442,12 @@ function patterns_edit(&$form_state, $pid = null) {
     '#type' => 'value',
     '#value' => $pattern->pid
   );
-//   if ($pattern->enabled <= $pattern->updated) {
-//     $form['revert'] = array(
-//       '#type' => 'markup',
-//       '#value' => l(t('Undo update changes to the state when you enabled the pattern.'), 'admin/build/patterns/revert/'. $pid, array(), drupal_get_destination())
-//     );
-//   }
+  //   if ($pattern->enabled <= $pattern->updated) {
+  //     $form['revert'] = array(
+  //       '#type' => 'markup',
+  //       '#value' => l(t('Undo update changes to the state when you enabled the pattern.'), 'admin/build/patterns/revert/'. $pid, array(), drupal_get_destination())
+  //     );
+  //   }
   $form['xml'] = array(
     '#type' => 'textarea',
     '#title' => t('Pattern\'s XML'),
@@ -458,7 +458,7 @@ function patterns_edit(&$form_state, $pid = null) {
     '#type' => 'submit',
     '#value' => t('Submit')
   );
-  
+
   return $form;
 }
 
@@ -483,19 +483,19 @@ function patterns_edit_submit($form, &$form_state) {
     $dir = file_directory_path() .'/'. variable_get('patterns_save_xml', 'patterns') .'/enabled';
     file_check_directory($dir, true);
     $path =  $dir .'/'. $form_state['values']['name'] .'.xml';
-    
+
     if (!file_exists($path)) {
       file_copy($file, $path, FILE_EXISTS_ERROR);
     }
   }
-  
+
   // Save the new pattern into the pattern files dir.
   $path = file_directory_path() .'/'. variable_get('patterns_save_xml', 'patterns') .'/'. $form_state['values']['name'] .'.xml';
-  
+
   file_save_data($form_state['values']['xml'], $path, FILE_EXISTS_REPLACE);
-  
+
   $old = db_result(db_query('SELECT file FROM {patterns} WHERE name = "%s"', $form_state['values']['name']));
- 
+
   // Load and save pattern
   if ($pattern = patterns_load_xml($path)) {
     if ($old) {
@@ -516,13 +516,13 @@ function patterns_edit_submit($form, &$form_state) {
  */
 function patterns_modules_page($pid) {
   $pattern = patterns_get_pattern($pid);
-  
+
   drupal_set_title($pattern->title .' '. t('(Pattern Modules)'));
-  
+
   $modules = patterns_modules($pattern);
   $modules_info = module_rebuild_cache();
   $modules_list = module_list();
-  
+
   // Get module name, whether its to be disabled or enabled,
   // whether the module is available or not, and whether it is
   // currently enabled or not
@@ -537,54 +537,54 @@ function patterns_modules_page($pid) {
     $row[] = $enabled ? t('Yes') : '<span class="alert">'. t('No') .'</span>';
     $row[] = $delete ? t('Delete') : t('Enable');
     $rows[] = $row;
-    
+
     if (!$available) {
       $not_available = true;
     }
   }
-  
+
   if ($not_available) {
     drupal_set_message(t('Some modules are not availalble, please download them before running this pattern.'), 'error');
   }
   else {
     drupal_set_message(t('All modules required by this module are available. Click !here to run this pattern.', array('!here' => l(t('here'), 'admin/build/patterns/enable/'. $pid))));
   }
-  
+
   return theme('table', array(t('Name'), t('Available'), t('Enabled'), t('Pattern Action')), $rows, t('Modules used for this pattern'));
 }
 
 function patterns_load_components() {
   static $loaded = false;
-  
+
   if ($loaded) {
     return;
   }
-  
+
   require_once drupal_get_path('module', 'patterns') .'/patterns.inc';
-  
+
   foreach(file_scan_directory(drupal_get_path('module', 'patterns') .'/components', '.\.inc') as $file) {
     include_once $file->filename;
   }
-  
+
   $loaded = true;
 }
 
 function patterns_get_patterns($reset = true) {
   patterns_load_components();
-  
+
   if ($reset || !variable_get('patterns_loaded', false)) {
     // Get a listing of enabled patterns
     $enabled = array();
     $result = db_query('SELECT file FROM {patterns} WHERE status = 1');
-    
+
     while ($pattern = db_fetch_object($result)) {
       $enabled[] = $result->file;
     }
-    
+
     $path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
     $priority = array();
     $errors = array();
-    
+
     // Get uploaded patterns first
     if (file_check_directory($path)) {
       // Check if .htaccess file exists in path, if not insert it
@@ -598,12 +598,12 @@ function patterns_get_patterns($reset = true) {
 
         // Set priority so these patterns won't get over-written
         $priority[] = $file->name;
-        
+
         // Can't update existing patterns that are enabled
         if (in_array($file->filename, $enabled)) {
           continue;
         }
-        
+
         // Load and save pattern
         if ($pattern = patterns_load_xml($file->filename)) {
           patterns_save_pattern($pattern, $file->filename);
@@ -620,18 +620,18 @@ function patterns_get_patterns($reset = true) {
       if (in_array($file->filename, $enabled) || in_array($file->name, $priority)) {
         continue;
       }
-      
+
       $priority[] = $file->name;
-      
+
       // Load and save pattern
       if ($pattern = patterns_load_xml($file->filename)) {
         patterns_save_pattern($pattern, $file->filename);
       }
       else {
         $errors[] = $file->filename;
-      }      
+      }
     }
-    
+
     // Get profile patterns next
     global $profile;
     foreach(file_scan_directory('profiles/'. $profile .'/patterns', '.\.xml') as $file) {
@@ -639,48 +639,48 @@ function patterns_get_patterns($reset = true) {
       if (in_array($file->filename, $enabled) || in_array($file->name, $priority)) {
         continue;
       }
-      
+
       $priority[] = $file->name;
-      
+
       // Load and save pattern
       if ($pattern = patterns_load_xml($file->filename)) {
         patterns_save_pattern($pattern, $file->filename);
       }
       else {
         $errors[] = $file->filename;
-      }      
+      }
     }
-    
+
     // Last get the default patterns
     foreach(file_scan_directory(drupal_get_path('module', 'patterns') .'/patterns', '.\.xml') as $file) {
       // Can't update existing patterns that are enabled
       if (in_array($file->filename, $enabled) || in_array($file->name, $priority)) {
         continue;
       }
-      
+
       // Load and save pattern
       if ($pattern = patterns_load_xml($file->filename)) {
         patterns_save_pattern($pattern, $file->filename);
       }
       else {
         $errors[] = $file->filename;
-      }      
+      }
     }
-    
+
     variable_set('patterns_loaded', time());
   }
-  
+
   $result = db_query('SELECT * FROM {patterns}');
-  
+
   $messages = array();
   while ($pattern = db_fetch_object($result)) {
 
-    // skip pattern if its XML file is missing 
+    // skip pattern if its XML file is missing
     if (!is_file($pattern->file)) continue;
 
     // skip pattern if loading failed and report that to the user
     if (in_array($pattern->file, $errors)) {
-      $messages[] = t("Pattern '%pattern' couldn't be loaded from the file '%file'", array('%pattern' => $pattern->title, '%file' => $pattern->file)); 
+      $messages[] = t("Pattern '%pattern' couldn't be loaded from the file '%file'", array('%pattern' => $pattern->title, '%file' => $pattern->file));
       continue;
     }
 
@@ -688,49 +688,49 @@ function patterns_get_patterns($reset = true) {
     $data = unserialize($pattern->pattern);
     $patterns[$pattern->pid]->pattern = $data;
     foreach ($data as $key => $section) {
-      if ($data[$key]['tag'] == 'info') {       
+      if ($data[$key]['tag'] == 'info') {
         $patterns[$pattern->pid]->info = array();
         array_shift($section);
         foreach($section as $property) {
           $patterns[$pattern->pid]->info[$property['tag']] = $property['value'];
         }
-      }  
+      }
     }
   }
-  
+
   if (!empty($messages)) {
     drupal_set_message(implode('<br>', $messages) .'<br>'. t('Make sure that above file(s) are readable and contain well-formed XML.'), 'error');
   }
-  
+
   return $patterns;
 }
 
 function patterns_save_pattern($pattern, $xmlpath = '') {
   $name = basename($xmlpath, '.xml');
-  
+
   foreach($pattern[0] as $index => $value) {
     if (is_numeric($index)) {
       switch($value['tag']) {
         case 'title':
           $title = $value['value'];
-        break;
+          break;
         case 'description':
           $description = $value['value'];
-        break;
+          break;
         case 'author':
           $author = $value['value'];
-        break;
+          break;
       }
     }
   }
-  
+
   if ($pid = db_result(db_query('SELECT pid FROM {patterns} WHERE name = "%s"', $name))) {
     $updated = db_result(db_query('SELECT updated FROM {patterns} WHERE pid = "%d"', $pid));
     if (($new_updated = filemtime(file_create_path($xmlpath))) > $updated) {
-    	db_query('UPDATE {patterns} SET pattern = "%s", title = "%s", file = "%s", updated = "%s", description = "%s" WHERE pid = %d', serialize($pattern), $title, $xmlpath, $new_updated, $description, $pid);
+      db_query('UPDATE {patterns} SET pattern = "%s", title = "%s", file = "%s", updated = "%s", description = "%s" WHERE pid = %d', serialize($pattern), $title, $xmlpath, $new_updated, $description, $pid);
     }
     else {
-    	db_query('UPDATE {patterns} SET pattern = "%s", title = "%s", file = "%s", description = "%s" WHERE pid = %d', serialize($pattern), $title, $xmlpath, $description, $pid);
+      db_query('UPDATE {patterns} SET pattern = "%s", title = "%s", file = "%s", description = "%s" WHERE pid = %d', serialize($pattern), $title, $xmlpath, $description, $pid);
     }
   }
   else {
@@ -745,16 +745,16 @@ function patterns_get_pattern($id) {
   else if (is_string($id)) {
     $pattern = db_fetch_object(db_query('SELECT * FROM {patterns} WHERE name = "%s"', $id));
   }
-  
+
   if (!$pattern) return FALSE;
-  
+
   // Get the actual data. Data is stored in serialized form in the db.
   $pattern->pattern = unserialize($pattern->pattern);
-  
+
   // Rearrange the data in a nice way for each component.
   // Make sure actions are processed differently so order is preserved.
   $pattern->pattern = patterns_rearrange_data($pattern->pattern);
-  
+
   return $pattern;
 }
 
@@ -762,9 +762,9 @@ function patterns_load_xml($path) {
   if (!file_exists($path)) {
     return;
   }
-  
+
   $xml = file_get_contents($path);
-  
+
   return patterns_from_source($xml);
 }
 
@@ -777,10 +777,10 @@ function patterns_from_source($xml) {
   if (!xml_parse_into_struct($parse, $xml, $vals, $index)) {
     return false;
   }
-  
+
   // Create a multi-dimensional array representing the XML structure
   $pattern = current(_patterns_parse_tag($vals));
-  
+
   return $pattern;
 }
 
@@ -790,42 +790,42 @@ function patterns_from_source($xml) {
  */
 function _patterns_parse_tag($data, &$index = 0) {
   $pattern = array();
-  
+
   while ($current = $data[$index]) {
     $type = $current['type'];
-    
+
     foreach((array)$current['attributes'] as $key => $value) {
       $current[strtolower($key)] = $value;
     }
-    
+
     $current['tag'] = strtolower($current['tag']);
-    
+
     unset($current['type'], $current['level'], $current['attributes']);
-    
+
     if (!trim($current['value']) && $current['value'] != "0") {
       unset($current['value']);
     }
-    
+
     switch($type) {
       case 'open':
         $index++;
         $current += _patterns_parse_tag($data, $index);
         $pattern[] = $current;
-      break;
+        break;
       case 'close':
         $index++;
         return $pattern;
-      break;
+        break;
       case 'complete':
         // In order to support more complex/non-standard features we can use serialized data
         if ($current['attributes']['serialized']) {
           $value = unserialize($current['value']);
-          
+
           if (isset($value)) {
             $current['value'] = $value;
           }
         }
-        
+
         // This enables tags like <blog /> to turn into array('blog' => 'blog')
         // which is useful for checkbox/select type forms
         if (!isset($current['value'])) {
@@ -833,12 +833,12 @@ function _patterns_parse_tag($data, &$index = 0) {
         }
 
         $pattern[] = $current;
-      break;
+        break;
     }
-    
+
     $index++;
   }
-  
+
   return $pattern;
 }
 
@@ -847,9 +847,9 @@ function _patterns_parse_tag($data, &$index = 0) {
 //     '#type' => 'value',
 //     '#value' => $pid
 //   );
-//   
+//
 //   $pattern = patterns_get_pattern($pid);
-// 
+//
 //   return confirm_form($form, t('Proceed with disabling pattern %pattern?', array('%pattern' => $pattern->title)), 'admin/build/patterns', '');
 // }
 
@@ -858,9 +858,9 @@ function patterns_enable_pattern(&$form_state, $pid) {
     '#type' => 'value',
     '#value' => $pid
   );
-  
+
   $disclaimer = t('Please be sure to backup your site before running a pattern. Patterns are not guaranteed to be reversable in case they do not execute well or if unforseen side effects occur.');
-  
+
   $pattern = patterns_get_pattern($pid);
 
   return confirm_form($form, t('Proceed with running pattern %pattern?', array('%pattern' => $pattern->title)), 'admin/build/patterns', $disclaimer);
@@ -869,7 +869,7 @@ function patterns_enable_pattern(&$form_state, $pid) {
 // function patterns_disable_pattern_submit($form_id, $form_values) {
 //   $pid = $form_values['pid'];
 //   $pattern = patterns_get_pattern($pid);
-//   
+//
 //   if (patterns_execute_pattern($pattern, true, true)) {
 //     return 'admin/build/patterns';
 //   }
@@ -877,13 +877,26 @@ function patterns_enable_pattern(&$form_state, $pid) {
 
 function patterns_enable_pattern_submit($form, &$form_state) {
   $pid = $form_state['values']['pid'];
-  
+
   patterns_load_components();
   $pattern = patterns_get_pattern($pid);
-  
-  if ($pattern && patterns_execute_pattern($pattern, false, true)) {
-    drupal_set_message(t('Pattern ran successfully.'));
+
+  // set custom error handler
+  set_error_handler('patterns_error_handler');
+  // trigger dummy error
+  // this will be used as a refrence to determine if any real error
+  // occured during the pattern execution
+  @trigger_error('patterns_error');
+  if ($pattern && @patterns_execute_pattern($pattern, false, true)) {
+    $e = error_get_last();
+    // If last error is equal to the dummy one set before execution,
+    // we can assume that pattern executed successfully
+    if ($e['message'] == 'patterns_error') {
+      drupal_set_message(t('Pattern ran successfully.'));
+    }
   }
+  restore_error_handler();
+  
   $form_state['redirect'] = 'admin/build/patterns';
 }
 
@@ -893,29 +906,29 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
 
   if (!is_object($pattern)) {
     $pattern = patterns_get_pattern($pattern);
-    
+
     if (!$pattern) {
       return false;
     }
   }
- 
+
   $missing = patterns_check_dependencies($pattern);
   if (!empty($missing)) {
     drupal_set_message(t('Following modules required to run this pattern are missing: %modules', array('%modules' => implode(', ', $missing))), 'error');
     return FALSE;
-  } 
+  }
 
   $errors = $action_list = $identifiers = array();
   $error = true;
-  
+
   // Pattern info
   $status = $pattern->status;
   $title = $pattern->title;
   $pid = $pattern->pid;
-  
+
   // From here on out just need the actual pattern data
   $pattern = $pattern->pattern;
-  
+
   // Split the pattern up into modules and actions. Submit modules as its
   // own pattern programattically.
   $modules = $actions = array();
@@ -928,14 +941,14 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
       unset($actions['tag']);
     }
   }
-  
+
   // If there are no actions or modules, most likely the pattern
   // was not created correctly.
   if (empty($actions) && empty($modules)) {
     drupal_set_message(t('Could not recognize pattern %title, aborting.', array('%title' => $title)), 'error');
     return FALSE;
   }
-  
+
   if ($modules && (!$interact || ($interact && !$jump))) {
     // Make the modules look like a normal pattern so they can be executed
     // on their own.
@@ -944,7 +957,7 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
     $obj->status = $status;
     $obj->pattern = array(array('tag' => 'actions', $modules));
     $modules = $obj;
-    
+
     // Modules need to be enabled first so the rest of the pattern
     // can proceed smoothly.
     if (!$reverse) {
@@ -952,46 +965,46 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
       module_rebuild_cache();
     }
   }
-  
+
   // Keep a list of what modules handle what tags
   $tag_modules = patterns_invoke($empty, 'tag modules');
-  
+
   // If an interactive pattern needs resuming, remove the
   // already executed actions
   if ($interact && $jump > 0) {
     array_splice($actions, 0, $jump);
   }
-  
+
   // TODO Finish basic setup and execution of the 'config' operation
   // TODO Make a better streamlined config framework process. For instance collect form_ids
   // from here and give the form_id and matching data to the 'build' process
-  foreach($actions as $key => &$data) {
+  foreach($actions as $key => &$data) {  
     if (($config = patterns_invoke($actions[$key], 'config')) && !empty($config)) {
       patterns_config_data($data, $config);
     }
   }
-  
+
   // Prepare actions for validation/processing
   foreach($actions as $key => &$data) {
     patterns_invoke($actions[$key], 'prepare');
   }
-  
+
   // Reverse a pattern for disabling
   if ($reverse && $status) {
     $actions = array_reverse($actions);
-    
+
     foreach($actions as $key => $data) {
       $continue = patterns_invoke($data, 'reverse');
-      
+
       if ($continue === false) {
         drupal_set_message(t('[Error] Disabling of this pattern is not supported at this time.'));
         return false;
       }
-      
+
       $actions[$key] = $data;
     }
   }
-  
+
   // Pre validate tags with their appropriate components
   foreach($actions as $key => &$data) {
     if (!array_key_exists($data['tag'], $tag_modules)) {
@@ -1004,32 +1017,33 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
       }
     }
   }
-  
+
   if (count($errors)) {
     $message = t('Errors encountered during pre-processing:') .'<br>'. implode('<br>', $errors);
-    drupal_set_message($message, 'error');    
+    drupal_set_message($message, 'error');
     return FALSE;
   }
-  
+
   // Build and execute a list of actions
   foreach($actions as $key => &$data) {
+    
     // Prepare actions for processing, ensure smooth pattern executions, and return form ids for execution
     $return = patterns_invoke($data, 'form_id');
-    
+
     // If prepare removed the data, dont continue with this action
     if (!$data || !$return) {
       continue;
     }
-    
+
     if (is_string($return)) {
       $form_ids = array($return);
     }
     else if ($return) {
       $form_ids = $return;
     }
-    
+
     $action_descriptions = patterns_invoke($data, 'actions');
-    
+
     // Build the action
     foreach($form_ids as $form_id) {
       $clone = $data;
@@ -1042,14 +1056,15 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
       }
 
       $error = patterns_invoke($clone, 'validate', $form_id);
-      
+      if (patterns_error_get_last('validate', $key+1, $action_descriptions[$form_id])) return FALSE;
+
       if ($error) {
         drupal_set_message(t('An error occured while validating action #%num (%action)', array('%num' => $key+1, '%action' => $action_descriptions[$form_id])), 'error');
         if (is_array($error)) {
           foreach($error as $msg) {
             drupal_set_message($msg, 'error');
           }
-          
+
           $errors[$clone['tag']] = t('Broken Pattern: %msg', array('%msg' => implode('<br>', $error)));
         }
         else {
@@ -1062,6 +1077,8 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
       // Get the form data for the action. This can either just be the form values,
       // or it can be the full form_state object
       $form_obj = patterns_invoke($clone, 'build', $form_id);
+
+      if (patterns_error_get_last('build', $key+1, $action_descriptions[$form_id])) return FALSE;
       
       // Dont execute the action if a string was returned, indicating the pattern component
       // most likely handled the action on its own and this is the message to display.
@@ -1085,33 +1102,36 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
 
         // Get any extra parameters required for the action
         $params = patterns_invoke($clone, 'params', $form_id, $form_state);
-        
+        if (patterns_error_get_last('params', $key+1, $action_descriptions[$form_id])) return FALSE;
+
         // A single, simple value can be returned as a parameter, which is then
         // put into an array here.
         if (isset($params) && !is_array($params)) {
           $params = array($params);
         }
-      
+
         // Execute action
         patterns_execute_action($form_id, $form_state, $params);
-                
-        if (form_get_errors()) {          
+        if (patterns_error_get_last('execute', $key+1, $action_descriptions[$form_id])) return FALSE;
+
+        if (form_get_errors()) {
           drupal_set_message(t('An error occured while executing action #%num (%action)', array('%num' => $key+1, '%action' => $action_descriptions[$form_id])), 'error');
           $error = true;
           return FALSE;
         }
-        
+
         // Let a component cleanup after each action
         patterns_invoke($clone, 'cleanup', $form_id, $form_state);
+        if (patterns_error_get_last('cleanup', $key+1, $action_descriptions[$form_id])) return FALSE;
       }
 
       // Clear the cache in case it causes problems
       cache_clear_all();
     }
-//    if ($error) {
-//      break;
-//    }
-    
+    //    if ($error) {
+    //      break;
+    //    }
+
     // Get any primary identifiers from the action for further actions to take advantage of
     $id = null;
     $id = patterns_invoke($clone, 'identifier', $form_id);
@@ -1119,19 +1139,19 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
       $identifiers[$key+1] = $id;
     }
   }
-  
+
   if ($reverse) {
     if ($modules) {
       // Modules need to be disabled last so the rest of the pattern
       // can reverse itself properly
       $error = patterns_execute_pattern($modules, $reverse, $interact);
     }
-    
+
     // Mark pattern as disabled
     if ($pid) {
       db_query('UPDATE {patterns} SET status = 0 WHERE pid = %d', $pid);
     }
-    
+
     drupal_set_message(t('Pattern reversed successfully.'));
   }
   else {
@@ -1140,7 +1160,7 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
       db_query('UPDATE {patterns} SET status = 1, enabled = "%s" WHERE pid = %d', time(), $pid);
     }
   }
-  
+
   return TRUE;
 }
 
@@ -1150,48 +1170,48 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
 function patterns_execute_action($form_id, $form_state, $params) {
   // Make sure we always have a clear cache for everything
   $result = db_query('SHOW TABLES LIKE "cache_%"');
-  
+
   while ($table = db_fetch_array($result)) {
     $table = current($table);
     cache_clear_all(null, $table);
   }
-  
+
   $args = array($form_id, &$form_state);
-  
+
   if (is_array($params)) {
     $args = array_merge($args, $params);
   }
-  
+
   patterns_executing(true);
-  
+
   //$form = call_user_func_array('drupal_retrieve_form', $args);
   //$form['#post'] = $values;
   //$return = drupal_process_form($form_id, $form);
   //dpm($args);
-  
+
   // drupal_execute fails to keep $form_state in-sync through the
-  // whole FAPI process. Issue http://drupal.org/node/346244  
+  // whole FAPI process. Issue http://drupal.org/node/346244
   //$return = call_user_func_array('drupal_execute', $args);
-  
+
   // Copy of drupal_execute until above issue is fixed
   $form = call_user_func_array('drupal_retrieve_form', $args);
   $form['#post'] = $form_state['values'];
   drupal_prepare_form($form_id, $form, $form_state);
   drupal_process_form($form_id, $form, $form_state);
-  
-  
+
+
   patterns_executing(false);
-  
+
   return $return;
 }
 
 function patterns_executing($b = null) {
   static $executing = false;
-  
+
   if (is_bool($b)) {
     $executing = $b;
   }
-  
+
   return $executing;
 }
 
@@ -1210,7 +1230,7 @@ function patterns_rearrange_data($pattern) {
       }
     }
   }
-  
+
   return $pattern;
 }
 
@@ -1219,7 +1239,7 @@ function patterns_rearrange_data($pattern) {
  */
 function patterns_modules($pattern) {
   $pattern = $pattern->pattern;
-  
+
   for($i=0;$tag=$pattern[$i];$i++) {
     if ($tag['tag'] == 'modules') {
       unset($tag['tag']);
@@ -1227,7 +1247,7 @@ function patterns_modules($pattern) {
       break;
     }
   }
-  
+
   return $modules;
 }
 
@@ -1238,26 +1258,26 @@ function patterns_process_modules($modules, $op = 'enable') {
       unset($modules[$i]);
     }
   }
-  
+
   patterns_invoke($empty, 'tag modules');
   $error = patterns_invoke($modules, 'pre-validate');
-  
+
   // Error validating modules
   if ($error) {
     return $error;
   }
-  
+
   patterns_invoke($modules, 'prepare');
 }
 
 function patterns_invoke(&$data, $op, $form_id = null, $a = null) {
   static $tag_modules;
-    
+
   if (!is_array($tag_modules) || $op == 'tag modules') {
     // Get a list of tags and their modules
     foreach(module_implements('patterns') as $module) {
       $tags = module_invoke($module, 'patterns', 'tags');
-      
+
       foreach($tags as $tag => $value) {
         if (is_array($value)) {
           $tag_modules[$tag] = $module;
@@ -1268,7 +1288,7 @@ function patterns_invoke(&$data, $op, $form_id = null, $a = null) {
       }
     }
   }
-  
+
   // If you just want the modules list
   if ($op == 'tag modules') {
     return $tag_modules;
@@ -1276,10 +1296,10 @@ function patterns_invoke(&$data, $op, $form_id = null, $a = null) {
 
   $tag = $data['tag'];
   unset($data['tag']);
-  
+
   $module = $tag_modules[$tag];
   $func = $module .'_patterns';
-  
+
   if (function_exists($func)) {
     if ($form_id) {
       $return = $func($op, $form_id, $data, $a);
@@ -1288,7 +1308,7 @@ function patterns_invoke(&$data, $op, $form_id = null, $a = null) {
       $return = $func($op, $tag, $data, $a);
     }
   }
-  
+
   $data['tag'] = $tag;
   return $return;
 }
@@ -1296,7 +1316,7 @@ function patterns_invoke(&$data, $op, $form_id = null, $a = null) {
 function _patterns_rearrange_data($data, $parent = '') {
   $numeric = array();
   $count=0;
-  
+
   foreach($data as $key => $value) {
     if ($value['value'] == 'false') {
       $value['value'] = false;
@@ -1304,7 +1324,7 @@ function _patterns_rearrange_data($data, $parent = '') {
     else if ($value['value'] == 'true') {
       $value['value'] = true;
     }
-    
+
     if (is_numeric($key) && is_array($value) && count($value) == 2 && isset($value['tag']) && isset($value['value'])) {
       unset($data[$key]);
       if (isset($data[$value['tag']])) {
@@ -1327,19 +1347,19 @@ function _patterns_rearrange_data($data, $parent = '') {
       unset($data[$key]);
     }
   }
-  
+
   foreach($data as $key => $value) {
     if (is_array($value) && count($value) == 1 && $value[0]) {
       $data[$key] = $data[$key][0];
     }
   }
-  
+
   return $data;
 }
 
 
 function patterns_form_alter(&$form, &$form_state, $form_id) {
-//dpm($form);
+  //dpm($form);
   if (user_access('administer patterns') && variable_get('patterns_form_helper', true)) {
     $form['#after_build'][] = 'patterns_form_helper';
   }
@@ -1348,11 +1368,11 @@ function patterns_form_alter(&$form, &$form_state, $form_id) {
 function patterns_form_helper($form, $form_state) {
   static $form_id;
 
-  if (!$form_id && $form_state['submitted'] && !form_get_errors()) {   
+  if (!$form_id && $form_state['submitted'] && !form_get_errors()) {
     $form_id = $form_state['values']['form_id'];
     $_SESSION['patterns_form_helper'] = array('form_id' => $form_id, 'form_values' => $form_state['values']);
   }
-  
+
   return $form;
 }
 
@@ -1365,13 +1385,13 @@ function patterns_exit($destination = null) {
     else {
       print theme('patterns_form_helper', $_SESSION['patterns_form_helper']['form_id'], $_SESSION['patterns_form_helper']['form_values']);
     }
-    
+
   }
 }
 
 /**
  * Implementation of hook_token_values()
- * 
+ *
  * @If these get implementated directly into token.module, this should be removed
  */
 function patterns_token_values($type, $object = NULL, $options = array()) {
@@ -1410,7 +1430,7 @@ function _patterns_recurse_tokens(&$object, $identifiers) {
     else if (is_scalar($value)) {
       $old_key = $key;
       _patterns_replace_tokens($object[$key], $key, $identifiers);
-      
+
       // The key was changed, change it
       if ($old_key != $key) {
         $keys = array_keys($object);
@@ -1446,7 +1466,7 @@ function _patterns_replace_tokens(&$a, &$b, $identifiers = array()) {
 function _patterns_check_file_dir() {
   return false;
   $path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
-  
+
   if (!is_file($path .'/.htaccess')) {
     $content = '# Prevent downloading site patterns
 <FilesMatch "\.xml$">
@@ -1459,50 +1479,50 @@ function _patterns_check_file_dir() {
 
 function theme_patterns_form_helper_menu($forms) {
   $output = '<ul class="patterns-form-menu">';
-  
+
   foreach ($forms as $form_id => $values) {
     $output .= '<li class="patterns-form-menu-item">'. $form_id .'</li>';
   }
-  
+
   $output .= '</li>';
-  
+
   return $output;
 }
 
 function theme_patterns_form_helper($form_id, $values) {
 
   $output = '<div class="patterns-form" id="patterns-form-'. $form_id .'">';
-  
+
   $output .= '<div class="patterns-form-title">'. t('Form values for %key', array('%key' => $form_id)) .'</div>';
-  
+
   foreach($values as $key => $value) {
     $output .= '<div class="patterns-form-item"><div class="patterns-form-key">'. $key .' => </div>';
     $output .= '<div class="patterns-form-value">'. print_r($value, true) .'</div></div>';
   }
-  
+
   $output .= '</div>';
-  
+
   return $output;
 }
 
 /**
  * Implementation of hook_theme().
- */ 
+ */
 function patterns_theme() {
   return array(
     'patterns_form_helper' => array(
       'arguments' => array('form_id' => NULL, 'values' => NULL),
-    ),
+  ),
     'patterns_form_helper_menu' => array(
       'forms' => NULL
-    )
+  )
   );
 }
 
 /**
  * Take a $data and $config object and adjust $data
  * based on the supplied configuration
- * 
+ *
  * TODO Look for ways to optimize and increase performance
  */
 function patterns_config_data(&$data, $configs) {
@@ -1514,10 +1534,10 @@ function patterns_config_data(&$data, $configs) {
     if ($config['#alias'] && is_array($config['#alias'])) {
       $tokens = array_slice(preg_split('/(?<!=)\/(?![a-z]*\])/', $path), 1);
       $real = end($tokens);
-      
+
       // Check for the real key
       $matches = patterns_array_fetch($path, $data);
-      
+
       // If the real key was not found, get the aliases
       if (empty($matches)) {
         if (!$config['#key']) {
@@ -1538,7 +1558,7 @@ function patterns_config_data(&$data, $configs) {
     if (empty($matches) && $config['#required']) {
       $error = true;
     }
-  
+
     foreach($matches as &$match) {
       // Collect form_ids here.
       // TODO Think of a better way to migrate components form_id operations here
@@ -1554,11 +1574,11 @@ function patterns_config_data(&$data, $configs) {
         else {
           $match['item'] = array($match['item']);
         }
-        
+
         // Update the context object to reflect new changes
         $match = _patterns_array_context($match['item'], $match);
       }
-      
+
       // Change the key of this match. Can get the key value via xpath as well.
       // Any duplicate keys will return an error
       if ($config['#key']) {
@@ -1596,7 +1616,7 @@ function patterns_config_data(&$data, $configs) {
 
           // Update the parent context object to reflect new changes
           $match['parent'] = _patterns_array_context($match['parent']['item'], $match['parent']);
-          
+
           // Update to the new current match
           for($i=0;$i<count($match['parent']);$i++) {
             if ($match['parent'][$i]['key'] == $new_key) {
@@ -1606,19 +1626,19 @@ function patterns_config_data(&$data, $configs) {
           }
         }
       }
-      
+
       // Create empty key elements if they don't exist but should (and are not required)
-      // This is useful when using 'move' to ensure that the destination exists 
+      // This is useful when using 'move' to ensure that the destination exists
       if ($config['#create'] && is_array($match['item']) && !array_key_exists($config['#create'], $match['item'])) {
         $match['item'][$config['#create']] = $config['#create value'];
       }
-      
+
       // Move(or copy) this match to somewhere else in the object. If more than one destination
       // match is found, this value is copied to each one
       // TODO Make move automatically create the destination if it doesn't exist
       // TODO Support move in (put inside array) and move to (replace) actions
       if (!empty($match['parent']) && ($config['#move']{0} == '/' && ($dest_path = $config['#move']) && ($op = 'move')) ||
-                                     ($config['#copy']{0} == '/' && ($dest_path = $config['#copy']) && ($op = 'copy'))) {
+      ($config['#copy']{0} == '/' && ($dest_path = $config['#copy']) && ($op = 'copy'))) {
         $dests = patterns_array_fetch($dest_path, $match['item'], $match);
         $parent = &$match['parent'];
         $obj = $match['item'];
@@ -1638,7 +1658,7 @@ function patterns_config_data(&$data, $configs) {
           // Update the dest object to reflect the change
           $dest = _patterns_array_context($dest['item'], $dest);
         }
-        
+
         if ($op == 'move') {
           if (!is_int($match['key'])) {
             unset($parent['item'][$match['key']]);
@@ -1646,7 +1666,7 @@ function patterns_config_data(&$data, $configs) {
           else {
             array_splice($parent['item'], $match['key'], 1);
           }
-          
+
           // Update the parent object to reflect the change (removal)
           $parent = _patterns_array_context($parent['item'], $parent);
           unset($match);
@@ -1659,15 +1679,15 @@ function patterns_config_data(&$data, $configs) {
 /**
  * Find parts of an array based on
  * a semi-compatible xpath syntax.
- * 
+ *
  * Returns an array of constructs that includes the
  * references 'item' and 'parent' from the matching values
  * in the $data object along with extra keys 'key' for the key
- * of the current match and 'trace' for a full list of keys 
+ * of the current match and 'trace' for a full list of keys
  * till the root of the $data object
- * 
+ *
  * Loosely based off of Cake function Set::extract
- * 
+ *
  * @Note: Ensure this always only returns matches from a single level
  * in the array. Changes made to matches in different levels can possibly
  * mess up the above-level matches. To this end, you cannot change the keys
@@ -1677,17 +1697,17 @@ function patterns_config_data(&$data, $configs) {
  */
 function patterns_array_fetch($path, &$data, $context = null) {
   if (!$context && (empty($data) || !is_array($data))) {
-      return array();
+    return array();
   }
   if ($path === '/') {
-      return $data;
+    return $data;
   }
    
   // Construct our contexts object that allows us to traverse the array
   if(!$context) {
     $context = _patterns_array_context($data);
   }
-  
+
   // Make our context actually a list of contexts
   $context = array($context);
 
@@ -1695,48 +1715,48 @@ function patterns_array_fetch($path, &$data, $context = null) {
   $tokens = array_slice(preg_split('/(?<!=)\/(?![a-z]*\])/', $path), 1);
 
   while(!empty($tokens)) {
-      $token = array_shift($tokens);
+    $token = array_shift($tokens);
 
-      // TODO Implement better conditionals for each token
-      // Currently only supports element=value conditions
-      $conditions = array();
-      if (preg_match('/(=)(.*)/', $token, $m)) {
-        $conditions[$m[1]] = $m[2];
-        $token = substr($token, 0, strpos($token, $m[1]));
+    // TODO Implement better conditionals for each token
+    // Currently only supports element=value conditions
+    $conditions = array();
+    if (preg_match('/(=)(.*)/', $token, $m)) {
+      $conditions[$m[1]] = $m[2];
+      $token = substr($token, 0, strpos($token, $m[1]));
+    }
+
+    $matches = array();
+    foreach ($context as &$piece) {
+      if ($token === '..') {
+        $matches[] = &$piece['parent'];
+        continue;
       }
-
-      $matches = array();
-      foreach ($context as &$piece) {
-        if ($token === '..') {
-            $matches[] = &$piece['parent'];
-            continue;
-        }
-        $match = false;
-        if (is_array($piece['item']) && ($token == '*' || array_key_exists($token, $piece['item']))) {
-          $i=0;
-          while(isset($piece[$i])) {
-            if ($piece[$i]['key'] === $token) {
-              $matches[] = &$piece[$i];
-              break;
-            }
-            else if ($token === '*') {
-              $matches[] = &$piece[$i];
-            }
-            $i++;
+      $match = false;
+      if (is_array($piece['item']) && ($token == '*' || array_key_exists($token, $piece['item']))) {
+        $i=0;
+        while(isset($piece[$i])) {
+          if ($piece[$i]['key'] === $token) {
+            $matches[] = &$piece[$i];
+            break;
           }
-        }
-        else if ($token === '.') {
-          $matches[] = &$piece;
+          else if ($token === '*') {
+            $matches[] = &$piece[$i];
+          }
+          $i++;
         }
       }
-
-      // Filter matches from the matches list based on our conditions
-      foreach($conditions as $operator => $value) {
-        _patterns_array_filter($matches, $operator, $value);
+      else if ($token === '.') {
+        $matches[] = &$piece;
       }
+    }
 
-      // Update the context area to the next set of matches to dig into
-      $context = $matches;
+    // Filter matches from the matches list based on our conditions
+    foreach($conditions as $operator => $value) {
+      _patterns_array_filter($matches, $operator, $value);
+    }
+
+    // Update the context area to the next set of matches to dig into
+    $context = $matches;
   }
 
   // Return the list of matches containing references to their respective data objects
@@ -1785,13 +1805,13 @@ function _patterns_array_context(&$obj, &$current = null) {
 function _patterns_array_filter(&$matches, $operator, $value = null) {
   for($i=count($matches)-1;$i>=0;$i--) {
     $match = &$matches[$i];
-    
+
     switch($operator) {
       case '=':
         if ($match['item'] != $value) {
           array_splice($matches, $i, 1);
         }
-      break;
+        break;
     }
   }
 }
@@ -1807,30 +1827,30 @@ function _patterns_array_trace($obj) {
     array_unshift($trace, $up['key']);
     $up = &$up['parent'];
   }
-  
+
   return $trace;
 }
 
 /*
  * Check if all the module dependencies are available
  * // @TODO check also dependencies of required modules
- * 
+ *
  * @param $pattern
  *   pattern object
  * @return
  *   empty array if all dependencies are available
  *   array of missing module's names if some dependencies are not available
- *  
+ *
  */
 function patterns_check_dependencies($pattern) {
   $modules = patterns_modules($pattern);
   $modules_info = module_rebuild_cache();
   $modules_list = module_list();
-  
+
   $result = array();
 
   if (empty($modules)) return array();
-  
+
   foreach($modules as $module) {
     $delete = is_array($module) ? $module['delete'] : false;
     $module = is_array($module) ? $module['value'] : $module;
@@ -1839,4 +1859,76 @@ function patterns_check_dependencies($pattern) {
     }
   }
   return $result;
+}
+/**
+ * Custom error handler used only during patterns execution
+ * in order to catch and properly handle PHP errors.
+ * Based on drupal_error_handler().
+ */
+function patterns_error_handler($errno, $message, $filename, $line, $context) {
+  
+  if ($errno & (E_ALL ^ E_NOTICE)) {
+
+    $types = array(1 => 'error', 2 => 'warning', 4 => 'parse error', 8 => 'notice', 16 => 'core error', 32 => 'core warning', 64 => 'compile error', 128 => 'compile warning', 256 => 'user error', 512 => 'user warning', 1024 => 'user notice', 2048 => 'strict warning', 4096 => 'recoverable fatal error');
+
+    // For database errors, we want the line number/file name of the place that
+    // the query was originally called, not _db_query().
+    if (isset($context[DB_ERROR])) {
+      $backtrace = array_reverse(debug_backtrace());
+
+      // List of functions where SQL queries can originate.
+      $query_functions = array('db_query', 'pager_query', 'db_query_range', 'db_query_temporary', 'update_sql');
+
+      // Determine where query function was called, and adjust line/file
+      // accordingly.
+      foreach ($backtrace as $index => $function) {
+        if (in_array($function['function'], $query_functions)) {
+          $line = $backtrace[$index]['line'];
+          $filename = $backtrace[$index]['file'];
+          break;
+        }
+      }
+    }
+
+    $entry = $types[$errno] .': '. $message .' in '. $filename .' on line (and my addition here) '. $line .'.';
+
+    // Force display of error messages in update.php.
+//    if ($message != 'patterns_error' && (variable_get('error_level', 1) == 1 || strstr($_SERVER['SCRIPT_NAME'], 'update.php'))) {
+//dpm($errno);
+//dpm($message);
+//dpm($context);
+//      drupal_set_message($entry, 'error');
+//    }
+
+    watchdog('php', '%message in %file on line %line.', array('%error' => $types[$errno], '%message' => $message, '%file' => $filename, '%line' => $line), WATCHDOG_ERROR);
+  }
+  else {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/*
+ * Check and report PHP errors during patterns execution
+ *
+ * @param $op
+ *   operation within hook_patterns() during which error occured
+ * @param $key
+ *   number of the action currently proccessed
+ * @param $description
+ *   description of the current action
+ * @return
+ *   TRUE if new error encuntered
+ *   FALSE if there are no new errors
+ *
+ */
+function patterns_error_get_last($op, $key, $description) {
+  $error = error_get_last();
+  if ($error['message'] != 'patterns_error') {
+    $types = array(1 => 'error', 2 => 'warning', 4 => 'parse error', 8 => 'notice', 16 => 'core error', 32 => 'core warning', 64 => 'compile error', 128 => 'compile warning', 256 => 'user error', 512 => 'user warning', 1024 => 'user notice', 2048 => 'strict warning', 4096 => 'recoverable fatal error');
+    $php_error_message = $types[$error['type']] .': '. $error['message'] .' in '. $error['file'] .' on line '. $error['line'] .'.';
+    drupal_set_message(t('Action #%key: %description (op "%op")<br>PHP error occured.<br>%error', array('%key' => $key, '%op' => $op, '%description' => $description, '%error' => $php_error_message)), 'error');
+    return TRUE;
+  }
+  return FALSE;
 }
