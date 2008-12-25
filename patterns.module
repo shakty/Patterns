@@ -282,11 +282,11 @@ function patterns_import_validate($form, &$form_state) {
   
   // @TODO validate XML and don't allow import if validation fails
   $parse = xml_parser_create();
-  xml_parse_into_struct($parse, $form_state['values']['xmlsource'], $vals, $index);
+  $success = xml_parse_into_struct($parse, $form_state['values']['xmlsource'], $vals, $index);
 
   // Check that the xml was properly parsed and also that the
   // root <pattern> tag and also an <info> tag were used.
-  if (!$vals || $vals[0]['tag'] != 'PATTERN' || $vals[1]['tag'] != 'INFO') {
+  if (!$success || !$vals || $vals[0]['tag'] != 'PATTERN' || $vals[1]['tag'] != 'INFO') {
     form_set_error('xmlsource', t('Error parsing the XML, please check your syntax and try again.'));
   }
 }
@@ -503,11 +503,12 @@ function patterns_edit_submit($form, &$form_state) {
     }
 
     patterns_save_pattern($pattern, $path);
+    drupal_set_message(t('%name was saved.', array('%name' => $form_state['values']['name'])));
+    $form_state['redirect'] = 'admin/build/patterns';
   }
-  
-  drupal_set_message(t('%name was saved.', array('%name' => $form_state['values']['name'])));
-  
-  $form_state['redirect'] = 'admin/build/patterns';
+  else {
+    drupal_set_message(t("Pattern '%name' couldn't be saved. Make sure edited XML code is well-formed.", array('%name' => $form_state['values']['name'])), 'error');
+  }
 }
 
 /**
@@ -582,6 +583,7 @@ function patterns_get_patterns($reset = true) {
     
     $path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
     $priority = array();
+    $errors = array();
     
     // Get uploaded patterns first
     if (file_check_directory($path)) {
@@ -593,7 +595,7 @@ function patterns_get_patterns($reset = true) {
         if (strpos($file->filename, $path .'/enabled/') === 0) {
           continue;
         }
-        
+
         // Set priority so these patterns won't get over-written
         $priority[] = $file->name;
         
@@ -605,6 +607,9 @@ function patterns_get_patterns($reset = true) {
         // Load and save pattern
         if ($pattern = patterns_load_xml($file->filename)) {
           patterns_save_pattern($pattern, $file->filename);
+        }
+        else {
+          $errors[] = $file->filename;
         }
       }
     }
@@ -622,6 +627,9 @@ function patterns_get_patterns($reset = true) {
       if ($pattern = patterns_load_xml($file->filename)) {
         patterns_save_pattern($pattern, $file->filename);
       }
+      else {
+        $errors[] = $file->filename;
+      }      
     }
     
     // Get profile patterns next
@@ -638,6 +646,9 @@ function patterns_get_patterns($reset = true) {
       if ($pattern = patterns_load_xml($file->filename)) {
         patterns_save_pattern($pattern, $file->filename);
       }
+      else {
+        $errors[] = $file->filename;
+      }      
     }
     
     // Last get the default patterns
@@ -651,6 +662,9 @@ function patterns_get_patterns($reset = true) {
       if ($pattern = patterns_load_xml($file->filename)) {
         patterns_save_pattern($pattern, $file->filename);
       }
+      else {
+        $errors[] = $file->filename;
+      }      
     }
     
     variable_set('patterns_loaded', time());
@@ -658,8 +672,18 @@ function patterns_get_patterns($reset = true) {
   
   $result = db_query('SELECT * FROM {patterns}');
   
+  $messages = array();
   while ($pattern = db_fetch_object($result)) {
+
+    // skip pattern if its XML file is missing 
     if (!is_file($pattern->file)) continue;
+
+    // skip pattern if loading failed and report that to the user
+    if (in_array($pattern->file, $errors)) {
+      $messages[] = t("Pattern '%pattern' couldn't be loaded from the file '%file'", array('%pattern' => $pattern->title, '%file' => $pattern->file)); 
+      continue;
+    }
+
     $patterns[$pattern->pid] = $pattern;
     $data = unserialize($pattern->pattern);
     $patterns[$pattern->pid]->pattern = $data;
@@ -672,6 +696,10 @@ function patterns_get_patterns($reset = true) {
         }
       }  
     }
+  }
+  
+  if (!empty($messages)) {
+    drupal_set_message(implode('<br>', $messages) .'<br>'. t('Make sure that above file(s) are readable and contain well-formed XML.'), 'error');
   }
   
   return $patterns;
@@ -737,9 +765,7 @@ function patterns_load_xml($path) {
   
   $xml = file_get_contents($path);
   
-  $pattern = patterns_from_source($xml);
-  
-  return $pattern;
+  return patterns_from_source($xml);
 }
 
 /**
@@ -747,7 +773,10 @@ function patterns_load_xml($path) {
  */
 function patterns_from_source($xml) {
   $parse = xml_parser_create();
-  xml_parse_into_struct($parse, $xml, $vals, $index);
+
+  if (!xml_parse_into_struct($parse, $xml, $vals, $index)) {
+    return false;
+  }
   
   // Create a multi-dimensional array representing the XML structure
   $pattern = current(_patterns_parse_tag($vals));
