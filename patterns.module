@@ -1831,7 +1831,7 @@ function _patterns_array_trace($obj) {
   return $trace;
 }
 
-/*
+/**
  * Check if all the module dependencies are available
  * // @TODO check also dependencies of required modules
  *
@@ -1908,7 +1908,7 @@ function patterns_error_handler($errno, $message, $filename, $line, $context) {
   return FALSE;
 }
 
-/*
+/**
  * Check and report PHP errors during patterns execution
  *
  * @param $op
