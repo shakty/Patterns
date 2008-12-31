@@ -1134,7 +1134,7 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
 
     // Get any primary identifiers from the action for further actions to take advantage of
     $id = null;
-    $id = patterns_invoke($clone, 'identifier', $form_id);
+    $id = patterns_invoke($clone, 'identifier', $form_id, $form_state);
     if (isset($id)) {
       $identifiers[$key+1] = $id;
     }
@@ -1167,7 +1167,7 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
 /**
  * Execute an action
  */
-function patterns_execute_action($form_id, $form_state, $params) {
+function patterns_execute_action($form_id, &$form_state, $params) {
   // Make sure we always have a clear cache for everything
   $result = db_query('SHOW TABLES LIKE "cache_%"');
 
