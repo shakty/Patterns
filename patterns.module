@@ -1946,8 +1946,12 @@ function patterns_error_handler($errno, $message, $filename, $line, $context) {
 //dpm($context);
 //      drupal_set_message($entry, 'error');
 //    }
-
-    watchdog('php', '%message in %file on line %line.', array('%error' => $types[$errno], '%message' => $message, '%file' => $filename, '%line' => $line), WATCHDOG_ERROR);
+    
+    // 'patterns_error' is not a real error and should be excluded from watchdog
+    if ($message != 'patterns_error') {
+      watchdog('php', '%message in %file on line %line.', array('%error' => $types[$errno], '%message' => $message, '%file' => $filename, '%line' => $line), WATCHDOG_ERROR);      
+    }
+    
   }
   else {
     return TRUE;
