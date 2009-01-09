@@ -1197,8 +1197,16 @@ function patterns_execute_action($form_id, &$form_state, $params) {
   $form = call_user_func_array('drupal_retrieve_form', $args);
   $form['#post'] = $form_state['values'];
   drupal_prepare_form($form_id, $form, $form_state);
-  drupal_process_form($form_id, $form, $form_state);
-
+  
+  // If you call drupal_validate_form() on the same form more 
+  // than once per page request, validation is not performed 
+  // on any but the first call. 
+  // see issue: http://drupal.org/node/260934
+  // drupal_process_form($form_id, $form, $form_state);
+  
+  // Until above issue is fixed we use our own implementation 
+  // of drupal_process_form() and drupal_validate_form(). 
+  _patterns_process_form($form_id, $form, $form_state);
 
   patterns_executing(false);
 
@@ -1359,10 +1367,49 @@ function _patterns_rearrange_data($data, $parent = '') {
 
 
 function patterns_form_alter(&$form, &$form_state, $form_id) {
-  //dpm($form);
+
   if (user_access('administer patterns') && variable_get('patterns_form_helper', true)) {
     $form['#after_build'][] = 'patterns_form_helper';
   }
+  
+  if (patterns_executing()) {
+    // Ensure that parent and related dropdowns display all the terms 
+    // including those created during current pattern execution.
+    // Without this, those terms would be omitted due to the static 
+    // caching within taxonomy_get_tree(). 
+    $form_ids = array('taxonomy_form_term');
+    if (in_array($form_id, $form_ids)) {
+      $tid = $form['#term']['tid'];
+      $vid = $form['#vocabulary']['vid'];
+      $parent = array_keys(taxonomy_get_parents($tid));
+
+      $children = _patterns_taxonomy_get_tree($vid, $tid);
+      // A term can't be the child of itself, nor of its children.
+      foreach ($children as $child) {
+        $exclude[] = $child->tid;
+      }
+      $exclude[] = $tid;      
+      
+      $form['advanced']['parent'] = _patterns_taxonomy_term_select(t('Parents'), 'parent', $parent, $vid, t('Parent terms') .'.', 1, '<'. t('root') .'>', $exclude);
+      $form['advanced']['relations'] = _patterns_taxonomy_term_select(t('Related terms'), 'relations', array_keys(taxonomy_get_related($tid)), $vid, NULL, 1, '<'. t('none') .'>', array($tid));            
+    }
+    
+    // Ensure that parent item dropdown displays all the menu items 
+    // including those created during current pattern execution.
+    // Without this, those menu items would be omitted due to the 
+    // static caching within menu_tree_all_data().
+    $form_ids = array('menu_edit_item');
+    if (in_array($form_id, $form_ids)) {    
+      if (empty($form['menu']['#item'])) {
+        $item = array('link_title' => '', 'mlid' => 0, 'plid' => 0, 'menu_name' => $form_state['values']['menu']['menu_name'], 'weight' => 0, 'link_path' => '', 'options' => array(), 'module' => 'menu', 'expanded' => 0, 'hidden' => 0, 'has_children' => 0);
+      }
+      else {
+        $item = $form['menu']['#item'];
+      }
+      $form['menu']['parent']['#options'] = _patterns_menu_parent_options(menu_get_menus(), $item); 
+    }
+  }
+  
 }
 
 function patterns_form_helper($form, $form_state) {
@@ -1931,4 +1978,279 @@ function patterns_error_get_last($op, $key, $description) {
     return TRUE;
   }
   return FALSE;
+}
+
+/**
+ * Custom implementation of drupal_process_form()
+ * 
+ * Enables validation to be performed for each executed form
+ * by calling our custom _patterns_validate_form() function
+ * see issue: http://drupal.org/node/260934
+ */
+function _patterns_process_form($form_id, &$form, &$form_state) {
+  $form_state['values'] = array();
+
+  $form = form_builder($form_id, $form, $form_state);
+  // Only process the form if it is programmed or the form_id coming
+  // from the POST data is set and matches the current form_id.
+  if ((!empty($form['#programmed'])) || (!empty($form['#post']) && (isset($form['#post']['form_id']) && ($form['#post']['form_id'] == $form_id)))) {
+    _patterns_validate_form($form_id, $form, $form_state);
+
+    // form_clean_id() maintains a cache of element IDs it has seen,
+    // so it can prevent duplicates. We want to be sure we reset that
+    // cache when a form is processed, so scenerios that result in
+    // the form being built behind the scenes and again for the
+    // browser don't increment all the element IDs needlessly.
+    form_clean_id(NULL, TRUE);
+
+    if ((!empty($form_state['submitted'])) && !form_get_errors() && empty($form_state['rebuild'])) {
+      $form_state['redirect'] = NULL;
+      form_execute_handlers('submit', $form, $form_state);
+
+      // We'll clear out the cached copies of the form and its stored data
+      // here, as we've finished with them. The in-memory copies are still
+      // here, though.
+      if (variable_get('cache', CACHE_DISABLED) == CACHE_DISABLED && !empty($form_state['values']['form_build_id'])) {
+        cache_clear_all('form_'. $form_state['values']['form_build_id'], 'cache_form');
+        cache_clear_all('storage_'. $form_state['values']['form_build_id'], 'cache_form');
+      }
+
+      // If batches were set in the submit handlers, we process them now,
+      // possibly ending execution. We make sure we do not react to the batch
+      // that is already being processed (if a batch operation performs a
+      // drupal_execute).
+      if ($batch =& batch_get() && !isset($batch['current_set'])) {
+        // The batch uses its own copies of $form and $form_state for
+        // late execution of submit handers and post-batch redirection.
+        $batch['form'] = $form;
+        $batch['form_state'] = $form_state;
+        $batch['progressive'] = !$form['#programmed'];
+        batch_process();
+        // Execution continues only for programmatic forms.
+        // For 'regular' forms, we get redirected to the batch processing
+        // page. Form redirection will be handled in _batch_finished(),
+        // after the batch is processed.
+      }
+
+      // If no submit handlers have populated the $form_state['storage']
+      // bundle, and the $form_state['rebuild'] flag has not been set,
+      // we're finished and should redirect to a new destination page
+      // if one has been set (and a fresh, unpopulated copy of the form
+      // if one hasn't). If the form was called by drupal_execute(),
+      // however, we'll skip this and let the calling function examine
+      // the resulting $form_state bundle itself.
+      if (!$form['#programmed'] && empty($form_state['rebuild']) && empty($form_state['storage'])) {
+        drupal_redirect_form($form, $form_state['redirect']);
+      }
+    }
+  }
+}
+
+/**
+ * Custom implementation of drupal_validate_form()
+ *  
+ * Removed static variable that prevented same form_id to be 
+ * validated more then once during a single page request 
+ */
+function _patterns_validate_form($form_id, $form, &$form_state) {
+  // If the session token was set by drupal_prepare_form(), ensure that it
+  // matches the current user's session.
+  if (isset($form['#token'])) {
+    if (!drupal_valid_token($form_state['values']['form_token'], $form['#token'])) {
+      // Setting this error will cause the form to fail validation.
+      form_set_error('form_token', t('Validation error, please try again. If this error persists, please contact the site administrator.'));
+    }
+  }
+
+  _form_validate($form, $form_state, $form_id);
+}
+
+/**
+ * Custom implementation of Drupal's _taxonomy_term_select()
+ *
+ * Used to override static caching in taxonmy_get_tree()
+ * which is preventing terms added during patterns execution 
+ * to be included in parents and relations dropdowns and 
+ * causes validation errors.
+ * Hopefully, we can find better solution for this.   
+ */
+function _patterns_taxonomy_term_select($title, $name, $value, $vocabulary_id, $description, $multiple, $blank, $exclude = array()) {
+  $tree = _patterns_taxonomy_get_tree($vocabulary_id);
+
+  $options = array();
+
+  if ($blank) {
+    $options[''] = $blank;
+  }
+  if ($tree) {
+    foreach ($tree as $term) {
+      if (!in_array($term->tid, $exclude)) {
+        $choice = new stdClass();
+        $choice->option = array($term->tid => str_repeat('-', $term->depth) . $term->name);
+        $options[] = $choice;
+      }
+    }
+  }
+
+  return array('#type' => 'select',
+    '#title' => $title,
+    '#default_value' => $value,
+    '#options' => $options,
+    '#description' => $description,
+    '#multiple' => $multiple,
+    '#size' => $multiple ? min(9, count($options)) : 0,
+    '#weight' => -15,
+    '#theme' => 'taxonomy_term_select',
+  );
+}
+
+/**
+ * Custom implementation of Drupal's taxonomy_get_tree()
+ *
+ * Removed static caching.
+ * New terms may be created during patterns execution and
+ * static caching prevents them from being returned in
+ * all subsequent calls to taxonomy_get_tree() during 
+ * the current pattern execution (within current page request)
+ */
+function _patterns_taxonomy_get_tree($vid, $parent = 0, $depth = -1, $max_depth = NULL) {
+
+  $depth++;
+
+  $children[$vid] = array();
+
+  $result = db_query(db_rewrite_sql('SELECT t.tid, t.*, parent FROM {term_data} t INNER JOIN {term_hierarchy} h ON t.tid = h.tid WHERE t.vid = %d ORDER BY weight, name', 't', 'tid'), $vid);
+  while ($term = db_fetch_object($result)) {
+    $children[$vid][$term->parent][] = $term->tid;
+    $parents[$vid][$term->tid][] = $term->parent;
+    $terms[$vid][$term->tid] = $term;
+  }
+
+  $max_depth = (is_null($max_depth)) ? count($children[$vid]) : $max_depth;
+  $tree = array();
+  if (!empty($children[$vid][$parent])) {
+    foreach ($children[$vid][$parent] as $child) {
+      if ($max_depth > $depth) {
+        $term = drupal_clone($terms[$vid][$child]);
+        $term->depth = $depth;
+        // The "parent" attribute is not useful, as it would show one parent only.
+        unset($term->parent);
+        $term->parents = $parents[$vid][$child];
+        $tree[] = $term;
+
+        if (!empty($children[$vid][$child])) {
+          $tree = array_merge($tree, _patterns_taxonomy_get_tree($vid, $child, $depth, $max_depth));
+        }
+      }
+    }
+  }
+
+  return $tree;
+}
+
+/**
+ * Custom implementation of Drupal's menu_parent_options()
+ * 
+ * Used to override static caching in menu_tree_all_data()
+ * which is preventing menu items created during patterns execution 
+ * to be included in 'parent item' dropdown and causes validation errors.
+ * Hopefully, we can find better solution for this.  
+ */
+function _patterns_menu_parent_options($menus, $item) {
+  // The menu_links table can be practically any size and we need a way to
+  // allow contrib modules to provide more scalable pattern choosers.
+  // hook_form_alter is too late in itself because all the possible parents are
+  // retrieved here, unless menu_override_parent_selector is set to TRUE.
+  if (variable_get('menu_override_parent_selector', FALSE)) {
+    return array();
+  }
+  // If the item has children, there is an added limit to the depth of valid parents.
+  if (isset($item['parent_depth_limit'])) {
+    $limit = $item['parent_depth_limit'];
+  }
+  else {
+    $limit = _menu_parent_depth_limit($item);
+  }
+
+  foreach ($menus as $menu_name => $title) {
+    $tree = _patterns_menu_tree_all_data($menu_name, NULL);
+    $options[$menu_name .':0'] = '<'. $title .'>';
+    _menu_parents_recurse($tree, $menu_name, '--', $options, $item['mlid'], $limit);
+  }
+  return $options;
+}
+
+/**
+ * Custom implementation of Drupal's menu_tree_all_data()
+ *
+ * Removed static caching.
+ * New menu items may be created during pattern execution and
+ * static caching prevents them from being returned in
+ * all subsequent calls to menu_tree_all_data() during 
+ * the current pattern execution (within current page request) 
+ */
+function _patterns_menu_tree_all_data($menu_name = 'navigation', $item = NULL) {
+  $tree = array();
+
+  // Use $mlid as a flag for whether the data being loaded is for the whole tree.
+  $mlid = isset($item['mlid']) ? $item['mlid'] : 0;
+  // Generate a cache ID (cid) specific for this $menu_name and $item.
+  $cid = 'links:'. $menu_name .':all-cid:'. $mlid;
+
+  // If the static variable doesn't have the data, check {cache_menu}.
+  $cache = cache_get($cid, 'cache_menu');
+  if ($cache && isset($cache->data)) {
+    // If the cache entry exists, it will just be the cid for the actual data.
+    // This avoids duplication of large amounts of data.
+    $cache = cache_get($cache->data, 'cache_menu');
+    if ($cache && isset($cache->data)) {
+      $data = $cache->data;
+    }
+  }
+  // If the tree data was not in the cache, $data will be NULL.
+  if (!isset($data)) {
+    // Build and run the query, and build the tree.
+    if ($mlid) {
+      // The tree is for a single item, so we need to match the values in its
+      // p columns and 0 (the top level) with the plid values of other links.
+      $args = array(0);
+      for ($i = 1; $i < MENU_MAX_DEPTH; $i++) {
+        $args[] = $item["p$i"];
+      }
+      $args = array_unique($args);
+      $placeholders = implode(', ', array_fill(0, count($args), '%d'));
+      $where = ' AND ml.plid IN ('. $placeholders .')';
+      $parents = $args;
+      $parents[] = $item['mlid'];
+    }
+    else {
+      // Get all links in this menu.
+      $where = '';
+      $args = array();
+      $parents = array();
+    }
+    array_unshift($args, $menu_name);
+    // Select the links from the table, and recursively build the tree.  We
+    // LEFT JOIN since there is no match in {menu_router} for an external
+    // link.
+    $data['tree'] = menu_tree_data(db_query("
+      SELECT m.load_functions, m.to_arg_functions, m.access_callback, m.access_arguments, m.page_callback, m.page_arguments, m.title, m.title_callback, m.title_arguments, m.type, m.description, ml.*
+      FROM {menu_links} ml LEFT JOIN {menu_router} m ON m.path = ml.router_path
+      WHERE ml.menu_name = '%s'". $where ."
+      ORDER BY p1 ASC, p2 ASC, p3 ASC, p4 ASC, p5 ASC, p6 ASC, p7 ASC, p8 ASC, p9 ASC", $args), $parents);
+    $data['node_links'] = array();
+    menu_tree_collect_node_links($data['tree'], $data['node_links']);
+    // Cache the data, if it is not already in the cache.
+    $tree_cid = _menu_tree_cid($menu_name, $data);
+    if (!cache_get($tree_cid, 'cache_menu')) {
+      cache_set($tree_cid, $data, 'cache_menu');
+    }
+    // Cache the cid of the (shared) data using the menu and item-specific cid.
+    cache_set($cid, $tree_cid, 'cache_menu');
+  }
+  // Check access for the current user to each item in the tree.
+  menu_tree_check_access($data['tree'], $data['node_links']);
+  $tree[$cid] = $data['tree'];
+
+  return $tree[$cid];
 }
