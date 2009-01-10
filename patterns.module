@@ -1408,6 +1408,15 @@ function patterns_form_alter(&$form, &$form_state, $form_id) {
       }
       $form['menu']['parent']['#options'] = _patterns_menu_parent_options(menu_get_menus(), $item); 
     }
+    
+    // Ensure that taxonomy dropdowns on node edit form display all the terms 
+    // including those created during current pattern execution.
+    if (isset($form['type']) && isset($form['#node']) && $form['type']['#value'] .'_node_form' == $form_id) {
+      foreach ($form['taxonomy'] as $vid => $v) {
+        if (!is_numeric($vid)) continue;
+        $form['taxonomy'][$vid] = _patterns_taxonomy_form($vid, $form['taxonomy'][$vid]['#default_value'], $form['taxonomy'][$vid]['#description']);
+      }
+    }
   }
   
 }
@@ -2150,6 +2159,25 @@ function _patterns_taxonomy_get_tree($vid, $parent = 0, $depth = -1, $max_depth 
   }
 
   return $tree;
+}
+
+/**
+ * Custom implementation of Drupal's taxonomy_form()
+ * 
+ * Used to override static caching for taxonomy terms on node edit form.
+ */
+function _patterns_taxonomy_form($vid, $value = 0, $help = NULL, $name = 'taxonomy') {
+  $vocabulary = taxonomy_vocabulary_load($vid);
+  $help = ($help) ? $help : $vocabulary->help;
+
+  if (!$vocabulary->multiple) {
+    $blank = ($vocabulary->required) ? t('- Please choose -') : t('- None selected -');
+  }
+  else {
+    $blank = ($vocabulary->required) ? 0 : t('- None -');
+  }
+
+  return _patterns_taxonomy_term_select(check_plain($vocabulary->name), $name, $value, $vid, $help, intval($vocabulary->multiple), $blank);
 }
 
 /**
