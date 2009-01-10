@@ -67,11 +67,6 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
         return t('"type" field is required.');
       }
 
-      $type = content_types($data['type']);
-      if ($type['type'] != $data['type'] && !$data['delete']) {
-        return t('Ivalid content type: %type', array('%type' => $data['type']));
-      }
-      
       if ($data['delete'] && empty($data['nid'])) {
         return t('"id" field is required.');
       }
@@ -224,7 +219,7 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
         }
       }
 
-      if ($data['update'] && $data['taxonomy_overwrite']) {
+      if (!$data['update'] || ($data['update'] && $data['taxonomy_overwrite'])) {
         if (empty($new_taxonomy)) {
           unset($data['taxonomy']);
         }
@@ -289,6 +284,11 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
     // Validate the values for an action before running the pattern
     case 'validate':
       // TODO: validate name field - should be valid/existing username
+      
+      $type = content_types($data['type']);
+      if ($type['type'] != $data['type'] && !$data['delete']) {
+        return t('Invalid content type: %type', array('%type' => $data['type']));
+      }
     break;
     
     // Build a patterns actions and parameters
