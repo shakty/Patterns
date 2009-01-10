@@ -395,6 +395,7 @@
       <name>Food</name>
       <nodes>
         <page />
+				<example />
       </nodes>
       <weight>-5</weight>
     </vocabulary>
@@ -436,7 +437,30 @@
       <parent>Vegetables</parent>      
     </term>    
     
+    <vocabulary>
+      <name>Languages</name>
+      <nodes>
+        <page />
+        <example />
+      </nodes>
+      <weight>-2</weight>
+			<multiple>1</multiple>
+    </vocabulary>
+    
+		<term vocabulary="Languages">English</term>
+		<term vocabulary="Languages">Spanish</term>
+		<term vocabulary="Languages">Italian</term>
+		<term vocabulary="Languages">German</term>
+    <term vocabulary="Languages">French</term>				
 
+    <vocabulary>
+      <name>Keywords</name>
+      <nodes>
+        <page />
+      </nodes>
+      <weight>2</weight>
+			<tags>1</tags>
+    </vocabulary>
 
     <!-- 
       Set default theme. All other themes will be disabled at the same time.
@@ -588,6 +612,72 @@
         <value>Toyota</value>
       </options>        
     </profile>    
+
+
+
+    <node>
+      <type>page</type>
+      <title>Page 1</title>
+      <teaser_js>Summary text that will not be displayed on the full node page.</teaser_js>
+      <body>
+<![CDATA[
+By wrapping our text with CDATA, we are allowed to use <strong>HTML</strong> mark up.
+
+Enter text in the exactly same way as you would do it in the regular node edit form.
+
+<ul>
+  <li>item 1</li>
+	<li>item 2</li>
+	<li>item 3</li>
+</ul>	 
+]]>
+      </body>
+      <format>2</format>
+      <teaser_include>0</teaser_include>
+			<promote>1</promote>
+      <taxonomy vocabulary="Languages">
+        <term>German</term>
+        <term>Spanish</term>     
+      </taxonomy>
+      <taxonomy vocabulary="Food">Orange</taxonomy>
+      <taxonomy vocabulary="Keywords">keyword1,keyword2,keyword3</taxonomy>
+      <!-- 
+			 By default, during the node update/edit, terms defined in the 
+			 pattern will be added to/merged with the already existing terms 
+			 for this node.
+			 If you are editing existing node and want to overwrite all the 
+			 previously set terms, you can set taxonomy_overwrite to 1.
+			 This, of course, doesn't have any effect during node creation.
+			-->
+      <taxonomy_overwrite>1</taxonomy_overwrite>
+    </node>
+
+    <node>
+      <type>example</type>
+      <title>Example 1</title>
+      <author>perry</author>
+      <status>1</status>
+      <promote>0</promote>
+      <sticky>1</sticky>
+      <comment>0</comment>
+      <taxonomy vocabulary="Languages">
+        <term>English</term>
+        <term>Italian</term>           
+      </taxonomy>
+      <taxonomy vocabulary="Food">Milk</taxonomy>
+      <fields>
+        <bio>
+          <value>Short biography.</value>
+          <format>1</format>
+        </bio>
+        <colors>blue</colors>
+        <country>Italy</country>
+        <arrival>
+          <value>2008-09-09 08:08:00</value>
+          <timezone>Europe/Rome</timezone>
+        </arrival>
+      </fields>
+    </node>
 
   </actions>  
 </pattern>
