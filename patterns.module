@@ -281,7 +281,7 @@ function patterns_import_validate($form, &$form_state) {
   }
 
   // @TODO validate XML and don't allow import if validation fails
-  $parse = xml_parser_create();
+  $parse = drupal_xml_parser_create($form_state['values']['xmlsource']);
   $success = xml_parse_into_struct($parse, $form_state['values']['xmlsource'], $vals, $index);
 
   // Check that the xml was properly parsed and also that the
@@ -772,7 +772,7 @@ function patterns_load_xml($path) {
  * Create a pattern from an XML data source
  */
 function patterns_from_source($xml) {
-  $parse = xml_parser_create();
+  $parse = drupal_xml_parser_create($xml);
 
   if (!xml_parse_into_struct($parse, $xml, $vals, $index)) {
     return false;
