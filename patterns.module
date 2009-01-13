@@ -1847,7 +1847,8 @@ function _patterns_array_context(&$obj, &$current = null) {
       foreach($parent as $index => &$child) {
         // TODO possible optimizations can be done here (with the parent trace)
         $ref[$i] = array('trace' => _patterns_array_trace($ref), 'key' => $index, 'item' => &$child, 'parent' => &$ref);
-        array_unshift($refs, &$ref[$i++]);
+        array_unshift($refs, '');
+        $refs[0] = &$ref[$i++];
       }
     }
   }
