@@ -26,13 +26,20 @@ function block_patterns($op, $id = null, &$data = null) {
         
         unset($data['id']);
       }
+      elseif (!empty($data['info'])) {
+        $delta = db_result(db_query('SELECT delta FROM {blocks} bl INNER JOIN {boxes} bo ON bl.delta = bo.bid AND bl.module = "block" WHERE info = "%s"', $data['info']));
+        if (!empty($delta)) {
+          $data['delta'] = $delta;
+          $data['module'] = 'block';
+        }
+      }
       
       if ($data['description']) {
         $data['info'] = $data['description'];
         unset($data['description']);
       }
       
-      if ($data['delete'] && $data['module'] == 'block') {
+      if ($data['delete'] && empty($data['info']) && $data['module'] == 'block') {
         $data['info'] = db_result(db_query('SELECT info FROM {boxes} WHERE bid = "%d"', $data['delta']));
       }
       
