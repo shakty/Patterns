@@ -1890,7 +1890,6 @@ function _patterns_array_trace($obj) {
 
 /**
  * Check if all the module dependencies are available
- * // @TODO check also dependencies of required modules
  *
  * @param $pattern
  *   pattern object
@@ -1902,16 +1901,22 @@ function _patterns_array_trace($obj) {
 function patterns_check_dependencies($pattern) {
   $modules = patterns_modules($pattern);
   $modules_info = module_rebuild_cache();
-  $modules_list = module_list();
 
   $result = array();
 
   if (empty($modules)) return array();
 
   foreach($modules as $module) {
-    $delete = is_array($module) ? $module['delete'] : false;
     $module = is_array($module) ? $module['value'] : $module;
-    if (!array_key_exists($module, $modules_info)) {
+    if (array_key_exists($module, $modules_info)) {
+      // check also for module's dependencies
+      foreach ($modules_info[$module]->info['dependencies'] as $dependency) {
+        if (!array_key_exists($dependency, $modules_info)) {
+          $result[] = $dependency;
+        }
+      }
+    }
+    else {
       $result[] = $module;
     }
   }
