@@ -26,6 +26,7 @@ function block_patterns($op, $id = null, &$data = null) {
         
         unset($data['id']);
       }
+      // Block description for custom blocks is always unique so we can try to get delta by looking up info field
       elseif (!empty($data['info'])) {
         $delta = db_result(db_query('SELECT delta FROM {blocks} bl INNER JOIN {boxes} bo ON bl.delta = bo.bid AND bl.module = "block" WHERE info = "%s"', $data['info']));
         if (!empty($delta)) {
