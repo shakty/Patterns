@@ -59,9 +59,6 @@ function block_patterns($op, $id = null, &$data = null) {
         $pages = implode("\r\n", $data['pages']);
         $data['pages'] = str_replace('[front]', '<front>', $pages);
       }
-      else {
-        $data['pages'] = '';
-      }
       
       if (!($data['module'] && $data['delta']) && $data['info']) {
         $data['module'] = 'block';
