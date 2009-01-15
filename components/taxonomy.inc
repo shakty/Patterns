@@ -207,7 +207,7 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
         }      
         // we can't procede without valid vocabulary ID
         if (empty($data['vid'])) {
-          return t("This action requires vocabulary to be defined. Make sure that vocabulary %vocab does exist or select another one.", array('%vocab' => $data['vocabulary']));
+          return t("Vocabulary %vocab doesn't exist.", array('%vocab' => $data['vocabulary']));
         }
       }
     break;

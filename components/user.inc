@@ -142,13 +142,13 @@ function user_patterns($op, $id = null, &$data = null) {
         }
         
         if (!empty($data['roles']) && !is_array($data['roles'])) {
-          return t('Invalid format of <roles> tag.');
+          return t('Invalid format of "roles" tag.');
         }
         
         if (!empty($data['timezone'])) {
           $zones = _system_zonelist();
           if (!array_key_exists($data['timezone'], $zones)) {
-            return t('Invalid timezone defined: %zone. Use the following format: +0100 or -0930', array('%zone' => $data['timezone_original']));
+            return t('Invalid timezone: %zone. Use the following format: +0100 or -0930', array('%zone' => $data['timezone_original']));
           }
         }
         unset($data['timezone_original']);
@@ -158,12 +158,12 @@ function user_patterns($op, $id = null, &$data = null) {
           return t('The authenticated or anonymous roles cannot be updated or deleted.');
         }
         if (!empty($data['id']) && !db_result(db_query("SELECT COUNT(*) FROM {role} WHERE rid = %d", $data['id']))) {
-          return t('Invalid role id: %rid', array('%rid' => $data['id']));
+          return t('Invalid role id: %rid.', array('%rid' => $data['id']));
         }
       }
       else if ($id == 'permissions') {
         if (!$data['rid']) {
-          return t('You must specify a role to apply permissions to');
+          return t('You must specify a role to apply permissions to.');
         }
       }
     break;
@@ -303,7 +303,7 @@ function user_patterns($op, $id = null, &$data = null) {
         }
         
         if (!db_result(db_query("SELECT COUNT(*) FROM {role} WHERE rid = %d", $rid))) {
-          return t('Invalid role %role to set permissions for', array('%role' => $data['role'] ? $data['role'] : $data['rid']));
+          return t('Invalid role %role to set permissions for.', array('%role' => $data['role'] ? $data['role'] : $data['rid']));
         }
       }
     break;

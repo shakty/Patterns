@@ -54,10 +54,10 @@ function profile_patterns($op, $id = null, &$data = null) {
     // Pre validate actions
     case 'pre-validate':
       if (!$data['name']) {
-        return t('<profile> actions require a <name> for the profile field.');
+        return t('"name" is required.');
       }
       if ($data['type'] == 'selection' && empty($data['options'])) {
-        return t('<options> tag is required for "selection" type of profile field.');
+        return t('"options" tag is required for "selection" type of profile field.');
       }
     break;
     

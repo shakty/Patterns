@@ -46,7 +46,7 @@ function patterns_patterns($op, $id = null, &$data = null) {
     // Validate the values for an action before running the pattern
     case 'validate':
       if (!patterns_get_pattern($data['value'])) {
-        return t("Pattern %pattern doesn't exist or is not valid.", array('%pattern' => $data['value']));
+        return t("Pattern %pattern doesn't exist or it's not valid.", array('%pattern' => $data['value']));
       }       
     break;
     

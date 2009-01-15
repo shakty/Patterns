@@ -165,7 +165,7 @@ function system_patterns($op, $id = null, &$data = null) {
             foreach((array)$modules_info[$module]->info['dependents'] as $dependent) {
               if (array_key_exists($dependent, $modules)) {
                 $remove[] = $i;
-                drupal_set_message(t('Warning: Could not disable %module because other modules depend on it.', array('%module' => $module)));
+                drupal_set_message(t('Warning: Could not disable %module because other modules depend on it.', array('%module' => $module)), "warning");
                 break;
               }
             }
@@ -203,7 +203,7 @@ function system_patterns($op, $id = null, &$data = null) {
       }
       else if ($id == 'form') {
       	if (!array_key_exists('form_id', $data)) {
-      		return t('form tag must specify a form_id.');
+      		return t('"form_id" is missing.');
       	}
       	if (!function_exists($data['form_id'])) {
           return t("Couldn't load the form %form. Check if all required modules are enabled and try to define 'include_file' or 'module' tag for this action.", array('%form' => $data['form_id']));

@@ -167,37 +167,37 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
         $name = $data['name'];
         
         if (!$type) {
-          return t('Missing tag &lt;type&gt; inside of &lt;content&gt;');
+          return t('&lt;type&gt; tag is missing.');
         }
       }
       else if ($id == 'field') {
         if (empty($data['type_name'])) {
-          return t('Missing tag &lt;type&gt; inside of &lt;field&gt;');
+          return t('&lt;type&gt; tag is missing.');
         }
         if (empty($data['field_name'])) {
-          return t('Missing tag &lt;name&gt; inside of &lt;field&gt;');
+          return t('&lt;name&gt; tag is missing.');
         }        
       }
       else if ($id == 'group') {
         if (empty($data['type_name'])) {
-          return t('Missing tag &lt;type&gt; inside of &lt;group&gt;');
+          return t('&lt;type&gt; tag is missing.');
         }
         else if (preg_match('/[^a-z0-9_]/', $data['type_name'])) {
-          return t('Invalid tag &lt;type&gt; inside of &lt;group&gt;');
+          return t('&lt;type&gt; tag is invalid.');
         }
         
         if (empty($data['group_name'])) {
-          return t('Missing tag &lt;name&gt; inside of &lt;group&gt;');
+          return t('&lt;name&gt; tag is missing.');
         }
       }
       else if ($id = 'display') {
         static $type;
         
         if (empty($type)) {
-          return t('Missing tag &lt;type&gt; inside of &lt;display&gt;');
+          return t('&lt;type&gt; tag is missing.');
         }
         if (empty($data['field'])) {
-          return t('Missing tag &lt;field&gt; inside of &lt;display&gt;');
+          return t('&lt;field&gt; tag is missing.');
         }
 
         if (empty($data[$data['field']])) {

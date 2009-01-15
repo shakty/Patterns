@@ -177,7 +177,7 @@ function menu_patterns($op, $id = null, &$data = null) {
           if (!empty($data['parent'])) {
             list($menu_name, $mlid) = explode(':', $data['parent']);
             if ($mlid != 0 && !db_result(db_query("SELECT count(*) FROM {menu_links} WHERE menu_name = '%s' AND mlid = %d", $menu_name, $mlid))) {
-              return t('parent is not valid.');
+              return t('"parent" is not valid.');
             }
           }
           else if (empty($data['mlid'])) {
