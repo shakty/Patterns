@@ -66,13 +66,15 @@ function patterns_menu() {
     'type' => MENU_CALLBACK
   );
 
-  //     $items[] = array('path' => 'admin/build/patterns/settings',
-  //       'title' => t('Settings'),
-  //       'callback' => 'drupal_get_form',
-  //       'callback arguments' => array('patterns_settings'),
-  //       'type' => MENU_LOCAL_TASK,
-  //       'weight' => 10
-  //     );
+  $items['admin/build/patterns/settings'] = array(
+    'title' => 'Settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('patterns_settings'),
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10
+  );
+
   //     $items[] = array('path' => 'admin/build/patterns/configure',
   //       'title' => t('Configure Pattern'),
   //       'callback' => 'drupal_get_form',
@@ -150,9 +152,15 @@ function patterns_menu() {
 /**
  * Display the pattern settings form
  */
-// function patterns_settings(&$form_state) {
-//   drupal_set_message('This feature not implemented yet.');
-// }
+function patterns_settings(&$form_state) {
+  $form['patterns_form_helper'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Enable Patterns Form Helper',
+    '#description' => 'When enabled, patterns form helper will dump $form_id and $form_state variables at the bottom of each page. Dump will always contain values from the latest form submission. This may be very helpful while writing your own patterns.',
+    '#default_value' => variable_get('patterns_form_helper', FALSE),
+  );
+  return system_settings_form($form); 
+}
 
 /**
  * Display the import pattern form
