@@ -17,11 +17,11 @@ function patterns_schema() {
       'name' => array('type' => 'varchar', 'length' => 55, 'default' => ''),
       'status' => array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
       'file' => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''),
-      'updated' => array('type' => 'varchar', 'length' => 10, 'not null' => TRUE, 'default' => 0),
-      'enabled' => array('type' => 'varchar', 'length' => 10, 'not null' => TRUE, 'default' => 0),
+      'updated' => array('type' => 'varchar', 'length' => 10, 'not null' => TRUE, 'default' => '0'),
+      'enabled' => array('type' => 'varchar', 'length' => 10, 'not null' => TRUE, 'default' => '0'),
       'title' => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''),
-      'description' => array('type' => 'text', 'not null' => TRUE, 'default' => ''),
-      'pattern' => array('type' => 'text', 'not null' => TRUE, 'default' => '')
+      'description' => array('type' => 'text', 'not null' => TRUE),
+      'pattern' => array('type' => 'text', 'not null' => TRUE)
     ),
     'primary key' => array('pid'),
     'unique keys' => array('name' => array('name'))
