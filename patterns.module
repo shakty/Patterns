@@ -900,7 +900,7 @@ function patterns_enable_pattern_submit($form, &$form_state) {
     // If last error is equal to the dummy one set before execution,
     // we can assume that pattern executed successfully
     if ($e['message'] == 'patterns_error') {
-      drupal_set_message(t('Pattern ran successfully.'));
+      drupal_set_message(t('Pattern "@pattern" ran successfully.', array('@pattern' => $pattern->title)));
     }
   }
   restore_error_handler();
