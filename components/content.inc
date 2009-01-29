@@ -518,7 +518,9 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
       
       // make sure fieldgroup info is up to date
       cache_clear_all('fieldgroup_data', content_cache_tablename());
-      fieldgroup_groups('', FALSE, TRUE);
+      if (module_exists('fieldgroup')) {
+        fieldgroup_groups('', FALSE, TRUE);  
+      }
     break;
   }
 }

@@ -118,8 +118,10 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
       drupal_prepare_form($form_id, $form, $form_state);
       
       $content_type = content_types($type);
-      $fields_info = $content_type['fields']; 
-      $groups = fieldgroup_groups($type, FALSE, TRUE);
+      $fields_info = $content_type['fields'];
+      if (module_exists('fieldgroup')) {
+        $groups = fieldgroup_groups($type, FALSE, TRUE);
+      }
 
       // TODO: make this work for PHP4
       $fields = array();
