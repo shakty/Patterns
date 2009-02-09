@@ -894,6 +894,34 @@ function patterns_enable_pattern_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/build/patterns';
 }
 
+/**
+ * Execute default configuration for module during the module installation
+ * 
+ * This function should be called by other modules from 
+ * within their hook_install() implementation.
+ * Module should also provide modulename.config file containing PHP array
+ * with the actions that need to be executed
+ *
+ * @param $module
+ *   name of the module calling the function
+ */
+function patterns_execute_config($module) {
+  $path = drupal_get_path('module', $module) .'/'. $module .'.config';
+
+  if (file_exists($path)) {
+    include_once($path);
+
+    if (empty($actions)) return;     
+
+    $pattern = new stdClass();
+    $pattern->title = t('Default configuration for @module module', array('@module' => $module));
+    $pattern->status = false;
+    $actions['tag'] = 'actions';
+    $pattern->pattern = array($actions);
+    patterns_execute_pattern($pattern);
+  }
+}
+
 function patterns_execute_pattern($pattern, $reverse = false, $interact = false, $jump = null) {
   // set custom error handler
   set_error_handler('patterns_error_handler');
