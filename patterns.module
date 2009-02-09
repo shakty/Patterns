@@ -889,13 +889,19 @@ function patterns_enable_pattern_submit($form, &$form_state) {
   patterns_load_components();
   $pattern = patterns_get_pattern($pid);
 
+  patterns_execute_pattern($pattern, false, true);
+  
+  $form_state['redirect'] = 'admin/build/patterns';
+}
+
+function patterns_execute_pattern($pattern, $reverse = false, $interact = false, $jump = null) {
   // set custom error handler
   set_error_handler('patterns_error_handler');
   // trigger dummy error
   // this will be used as a refrence to determine if any real error
   // occured during the pattern execution
   @trigger_error('patterns_error');
-  if ($pattern && @patterns_execute_pattern($pattern, false, true)) {
+  if ($pattern && @_patterns_execute_pattern($pattern, $reverse, $interact, $jump)) {
     $e = error_get_last();
     // If last error is equal to the dummy one set before execution,
     // we can assume that pattern executed successfully
@@ -903,12 +909,10 @@ function patterns_enable_pattern_submit($form, &$form_state) {
       drupal_set_message(t('Pattern "@pattern" ran successfully.', array('@pattern' => $pattern->title)));
     }
   }
-  restore_error_handler();
-  
-  $form_state['redirect'] = 'admin/build/patterns';
+  restore_error_handler();  
 }
 
-function patterns_execute_pattern($pattern, $reverse = false, $interact = false, $jump = null) {
+function _patterns_execute_pattern($pattern, $reverse = false, $interact = false, $jump = null) {
   patterns_load_components();
   set_time_limit(0);
 
