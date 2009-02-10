@@ -898,14 +898,19 @@ function patterns_enable_pattern_submit($form, &$form_state) {
  * Execute default configuration for module during the module installation
  * 
  * This function should be called by other modules from 
- * within their hook_install() implementation.
+ * within their hook_enable() implementation.
  * Module should also provide modulename.config file containing PHP array
- * with the actions that need to be executed
+ * with the actions that need to be executed.
  *
  * @param $module
  *   name of the module calling the function
  */
 function patterns_execute_config($module) {
+
+  // since this function is called from hook_enable(), we need to ensure that
+  // it's executed only at module installation (first time module is enabled)
+  if (drupal_get_installed_schema_version($module) == SCHEMA_INSTALLED) return;
+  
   $path = drupal_get_path('module', $module) .'/'. $module .'.config';
 
   if (file_exists($path)) {
