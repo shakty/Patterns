@@ -33,6 +33,7 @@
     <module>views</module>
     <module>views_ui</module>
     <module>devel</module>
+		<module>admin_menu</module>
   </modules>
   
   <actions>
