@@ -300,5 +300,12 @@ function system_patterns($op, $id = null, &$data = null) {
     // Build a patterns actions and parameters
     case 'params':
     break;
+
+    // Any last cleanup items
+    case 'cleanup':
+      if ($id == 'system_modules') {
+        menu_rebuild();
+      }
+    break;
   }
 }
