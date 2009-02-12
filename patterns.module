@@ -243,7 +243,10 @@ function patterns_import_validate($form, &$form_state) {
 
   $path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
   if (!file_check_directory($path, true)) {
-    form_set_error('xmlfile', t('Destination folder doesn\'t exist.'));
+    $message = t("Destination folder doesn't exist: !path<br />", array('!path' => $path));
+    $link = l(t('status report'), 'admin/reports/status');
+    $message .= t('You might want to check the !link to ensure your files directory exists and is writable.', array('!link' => $link));
+    form_set_error('xmlfile', $message);
     return;
   }
   $validators = array('file_validate_extensions' => array('xml'));
