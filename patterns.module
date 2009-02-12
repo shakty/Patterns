@@ -1459,7 +1459,7 @@ function patterns_form_alter(&$form, &$form_state, $form_id) {
     
     // Ensure that taxonomy dropdowns on node edit form display all the terms 
     // including those created during current pattern execution.
-    if (isset($form['type']) && isset($form['#node']) && $form['type']['#value'] .'_node_form' == $form_id) {
+    if (!empty($form['taxonomy']) && isset($form['type']) && isset($form['#node']) && $form['type']['#value'] .'_node_form' == $form_id) {
       foreach ($form['taxonomy'] as $vid => $v) {
         if (!is_numeric($vid)) continue;
         $form['taxonomy'][$vid] = _patterns_taxonomy_form($vid, $form['taxonomy'][$vid]['#default_value'], $form['taxonomy'][$vid]['#description']);
