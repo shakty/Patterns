@@ -1001,7 +1001,7 @@ function _patterns_execute_pattern($pattern, $reverse = false, $interact = false
     // Make the modules look like a normal pattern so they can be executed
     // on their own.
     $obj = new stdClass();
-    $obj->title = t('Enable/disable %title pattern modules', array('%title' => $title));
+    $obj->title = t('Enable modules required by "@title" pattern.', array('@title' => $title));
     $obj->status = $status;
     $obj->pattern = array(array('tag' => 'actions', $modules));
     $modules = $obj;
