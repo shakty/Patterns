@@ -77,42 +77,10 @@ function user_patterns($op, $id = null, &$data = null) {
         }
       }
       else if ($id == 'permissions') {
-        // Get list of permissions to ensure only available permissions are saved
-        $permissions = array();
-        foreach (module_list(FALSE, FALSE, TRUE) as $module) {
-          if ($p = module_invoke($module, 'perm')) {
-            $permissions = array_merge($permissions, $p);
-          }
-        }
-        
         if ($data['role'] && !$data['rid']) {
           $data['rid'] = $data['role'];
         }
         unset($data['role']);
-
-        if ($data['rid']) {
-          if (is_string($data['value'])) {
-            $p = explode(',', $data['value']);
-            unset($data['value']);
-
-            foreach($p as $key => $value) {
-              $val = trim($value);
-              if (in_array($val, $permissions)) {
-                $perms[$val] = $data['delete'] ? '0' : $val;                   
-              }
-            }
-            $data[$data['rid']] = $perms;
-          }
-          else {
-            for($i=0;$item=$data[$i];$i++) {
-              if (in_array($item, $permissions)) {
-                $perms[$item] = ($data['delete'] ? 0 : $item); 
-              }      
-              unset($data[$i]);
-            }
-            $data[$data['rid']] = $perms;
-          }
-        }
       }
     break;
     
@@ -253,6 +221,38 @@ function user_patterns($op, $id = null, &$data = null) {
         unset($data['id']);
       }
       else if ($id == 'user_admin_perm') {
+        
+        // Get list of permissions to ensure only available permissions are saved
+        $permissions = array();         
+        foreach (module_list(FALSE, FALSE, TRUE) as $module) {
+          if ($p = module_invoke($module, 'perm')) {
+            $permissions = array_merge($permissions, $p);
+          }
+        }   
+
+        if (is_string($data['value'])) {
+          $p = explode(',', $data['value']);
+          unset($data['value']);
+
+          foreach($p as $key => $value) {
+            $val = trim($value);
+            if (in_array($val, $permissions)) {
+              $perms[$val] = $data['delete'] ? '0' : $val;                   
+            }
+          }
+          $data[$data['rid']] = $perms;
+        }
+        else {
+          for($i=0;$item=$data[$i];$i++) {
+            if (in_array($item, $permissions)) {
+              $perms[$item] = ($data['delete'] ? 0 : $item); 
+            }      
+            unset($data[$i]);
+          }
+          $data[$data['rid']] = $perms;
+        }
+
+
         module_load_include('inc', 'user', 'user.admin');
         if (is_numeric($data['rid'])) {
           $rid = $data['rid'];
@@ -275,7 +275,6 @@ function user_patterns($op, $id = null, &$data = null) {
             $data[$data['rid']] = array_merge($perms, $data[$data['rid']]); 
           }
         }
-        
       } 
       return $data;
     break;
