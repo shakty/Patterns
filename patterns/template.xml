@@ -500,7 +500,7 @@
     <block id="menu-devel">
       <theme>garland</theme>
       <status>1</status>
-      <weight>-10</weight>
+      <weight>-7</weight>
       <region>right</region>
       <title>Custom Title</title>
     </block>

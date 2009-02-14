@@ -123,6 +123,9 @@ function block_patterns($op, $id = null, &$data = null) {
         foreach($blocks as $i => $v) {
           if ($v['module'] == $block['module'] && $v['delta'] == $block['delta']) {
             $data[$block['module'] .'_'. $block['delta']] = $block;
+            $blocks[$i] = $block;
+            // store $blocks variable for later use in 'params' op
+            $data[$block['module'] .'_'. $block['delta']]['all_blocks'] = $blocks;
             break;
           }
         }   
@@ -142,7 +145,8 @@ function block_patterns($op, $id = null, &$data = null) {
       }
       else if ($id == 'block_admin_display_form') {
         $block = reset($data);
-        return array($data, $block['theme']);
+        $blocks = $block['all_blocks'];      
+        return array($blocks, $block['theme']);
       }
       else if ($id == 'block_box_delete') {
         return $data['delta'];
