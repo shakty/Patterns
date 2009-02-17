@@ -1572,7 +1572,8 @@ function patterns_form_helper($form, $form_state) {
 }
 
 function patterns_exit($destination = null) {
-  if (variable_get('patterns_form_helper', FALSE) && $_SESSION['patterns_form_helper'] && !$destination) {
+  $batch =& batch_get();
+  if (variable_get('patterns_form_helper', FALSE) && $_SESSION['patterns_form_helper'] && !$destination && empty($batch)) {
     if (module_exists('devel')) {
       //dpm($_SESSION['patterns_form_helper']);
       kprint_r($_SESSION['patterns_form_helper']);
