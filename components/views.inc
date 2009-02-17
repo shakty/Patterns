@@ -86,11 +86,6 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
     
     // Prepare data for views-centric structure
     case 'prepare':
-      // Make sure necessary files are loaded.
-      require_once(drupal_get_path('module', 'views') .'/includes/admin.inc');
-      
-      // Get a list of forms so we can have needed info for mapping and validating
-      $forms = views_ui_ajax_forms();
     break;
     
     // Validate and cleanup the values for an action before running the pattern
@@ -128,6 +123,11 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
     
     // Return the form id or determine if the action does not need processing
     case 'form_id':
+      // Make sure necessary files are loaded.
+      require_once(drupal_get_path('module', 'views') .'/includes/admin.inc');
+
+      // Get a list of forms so we can have needed info for mapping and validating
+      $forms = views_ui_ajax_forms();
       $form_ids = array();
 
       if ($data['action'] == 'delete') {

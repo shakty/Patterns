@@ -892,7 +892,7 @@ function patterns_enable_pattern_submit($form, &$form_state) {
   patterns_load_components();
   $pattern = patterns_get_pattern($pid);
 
-  patterns_execute_pattern($pattern, false, true);
+  patterns_execute_pattern($pattern, false, $form_state);
   
   $form_state['redirect'] = 'admin/build/patterns';
 }
@@ -930,14 +930,14 @@ function patterns_execute_config($module) {
   }
 }
 
-function patterns_execute_pattern($pattern, $reverse = false, $interact = false, $jump = null) {
+function patterns_execute_pattern($pattern, $reverse = false, $form_state = null) {
   // set custom error handler
   set_error_handler('patterns_error_handler');
   // trigger dummy error
   // this will be used as a refrence to determine if any real error
   // occured during the pattern execution
   @trigger_error('patterns_error');
-  if ($pattern && @_patterns_execute_pattern($pattern, $reverse, $interact, $jump)) {
+  if ($pattern && @_patterns_execute_pattern($pattern, $reverse, $form_state)) {
     $e = error_get_last();
     // If last error is equal to the dummy one set before execution,
     // we can assume that pattern executed successfully
@@ -948,7 +948,7 @@ function patterns_execute_pattern($pattern, $reverse = false, $interact = false,
   restore_error_handler();  
 }
 
-function _patterns_execute_pattern($pattern, $reverse = false, $interact = false, $jump = null) {
+function _patterns_execute_pattern($pattern, $reverse = false, $form_state = null) {
   patterns_load_components();
   set_time_limit(0);
 
@@ -997,9 +997,10 @@ function _patterns_execute_pattern($pattern, $reverse = false, $interact = false
     return FALSE;
   }
 
-  if ($modules && (!$interact || ($interact && !$jump))) {
-    // Make the modules look like a normal pattern so they can be executed
-    // on their own.
+  // Modules need to be enabled first and seperate so that the various pre-execute hooks
+  // can be called properly
+  if ($modules && (!$form_state || ($form_state && !$form_state->patterns_action))) {
+    // Make the modules look like a normal pattern so they can be executed on their own.
     $obj = new stdClass();
     $obj->title = t('Enable modules required by "@title" pattern.', array('@title' => $title));
     $obj->status = $status;
@@ -1009,7 +1010,7 @@ function _patterns_execute_pattern($pattern, $reverse = false, $interact = false
     // Modules need to be enabled first so the rest of the pattern
     // can proceed smoothly.
     if (!$reverse) {
-      $error = patterns_execute_pattern($modules, $reverse, $interact);
+      $error = patterns_execute_pattern($modules, $reverse);
       module_rebuild_cache();
     }
   }
@@ -1017,10 +1018,11 @@ function _patterns_execute_pattern($pattern, $reverse = false, $interact = false
   // Keep a list of what modules handle what tags
   $tag_modules = patterns_invoke($empty, 'tag modules');
 
-  // If an interactive pattern needs resuming, remove the
+  // If an interactive (form batch mode) pattern needs resuming, remove the
   // already executed actions
-  if ($interact && $jump > 0) {
-    array_splice($actions, 0, $jump);
+  if ($form_state->patterns_action) {
+    array_splice($actions, 0, $form_state->patterns_action);
+    $identifiers = $form_state->patterns_identifiers;
   }
 
   // TODO Finish basic setup and execution of the 'config' operation
@@ -1071,120 +1073,31 @@ function _patterns_execute_pattern($pattern, $reverse = false, $interact = false
     drupal_set_message($message, 'error');
     return FALSE;
   }
-
-  // Build and execute a list of actions
-  foreach($actions as $key => &$data) {
+  
+  // In interactive mode, use batch processing and direct processing to the batch api
+  if ($form_state) {
+    $batch = array(
+      'title' => t('Processing pattern %pattern', array('%pattern' => $title)),
+      'init_message' => t('Running action @current out of @total', array('@current' => 1, '@total' => count($actions))),
+      'progress_message' => t('Running action @current out of @total.')
+    );
     
-    // Prepare actions for processing, ensure smooth pattern executions, and return form ids for execution
-    $return = patterns_invoke($data, 'form_id');
-
-    // If prepare removed the data, dont continue with this action
-    if (!$data || !$return) {
-      continue;
+    for($i=0;$i<count($actions);$i++) {
+      $batch['operations'][] = array('patterns_batch_actions', array($actions[$i], $i));
     }
 
-    if (is_string($return)) {
-      $form_ids = array($return);
-    }
-    else if ($return) {
-      $form_ids = $return;
-    }
+    $_SESSION['patterns_batch_pid'] = $pid;
 
-    $action_descriptions = patterns_invoke($data, 'actions');
+    batch_set($batch);
+    return;
+  }
 
-    // Build the action
-    foreach($form_ids as $form_id) {
-      $clone = $data;
-
-      // If tokens are enabled, apply tokens to the action values
-      // before processing
-      if (module_exists('token')) {
-        _patterns_recurse_tokens($clone, $identifiers);
-        //array_walk($clone, '_patterns_replace_tokens', $identifiers);
-      }
-
-      $error = patterns_invoke($clone, 'validate', $form_id);
-      if (patterns_error_get_last('validate', $key+1, $action_descriptions[$form_id])) return FALSE;
-
-      if ($error) {
-        drupal_set_message(t('An error occured while validating action #%num (%action)', array('%num' => $key+1, '%action' => $action_descriptions[$form_id])), 'error');
-        if (is_array($error)) {
-          foreach($error as $msg) {
-            drupal_set_message($msg, 'error');
-          }
-
-          $errors[$clone['tag']] = t('Broken Pattern: %msg', array('%msg' => implode('<br>', $error)));
-        }
-        else {
-          drupal_set_message($error, 'error');
-          $errors[$clone['tag']] = t('Broken Pattern: %msg', array('%msg' => $error));
-        }
-        return FALSE;
-      }
-
-      // Get the form data for the action. This can either just be the form values,
-      // or it can be the full form_state object
-      $form_obj = patterns_invoke($clone, 'build', $form_id);
-
-      if (patterns_error_get_last('build', $key+1, $action_descriptions[$form_id])) return FALSE;
-      
-      // Dont execute the action if a string was returned, indicating the pattern component
-      // most likely handled the action on its own and this is the message to display.
-      if (is_string($form_obj)) {
-        drupal_set_message($form_obj);
-      }
-      else {
-        // We check for the 'storage' and 'submitted' values in the object to see
-        // if it is a form_state instead of form_values. There could be a better way
-        // to do this.
-        if (array_key_exists('submitted', (array)$form_obj) && array_key_exists('storage', (array)$form_obj)) {
-          $form_state = $form_obj;
-        }
-        else {
-          $form_state = array(
-            'storage' => null,
-            'submitted' => false,
-            'values' => $form_obj
-          );
-        }
-
-        // Get any extra parameters required for the action
-        $params = patterns_invoke($clone, 'params', $form_id, $form_state);
-        if (patterns_error_get_last('params', $key+1, $action_descriptions[$form_id])) return FALSE;
-
-        // A single, simple value can be returned as a parameter, which is then
-        // put into an array here.
-        if (isset($params) && !is_array($params)) {
-          $params = array($params);
-        }
-
-        // Execute action
-        patterns_execute_action($form_id, $form_state, $params);
-        if (patterns_error_get_last('execute', $key+1, $action_descriptions[$form_id])) return FALSE;
-
-        if (form_get_errors()) {
-          drupal_set_message(t('An error occured while executing action #%num (%action)', array('%num' => $key+1, '%action' => $action_descriptions[$form_id])), 'error');
-          $error = true;
-          return FALSE;
-        }
-
-        // Let a component cleanup after each action
-        patterns_invoke($clone, 'cleanup', $form_id, $form_state);
-        if (patterns_error_get_last('cleanup', $key+1, $action_descriptions[$form_id])) return FALSE;
-      }
-
-      // Clear the cache in case it causes problems
-      cache_clear_all();
-    }
-    //    if ($error) {
-    //      break;
-    //    }
-
-    // Get any primary identifiers from the action for further actions to take advantage of
-    $id = null;
-    $id = patterns_invoke($clone, 'identifier', $form_id, $form_state);
-    if (isset($id)) {
-      $identifiers[$key+1] = $id;
+  // @todo We need a new method for non-batch processing that invovles fresh page
+  // instances per action such as a soap interface
+  foreach($actions as $key => &$data) {
+    // Setup and run this particular action
+    if (!patterns_implement_action($data, $identifiers, $key)) {
+      return false;
     }
   }
 
@@ -1192,7 +1105,7 @@ function _patterns_execute_pattern($pattern, $reverse = false, $interact = false
     if ($modules) {
       // Modules need to be disabled last so the rest of the pattern
       // can reverse itself properly
-      $error = patterns_execute_pattern($modules, $reverse, $interact);
+      $error = patterns_execute_pattern($modules, $reverse);
     }
 
     // Mark pattern as disabled
@@ -1210,6 +1123,175 @@ function _patterns_execute_pattern($pattern, $reverse = false, $interact = false
   }
 
   return TRUE;
+}
+
+/**
+ * Execute a batch action
+ */
+function patterns_batch_actions($action, $place, &$context) {
+  // set custom error handler
+  set_error_handler('patterns_error_handler');
+  // trigger dummy error
+  // this will be used as a refrence to determine if any real error
+  // occured during the pattern execution
+  @trigger_error('patterns_error');
+
+  patterns_load_components();
+
+  // Nothing to do if there is no action
+  if (empty($action)) {
+    $context['finished'] = 1;
+    return;
+  }
+
+  // Start a timer. Since we want each action to be its own http request, we need
+  // to ensure the batch api will decide to do it like that by making each action
+  // take at least a second to execute
+  timer_start('patterns_action');
+
+  $identifiers = &$context['sandbox']['identifiers'];
+
+  if (!patterns_implement_action($action, $identifiers, $place)) {
+    $context['message'] = t('There was an error processing action #%num', array('%num' => $place + 1));
+  }
+
+  if (timer_read('patterns_action') < 1000) {
+    @usleep(1000 - timer_read('patterns_action'));
+  }
+}
+
+/**
+ * Finish a batch operation
+ */
+function patterns_batch_finish($success, $results) {
+  db_query('UPDATE {patterns} SET status = 1, enabled = "%s" WHERE pid = %d', time(), $_SESSION['patterns_batch_pid']);
+}
+
+/**
+ * Setup and run an action
+ */
+function patterns_implement_action($action, &$identifiers, $place = 0) {
+  // Prepare actions for processing, ensure smooth pattern executions, and return form ids for execution
+  $return = patterns_invoke($action, 'form_id');
+
+  // If prepare removed the data, dont continue with this action
+  if (!$action || !$return) {
+    return true;
+  }
+
+  if (is_string($return)) {
+    $form_ids = array($return);
+  }
+  else if ($return) {
+    $form_ids = $return;
+  }
+
+  $action_descriptions = patterns_invoke($action, 'actions');
+
+  // Build the action
+  foreach($form_ids as $form_id) {
+    $clone = $action;
+  
+    // If tokens are enabled, apply tokens to the action values
+    // before processing
+    if (module_exists('token')) {
+      _patterns_recurse_tokens($clone, $identifiers);
+      //array_walk($clone, '_patterns_replace_tokens', $identifiers);
+    }
+  
+    $error = patterns_invoke($clone, 'validate', $form_id);
+    if (patterns_error_get_last('validate', $place+1, $action_descriptions[$form_id])) {
+      return false;
+    }
+  
+    if ($error) {
+      drupal_set_message(t('An error occured while validating action #%num (%action)', array('%num' => $place+1, '%action' => $action_descriptions[$form_id])), 'error');
+      if (is_array($error)) {
+        foreach($error as $msg) {
+          drupal_set_message($msg, 'error');
+        }
+  
+        $errors[$clone['tag']] = t('Broken Pattern: %msg', array('%msg' => implode('<br>', $error)));
+      }
+      else {
+        drupal_set_message($error, 'error');
+        $errors[$clone['tag']] = t('Broken Pattern: %msg', array('%msg' => $error));
+      }
+      
+      return false;
+    }
+  
+    // Get the form data for the action. This can either just be the form values,
+    // or it can be the full form_state object
+    $form_obj = patterns_invoke($clone, 'build', $form_id);
+  
+    if (patterns_error_get_last('build', $place+1, $action_descriptions[$form_id])) {
+      return false;
+    }
+
+    // Dont execute the action if a string was returned, indicating the pattern component
+    // most likely handled the action on its own and this is the message to display.
+    if (is_string($form_obj)) {
+      drupal_set_message($form_obj);
+    }
+    else {
+      // We check for the 'storage' and 'submitted' values in the object to see
+      // if it is a form_state instead of form_values. There could be a better way
+      // to do this.
+      if (array_key_exists('submitted', (array)$form_obj) && array_key_exists('storage', (array)$form_obj)) {
+        $action_state = $form_obj;
+      }
+      else {
+        $action_state = array(
+          'storage' => null,
+          'submitted' => false,
+          'values' => $form_obj
+        );
+      }
+  
+      // Get any extra parameters required for the action
+      $params = patterns_invoke($clone, 'params', $form_id, $action_state);
+      if (patterns_error_get_last('params', $place+1, $action_descriptions[$form_id])) {
+        return false;
+      }
+  
+      // A single, simple value can be returned as a parameter, which is then
+      // put into an array here.
+      if (isset($params) && !is_array($params)) {
+        $params = array($params);
+      }
+
+      // Execute action
+      patterns_execute_action($form_id, $action_state, $params);
+
+      if (patterns_error_get_last('execute', $place+1, $action_descriptions[$form_id])) {
+        return false;
+      }
+
+      if (form_get_errors()) {
+        drupal_set_message(t('An error occured while executing action #%num (%action)', array('%num' => $place+1, '%action' => $action_descriptions[$form_id])), 'error');
+        return false;
+      }
+  
+      // Let a component cleanup after each action
+      patterns_invoke($clone, 'cleanup', $form_id, $action_state);
+      if (patterns_error_get_last('cleanup', $place+1, $action_descriptions[$form_id])) {
+        return false;
+      }
+    }
+  
+    // Clear the cache in case it causes problems
+    cache_clear_all();
+  }
+
+  // Get any primary identifiers from the action for further actions to take advantage of
+  $id = null;
+  $id = patterns_invoke($clone, 'identifier', $form_id, $action_state);
+  if (isset($id)) {
+    $identifiers[$place+1] = $id;
+  }
+  
+  return true;
 }
 
 /**
@@ -1231,6 +1313,12 @@ function patterns_execute_action($form_id, &$form_state, $params) {
   }
 
   patterns_executing(true);
+  
+  // If we are in batch mode, trick the form api to think
+  // otherwise to avoid potential problems
+  $batch =& batch_get();
+  $batch_clone = $batch;
+  $batch = null;
 
   //$form = call_user_func_array('drupal_retrieve_form', $args);
   //$form['#post'] = $values;
@@ -1257,6 +1345,7 @@ function patterns_execute_action($form_id, &$form_state, $params) {
   _patterns_process_form($form_id, $form, $form_state);
 
   patterns_executing(false);
+  $batch = $batch_clone;
 
   return $return;
 }
