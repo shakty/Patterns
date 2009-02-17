@@ -926,7 +926,11 @@ function patterns_execute_config($module) {
     $pattern->status = false;
     $actions['tag'] = 'actions';
     $pattern->pattern = array($actions);
-    patterns_execute_pattern($pattern);
+    
+    $form_state = array();
+    $form_state['values'] = array();
+    
+    patterns_execute_pattern($pattern, FALSE, $form_state);
   }
 }
 
