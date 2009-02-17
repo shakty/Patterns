@@ -50,15 +50,14 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
         }       
       }
       else if ($id == 'display') {
-        static $type;
-        
-        $type = check_plain($data['type']);
+
+        $data['type'] = check_plain($data['type']);
         $data['field'] = check_plain($data['field']);
         if (empty($data['field']) && !empty($data['group'])) {
           $data['field'] = check_plain($data['group']);
           $data['is_group'] = true;
         }
-        unset($data['type'], $data['group']);
+        unset($data['group']);
 
         
         if (!$data['is_group'] && strpos($data['field'], 'field_') !== 0) {
@@ -191,9 +190,8 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
         }
       }
       else if ($id = 'display') {
-        static $type;
-        
-        if (empty($type)) {
+
+        if (empty($data['type'])) {
           return t('&lt;type&gt; tag is missing.');
         }
         if (empty($data['field'])) {
@@ -208,13 +206,10 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
     
     // Validate action before processing
     case 'validate':
-        if ($id == 'display') {
-          static $type;
-        }
 
         if (!empty($data['type_name']) || $id == 'display') {
           _content_type_info(true);
-          $type_name = $id == 'display' ? $type : $data['type_name'];
+          $type_name = $id == 'display' ? $data['type'] : $data['type_name'];
           $content_type = content_types($type_name);     
           if ($content_type['type'] != $type_name) {
             return t("Invalid tag &lt;type&gt;. '%type' is not a valid content type name or such content type doesn't exist.", array('%type' => $type_name));
@@ -238,13 +233,13 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
         }
         else if ($id == 'display') {
           if ($data['is_group']) {
-            $groups = fieldgroup_groups($type, FALSE, TRUE);
+            $groups = fieldgroup_groups($data['type'], FALSE, TRUE);
             if (!$groups[$data['field']]) {
-              return t('Group %group is not available in %type content type.', array('%group' => $data['field'], '%type' => $type));
+              return t('Group %group is not available in %type content type.', array('%group' => $data['field'], '%type' => $data['type']));
             }
           }
-          else if (!content_fields($data['field'], $type)) {
-            return t("Field %field doesn't exist within %type content type.", array('%field' => $data['field'], '%type' => $type));
+          else if (!content_fields($data['field'], $data['type'])) {
+            return t("Field %field doesn't exist within %type content type.", array('%field' => $data['field'], '%type' => $data['type']));
           }
         }       
     break;
@@ -462,19 +457,18 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
         module_load_include('inc', 'node', 'content_types');
       }
       else if ($id == 'display') {
-        static $type;
 
         if ($data['is_group']) {
-          $groups = fieldgroup_groups($type, FALSE, TRUE);
+          $groups = fieldgroup_groups($data['type'], FALSE, TRUE);
           $group = $groups[$data['field']];
           if ($group) {
             $group['settings']['display'] = $data[$data['field']] + $group['settings']['display'];
-            fieldgroup_save_group($type, $group);          
+            fieldgroup_save_group($data['type'], $group);          
           }
         }
         else {
           module_load_include('inc', 'content', 'includes/content.crud');
-          $field = content_fields($data['field'], $type);
+          $field = content_fields($data['field'], $data['type']);
           if ($field) {
             $field['display_settings'] = $data[$data['field']] + $field['display_settings'];
             content_field_instance_update($field);

@@ -49,16 +49,6 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
       if (empty($data['uid'])) $data['uid'] = $user->uid;
       if (empty($data['name'])) $data['name'] = $user->name;
 
-      // required for proper functioning of pathauto module
-      static $old_q;
-      $old_q = $_GET['q'];
-      if ($data['update']) {
-        $_GET['q'] = 'node/'. $data['nid'] .'/edit';
-      }
-      else {
-        $_GET['q'] = 'node/add/'. str_replace('_', '-', $data['type']);
-      }      
-      
       if (is_numeric($data['nid']) && $data['node'] = node_load($data['nid'])) {
         $data['update'] = TRUE;
       }
@@ -288,6 +278,16 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
       $node->taxonomy = array();
       if ($data['update']) $data = array_merge((array)$node, $data);
 
+//      // required for proper functioning of pathauto module
+//      static $old_q;
+//      $old_q = $_GET['q'];
+//      if ($data['update']) {
+//        $_GET['q'] = 'node/'. $data['nid'] .'/edit';
+//      }
+//      else {
+//        $_GET['q'] = 'node/add/'. str_replace('_', '-', $data['type']);
+//      }         
+      
       unset($data['update']);
 
       // Until manual path setting is fixed, 
@@ -318,11 +318,11 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
 
     // Cleanup any global settings after the action runs
     case 'cleanup':
-      static $old_q;
-      if ($old_q) {
-        $_GET['q'] = $old_q;
-        unset($old_q);
-      }      
+//      static $old_q;
+//      if ($old_q) {
+//        $_GET['q'] = $old_q;
+//        unset($old_q);
+//      }      
     break;
     
     // Return the primary ID if possible from this action
