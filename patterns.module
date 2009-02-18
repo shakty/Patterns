@@ -1003,7 +1003,7 @@ function _patterns_execute_pattern($pattern, $reverse = false, $form_state = nul
 
   // Modules need to be enabled first and seperate so that the various pre-execute hooks
   // can be called properly
-  if ($modules && (!$form_state || ($form_state && !$form_state->patterns_action))) {
+  if (!empty($modules)) {
     // Make the modules look like a normal pattern so they can be executed on their own.
     $obj = new stdClass();
     $obj->title = t('Enable modules required by "@title" pattern.', array('@title' => $title));
@@ -1021,13 +1021,6 @@ function _patterns_execute_pattern($pattern, $reverse = false, $form_state = nul
 
   // Keep a list of what modules handle what tags
   $tag_modules = patterns_invoke($empty, 'tag modules');
-
-  // If an interactive (form batch mode) pattern needs resuming, remove the
-  // already executed actions
-  if ($form_state->patterns_action) {
-    array_splice($actions, 0, $form_state->patterns_action);
-    $identifiers = $form_state->patterns_identifiers;
-  }
 
   // TODO Finish basic setup and execution of the 'config' operation
   // TODO Make a better streamlined config framework process. For instance collect form_ids
