@@ -596,85 +596,52 @@ function patterns_get_patterns($reset = true) {
     $priority = array();
     $errors = array();
 
-    // Get uploaded patterns first
+    global $profile;
+    
+    // array of all the paths where we should look for patterns
+    $patterns_paths = array(
+      conf_path() .'/patterns',
+      'profiles/'. $profile .'/patterns',
+      drupal_get_path('module', 'patterns') .'/patterns'
+    );
+    
+    // also prepend files folder if it's valid
     if (file_check_directory($path)) {
-      // Check if .htaccess file exists in path, if not insert it
-      _patterns_check_file_dir();
+      array_unshift($patterns_paths, $path);
+    }
 
-      foreach(file_scan_directory($path, '.\.xml') as $file) {
-        // Don't save enabled pattern backups
-        if (strpos($file->filename, $path .'/enabled/') === 0) {
-          continue;
-        }
+    // get valid file extensions
+    // @todo: convert this into pluggable system
+    if (file_exists(drupal_get_path('module', 'patterns') .'/spyc/spyc.php')) {
+      $mask = '.\.(xml|yaml)$';  
+    }
+    else {
+      $mask = '.\.xml$';
+    }
 
-        // Set priority so these patterns won't get over-written
-        $priority[] = $file->name;
-
+    // prepare list of files/folders to be excluded
+    // 'enabled' - Don't save enabled pattern backups
+    $no_mask = array('.', '..', 'CVS', '.svn', 'enabled');
+      
+    foreach ($patterns_paths as $path) {
+      foreach(file_scan_directory($path, $mask, $no_mask) as $file) {
         // Can't update existing patterns that are enabled
-        if (in_array($file->filename, $enabled)) {
+        if (in_array($file->filename, $enabled) || in_array($file->name, $priority)) {
           continue;
         }
 
+        $priority[] = $file->name;
+        
+        // choose appropriate function based on the file extension
+        $func = 'patterns_load_'. substr($file->basename, strlen($file->name) + 1);
+        
         // Load and save pattern
-        if ($pattern = patterns_load_xml($file->filename)) {
-          patterns_save_pattern($pattern, $file->filename);
+        if ($pattern = $func($file->filename)) {
+          patterns_save_pattern($pattern, $file->filename, $file->name);
         }
         else {
           $errors[] = $file->filename;
         }
-      }
-    }
-
-    // Get per-site patterns next
-    foreach(file_scan_directory(conf_path() .'/patterns', '.\.xml') as $file) {
-      // Can't update existing patterns that are enabled
-      if (in_array($file->filename, $enabled) || in_array($file->name, $priority)) {
-        continue;
-      }
-
-      $priority[] = $file->name;
-
-      // Load and save pattern
-      if ($pattern = patterns_load_xml($file->filename)) {
-        patterns_save_pattern($pattern, $file->filename);
-      }
-      else {
-        $errors[] = $file->filename;
-      }
-    }
-
-    // Get profile patterns next
-    global $profile;
-    foreach(file_scan_directory('profiles/'. $profile .'/patterns', '.\.xml') as $file) {
-      // Can't update existing patterns that are enabled
-      if (in_array($file->filename, $enabled) || in_array($file->name, $priority)) {
-        continue;
-      }
-
-      $priority[] = $file->name;
-
-      // Load and save pattern
-      if ($pattern = patterns_load_xml($file->filename)) {
-        patterns_save_pattern($pattern, $file->filename);
-      }
-      else {
-        $errors[] = $file->filename;
-      }
-    }
-
-    // Last get the default patterns
-    foreach(file_scan_directory(drupal_get_path('module', 'patterns') .'/patterns', '.\.xml') as $file) {
-      // Can't update existing patterns that are enabled
-      if (in_array($file->filename, $enabled) || in_array($file->name, $priority)) {
-        continue;
-      }
-
-      // Load and save pattern
-      if ($pattern = patterns_load_xml($file->filename)) {
-        patterns_save_pattern($pattern, $file->filename);
-      }
-      else {
-        $errors[] = $file->filename;
       }
     }
 
@@ -686,7 +653,7 @@ function patterns_get_patterns($reset = true) {
   $messages = array();
   while ($pattern = db_fetch_object($result)) {
 
-    // skip pattern if its XML file is missing
+    // skip pattern if its file is missing
     if (!is_file($pattern->file)) continue;
 
     // skip pattern if loading failed and report that to the user
@@ -698,54 +665,33 @@ function patterns_get_patterns($reset = true) {
     $patterns[$pattern->pid] = $pattern;
     $data = unserialize($pattern->pattern);
     $patterns[$pattern->pid]->pattern = $data;
-    foreach ($data as $key => $section) {
-      if ($data[$key]['tag'] == 'info') {
-        $patterns[$pattern->pid]->info = array();
-        array_shift($section);
-        foreach($section as $property) {
-          $patterns[$pattern->pid]->info[$property['tag']] = $property['value'];
-        }
-      }
-    }
+    $patterns[$pattern->pid]->info = $data['info'];
   }
 
   if (!empty($messages)) {
     drupal_set_message(implode('<br>', $messages) .'<br>'. t('Make sure that above file(s) are readable and contain well-formed XML.'), 'error');
   }
-
+dpm($patterns);
   return $patterns;
 }
 
-function patterns_save_pattern($pattern, $xmlpath = '') {
-  $name = basename($xmlpath, '.xml');
+function patterns_save_pattern($pattern, $path = '', $name = '') {
 
-  foreach($pattern[0] as $index => $value) {
-    if (is_numeric($index)) {
-      switch($value['tag']) {
-        case 'title':
-          $title = $value['value'];
-          break;
-        case 'description':
-          $description = $value['value'];
-          break;
-        case 'author':
-          $author = $value['value'];
-          break;
-      }
-    }
-  }
-
+  $title = $pattern['info']['title'];
+  $description = $pattern['info']['description'];
+  $author = $pattern['info']['author'];
+  
   if ($pid = db_result(db_query('SELECT pid FROM {patterns} WHERE name = "%s"', $name))) {
     $updated = db_result(db_query('SELECT updated FROM {patterns} WHERE pid = "%d"', $pid));
-    if (($new_updated = filemtime(file_create_path($xmlpath))) > $updated) {
-      db_query('UPDATE {patterns} SET pattern = "%s", title = "%s", file = "%s", updated = "%s", description = "%s" WHERE pid = %d', serialize($pattern), $title, $xmlpath, $new_updated, $description, $pid);
+    if (($new_updated = filemtime(file_create_path($path))) > $updated) {
+      db_query('UPDATE {patterns} SET pattern = "%s", title = "%s", file = "%s", updated = "%s", description = "%s" WHERE pid = %d', serialize($pattern), $title, $path, $new_updated, $description, $pid);
     }
     else {
-      db_query('UPDATE {patterns} SET pattern = "%s", title = "%s", file = "%s", description = "%s" WHERE pid = %d', serialize($pattern), $title, $xmlpath, $description, $pid);
+      db_query('UPDATE {patterns} SET pattern = "%s", title = "%s", file = "%s", description = "%s" WHERE pid = %d', serialize($pattern), $title, $path, $description, $pid);
     }
   }
   else {
-    db_query('INSERT INTO {patterns} (name, status, file, updated, enabled, title, description, pattern) VALUES ( "%s", 0, "%s", "%s", 0, "%s", "%s", "%s")', $name, $xmlpath, time(), $title, $description, serialize($pattern));
+    db_query('INSERT INTO {patterns} (name, status, file, updated, enabled, title, description, pattern) VALUES ( "%s", 0, "%s", "%s", 0, "%s", "%s", "%s")', $name, $path, time(), $title, $description, serialize($pattern));
   }
 }
 
@@ -762,10 +708,17 @@ function patterns_get_pattern($id) {
   // Get the actual data. Data is stored in serialized form in the db.
   $pattern->pattern = unserialize($pattern->pattern);
 
-  // Rearrange the data in a nice way for each component.
-  // Make sure actions are processed differently so order is preserved.
-  $pattern->pattern = patterns_rearrange_data($pattern->pattern);
+  return $pattern;
+}
 
+function patterns_load_yaml($path) {
+  include 'spyc/spyc.php';
+
+  if (!file_exists($path)) {
+    return;
+  }  
+  
+  $pattern = Spyc::YAMLLoad($path);
   return $pattern;
 }
 
@@ -776,7 +729,19 @@ function patterns_load_xml($path) {
 
   $xml = file_get_contents($path);
 
-  return patterns_from_source($xml);
+  $pattern = patterns_from_source($xml);
+
+  // Rearrange the data in a nice way for each component.
+  // Make sure actions are processed differently so order is preserved.
+  $pattern = patterns_rearrange_data($pattern);
+  
+  foreach($pattern as $key => $values) {
+    $pattern[$values['tag']] = $values;
+    unset($pattern[$values['tag']]['tag']);
+    unset($pattern[$key]);
+  }
+  
+  return $pattern;
 }
 
 /**
@@ -924,8 +889,7 @@ function patterns_execute_config($module) {
     $pattern = new stdClass();
     $pattern->title = t('Default configuration for @module module', array('@module' => $module));
     $pattern->status = false;
-    $actions['tag'] = 'actions';
-    $pattern->pattern = array($actions);
+    $pattern->pattern['actions'] = $actions;
     
     $form_state = array();
     $form_state['values'] = array();
@@ -983,16 +947,8 @@ function _patterns_execute_pattern($pattern, $reverse = false, $form_state = nul
 
   // Split the pattern up into modules and actions. Submit modules as its
   // own pattern programattically.
-  $modules = $actions = array();
-  for($i=0;$tag=$pattern[$i];$i++) {
-    if ($tag['tag'] == 'modules') {
-      $modules = $tag;
-    }
-    else if ($tag['tag'] == 'actions') {
-      $actions = $tag;
-      unset($actions['tag']);
-    }
-  }
+  $modules = isset($pattern['modules']) ? $pattern['modules'] : array();
+  $actions = isset($pattern['actions']) ? $pattern['actions'] : array();
 
   // If there are no actions or modules, most likely the pattern
   // was not created correctly.
@@ -1008,7 +964,8 @@ function _patterns_execute_pattern($pattern, $reverse = false, $form_state = nul
     $obj = new stdClass();
     $obj->title = t('Enable modules required by "@title" pattern.', array('@title' => $title));
     $obj->status = $status;
-    $obj->pattern = array(array('tag' => 'actions', $modules));
+    $modules['tag'] = 'modules';
+    $obj->pattern = array('actions' => array($modules));
     $modules = $obj;
 
     // Modules need to be enabled first so the rest of the pattern
@@ -1382,17 +1339,7 @@ function patterns_rearrange_data($pattern) {
  * Return a list of modules for a pattern
  */
 function patterns_modules($pattern) {
-  $pattern = $pattern->pattern;
-
-  for($i=0;$tag=$pattern[$i];$i++) {
-    if ($tag['tag'] == 'modules') {
-      unset($tag['tag']);
-      $modules = $tag;
-      break;
-    }
-  }
-
-  return $modules;
+  return isset($pattern->pattern['modules']) ? $pattern->pattern['modules'] : array();
 }
 
 function patterns_process_modules($modules, $op = 'enable') {

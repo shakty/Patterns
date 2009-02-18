@@ -1,0 +1,35 @@
+info:
+  title: YAML sample
+  description: sample YAML pattern
+  author: Vaish
+  category: Template
+  author_email: vnd@graviteklabs.com
+
+modules:
+  - content
+  - text
+  - taxonomy
+
+actions:
+  - tag: content
+    name: Article
+    type: article
+    comment: 0
+    status: 1
+  - tag: field
+    type: article
+    name: summary
+    label: Article Summary
+    option: text
+    widget: text_textarea
+    rows: 3
+    text_processing: 1
+    weight: -1
+  - tag: vocabulary
+    name: Article Keywords
+    nodes: 
+      article: article
+    tags: 1
+  - tag: variable
+    name: site_footer
+    value: YAML file format Test
