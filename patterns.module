@@ -1034,7 +1034,8 @@ function _patterns_execute_pattern($pattern, $reverse = false, $form_state = nul
       'title' => t('Processing pattern %pattern', array('%pattern' => $title)),
       'init_message' => t('Running action @current out of @total', array('@current' => 1, '@total' => count($actions))),
       'progress_message' => t('Running action @current out of @total.'),
-      'operations' => array()
+      'operations' => array(),
+      'finished' => 'patterns_batch_finish'
     );
     
     for($i=0;$i<count($actions);$i++) {
@@ -1119,7 +1120,7 @@ function patterns_batch_actions($action, $place, &$context) {
  * Finish a batch operation
  */
 function patterns_batch_finish($success, $results) {
-  unset($_SESSION['pattern_identifiers']);
+  unset($_SESSION['pattern_identifiers']); 
   db_query('UPDATE {patterns} SET status = 1, enabled = "%s" WHERE pid = %d', time(), $_SESSION['patterns_batch_pid']);
 }
 
