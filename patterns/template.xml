@@ -341,7 +341,7 @@
 
     <role>test role</role>
     
-    <role>content editor</role>
+    <role>editor</role>
     
     <user>
       <name>perry</name>
@@ -349,7 +349,7 @@
       <mail>testemail@domain.com</mail>
       <roles>
         <role>test role</role>
-        <role>content editor</role>
+        <role>editor</role>
       </roles>
       <contact>0</contact>
       <timezone>+0100</timezone>
@@ -367,7 +367,7 @@
       <value>administer imageapi</value>
     </permissions>
 
-    <permissions role="content editor">
+    <permissions role="editor">
       <value>access comments</value>
       <value>administer blocks</value>
       <value>access comments</value>
@@ -376,15 +376,15 @@
     </permissions>
     
     <!-- permissions can also be specified as a comma separated string-->
-    <permissions role="content editor">access comments, administer blocks</permissions>  
+    <permissions role="editor">access comments, administer blocks</permissions>  
 
     <!-- overwirte will cause all other permissions for rid 4 
         (except those defined within this action) to be reset/disabled
     -->
-    <permissions rid="content editor" overwrite="1">access comments, administer blocks, administer filters, post comments</permissions>
+    <permissions rid="editor" overwrite="1">access comments, administer blocks, administer filters, post comments</permissions>
 
     <!-- remove permissions -->
-    <permissions role="content editor" delete="1">
+    <permissions role="editor" delete="1">
       <value>administer blocks</value>
       <value>access comments</value>
     </permissions>
