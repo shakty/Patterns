@@ -530,7 +530,7 @@ function patterns_modules_page($pid) {
 
   drupal_set_title($pattern->title .' '. t('(Pattern Modules)'));
 
-  $modules = patterns_modules($pattern);
+  $modules = isset($pattern->pattern['modules']) ? $pattern->pattern['modules'] : array();
   $modules_info = module_rebuild_cache();
   $modules_list = module_list();
 
@@ -857,7 +857,7 @@ function patterns_enable_pattern_submit($form, &$form_state) {
   patterns_load_components();
   $pattern = patterns_get_pattern($pid);
 
-  patterns_execute_pattern($pattern, false, $form_state);
+  patterns_execute_pattern($pattern, $form_state['values']);
   
   $form_state['redirect'] = 'admin/build/patterns';
 }
@@ -890,92 +890,107 @@ function patterns_execute_config($module) {
     $pattern->title = t('Default configuration for @module module', array('@module' => $module));
     $pattern->status = false;
     $pattern->pattern['actions'] = $actions;
-    
-    $form_state = array();
-    $form_state['values'] = array();
-    
-    patterns_execute_pattern($pattern, FALSE, $form_state);
+
+    patterns_execute_pattern($pattern);
   }
 }
 
-function patterns_execute_pattern($pattern, $reverse = false, $form_state = null) {
-  // set custom error handler
-  set_error_handler('patterns_error_handler');
-  // trigger dummy error
-  // this will be used as a refrence to determine if any real error
-  // occured during the pattern execution
-  @trigger_error('patterns_error');
-  if ($pattern && @_patterns_execute_pattern($pattern, $reverse, $form_state)) {
-    $e = error_get_last();
-    // If last error is equal to the dummy one set before execution,
-    // we can assume that pattern executed successfully
-    if ($e['message'] == 'patterns_error') {
-//      drupal_set_message(t('Pattern "@pattern" ran successfully.', array('@pattern' => $pattern->title)));
-    }
-  }
-  restore_error_handler();  
+function patterns_execute_pattern($pattern, $params = array(), $mode = 'batch') {
+
+  $args = array($pattern, $params);
+  $function = 'patterns_execute_pattern_'. $mode;
+  
+  if (!function_exists($function) || !is_object($pattern)) return FALSE;
+  
+  return call_user_func_array($function, $args); 
 }
 
-function _patterns_execute_pattern($pattern, $reverse = false, $form_state = null) {
-  patterns_load_components();
+function patterns_execute_pattern_batch($pattern, $params = array()) {
+  
   set_time_limit(0);
 
   if (!is_object($pattern)) {
     $pattern = patterns_get_pattern($pattern);
 
     if (!$pattern) {
-      return false;
+      return FALSE;
     }
   }
 
-  $missing = patterns_check_dependencies($pattern);
-  if (!empty($missing)) {
-    drupal_set_message(t('Following modules required to run this pattern are missing: %modules', array('%modules' => implode(', ', $missing))), 'error');
-    return FALSE;
-  }
+  $pattern_details = patterns_get_pattern_details($pattern, TRUE);
 
-  $errors = $action_list = $identifiers = array();
-  $error = true;
-
-  // Pattern info
-  $status = $pattern->status;
-  $title = $pattern->title;
-  $pid = $pattern->pid;
-
-  // From here on out just need the actual pattern data
-  $pattern = $pattern->pattern;
-
-  // Split the pattern up into modules and actions. Submit modules as its
-  // own pattern programattically.
-  $modules = isset($pattern['modules']) ? $pattern['modules'] : array();
-  $actions = isset($pattern['actions']) ? $pattern['actions'] : array();
+  $modules = $pattern_details['modules'];
+  $actions = $pattern_details['actions'];
+  $actions_map = array('patterns' => $pattern_details['info'], 'map' => $pattern_details['actions_map']);
+  $info = reset($pattern_details['info']);
 
   // If there are no actions or modules, most likely the pattern
   // was not created correctly.
   if (empty($actions) && empty($modules)) {
-    drupal_set_message(t('Could not recognize pattern %title, aborting.', array('%title' => $title)), 'error');
+    drupal_set_message(t('Could not recognize pattern %title, aborting.', array('%title' => $info['title'])), 'error');
+    return FALSE;
+  }  
+  
+  $result = patterns_install_modules($modules);
+  if (!$result['success']) {
+    drupal_set_message($result['error_message'], 'error');
     return FALSE;
   }
 
-  // Modules need to be enabled first and seperate so that the various pre-execute hooks
-  // can be called properly
-  if (!empty($modules)) {
-    // Make the modules look like a normal pattern so they can be executed on their own.
-    $obj = new stdClass();
-    $obj->title = t('Enable modules required by "@title" pattern.', array('@title' => $title));
-    $obj->status = $status;
-    $modules['tag'] = 'modules';
-    $obj->pattern = array('actions' => array($modules));
-    $modules = $obj;
-
-    // Modules need to be enabled first so the rest of the pattern
-    // can proceed smoothly.
-    if (!$reverse) {
-      $error = patterns_execute_pattern($modules, $reverse);
-      module_rebuild_cache();
-    }
+  $result = patterns_prepare_actions(&$actions);  
+  if (!$result['success']) {
+    drupal_set_message($result['error_message'], 'error');
+    return FALSE;
+  }  
+  
+  $batch = array(
+    'title' => t('Processing pattern %pattern', array('%pattern' => $info['title'])),
+//    'init_message' => t('Running action @current out of @total', array('@current' => 1, '@total' => count($actions))),
+    'progress_message' => t('Running action @current out of @total'),
+    'operations' => array(),
+    'finished' => 'patterns_batch_finish'
+  );
+  
+  for($i=0;$i<count($actions);$i++) {
+    $batch['operations'][] = array('patterns_batch_actions', array($actions[$i], $i, $actions_map));
   }
 
+  $_SESSION['patterns_batch_info'] = $info;
+
+  batch_set($batch);
+  return TRUE;
+}
+
+function patterns_install_modules(&$modules) {
+  $result = array('success' => TRUE);
+  
+  if (empty($modules)) return $result;
+  
+  $missing = patterns_check_module_dependencies(&$modules, TRUE);
+  if (!empty($missing)) {
+    $result['success'] = FALSE;
+    $result['error_message'] = t('Following required modules are missing: %modules', array('%modules' => implode(', ', $missing)));
+    $result['missing_modules'] = $missing; 
+    return $result;
+  }
+
+  require_once './includes/install.inc';
+  drupal_install_modules($modules);
+  module_rebuild_cache();    
+  
+  $result['installed_modules'] = $modules;
+  
+  return $result; 
+}
+
+function patterns_prepare_actions(&$actions) {
+  
+  $result = array('success' => TRUE);
+  
+  if (empty($actions)) return $result; 
+  
+  patterns_load_components();
+  
   // Keep a list of what modules handle what tags
   $tag_modules = patterns_invoke($empty, 'tag modules');
 
@@ -993,22 +1008,6 @@ function _patterns_execute_pattern($pattern, $reverse = false, $form_state = nul
     patterns_invoke($actions[$key], 'prepare');
   }
 
-  // Reverse a pattern for disabling
-  if ($reverse && $status) {
-    $actions = array_reverse($actions);
-
-    foreach($actions as $key => $data) {
-      $continue = patterns_invoke($data, 'reverse');
-
-      if ($continue === false) {
-        drupal_set_message(t('[Error] Disabling of this pattern is not supported at this time.'));
-        return false;
-      }
-
-      $actions[$key] = $data;
-    }
-  }
-
   // Pre validate tags with their appropriate components
   foreach($actions as $key => &$data) {
     if (!array_key_exists($data['tag'], $tag_modules)) {
@@ -1024,68 +1023,17 @@ function _patterns_execute_pattern($pattern, $reverse = false, $form_state = nul
 
   if (count($errors)) {
     $message = t('Errors encountered during pre-processing:') .'<br>'. implode('<br>', $errors);
-    drupal_set_message($message, 'error');
-    return FALSE;
+    $result['success'] = FALSE;
+    $result['error_message'] = $message;
   }
   
-  // In interactive mode, use batch processing and direct processing to the batch api
-  if ($form_state) {
-    $batch = array(
-      'title' => t('Processing pattern %pattern', array('%pattern' => $title)),
-      'init_message' => t('Running action @current out of @total', array('@current' => 1, '@total' => count($actions))),
-      'progress_message' => t('Running action @current out of @total.'),
-      'operations' => array(),
-      'finished' => 'patterns_batch_finish'
-    );
-    
-    for($i=0;$i<count($actions);$i++) {
-      $batch['operations'][] = array('patterns_batch_actions', array($actions[$i], $i));
-    }
-
-    $_SESSION['patterns_batch_pid'] = $pid;
-    $_SESSION['patterns_batch_title'] = $title;
-
-    batch_set($batch);
-    return TRUE;
-  }
-
-  // @todo We need a new method for non-batch processing that invovles fresh page
-  // instances per action such as a soap interface
-  foreach($actions as $key => &$data) {
-    // Setup and run this particular action
-    if (!patterns_implement_action($data, $identifiers, $key)) {
-      return false;
-    }
-  }
-
-  if ($reverse) {
-    if ($modules) {
-      // Modules need to be disabled last so the rest of the pattern
-      // can reverse itself properly
-      $error = patterns_execute_pattern($modules, $reverse);
-    }
-
-    // Mark pattern as disabled
-    if ($pid) {
-      db_query('UPDATE {patterns} SET status = 0 WHERE pid = %d', $pid);
-    }
-
-    drupal_set_message(t('Pattern reversed successfully.'));
-  }
-  else {
-    // Mark pattern as enabled
-    if ($pid) {
-      db_query('UPDATE {patterns} SET status = 1, enabled = "%s" WHERE pid = %d', time(), $pid);
-    }
-  }
-
-  return TRUE;
+  return $result;
 }
 
 /**
  * Execute a batch action
  */
-function patterns_batch_actions($action, $place, &$context) {
+function patterns_batch_actions($action, $place, $actions_map, &$context) {
 
   patterns_load_components();
 
@@ -1100,16 +1048,17 @@ function patterns_batch_actions($action, $place, &$context) {
   // take at least a second to execute
   timer_start('patterns_action');
 
-  $identifiers = &$_SESSION['pattern_identifiers'];
-  
   // skip action execution if an error is encountered in some of the previous operations
-  if (!empty($context['results'])) return;
+  if (!empty($context['results']['abort'])) return;
   
-  if (!patterns_implement_action($action, $identifiers, $place)) {
+  $result = patterns_implement_action($action, $context['results']['identifiers'], $place, $actions_map); 
+  
+  if (!$result['success']) {
     // we use 'results' to keep track of errors and abort execution if required
-    $context['results'][$place + 1] = $place + 1; 
+    $context['results']['abort'] = TRUE;
+    $context['results']['error_message'] = $result['error_message']; 
   }
-  
+
   if (timer_read('patterns_action') < 1000) {
     @usleep(1000 - timer_read('patterns_action'));
   }
@@ -1119,35 +1068,33 @@ function patterns_batch_actions($action, $place, &$context) {
  * Finish a batch operation
  */
 function patterns_batch_finish($success, $results, $operations) {
-  if (empty($results)) {
-    drupal_set_message(t('Pattern "@pattern" ran successfully.', array('@pattern' => $_SESSION['patterns_batch_title'])));
-    db_query('UPDATE {patterns} SET status = 1, enabled = "%s" WHERE pid = %d', time(), $_SESSION['patterns_batch_pid']);
+  $info = $_SESSION['patterns_batch_info'];
+  if (!($results['abort'])) {
+    drupal_set_message(t('Pattern "@pattern" ran successfully.', array('@pattern' => $info['title'])));
+    db_query('UPDATE {patterns} SET status = 1, enabled = "%s" WHERE pid = %d', time(), $info['pid']);
   }
   else {
-    drupal_set_message(t('Pattern "@pattern" ran with the errors listed below.', array('@pattern' => $_SESSION['patterns_batch_title'])));
+    drupal_set_message(t('Pattern "@pattern" ran with the errors listed below.', array('@pattern' => $info['title'])));
+    drupal_set_message($results['error_message'], 'error'); 
   }
-  unset($_SESSION['pattern_identifiers']);
-  unset($_SESSION['patterns_batch_pid']);
-  unset($_SESSION['patterns_batch_title']);
+  unset($_SESSION['patterns_batch_info']);
 }
 
 /**
  * Setup and run an action
  */
-function patterns_implement_action($action, &$identifiers, $place = 0) {
-  // set custom error handler
-  set_error_handler('patterns_error_handler');
-  // trigger dummy error
-  // this will be used as a refrence to determine if any real error
-  // occured during the pattern execution
-  @trigger_error('patterns_error');
+function patterns_implement_action($action, &$identifiers, $place = 0, $actions_map = NULL) {
+
+  patterns_set_error_handler();
+
+  $result = array('success' => TRUE);  
   
   // Prepare actions for processing, ensure smooth pattern executions, and return form ids for execution
   $return = patterns_invoke($action, 'form_id');
-
+  
   // If prepare removed the data, dont continue with this action
   if (!$action || !$return) {
-    return true;
+    return $result;
   }
 
   if (is_string($return)) {
@@ -1158,11 +1105,17 @@ function patterns_implement_action($action, &$identifiers, $place = 0) {
   }
 
   $action_descriptions = patterns_invoke($action, 'actions');
-
+  $index = $actions_map['map'][$place]['index'] + 1;
+  $title = $actions_map['patterns'][$actions_map['map'][$place]['pid']]['title'];
+   
   // Build the action
   foreach($form_ids as $form_id) {
     $clone = $action;
-  
+    
+    $action_description = isset($action_descriptions[$form_id]) ? $action_descriptions[$form_id] : t('System: Execute form');
+    
+    $result['action_descriptions'][$place][] = $action_description;
+    
     // If tokens are enabled, apply tokens to the action values
     // before processing
     if (module_exists('token')) {
@@ -1171,33 +1124,27 @@ function patterns_implement_action($action, &$identifiers, $place = 0) {
     }
   
     $error = patterns_invoke($clone, 'validate', $form_id);
-    if (patterns_error_get_last('validate', $place+1, $action_descriptions[$form_id])) {
-      return false;
+    if ($message = patterns_error_get_last('validate', $index, $title, $action_description)) {
+      $result['error_message'] = $message;
+      $result['success'] = FALSE;
+      return $result;
     }
   
     if ($error) {
-      drupal_set_message(t('An error occured while validating action #%num (%action)', array('%num' => $place+1, '%action' => $action_descriptions[$form_id])), 'error');
-      if (is_array($error)) {
-        foreach($error as $msg) {
-          drupal_set_message($msg, 'error');
-        }
-  
-        $errors[$clone['tag']] = t('Broken Pattern: %msg', array('%msg' => implode('<br>', $error)));
-      }
-      else {
-        drupal_set_message($error, 'error');
-        $errors[$clone['tag']] = t('Broken Pattern: %msg', array('%msg' => $error));
-      }
-      
-      return false;
+      $message = t('An error occured while validating action #%num (%action) in %title pattern', array('%num' => $index, '%action' => $action_description, '%title' => $title));
+      $result['error_message'] = $message .'<br>'. $error;
+      $result['success'] = FALSE;
+      return $result;
     }
   
     // Get the form data for the action. This can either just be the form values,
     // or it can be the full form_state object
     $form_obj = patterns_invoke($clone, 'build', $form_id);
   
-    if (patterns_error_get_last('build', $place+1, $action_descriptions[$form_id])) {
-      return false;
+    if ($message = patterns_error_get_last('build', $index, $title, $action_description)) {
+      $result['error_message'] = $message;
+      $result['success'] = FALSE;
+      return $result;
     }
 
     // Dont execute the action if a string was returned, indicating the pattern component
@@ -1222,8 +1169,10 @@ function patterns_implement_action($action, &$identifiers, $place = 0) {
   
       // Get any extra parameters required for the action
       $params = patterns_invoke($clone, 'params', $form_id, $action_state);
-      if (patterns_error_get_last('params', $place+1, $action_descriptions[$form_id])) {
-        return false;
+      if ($message = patterns_error_get_last('params', $index, $title, $action_description)) {
+        $result['error_message'] = $message;
+        $result['success'] = FALSE;
+        return $result;
       }
   
       // A single, simple value can be returned as a parameter, which is then
@@ -1235,19 +1184,24 @@ function patterns_implement_action($action, &$identifiers, $place = 0) {
       // Execute action
       patterns_execute_action($form_id, $action_state, $params);
 
-      if (patterns_error_get_last('execute', $place+1, $action_descriptions[$form_id])) {
-        return false;
+      if ($message = patterns_error_get_last('execute', $index, $title, $action_description)) {
+        $result['error_message'] = $message;
+        $result['success'] = FALSE;
+        return $result;
       }
 
       if (form_get_errors()) {
-        drupal_set_message(t('An error occured while executing action #%num (%action)', array('%num' => $place+1, '%action' => $action_descriptions[$form_id])), 'error');
-        return false;
+        $result['error_message'] = t('Above error occured while executing action #%num (%action) in %title pattern', array('%num' => $index, '%action' => $action_description, '%title' => $title));
+        $result['success'] = FALSE;
+        return $result;
       }
   
       // Let a component cleanup after each action
       patterns_invoke($clone, 'cleanup', $form_id, $action_state);
-      if (patterns_error_get_last('cleanup', $place+1, $action_descriptions[$form_id])) {
-        return false;
+      if ($message = patterns_error_get_last('cleanup', $index, $title, $action_description)) {
+          $result['error_message'] = $message;
+          $result['success'] = FALSE;
+          return $result;
       }
     }
   
@@ -1259,10 +1213,13 @@ function patterns_implement_action($action, &$identifiers, $place = 0) {
   $id = null;
   $id = patterns_invoke($clone, 'identifier', $form_id, $action_state);
   if (isset($id)) {
-    $identifiers[$place+1] = $id;
+    $index = isset($clone['action_label']) ? $clone['action_label'] : $place+1;
+    $identifiers[$index] = $id;
   }
   
-  return true;
+  patterns_restore_error_handler();
+  
+  return $result;
 }
 
 /**
@@ -1351,30 +1308,66 @@ function patterns_rearrange_data($pattern) {
 }
 
 /**
- * Return a list of modules for a pattern
+ * Return an array with detailed information about the pattern
  */
-function patterns_modules($pattern) {
-  return isset($pattern->pattern['modules']) ? $pattern->pattern['modules'] : array();
-}
+function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = array()) {
 
-function patterns_process_modules($modules, $op = 'enable') {
-  // Enable at the beginning of the pattern. Disable at the end.
-  for($i=0;$module=$modules[$i];$i++) {
-    if (($op == 'enable' && $module['delete']) || ($op == 'disable' && !$module['delete'])) {
-      unset($modules[$i]);
+  // prevent infinite recursion
+  if (in_array($pattern->pid, $pids)) return array();
+  $pids[] = $pattern->pid;
+
+  $actions = isset($pattern->pattern['actions']) ? $pattern->pattern['actions'] : array();
+  $modules = isset($pattern->pattern['modules']) ? $pattern->pattern['modules'] : array();
+    
+  $patterns[$pattern->pid] = (array)$pattern;
+  $patterns[$pattern->pid] = array_merge($patterns[$pattern->pid], $patterns[$pattern->pid]['pattern']['info']);
+  unset($patterns[$pattern->pid]['pattern']);  
+  
+  if ($recursive) {
+    $result = array('modules' => $modules, 'info' => $patterns);
+
+    foreach($actions as $key => $action) {
+      if ($action['tag'] == 'pattern') {
+        $p = patterns_get_pattern($action['value']);
+        $a = patterns_get_pattern_details($p, TRUE, $pids);
+        // array_merge doesn't preserve numeric array keys
+        // so we handle 'info' separately 
+        $info = $result['info'];
+        $result = array_merge_recursive($result, $a);
+        $result['info'] = $info + $a['info'];
+      }
+      else {
+        $result['actions'][] = $action;
+        $result['actions_map'][] = array(
+          'pid'   => $pattern->pid,
+          'index' => $key,
+        );
+      }
     }
+    $result['modules'] = array_merge(array_unique($result['modules']));
+    return $result;
   }
-
-  patterns_invoke($empty, 'tag modules');
-  $error = patterns_invoke($modules, 'pre-validate');
-
-  // Error validating modules
-  if ($error) {
-    return $error;
-  }
-
-  patterns_invoke($modules, 'prepare');
+  return array('actions' => $actions, 'modules' => $modules, 'info' => $patterns);
 }
+
+//function patterns_process_modules($modules, $op = 'enable') {
+//  // Enable at the beginning of the pattern. Disable at the end.
+//  for($i=0;$module=$modules[$i];$i++) {
+//    if (($op == 'enable' && $module['delete']) || ($op == 'disable' && !$module['delete'])) {
+//      unset($modules[$i]);
+//    }
+//  }
+//
+//  patterns_invoke($empty, 'tag modules');
+//  $error = patterns_invoke($modules, 'pre-validate');
+//
+//  // Error validating modules
+//  if ($error) {
+//    return $error;
+//  }
+//
+//  patterns_invoke($modules, 'prepare');
+//}
 
 function patterns_invoke(&$data, $op, $form_id = null, $a = null) {
   static $tag_modules;
@@ -1603,10 +1596,10 @@ function _patterns_replace_tokens(&$a, &$b, $identifiers = array()) {
   static $count = 0;
 
   // Replace IDs with identifiers from the current executing pattern
-  if (preg_match('/@([0-9]+)@/', $a, $match)) {
+  if (preg_match('/@([a-zA-Z0-9_]+)@/', $a, $match)) {
     $a = str_replace($match[0], $identifiers[$match[1]], $a);
   }
-  if (preg_match('/__([0-9]+)__/', $b, $match)) {
+  if (preg_match('/__([a-zA-Z0-9_]+)__/', $b, $match)) {
     $b = str_replace($match[0], $identifiers[$match[1]], $a);
   }
 
@@ -1990,27 +1983,33 @@ function _patterns_array_trace($obj) {
 /**
  * Check if all the module dependencies are available
  *
- * @param $pattern
- *   pattern object
+ * @param $modules
+ *   array of module names
+ * @param $update_list
+ *   if TRUE, add all the dependecies to pattern's module list
  * @return
  *   empty array if all dependencies are available
  *   array of missing module's names if some dependencies are not available
  *
  */
-function patterns_check_dependencies($pattern) {
-  $modules = patterns_modules($pattern);
+function patterns_check_module_dependencies(&$modules, $update_list = FALSE) {
+
+  if (empty($modules)) return array();
+
   $modules_info = module_rebuild_cache();
 
   $result = array();
-
-  if (empty($modules)) return array();
+  $dependencies = array();
 
   foreach($modules as $module) {
     $module = is_array($module) ? $module['value'] : $module;
     if (array_key_exists($module, $modules_info)) {
       // check also for module's dependencies
       foreach ($modules_info[$module]->info['dependencies'] as $dependency) {
-        if (!array_key_exists($dependency, $modules_info)) {
+        if (array_key_exists($dependency, $modules_info)) {
+          $dependencies[] = $dependency; 
+        }
+        else {
           $result[] = $dependency;
         }
       }
@@ -2019,8 +2018,27 @@ function patterns_check_dependencies($pattern) {
       $result[] = $module;
     }
   }
+
+  if ($update_list && empty($result) && !empty($dependencies)) {
+    $modules = array_unique(array_merge($modules, $dependencies));
+  }
+  
   return $result;
 }
+
+function patterns_set_error_handler() {
+  // set custom error handler
+  set_error_handler('patterns_error_handler');
+  // trigger dummy error
+  // this will be used as a refrence to determine if any real error
+  // occured during the pattern execution
+  @trigger_error('patterns_error');  
+}
+
+function patterns_restore_error_handler() {
+  restore_error_handler();
+}
+
 /**
  * Custom error handler used only during patterns execution
  * in order to catch and properly handle PHP errors.
@@ -2087,13 +2105,13 @@ function patterns_error_handler($errno, $message, $filename, $line, $context) {
  *   FALSE if there are no new errors
  *
  */
-function patterns_error_get_last($op, $key, $description) {
+function patterns_error_get_last($op, $key, $title, $description) {
   $error = error_get_last();
   if ($error['message'] != 'patterns_error') {
     $types = array(1 => 'error', 2 => 'warning', 4 => 'parse error', 8 => 'notice', 16 => 'core error', 32 => 'core warning', 64 => 'compile error', 128 => 'compile warning', 256 => 'user error', 512 => 'user warning', 1024 => 'user notice', 2048 => 'strict warning', 4096 => 'recoverable fatal error');
     $php_error_message = $types[$error['type']] .': '. $error['message'] .' in '. $error['file'] .' on line '. $error['line'] .'.';
-    drupal_set_message(t('Action #%key: %description (op "%op")<br>PHP error occured.<br>%error', array('%key' => $key, '%op' => $op, '%description' => $description, '%error' => $php_error_message)), 'error');
-    return TRUE;
+    $message = t('Action #%key in %title pattern: %description (op "%op")<br>PHP error occured.<br>%error', array('%key' => $key, '%title' => $title, '%op' => $op, '%description' => $description, '%error' => $php_error_message));
+    return $message;
   }
   return FALSE;
 }
