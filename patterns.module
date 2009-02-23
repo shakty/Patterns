@@ -658,7 +658,7 @@ function patterns_get_patterns($reset = true) {
 
     // skip pattern if loading failed and report that to the user
     if (in_array($pattern->file, $errors)) {
-      $messages[] = t("Pattern '%pattern' couldn't be loaded from the file '%file'", array('%pattern' => $pattern->title, '%file' => $pattern->file));
+      $messages[] = t("Pattern couldn't be loaded from the file '%file'", array('%file' => $pattern->file));
       continue;
     }
 
@@ -669,7 +669,7 @@ function patterns_get_patterns($reset = true) {
   }
 
   if (!empty($messages)) {
-    drupal_set_message(implode('<br>', $messages) .'<br>'. t('Make sure that above file(s) are readable and contain well-formed XML.'), 'error');
+    drupal_set_message(implode('<br>', $messages) .'<br>'. t('Make sure that above file(s) are readable and contain valid data.'), 'error');
   }
 
   return $patterns;
@@ -730,6 +730,7 @@ function patterns_load_xml($path) {
   $xml = file_get_contents($path);
 
   $pattern = patterns_from_source($xml);
+  if (empty($pattern) || $pattern['tag'] != 'pattern') return;
 
   // Rearrange the data in a nice way for each component.
   // Make sure actions are processed differently so order is preserved.
