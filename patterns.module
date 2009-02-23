@@ -711,26 +711,53 @@ function patterns_get_pattern($id) {
   return $pattern;
 }
 
+/**
+ * Check if pattern array contains only allowed keys  
+ *
+ * @param $pattern
+ *   pattern array obtained by parsing pattern file
+ * @return
+ *   TRUE when only allowed array keys are found, FALSE otherwise
+ * 
+ * @todo expand this function to include much more detailed validation
+ */
+function patterns_validate_pattern($pattern) {
+  if (empty($pattern)) {
+    return FALSE;
+  }
+  
+  $allowed_keys = array('info', 'modules', 'actions');
+  $diff = array_diff(array_keys($pattern), $allowed_keys);
+  return empty($diff) ? TRUE : FALSE;
+}
+
 function patterns_load_yaml($path) {
   include_once 'spyc/spyc.php';
 
   if (!file_exists($path)) {
-    return;
+    return FALSE;
   }  
   
   $pattern = Spyc::YAMLLoad($path);
+
+  if (!patterns_validate_pattern($pattern)) {
+    return FALSE;
+  }
+
   return $pattern;
 }
 
 function patterns_load_xml($path) {
   if (!file_exists($path)) {
-    return;
+    return FALSE;
   }
 
   $xml = file_get_contents($path);
 
   $pattern = patterns_from_source($xml);
-  if (empty($pattern) || $pattern['tag'] != 'pattern') return;
+  if (empty($pattern) || $pattern['tag'] != 'pattern') {
+    return FALSE;
+  }
 
   // Rearrange the data in a nice way for each component.
   // Make sure actions are processed differently so order is preserved.
@@ -741,6 +768,10 @@ function patterns_load_xml($path) {
     unset($pattern[$values['tag']]['tag']);
     unset($pattern[$key]);
   }
+
+  if (!patterns_validate_pattern($pattern)) {
+    return FALSE;
+  }  
   
   return $pattern;
 }
