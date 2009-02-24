@@ -337,6 +337,8 @@
     </menu_item>
 
 
+    <!-- execute pattern "news" -->
+    <pattern>news</pattern>
 
 
     <role>test role</role>
@@ -346,7 +348,7 @@
     <user>
       <name>perry</name>
       <password>securepassword</password>
-      <mail>testemail@domain.com</mail>
+      <mail>testemail2@domain.com</mail>
       <roles>
         <role>test role</role>
         <role>editor</role>
@@ -489,11 +491,11 @@
       <region>left</region>
     </block>   
 
-    <!-- enable Who's online block. If we don't specify region left sidebar is assigned by default -->
+    <!-- enable Who's online block. It is necessary to specify block region -->
     <block id="user-3">
       <theme>garland</theme>
-      <status>1</status>
       <weight>-4</weight>
+      <region>left</region>
     </block>
     
     <!-- enable Devel block -->

@@ -9,6 +9,7 @@ modules:
   - content
   - text
   - taxonomy
+  - adminrole
 
 actions:
   - tag: content
@@ -33,3 +34,32 @@ actions:
   - tag: variable
       name: site_footer
       value: YAML file format Test
+  - tag: role
+      action_label: adminrole
+      value: administrator
+  - tag: form
+      form_id: adminrole_admin_settings
+      adminrole_adminrole: @adminrole@ 
+  - tag: node
+      action_label: aboutus
+      type: page
+      title: About Us
+      body: |
+        <p>By using | character on the line above, we are able to enter <strong>HTML</strong> mark up and have all the line breaks preserved.</p>
+ 
+        <p>Enter text in the exactly same way as you would do it in the regular node edit form.</p>
+       
+        <p>
+          Unfortunately, indentation seems to be lost.
+          <ul>
+            <li>item 1</li>
+            <li>item 2</li>
+            <li>item 3</li>
+          </ul>
+        </p>
+  - tag: menu_item
+      menu: Primary Links
+      title: About Us
+      path: node/@aboutus@
+      weight: 5
+      
