@@ -969,7 +969,7 @@ function patterns_execute_pattern_batch($pattern, $params = array()) {
     return FALSE;
   }
 
-  $result = patterns_prepare_actions(&$actions);  
+  $result = patterns_prepare_actions(&$actions, $actions_map);  
   if (!$result['success']) {
     drupal_set_message($result['error_message'], 'error');
     return FALSE;
@@ -1015,7 +1015,14 @@ function patterns_install_modules(&$modules) {
   return $result; 
 }
 
-function patterns_prepare_actions(&$actions) {
+function patterns_locate_action($key, $actions_map) {
+  $result['key'] = $actions_map['map'][$key]['index'];
+  $result['title'] = $actions_map['patterns'][$actions_map['map'][$key]['pid']]['title'];
+  $result['file'] = $actions_map['patterns'][$actions_map['map'][$key]['pid']]['file'];
+  return $result;
+}
+
+function patterns_prepare_actions(&$actions, $actions_map) {
   
   $result = array('success' => TRUE);
   
@@ -1042,13 +1049,19 @@ function patterns_prepare_actions(&$actions) {
 
   // Pre validate tags with their appropriate components
   foreach($actions as $key => &$data) {
+    
+    $action_location = patterns_locate_action($key, $actions_map);
+    $index = $action_location['key'];
+    $pattern_title = $action_location['title'];
+//    $pattern_file = $action_location['file'];      
+    
     if (!array_key_exists($data['tag'], $tag_modules)) {
-      $errors[] = t('Action #%num (%tag): <%tag> is not a valid tag', array('%num' => $key+1, '%tag' => $data['tag']));
+      $errors[] = t('Action #%num (%tag) in pattern %title: <%tag> is not a valid tag', array('%num' => $index+1, '%tag' => $data['tag'], '%title' => $pattern_title));
     }
     else {
       $error = patterns_invoke($actions[$key], 'pre-validate');
       if ($error) {
-        $errors[] = t('Action #%num (%tag): !msg', array('!msg' => $error, '%num' => $key+1, '%tag' => $data['tag']));
+        $errors[] = t('Action #%num (%tag) in pattern %title: !msg', array('!msg' => $error, '%num' => $index+1, '%tag' => $data['tag'], '%title' => $pattern_title));
       }
     }
   }
@@ -1084,7 +1097,7 @@ function patterns_batch_actions($action, $place, $actions_map, &$context) {
   if (!empty($context['results']['abort'])) return;
   
   $result = patterns_implement_action($action, $context['results']['identifiers'], $place, $actions_map); 
-  
+
   if (!$result['success']) {
     // we use 'results' to keep track of errors and abort execution if required
     $context['results']['abort'] = TRUE;
@@ -1137,8 +1150,10 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
   }
 
   $action_descriptions = patterns_invoke($action, 'actions');
-  $index = $actions_map['map'][$place]['index'] + 1;
-  $title = $actions_map['patterns'][$actions_map['map'][$place]['pid']]['title'];
+  $action_location = patterns_locate_action($place, $actions_map);
+  $index = $action_location['key'] + 1;
+  $pattern_title = $action_location['title'];
+  $pattern_file = $action_location['file'];
    
   // Build the action
   foreach($form_ids as $form_id) {
@@ -1156,14 +1171,14 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
     }
   
     $error = patterns_invoke($clone, 'validate', $form_id);
-    if ($message = patterns_error_get_last('validate', $index, $title, $action_description)) {
+    if ($message = patterns_error_get_last('validate', $index, $action_description, $pattern_title, $pattern_file)) {
       $result['error_message'] = $message;
       $result['success'] = FALSE;
       return $result;
     }
   
     if ($error) {
-      $message = t('An error occured while validating action #%num (%action) in %title pattern', array('%num' => $index, '%action' => $action_description, '%title' => $title));
+      $message = t('An error occured while validating action #%num (%action) in %title pattern', array('%num' => $index, '%action' => $action_description, '%title' => $pattern_title));
       $result['error_message'] = $message .'<br>'. $error;
       $result['success'] = FALSE;
       return $result;
@@ -1173,7 +1188,7 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
     // or it can be the full form_state object
     $form_obj = patterns_invoke($clone, 'build', $form_id);
   
-    if ($message = patterns_error_get_last('build', $index, $title, $action_description)) {
+    if ($message = patterns_error_get_last('build', $index, $action_description, $pattern_title, $pattern_file)) {
       $result['error_message'] = $message;
       $result['success'] = FALSE;
       return $result;
@@ -1201,7 +1216,7 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
   
       // Get any extra parameters required for the action
       $params = patterns_invoke($clone, 'params', $form_id, $action_state);
-      if ($message = patterns_error_get_last('params', $index, $title, $action_description)) {
+      if ($message = patterns_error_get_last('params', $index, $action_description, $pattern_title, $pattern_file)) {
         $result['error_message'] = $message;
         $result['success'] = FALSE;
         return $result;
@@ -1216,21 +1231,21 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
       // Execute action
       patterns_execute_action($form_id, $action_state, $params);
 
-      if ($message = patterns_error_get_last('execute', $index, $title, $action_description)) {
+      if ($message = patterns_error_get_last('execute', $index, $action_description, $pattern_title, $pattern_file)) {
         $result['error_message'] = $message;
         $result['success'] = FALSE;
         return $result;
       }
 
       if (form_get_errors()) {
-        $result['error_message'] = t('Above error occured while executing action #%num (%action) in %title pattern', array('%num' => $index, '%action' => $action_description, '%title' => $title));
+        $result['error_message'] = t('Above error occured while executing action #%num (%action) in %title pattern', array('%num' => $index, '%action' => $action_description, '%title' => $pattern_title));
         $result['success'] = FALSE;
         return $result;
       }
   
       // Let a component cleanup after each action
       patterns_invoke($clone, 'cleanup', $form_id, $action_state);
-      if ($message = patterns_error_get_last('cleanup', $index, $title, $action_description)) {
+      if ($message = patterns_error_get_last('cleanup', $index,  $action_description, $pattern_title, $pattern_file)) {
           $result['error_message'] = $message;
           $result['success'] = FALSE;
           return $result;
@@ -2077,7 +2092,7 @@ function patterns_restore_error_handler() {
  * Based on drupal_error_handler().
  */
 function patterns_error_handler($errno, $message, $filename, $line, $context) {
-  
+
   if ($errno & (E_ALL ^ E_NOTICE)) {
 
     $types = array(1 => 'error', 2 => 'warning', 4 => 'parse error', 8 => 'notice', 16 => 'core error', 32 => 'core warning', 64 => 'compile error', 128 => 'compile warning', 256 => 'user error', 512 => 'user warning', 1024 => 'user notice', 2048 => 'strict warning', 4096 => 'recoverable fatal error');
@@ -2101,26 +2116,22 @@ function patterns_error_handler($errno, $message, $filename, $line, $context) {
       }
     }
 
-    $entry = $types[$errno] .': '. $message .' in '. $filename .' on line (and my addition here) '. $line .'.';
-
-    // Force display of error messages in update.php.
-//    if ($message != 'patterns_error' && (variable_get('error_level', 1) == 1 || strstr($_SERVER['SCRIPT_NAME'], 'update.php'))) {
-//dpm($errno);
-//dpm($message);
-//dpm($context);
-//      drupal_set_message($entry, 'error');
-//    }
-    
-    // 'patterns_error' is not a real error and should be excluded from watchdog
+    // 'patterns_error' is not a real error and should be skipped
     if ($message != 'patterns_error') {
-      watchdog('php', '%message in %file on line %line.', array('%error' => $types[$errno], '%message' => $message, '%file' => $filename, '%line' => $line), WATCHDOG_ERROR);      
-    }
-    
+      watchdog('php', '%message in %file on line %line.', array('%error' => $types[$errno], '%message' => $message, '%file' => $filename, '%line' => $line), WATCHDOG_ERROR);
+      patterns_error_set_last(array('message' => $message, 'type' => $errno, 'file' => $filename, 'line' => $line));            
+    } 
   }
-  else {
-    return TRUE;
+  return TRUE;
+}
+
+function patterns_error_set_last($error = NULL) {
+  static $last_error = array();
+  
+  if (isset($error)) {
+    $last_error = $error;
   }
-  return FALSE;
+  return $last_error;
 }
 
 /**
@@ -2132,17 +2143,22 @@ function patterns_error_handler($errno, $message, $filename, $line, $context) {
  *   number of the action currently proccessed
  * @param $description
  *   description of the current action
+ * @param $pattern_title
+ *   title of the pattern currently proccessed
+ * @param $pattern_file
+ *   path to pattern file currently proccessed 
  * @return
- *   TRUE if new error encuntered
+ *   error message if new error encountered
  *   FALSE if there are no new errors
  *
  */
-function patterns_error_get_last($op, $key, $title, $description) {
-  $error = error_get_last();
-  if ($error['message'] != 'patterns_error') {
+function patterns_error_get_last($op, $key, $description, $pattern_title, $pattern_file) {
+  $error = patterns_error_set_last();
+
+  if (!empty($error) && $error['message'] != 'patterns_error') {
     $types = array(1 => 'error', 2 => 'warning', 4 => 'parse error', 8 => 'notice', 16 => 'core error', 32 => 'core warning', 64 => 'compile error', 128 => 'compile warning', 256 => 'user error', 512 => 'user warning', 1024 => 'user notice', 2048 => 'strict warning', 4096 => 'recoverable fatal error');
     $php_error_message = $types[$error['type']] .': '. $error['message'] .' in '. $error['file'] .' on line '. $error['line'] .'.';
-    $message = t('Action #%key in %title pattern: %description (op "%op")<br>PHP error occured.<br>%error', array('%key' => $key, '%title' => $title, '%op' => $op, '%description' => $description, '%error' => $php_error_message));
+    $message = t('Pattern %title (%pattern_file)<br>Action #%key: %description (op "%op")<br>PHP error occured:<br>%error', array('%key' => $key, '%title' => $pattern_title, '%op' => $op, '%description' => $description, '%error' => $php_error_message, '%pattern_file' => $pattern_file));
     return $message;
   }
   return FALSE;
