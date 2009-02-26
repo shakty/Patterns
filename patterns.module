@@ -938,7 +938,7 @@ function patterns_execute_pattern($pattern, $params = array(), $mode = 'batch') 
 }
 
 function patterns_execute_pattern_batch($pattern, $params = array()) {
-  
+
   set_time_limit(0);
 
   if (!is_object($pattern)) {
@@ -987,7 +987,7 @@ function patterns_execute_pattern_batch($pattern, $params = array()) {
     $batch['operations'][] = array('patterns_batch_actions', array($actions[$i], $i, $actions_map));
   }
 
-  $_SESSION['patterns_batch_info'] = $info;
+  $_SESSION['patterns_batch_info'] = $pattern_details['info'];
 
   batch_set($batch);
   return TRUE;
@@ -1115,8 +1115,10 @@ function patterns_batch_actions($action, $place, $actions_map, &$context) {
 function patterns_batch_finish($success, $results, $operations) {
   $info = $_SESSION['patterns_batch_info'];
   if (!($results['abort'])) {
-    drupal_set_message(t('Pattern "@pattern" ran successfully.', array('@pattern' => $info['title'])));
-    db_query('UPDATE {patterns} SET status = 1, enabled = "%s" WHERE pid = %d', time(), $info['pid']);
+    foreach ($info as $key => $i) {
+      drupal_set_message(t('Pattern "@pattern" ran successfully.', array('@pattern' => $i['title'])));
+      db_query('UPDATE {patterns} SET status = 1, enabled = "%s" WHERE pid = %d', time(), $key);
+    }
   }
   else {
     drupal_set_message(t('Pattern "@pattern" ran with the errors listed below.', array('@pattern' => $info['title'])));
