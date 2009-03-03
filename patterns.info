@@ -5,3 +5,4 @@ description = Enables extremely simple adding/removing features to your site wit
 dependencies[] = token
 core = 6.x
 package = Site Setup
+php = 5.1
