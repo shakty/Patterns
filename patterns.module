@@ -65,7 +65,25 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
-
+  $items['admin/build/patterns/publish'] = array(
+    'title' => 'Publish Pattern',
+    'page callback' => 'patterns_publish_pattern',
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK
+  );
+  $items['admin/build/patterns/unpublish'] = array(
+    'title' => 'Unpublish Pattern',
+    'page callback' => 'patterns_unpublish_pattern',
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK
+  );
+  $items['patterns/patterns.xml'] = array(
+    'title' => 'Published Patterns',
+    'page callback' => 'patterns_feed',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK
+  );
+  
   $items['admin/build/patterns/settings'] = array(
     'title' => 'Settings',
     'page callback' => 'drupal_get_form',
@@ -74,7 +92,14 @@ function patterns_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
   );
-
+  
+  $items['admin/build/patterns/get'] = array(
+    'title' => 'Download Pattern Source',
+    'page callback' => 'patterns_get_source',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK
+  );
+  
   //     $items[] = array('path' => 'admin/build/patterns/configure',
   //       'title' => t('Configure Pattern'),
   //       'callback' => 'drupal_get_form',
@@ -137,14 +162,13 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),    
     'type' => MENU_LOCAL_TASK
   );
-
-  //     $items[] = array('path' => 'admin/build/patterns/import/server',
-  //       'access' => user_access('administer patterns'),
-  //       'title' => t('Import via Patterns Server'),
-  //       'callback' => 'drupal_get_form',
-  //       'callback arguments' => array('patterns_import_server'),
-  //       'type' => MENU_LOCAL_TASK
-  //     );
+  $items['admin/build/patterns/import/server'] = array(
+    'title' => 'Import via Patterns Server',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('patterns_import_server'),  
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_LOCAL_TASK
+  );
 
   return $items;
 }
@@ -190,11 +214,265 @@ function patterns_import_source(&$form_state) {
 }
 
 /**
+ * Menu callback - returns source code of the requested pattern
+ * if the pattern is public
+ *
+ * @param $pid
+ *   pattern id
+ * @return 
+ *   source code of the requested pattern
+ */
+function patterns_get_source($pid) {
+  if (!is_numeric($pid)) {
+    exit;
+  }
+  
+  $pattern = patterns_get_pattern($pid);
+
+  // make sure pattern is public (published)
+  if (!$pattern->public) {
+    exit;
+  }
+  
+  $content_type = 'text/plain';
+  if (substr($pattern->file,-4) == '.xml') {
+    $content_type = 'text/xml';
+  }
+  
+  drupal_set_header('Content-Type: '. $content_type .'; charset=utf-8');
+  print file_get_contents($pattern->file);
+  exit;
+}
+/**
+ * Prints XML Feed of published (public) patterns
+ *
+ */
+function patterns_feed() {
+  global $base_url;
+  
+  $patterns = patterns_get_patterns();
+  
+  foreach ($patterns as $pattern) {
+    if (!$pattern->public) {
+      continue;
+    }
+    preg_match('/[^\.]*$/', $pattern->file, $matches);
+    $extension = $matches[0];
+    $item = "    <pattern>\n";
+    $item .= "      <pid>". $pattern->pid ."</pid>\n";
+    $item .= "      <name>". $pattern->name . "</name>\n";
+    $item .= "      <title>". $pattern->title . "</title>\n";
+    $item .= "      <description>". $pattern->description . "</description>\n";
+    $item .= "      <category>". $pattern->pattern['info']['category'] . "</category>\n";
+    $item .= "      <file_type>". $extension . "</file_type>\n";
+    $item .= "    </pattern>\n";
+    
+    $items .= $item;
+  }
+  
+  $header = "  <info>\n";
+  $header .= "    <url>". $base_url ."</url>\n";
+//  $header .= "    <description>". $description ."</description>\n";
+  $header .= "  </info>\n";
+  
+  $feed = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
+  $feed .= "<patterns_feed>\n";
+  $feed .= $header;
+  $feed .= "  <patterns>\n";
+  $feed .= $items;
+  $feed .= "  </patterns>\n";
+  $feed .= "</patterns_feed>\n";
+  
+  drupal_set_header('Content-Type: text/xml; charset=utf-8');
+  print $feed;
+  exit;  
+}
+
+/**
  * Display the import pattern from server form
  */
-// function patterns_import_server() {
-//   drupal_set_message('This feature not implemented yet.');
-// }
+function patterns_import_server(&$form_state) {
+  if (empty($form_state['storage'])) {
+    $form['server_url'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Specify Patterns Server URL'),
+      '#description' => t('Import patterns from a patterns server. Imported patterns are not executed until you run them manually.'),
+      '#size' => 48
+    );   
+  }
+  else {
+    $feed = $form_state['storage']['feed'];
+    
+    $form['patterns'] = array(
+      '#type' => 'fieldset',
+      '#tree' => TRUE,
+      '#title' => t('Patterns'),
+    );
+ 
+    foreach ($feed['patterns'] as $pattern) {
+      $form['patterns'][$pattern['pid']] = array(
+        '#type' => 'checkbox',
+        '#title' => $pattern['title'],
+        '#description' => $pattern['description'],
+        '#disabled' => in_array($pattern['file_type'], patterns_file_types()) ? FALSE : TRUE,
+      );  
+    }
+  }
+  
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit')
+  ); 
+
+  $form['#validate'][] = 'patterns_import_server_validate';
+  $form['#submit'][] = 'patterns_import_server_submit';
+
+  return $form;
+}
+
+function patterns_import_server_validate($form, &$form_state) {
+  if (empty($form_state['storage'])) {
+    if (!ini_get('allow_url_fopen')) {
+      form_set_error('fopen', t('allow_url_fopen must be enabled in your php configuration in order to use this feature.'));
+      return;
+    }
+    if (empty($form_state['values']['server_url'])) {
+      form_set_error('server_url', t('Please enter Patterns Server URL.'));
+      return;
+    }    
+    if (!$xml = file_get_contents($form_state['values']['server_url'])) {
+      form_set_error('server_url', t('Failed to retreive the patterns feed specified: %url. Please check your URL and try again.', array('%url' => $form_state['values']['server_url'])));
+      return;
+    }
+    // @todo: replace this with proper XML validation
+    if (strpos($xml, '<?xml') !== 0) {
+      form_set_error('', t('URL %url is not a valid XML file.', array('%url' => $form_state['values']['server_url'])));
+      return;
+    }
+
+    $feed = patterns_from_source($xml);
+    if (!$feed) {
+      form_set_error('', t('URL %url is not a valid patterns feed.', array('%url' => $form_state['values']['server_url'])));
+      return;
+    }
+    $feed = patterns_feed_rearrange_data($feed);
+    if (!$feed) {
+      form_set_error('', t('URL %url is not a valid patterns feed.', array('%url' => $form_state['values']['server_url'])));
+      return;
+    }    
+
+    $form_state['storage']['step'] = 'get url';
+    $form_state['storage']['server_url'] = $form_state['values']['server_url'];
+    $form_state['storage']['feed'] = $feed;    
+  }
+  else {
+    $form_state['storage']['step'] = 'select patterns';  
+  }
+}
+
+function patterns_import_server_submit($form, &$form_state) {
+  
+  if ($form_state['storage']['step'] == 'get url') {
+    return;
+  }
+  
+  $pids = array_keys(array_filter($form_state['values']['patterns']));
+  $feed = $form_state['storage']['feed'];
+  $errors = array();
+  
+  foreach ($pids as $pid) {
+    $url = $feed['info']['url'] .'/admin/build/patterns/get/'. $pid;
+    $pattern_info = $feed['patterns'][$pid]; 
+
+    if (!$source = file_get_contents($url)) {
+      $errors['get file'][] = $pattern_info;
+      continue;
+    }
+    
+    // choose appropriate function based on the file extension
+    $func = 'patterns_load_string_'. $pattern_info['file_type'];
+    
+    // Load pattern
+    if (!$pattern = $func($source)) {
+      $errors['load pattern'][] = $pattern_info;
+      continue;
+    }
+    
+    // save file
+    $path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
+    $path .= '/'. $pattern_info['name'] .'.'. $pattern_info['file_type'];  
+    if (!$saved = file_save_data($source, $path, FILE_EXISTS_ERROR)) {
+      $errors['save file'][] = $pattern_info;
+      continue;        
+    }
+
+    patterns_save_pattern($pattern, $saved, $pattern_info['name']);
+  }
+  
+  if (!empty($errors)) {
+    $patterns = array();
+    foreach ($errors as $type => $files) {
+      foreach ($files as $file) {
+        $patterns[] = $file['title'] .' (cause: "'. $type .'" failed)';
+      }
+      $patterns = theme('item_list', $patterns);
+    }
+    drupal_set_message(t('Import failed for the following patterns: ') .'<br>'. $patterns, 'error');
+    return;
+  }
+
+  unset($form_state['storage']);
+  $form_state['redirect'] = 'admin/build/patterns';  
+
+}
+
+function patterns_feed_rearrange_data($feed) {
+  unset($feed['tag']);
+  foreach ($feed as $key => $section) {
+    $tag = $section['tag'];
+    if ($tag == 'pattern') {
+      unset($section['tag']);
+      if (!isset($section['value'])) {
+        foreach ($section as $t) {
+          if ($t['tag'] == 'pid') {
+            $pid = $t['value'];
+            break;
+          }
+        }
+        $result[$pid] = patterns_feed_rearrange_data($section);
+      }
+      else {
+        $result[$tag] = $section['value'];
+      }   
+    }
+    else {
+      unset($section['tag']);
+      if (!isset($section['value'])) {
+        $result[$tag] = patterns_feed_rearrange_data($section);
+      }
+      else {
+        $result[$tag] = $section['value'];
+      }      
+    }
+  }
+  return $result;
+}
+
+function patterns_publish_pattern($pid) {
+  if (is_numeric($pid)) {
+    $result = db_query("UPDATE {patterns} SET public = 1 WHERE pid = %d", $pid);
+  }
+  drupal_set_message('Pattern published.');
+  drupal_goto('admin/build/patterns');
+}
+
+function patterns_unpublish_pattern($pid) {
+  if (is_numeric($pid)) {
+    $result = db_query("UPDATE {patterns} SET public = 0 WHERE pid = %d", $pid);
+  }
+  drupal_set_message('Pattern unpublished.');
+  drupal_goto('admin/build/patterns');
+}
 
 /**
  * Display the import pattern file form
@@ -346,6 +624,7 @@ function patterns_list() {
       $actions[] = l(t('Run Update'), 'admin/build/patterns/enable/'. $pid);
     }
     $actions[] = l(t('Edit'), 'admin/build/patterns/edit/'. $pid);
+    $actions[] = $pattern->public ? l(t('Unpublish'), 'admin/build/patterns/unpublish/'. $pid) : l(t('Publish'), 'admin/build/patterns/publish/'. $pid); 
     $actions = implode('&nbsp;&nbsp;', $actions);
 
     $cells = array();
@@ -513,7 +792,7 @@ function patterns_edit_submit($form, &$form_state) {
       db_query('UPDATE {patterns} SET file = "%s", updated = "%s" WHERE pid = "%d"', $path, time(), $form_state['values']['pid']);
     }
 
-    patterns_save_pattern($pattern, $path);
+    patterns_save_pattern($pattern, $path, $form_state['values']['name']);
     drupal_set_message(t('%name was saved.', array('%name' => $form_state['values']['name'])));
     $form_state['redirect'] = 'admin/build/patterns';
   }
@@ -611,13 +890,7 @@ function patterns_get_patterns($reset = true) {
     }
 
     // get valid file extensions
-    // @todo: convert this into pluggable system
-    if (file_exists(drupal_get_path('module', 'patterns') .'/spyc/spyc.php')) {
-      $mask = '.\.(xml|yaml)$';  
-    }
-    else {
-      $mask = '.\.xml$';
-    }
+    $mask = '.\.('. implode('|', patterns_file_types()) .')$';
 
     // prepare list of files/folders to be excluded
     // 'enabled' - Don't save enabled pattern backups
@@ -731,14 +1004,38 @@ function patterns_validate_pattern($pattern) {
   return empty($diff) ? TRUE : FALSE;
 }
 
-function patterns_load_yaml($path) {
-  include_once 'spyc/spyc.php';
+/**
+ * Return file extensions supported by patterns module
+ *
+ * @return array of supported file types
+ * 
+ * @todo convert this into pluggable system
+ */
+function patterns_file_types() {
+  $result = array('xml');
+  if (file_exists(drupal_get_path('module', 'patterns') .'/spyc/spyc.php')) {
+    $result[] = 'yaml';  
+  }
+  return $result; 
+}
 
-  if (!file_exists($path)) {
+function patterns_load_yaml($path, $local = TRUE) {
+
+  if ($local && !file_exists($path)) {
+    return FALSE;
+  }
+
+  if (!$yaml = file_get_contents($path)) {
     return FALSE;
   }  
+
+  return patterns_load_string_yaml($yaml);
+}
+
+function patterns_load_string_yaml($source) {
+  include_once 'spyc/spyc.php';
   
-  $pattern = Spyc::YAMLLoad($path);
+  $pattern = Spyc::YAMLLoadString($source);
 
   if (!patterns_validate_pattern($pattern)) {
     return FALSE;
@@ -747,14 +1044,20 @@ function patterns_load_yaml($path) {
   return $pattern;
 }
 
-function patterns_load_xml($path) {
-  if (!file_exists($path)) {
+function patterns_load_xml($path, $local = TRUE) {
+  if ($local && !file_exists($path)) {
     return FALSE;
   }
 
-  $xml = file_get_contents($path);
+  if (!$xml = file_get_contents($path)) {
+    return FALSE;
+  }
+    
+  return patterns_load_string_xml($xml);
+}
 
-  $pattern = patterns_from_source($xml);
+function patterns_load_string_xml($source) {
+  $pattern = patterns_from_source($source);
   if (empty($pattern) || $pattern['tag'] != 'pattern') {
     return FALSE;
   }
