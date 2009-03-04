@@ -297,6 +297,16 @@ function patterns_feed() {
  */
 function patterns_import_server(&$form_state) {
   if (empty($form_state['storage'])) {
+
+    $path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
+    if (!file_check_directory($path, true)) {
+      $message = t("In order to save imported patterns, directory %path must be writable.<br />", array('%path' => $path));
+      $link = l(t('status report'), 'admin/reports/status');
+      $message .= t('You might want to check the !link to ensure your files directory exists and is writable.', array('!link' => $link));
+      drupal_set_message($message, 'error');
+      return array();
+    }    
+    
     $form['server_url'] = array(
       '#type' => 'textfield',
       '#title' => t('Specify Patterns Server URL'),
