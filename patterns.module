@@ -77,7 +77,7 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
-  $items['patterns/patterns.xml'] = array(
+  $items['patterns.xml'] = array(
     'title' => 'Published Patterns',
     'page callback' => 'patterns_feed',
     'access callback' => TRUE,
@@ -143,31 +143,32 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_LOCAL_TASK
   );
-  $items['admin/build/patterns/import/xmltext'] = array(
-    'title' => 'Import via XML Source',
+  $items['admin/build/patterns/import/source'] = array(
+    'title' => 'Import Source Code',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10
   );
-  $items['admin/build/patterns/import/xmlfile'] = array(
-    'title' => 'Import via XML File',
+  $items['admin/build/patterns/import/file'] = array(
+    'title' => 'Import File',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('patterns_import_file'),
     'access arguments' => array('administer patterns'),    
     'type' => MENU_LOCAL_TASK
   );
-  $items['admin/build/patterns/import/xmlurl'] = array(
-    'title' => 'Import via XML URL',
+  $items['admin/build/patterns/import/url'] = array(
+    'title' => 'Import from URL',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('patterns_import_url'),
     'access arguments' => array('administer patterns'),    
     'type' => MENU_LOCAL_TASK
   );
-  $items['admin/build/patterns/import/server'] = array(
-    'title' => 'Import via Patterns Server',
+  $items['admin/build/patterns/server'] = array(
+    'title' => 'Patterns Server',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('patterns_import_server'),  
     'access arguments' => array('administer patterns'),
-    'type' => MENU_LOCAL_TASK
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -5
   );
 
   return $items;
@@ -190,6 +191,9 @@ function patterns_settings(&$form_state) {
  * Display the import pattern form
  */
 function patterns_import_source(&$form_state) {
+  if (empty($form_state['post'])) {
+    drupal_set_message(t('Import feature currently supports only XML file format.'), 'warning');  
+  }
   $form['xmlname'] = array(
     '#type' => 'textfield',
     '#title' => t('Pattern Identifier'),
@@ -199,8 +203,8 @@ function patterns_import_source(&$form_state) {
   $form['xmlsource'] = array(
     '#type' => 'textarea',
     '#rows' => 15,
-    '#title' => t('Enter Pattern XML'),
-    '#description' => t('Imported patterns are not executed until you run them manually. You can leave off the <?xml> tag at the top.')
+    '#title' => t('Enter Pattern Source Code'),
+    '#description' => t('Imported patterns are not executed until you run them manually.')
   );
   $form['submit'] = array(
     '#type' => 'submit',
@@ -296,13 +300,14 @@ function patterns_import_server(&$form_state) {
     $form['server_url'] = array(
       '#type' => 'textfield',
       '#title' => t('Specify Patterns Server URL'),
-      '#description' => t('Import patterns from a patterns server. Imported patterns are not executed until you run them manually.'),
+      '#description' => t('URL of the web site you want to import patterns from. Example: http://patterns.graviteklabs.com'),
+      '#default_value' => variable_get('patterns_default_server', 'http://patterns.graviteklabs.com'),
       '#size' => 48
     );   
   }
   else {
     $feed = $form_state['storage']['feed'];
-    
+
     $form['patterns'] = array(
       '#type' => 'fieldset',
       '#tree' => TRUE,
@@ -336,12 +341,13 @@ function patterns_import_server_validate($form, &$form_state) {
       form_set_error('fopen', t('allow_url_fopen must be enabled in your php configuration in order to use this feature.'));
       return;
     }
-    if (empty($form_state['values']['server_url'])) {
+    $feed_url = $form_state['values']['server_url'] .'/patterns.xml';
+    if (empty($feed_url)) {
       form_set_error('server_url', t('Please enter Patterns Server URL.'));
       return;
     }    
-    if (!$xml = file_get_contents($form_state['values']['server_url'])) {
-      form_set_error('server_url', t('Failed to retreive the patterns feed specified: %url. Please check your URL and try again.', array('%url' => $form_state['values']['server_url'])));
+    if (!$xml = file_get_contents($feed_url)) {
+      form_set_error('server_url', t('Failed to retreive the patterns feed from: %url. Please check your URL and try again.', array('%url' => $form_state['values']['server_url'])));
       return;
     }
     // @todo: replace this with proper XML validation
@@ -363,6 +369,7 @@ function patterns_import_server_validate($form, &$form_state) {
 
     $form_state['storage']['step'] = 'get url';
     $form_state['storage']['server_url'] = $form_state['values']['server_url'];
+    $form_state['storage']['feed_url'] = $feed_url;
     $form_state['storage']['feed'] = $feed;    
   }
   else {
@@ -478,10 +485,13 @@ function patterns_unpublish_pattern($pid) {
  * Display the import pattern file form
  */
 function patterns_import_file(&$form_state) {
+  if (empty($form_state['post'])) {
+    drupal_set_message(t('Import feature currently supports only XML file format.'), 'warning');  
+  }
   $form['#attributes']['enctype'] = 'multipart/form-data';
   $form['xmlfile'] = array(
     '#type' => 'file',
-    '#title' => t('Upload XML Pattern File'),
+    '#title' => t('Upload Pattern File'),
     '#description' => t('Imported patterns are not executed until you run them manually.'),
     '#size' => 48
   );
@@ -500,9 +510,12 @@ function patterns_import_file(&$form_state) {
  * Display the import pattern url form
  */
 function patterns_import_url(&$form_state) {
+  if (empty($form_state['post'])) {
+    drupal_set_message(t('Import feature currently supports only XML file format.'), 'warning');  
+  }
   $form['xmlurl'] = array(
     '#type' => 'textfield',
-    '#title' => t('Specify an XML url'),
+    '#title' => t('Specify an URL'),
     '#description' => t('Import a pattern from a remote URL. Imported patterns are not executed until you run them manually.'),
     '#size' => 48
   );
