@@ -906,7 +906,7 @@ function patterns_get_patterns($reset = true) {
       'profiles/'. $profile .'/patterns',
       drupal_get_path('module', 'patterns') .'/patterns'
     );
-    
+
     // also prepend files folder if it's valid
     if (file_check_directory($path)) {
       array_unshift($patterns_paths, $path);
@@ -918,7 +918,7 @@ function patterns_get_patterns($reset = true) {
     // prepare list of files/folders to be excluded
     // 'enabled' - Don't save enabled pattern backups
     $no_mask = array('.', '..', 'CVS', '.svn', 'enabled');
-      
+
     foreach ($patterns_paths as $path) {
       foreach(file_scan_directory($path, $mask, $no_mask) as $file) {
         // Can't update existing patterns that are enabled
@@ -1582,6 +1582,10 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
   
     // Clear the cache in case it causes problems
     cache_clear_all();
+    
+    // Rebuild the menu
+    // TODO Should this go at the end only when a pattern successfully runs?
+    variable_set('menu_rebuild_needed', true);
   }
 
   // Get any primary identifiers from the action for further actions to take advantage of
