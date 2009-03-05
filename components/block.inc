@@ -102,15 +102,16 @@ function block_patterns($op, $id = null, &$data = null) {
     // Prepare for valid processing of this type of component
     case 'build':
       module_load_include('inc', 'block', 'block.admin');
+      // Fetch and sort blocks
+      $blocks = _block_rehash();
+      usort($blocks, '_block_compare');
+
       if ($id == 'block_box_delete') {
         $data['op'] = t('Delete');
         $data['confirm'] = 1;
       }
       else if ($id == 'block_admin_display_form') {
         if (isset($data['status']) && $data['status'] == 0) $data['region'] = -1;
-        // Fetch and sort blocks
-        $blocks = _block_rehash();        
-        usort($blocks, '_block_compare');
         $block = $data;
         $data = array();
         
