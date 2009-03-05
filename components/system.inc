@@ -132,8 +132,11 @@ function system_patterns($op, $id = null, &$data = null) {
         case 'form':
           // attempt to load required include file if callback function is not defined
           if (!function_exists($data['form_id'])) {
-            if (!empty($data['include_file']) && is_file($data['include_file'])) {
-              require_once $data['include_file'];
+            if (is_array($data['include'])) {
+              $data['include'] = drupal_get_path('module', $data['include']['module']) .'/'. $data['include']['file'];
+            }
+            if (!empty($data['include']) && is_file($data['include'])) {
+              require_once $data['include'];
             }
             elseif (!empty($data['module']) && is_string($data['module'])) {
               $modules = module_list();
@@ -223,6 +226,18 @@ function system_patterns($op, $id = null, &$data = null) {
       	return 'system_themes_form';
       }
       else if ($id == 'form') {
+        if (!empty($data['include']) && is_file($data['include'])) {
+          require_once $data['include'];
+        }
+        elseif (!empty($data['module']) && is_string($data['module'])) {
+          $modules = module_list();
+          if (in_array($data['module'], $modules)) {
+            // try most common include file names
+            module_load_include('inc', $data['module']);
+            module_load_include('inc', $data['module'], $data['module'] .'.admin');
+            module_load_include('inc', $data['module'], $data['module'] .'.page');
+          }   
+        }
       	return $data['form_id'];
       }
     break;
