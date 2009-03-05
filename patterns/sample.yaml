@@ -1,8 +1,8 @@
 info:
-  title: YAML sample
+  title: YAML example
   description: sample YAML pattern
   author: Vaish
-  category: Template
+  category: Examples
   author_email: vnd@graviteklabs.com
 
 modules:

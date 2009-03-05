@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <pattern>
   <info>
-    <title>Drupal6 Template</title>
-    <description>Template/sample for creating your own patterns.</description>
+    <title>XML Example</title>
+    <description>XML samples for creating your own patterns.</description>
     <author>Vaish</author>
     <author_email>vnd@graviteklabs.com</author_email>
     <version>0.1</version>
-    <category>Template</category>
+    <category>Examples</category>
     <core>6.x</core>    
   </info>
   
