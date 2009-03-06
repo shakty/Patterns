@@ -1695,8 +1695,8 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
   if (in_array($pattern->pid, $pids)) return array();
   $pids[] = $pattern->pid;
 
-  $actions = isset($pattern->pattern['actions']) ? $pattern->pattern['actions'] : array();
-  $modules = isset($pattern->pattern['modules']) ? $pattern->pattern['modules'] : array();
+  $actions = !empty($pattern->pattern['actions']) ? $pattern->pattern['actions'] : array();
+  $modules = !empty($pattern->pattern['modules']) ? $pattern->pattern['modules'] : array();
     
   $patterns[$pattern->pid] = (array)$pattern;
   $patterns[$pattern->pid] = array_merge($patterns[$pattern->pid], $patterns[$pattern->pid]['pattern']['info']);
