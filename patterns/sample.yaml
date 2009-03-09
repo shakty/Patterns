@@ -62,4 +62,9 @@ actions:
       title: About Us
       path: node/@aboutus@
       weight: 5
+  - tag: variable
+      name: theme_settings
+      toggle_node_info_page: 0
+      toggle_node_info_story: 1
+      toggle_favicon: 0      
       
