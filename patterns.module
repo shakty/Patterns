@@ -1295,7 +1295,7 @@ function patterns_execute_pattern_batch($pattern, $params = array()) {
     return FALSE;
   }
 
-  $result = patterns_prepare_actions(&$actions, $actions_map);  
+  $result = patterns_prepare_actions($actions, $actions_map);  
   if (!$result['success']) {
     drupal_set_message($result['error_message'], 'error');
     return FALSE;
@@ -1324,7 +1324,7 @@ function patterns_install_modules(&$modules) {
   
   if (empty($modules)) return $result;
   
-  $missing = patterns_check_module_dependencies(&$modules, TRUE);
+  $missing = patterns_check_module_dependencies($modules, TRUE);
   if (!empty($missing)) {
     $result['success'] = FALSE;
     $result['error_message'] = t('Following required modules are missing: %modules', array('%modules' => implode(', ', $missing)));
