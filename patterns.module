@@ -1707,7 +1707,18 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
 
     foreach($actions as $key => $action) {
       if ($action['tag'] == 'pattern') {
-        $p = patterns_get_pattern($action['value']);
+        // determine pattern name
+        if (!empty($action['value'])) {
+          $name = $action['value'];
+        }
+        elseif (!empty($action['name'])) {
+          $name = $action['name'];
+        }
+        if (!$p = patterns_get_pattern($name)) {
+          // just give a warning and try to continue
+          drupal_set_message(t('Action #%key in %file: Pattern %pattern not found.<br>Pattern execution will try to continue without it.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'warning');
+          continue;
+        }
         $a = patterns_get_pattern_details($p, TRUE, $pids);
         // array_merge doesn't preserve numeric array keys
         // so we handle 'info' separately 
