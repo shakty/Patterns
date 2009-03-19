@@ -100,74 +100,76 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
       $data['op'] = t('Save');
       $node = drupal_clone($data['node']);
       
-      // build CCK fields
-      $type = $data['type'];
-      $form_id = $type .'_node_form';
-      $form_state = array();
-      $form = drupal_retrieve_form($form_id, $form_state, $node);
-      drupal_prepare_form($form_id, $form, $form_state);
-      
-      $content_type = content_types($type);
-      $fields_info = $content_type['fields'];
-      if (module_exists('fieldgroup')) {
-        $groups = fieldgroup_groups($type, FALSE, TRUE);
-      }
-
-      // TODO: make this work for PHP4
-      $fields = array();
-      $fields_diff = array();
-      if (!empty($groups)) {
-        foreach($groups as $key => $group) {
-          $fields = array_merge($fields, array_intersect_ukey($form[$key], $group['fields'], '_patterns_compare_keys')); 
-        }
-        $fields_diff = array_diff_ukey($fields_info, $fields, '_patterns_compare_keys');
-        $fields = array_merge($fields, array_intersect_ukey($form, $fields_diff, '_patterns_compare_keys'));
-      }
-      else {
-        $fields = array_merge($fields, array_intersect_ukey($form, $fields_info, '_patterns_compare_keys'));
-      }
-
-      if (!empty($fields)) {
-        $defaults = array();
-        foreach($fields as $field_name => $field) {
-          $name = count($field[0]['#columns']) == 1 ? $field[0]['#columns'][0] : 'value';
-          $alias = str_replace('field_', '', $field_name);
-           
-          if (isset($field['#default_value']) && !isset($field[0])) {
-            $default = empty($field['default_value']) ? '' : $field['default_value'];
-            $defaults[$field_name][0][$name] = _patterns_get_field_value($data['fields'][$alias], $name, $default);
-          }
-          else {
-            $i = 0;
-            while (isset($field[$i])) {          	
-              if (is_string($field[$i]['#default_value'])) {
-                $default = empty($field[$i]['default_value']) ? '' : $field[$i]['default_value'];
-                $defaults[$field_name][$i][$name] = _patterns_get_field_value($data['fields'][$alias], $name, $default);
-              }
-              elseif (is_array($field[$i]['#default_value'])) {
-                foreach ($field[$i]['#default_value'] as $key => $val) {
-                  $defaults[$field_name][$i][$key] = _patterns_get_field_value($data['fields'][$alias], $key, $val);
-                }
-              }
+      if (module_exists('content')) {
+        // build CCK fields
+        $type = $data['type'];
+        $form_id = $type .'_node_form';
+        $form_state = array();
+        $form = drupal_retrieve_form($form_id, $form_state, $node);
+        drupal_prepare_form($form_id, $form, $form_state);
         
-              if (count($field[$i]['#columns']) > 1) {
-                foreach ($field[$i]['#columns'] as $col) {
-                  if (isset($field[$i][$col])) {
-                    $value = _patterns_get_field_value($data['fields'][$alias], $col, $field[$i][$col]['#default_value']);
-                    $defaults[$field_name][$i][$col] = array($col => $value);
-                  }
-                  else {
-                    $defaults[$field_name][$i][$col] = _patterns_get_field_value($data['fields'][$alias], $col, NULL);
+        $content_type = content_types($type);
+        $fields_info = $content_type['fields'];
+        if (module_exists('fieldgroup')) {
+          $groups = fieldgroup_groups($type, FALSE, TRUE);
+        }
+  
+        // TODO: make this work for PHP4
+        $fields = array();
+        $fields_diff = array();
+        if (!empty($groups)) {
+          foreach($groups as $key => $group) {
+            $fields = array_merge($fields, array_intersect_ukey($form[$key], $group['fields'], '_patterns_compare_keys')); 
+          }
+          $fields_diff = array_diff_ukey($fields_info, $fields, '_patterns_compare_keys');
+          $fields = array_merge($fields, array_intersect_ukey($form, $fields_diff, '_patterns_compare_keys'));
+        }
+        else {
+          $fields = array_merge($fields, array_intersect_ukey($form, $fields_info, '_patterns_compare_keys'));
+        }
+  
+        if (!empty($fields)) {
+          $defaults = array();
+          foreach($fields as $field_name => $field) {
+            $name = count($field[0]['#columns']) == 1 ? $field[0]['#columns'][0] : 'value';
+            $alias = str_replace('field_', '', $field_name);
+             
+            if (isset($field['#default_value']) && !isset($field[0])) {
+              $default = empty($field['default_value']) ? '' : $field['default_value'];
+              $defaults[$field_name][0][$name] = _patterns_get_field_value($data['fields'][$alias], $name, $default);
+            }
+            else {
+              $i = 0;
+              while (isset($field[$i])) {          	
+                if (is_string($field[$i]['#default_value'])) {
+                  $default = empty($field[$i]['default_value']) ? '' : $field[$i]['default_value'];
+                  $defaults[$field_name][$i][$name] = _patterns_get_field_value($data['fields'][$alias], $name, $default);
+                }
+                elseif (is_array($field[$i]['#default_value'])) {
+                  foreach ($field[$i]['#default_value'] as $key => $val) {
+                    $defaults[$field_name][$i][$key] = _patterns_get_field_value($data['fields'][$alias], $key, $val);
                   }
                 }
-              }            
-              $i++;
+          
+                if (count($field[$i]['#columns']) > 1) {
+                  foreach ($field[$i]['#columns'] as $col) {
+                    if (isset($field[$i][$col])) {
+                      $value = _patterns_get_field_value($data['fields'][$alias], $col, $field[$i][$col]['#default_value']);
+                      $defaults[$field_name][$i][$col] = array($col => $value);
+                    }
+                    else {
+                      $defaults[$field_name][$i][$col] = _patterns_get_field_value($data['fields'][$alias], $col, NULL);
+                    }
+                  }
+                }            
+                $i++;
+              }
             }
           }
+          $data = $data + $defaults;
         }
-        $data = $data + $defaults;
       }
-
+        
       // build taxonomy array
       $vocabularies = taxonomy_get_vocabularies($data['type']);      
       
@@ -304,9 +306,8 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
     // Validate the values for an action before running the pattern
     case 'validate':
       // TODO: validate name field - should be valid/existing username
-      
-      $type = content_types($data['type']);
-      if ($type['type'] != $data['type'] && !$data['delete']) {
+       
+      if (!node_get_types('types', $data['type'], TRUE) && !$data['delete']) {
         return t('Invalid content type: %type', array('%type' => $data['type']));
       }
     break;
