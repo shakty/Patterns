@@ -1451,6 +1451,7 @@ function patterns_batch_finish($success, $results, $operations) {
     drupal_set_message($results['error_message'], 'error'); 
   }
   unset($_SESSION['patterns_batch_info']);
+  drupal_flush_all_caches();
 }
 
 /**
