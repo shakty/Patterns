@@ -107,7 +107,7 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
         $form_state = array();
         $form = drupal_retrieve_form($form_id, $form_state, $node);
         drupal_prepare_form($form_id, $form, $form_state);
-        
+            
         $content_type = content_types($type);
         $fields_info = $content_type['fields'];
         if (module_exists('fieldgroup')) {
@@ -127,41 +127,62 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
         else {
           $fields = array_merge($fields, array_intersect_ukey($form, $fields_info, '_patterns_compare_keys'));
         }
-  
+
         if (!empty($fields)) {
           $defaults = array();
           foreach($fields as $field_name => $field) {
-            $name = count($field[0]['#columns']) == 1 ? $field[0]['#columns'][0] : 'value';
             $alias = str_replace('field_', '', $field_name);
-             
+            
             if (isset($field['#default_value']) && !isset($field[0])) {
-              $default = empty($field['default_value']) ? '' : $field['default_value'];
-              $defaults[$field_name][0][$name] = _patterns_get_field_value($data['fields'][$alias], $name, $default);
+              $col = $field['#columns'][0];
+              
+              // prepare default value 
+              if (is_numeric($field['#default_value']) || is_string($field['#default_value'])) {
+                $default = $field['#default_value'];
+              }
+              elseif (empty($field['#default_value'])) {
+                $default = NULL;
+              }              
+              else {
+                $default = array();
+                foreach ($field['#default_value'] as $value) {
+                  foreach ($value as $key => $val) {
+                    if (empty($default[$key])) {
+                      $default[$key] = array();
+                    }
+                    $v = array($val => $val);
+                    $default[$key] = $default[$key] + $v;
+                  }
+                }
+              }
+              
+              // fix for non-standard format of nodereference and userreference fields
+              if (preg_match('/^(nodereference|userreference)/', $field['#type'])) {
+                $defaults[$field_name][$col][$col] = _patterns_get_field_value($data['fields'][$alias], $col, $default[$col]);  
+              }
+              else {
+                $defaults[$field_name][$col] = _patterns_get_field_value($data['fields'][$alias], $col, $default[$col]);
+              }
             }
             else {
               $i = 0;
-              while (isset($field[$i])) {          	
-                if (is_string($field[$i]['#default_value'])) {
-                  $default = empty($field[$i]['default_value']) ? '' : $field[$i]['default_value'];
-                  $defaults[$field_name][$i][$name] = _patterns_get_field_value($data['fields'][$alias], $name, $default);
-                }
-                elseif (is_array($field[$i]['#default_value'])) {
-                  foreach ($field[$i]['#default_value'] as $key => $val) {
-                    $defaults[$field_name][$i][$key] = _patterns_get_field_value($data['fields'][$alias], $key, $val);
+              while (isset($field[$i])) {
+                foreach ($field[$i]['#columns'] as $col) {
+                  if (isset($field[$i][$col])) {
+                    $value = _patterns_get_field_value($data['fields'][$alias], $col, $field[$i][$col]['#default_value']);
+                    $defaults[$field_name][$i][$col] = array($col => $value);
                   }
-                }
-          
-                if (count($field[$i]['#columns']) > 1) {
-                  foreach ($field[$i]['#columns'] as $col) {
-                    if (isset($field[$i][$col])) {
-                      $value = _patterns_get_field_value($data['fields'][$alias], $col, $field[$i][$col]['#default_value']);
-                      $defaults[$field_name][$i][$col] = array($col => $value);
+                  else {
+                    $default = isset($field[$i]['#default_value'][$col]) ? $field[$i]['#default_value'][$col] : NULL;
+                    // fix for non-standard implementation of viewfield module
+                    if (preg_match('/^(viewfield)/', $field[$i]['#type'])) {
+                      $defaults[$field_name][$i]['fieldset'][$col] = _patterns_get_field_value($data['fields'][$alias], $col, $default);
                     }
                     else {
-                      $defaults[$field_name][$i][$col] = _patterns_get_field_value($data['fields'][$alias], $col, NULL);
+                      $defaults[$field_name][$i][$col] = _patterns_get_field_value($data['fields'][$alias], $col, $default);  
                     }
                   }
-                }            
+                }
                 $i++;
               }
             }
@@ -169,7 +190,7 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
           $data = $data + $defaults;
         }
       }
-        
+
       // build taxonomy array
       $vocabularies = taxonomy_get_vocabularies($data['type']);      
       
@@ -346,13 +367,13 @@ function _patterns_compare_keys($key1, $key2) {
 }
 
 function _patterns_get_field_value($field, $key, $default) {
-  if (empty($field)) {
-    return $default;
+  if (is_array($field)) {
+    return isset($field[$key]) ? $field[$key] : $default;
   }
-  elseif (is_string($field)) {
+  elseif (is_numeric($field) || is_string($field)) {
     return $field;
   }
-  elseif (is_array($field)) {
-    return empty($field[$key]) ? $default : $field[$key];
+  else {
+    return $default;
   }
 }
