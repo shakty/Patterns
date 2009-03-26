@@ -980,7 +980,7 @@ function patterns_save_pattern($pattern, $path = '', $name = '') {
   
   if ($pid = db_result(db_query('SELECT pid FROM {patterns} WHERE name = "%s"', $name))) {
     $updated = db_result(db_query('SELECT updated FROM {patterns} WHERE pid = "%d"', $pid));
-    if (($new_updated = filemtime(file_create_path($path))) > $updated) {
+    if (($new_updated = filemtime($path)) > $updated) {
       db_query('UPDATE {patterns} SET pattern = "%s", title = "%s", file = "%s", updated = "%s", description = "%s" WHERE pid = %d', serialize($pattern), $title, $path, $new_updated, $description, $pid);
     }
     else {
