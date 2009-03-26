@@ -209,7 +209,7 @@ function system_patterns($op, $id = null, &$data = null) {
       		return t('"form_id" is missing.');
       	}
       	if (!function_exists($data['form_id'])) {
-          return t("Couldn't load the form %form. Check if all required modules are enabled and try to define 'include_file' or 'module' tag for this action.", array('%form' => $data['form_id']));
+          return t("Couldn't load the form %form. Check if all required modules are enabled and try to define 'include' or 'module' for this action.", array('%form' => $data['form_id']));
       	}
       }
     break;
