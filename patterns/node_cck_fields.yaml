@@ -1,0 +1,56 @@
+---
+info: 
+  title: |
+    Node: CCK Fields example
+  description: |
+    Creates a node and provides examples for CCK fields syntax. Depends on "Content Type: CCK Fields example".
+  author: Vaish
+  author_email: vaish@graviteklabs.com
+  version: 0.1
+  author_date: 03.26.2009
+  category: Examples
+  core: 6.x
+actions:
+  - 
+    tag: node
+    type: company
+    title: Creative Technologies
+    body: lorem ipsum ...
+    taxonomy:
+      - vocabulary: Company Type
+        term: Vendor
+    fields:
+      company_name: Creative Technologies
+      industry: telecom
+      email: info@creativetech.com
+      website: 
+        url: http://creativetech.com
+      demo_site:
+        title: Demos and Examples
+        url: http://demos.creativetech.com
+      phone_number: (123) 456-7890
+      address:
+        value: |
+          74 Fifth Avenue, 
+          Baltimore
+        format: 1
+      established:
+        value: 2008-09-09
+      primary_contact:
+        nid: 3
+      sysadmin:
+        uid:
+          4: 4
+          3: 3
+      num_employees: 500
+      features:
+        value:
+          1: 1
+          3: 3
+      public: 0
+      posts:
+        view_id: 9
+        arguments:
+      testimonials:
+        vname: tracker|default
+        vargs: 1
