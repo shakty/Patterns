@@ -405,16 +405,7 @@ function patterns_import_server_submit($form, &$form_state) {
       $errors['get file'][] = $pattern_info;
       continue;
     }
-    
-    // choose appropriate function based on the file extension
-    $func = 'patterns_load_string_'. $pattern_info['file_type'];
-    
-    // Load pattern
-    if (!$pattern = $func($source)) {
-      $errors['load pattern'][] = $pattern_info;
-      continue;
-    }
-    
+
     // save file
     $path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
     $path .= '/'. $pattern_info['name'] .'.'. $pattern_info['file_type'];  
@@ -423,6 +414,16 @@ function patterns_import_server_submit($form, &$form_state) {
       continue;        
     }
 
+      // choose appropriate function based on the file extension
+    $func = 'patterns_load_'. $pattern_info['file_type'];
+    
+    // Load pattern
+    if (!$pattern = $func($saved)) {
+      $errors['load pattern'][] = $pattern_info;
+      unlink($saved);
+      continue;
+    }    
+    
     patterns_save_pattern($pattern, $saved, $pattern_info['name']);
   }
   
@@ -1043,27 +1044,28 @@ function patterns_file_types() {
 }
 
 function patterns_load_yaml($path, $local = TRUE) {
-
   if ($local && !file_exists($path)) {
     return FALSE;
   }
 
-  if (!$yaml = file_get_contents($path)) {
-    return FALSE;
-  }  
-
-  return patterns_load_string_yaml($yaml);
-}
-
-function patterns_load_string_yaml($source) {
-  include_once 'spyc/spyc.php';
-  
-  $pattern = Spyc::YAMLLoadString($source);
+  include_once 'spyc/spyc.php';  
+  $pattern = Spyc::YAMLLoad($path);
 
   if (!patterns_validate_pattern($pattern)) {
     return FALSE;
   }
 
+  return $pattern;
+}
+
+function patterns_load_string_yaml($source) {
+  // loading yaml from source doesn't preserve line breaks
+  // so we need to save it as a file first
+  $path = file_directory_temp() .'/import.yaml';
+  file_save_data($source, $path, FILE_EXISTS_REPLACE);
+  $pattern = patterns_load_yaml($path);
+  unlink($path);
+  
   return $pattern;
 }
 
