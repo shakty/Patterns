@@ -476,7 +476,14 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
         }
         return t('Your settings have been saved.');
       }           
-
+      elseif ($id == 'content_field_overview_form') {
+        // due to all the data being passed to multiple forms we may 
+        // end up with some CCK field's "title" setting overwriting title 
+        // field on this form with some bogus value 
+        if (!is_array($data['title'])) {
+          unset($data['title']);
+        }
+      }
       return $data;
     break;
     
