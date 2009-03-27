@@ -132,6 +132,13 @@ function system_patterns($op, $id = null, &$data = null) {
         case 'form':
           // attempt to load required include file if callback function is not defined
           if (!function_exists($data['form_id'])) {
+            $menu = menu_router_build(TRUE);
+            foreach ($menu as $item) {
+              if ($item['page arguments'][0] == $data['form_id']) {
+                $data['include'] = $item['include file'];
+                break;
+              }
+            }
             if (is_array($data['include'])) {
               $data['include'] = drupal_get_path('module', $data['include']['module']) .'/'. $data['include']['file'];
             }
@@ -303,8 +310,16 @@ function system_patterns($op, $id = null, &$data = null) {
         module_load_include('inc', 'system', 'system.admin');
       	return $data;
       }
-      else if ($data['form_id']) {
-      	return $data;
+      else if ($id == $data['form_id']) {
+        $form_state = $data['form_state_extras'];
+        unset($data['form_state_extras']);
+        unset($data['include']);
+        $form_state['values'] = $data;
+        $form_state['submitted'] = FALSE;
+        if (!isset($form_state['storage'])) {
+          $form_state['storage'] = NULL;
+        }
+        return $form_state;
       }
     break;
     
@@ -314,6 +329,11 @@ function system_patterns($op, $id = null, &$data = null) {
     
     // Build a patterns actions and parameters
     case 'params':
+      if ($id == $data['form_id'] && isset($data['args'])) {
+        $params = $data['args'];
+        unset($data['args']);
+        return $params;
+      }
     break;
 
     // Any last cleanup items
