@@ -18,3 +18,15 @@
   padding: 8px;
   z-index: 10;
 }
+
+.patterns-list .status {
+  width: 15%;
+}
+
+.patterns-list .version {
+  width: 15%;
+}
+
+.patterns-list .actions {
+  width: 30%;
+}

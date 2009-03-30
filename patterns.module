@@ -673,11 +673,11 @@ function patterns_list() {
     $info[] = t('Web: ') . $pattern->info['author_website'];
     $author = theme('item_list', $info);
     $title .= '<div id="pid-'. $pid .'-info" class="pattern-info">'. $author . $pattern->description . $view_more .'</div>';
-    $cells[] = $title;
-    $cells[] = $pattern->status ? t('Enabled') : t('Disabled');
-    $cells[] = $pattern->info['version'];
+    $cells[] = array('data' => $title, 'class' => 'title');
+    $cells[] = array('data' => $pattern->status ? t('Enabled') : t('Disabled'), 'class' => 'status');
+    $cells[] = array('data' => $pattern->info['version'], 'class' => 'version');
     //     $cells[] = $pattern->public ?  t('Yes') : t('No');
-    $cells[] = $actions;
+    $cells[] = array('data' => $actions, 'class' => 'actions');
     $category = $pattern->info['category'] ? $pattern->info['category'] : t('Other');
     $rows[$category][] = $cells;
   }
@@ -688,7 +688,7 @@ function patterns_list() {
       '#title' => t($title),
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
-      '#value' => theme('table', $header, $category),
+      '#value' => theme('table', $header, $category, array('class' => 'patterns-list')),
     );
     $output .= theme('fieldset', $fieldset);
   }
