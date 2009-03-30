@@ -522,6 +522,15 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
       if (module_exists('fieldgroup')) {
         fieldgroup_groups('', FALSE, TRUE);  
       }
+      // filter out confusing warning about 'allowed values' produced by optionwidgets module
+      if ($id == 'content_field_edit_form' && strpos($data['widget_type'], 'optionwidget') === 0) {
+        $warnings = drupal_get_messages('warning');
+        foreach ($warnings['warning'] as $warning) {
+          if ($warning != "You need to specify the 'allowed values' for this field.") {
+            drupal_set_message($warning, 'warning');
+          }
+        }
+      }
     break;
   }
 }
