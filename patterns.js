@@ -1,5 +1,5 @@
 
-$(document).ready(function(){
+Drupal.behaviors.patternsBehavior = function (context) {
   $('.pattern-info').hide();
   $('.pattern-info').css({'position' : 'absolute', 'width' : '300px'});
   $('.pattern-title').hover(
@@ -9,5 +9,5 @@ $(document).ready(function(){
     function(){
       $('#' + $(this).attr('id') + '-info').hide();
     }
-  );  
-});
+  );
+};
