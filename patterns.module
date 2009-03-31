@@ -210,7 +210,7 @@ function patterns_import_source(&$form_state) {
   );
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Submit')
+    '#value' => t('Import')
   );
 
   $form['#validate'][] = 'patterns_import_validate';
@@ -342,7 +342,7 @@ function patterns_import_server(&$form_state) {
   
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Submit')
+    '#value' => empty($form_state['storage']) ? t('Get Patterns List') : t('Import')
   ); 
 
   $form['#validate'][] = 'patterns_import_server_validate';
@@ -514,7 +514,7 @@ function patterns_import_file(&$form_state) {
   );
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Submit')
+    '#value' => t('Import')
   );
 
   $form['#validate'][] = 'patterns_import_validate';
@@ -538,7 +538,7 @@ function patterns_import_url(&$form_state) {
   );
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Submit')
+    '#value' => t('Import')
   );
 
   $form['#validate'][] = 'patterns_import_validate';
