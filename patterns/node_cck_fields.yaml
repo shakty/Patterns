@@ -14,25 +14,25 @@ actions:
   - 
     tag: node
     type: company
-    title: Creative Technologies
+    title: Example Company
     body: lorem ipsum ...
     taxonomy:
       - vocabulary: Company Type
         term: Vendor
     fields:
-      company_name: Creative Technologies
+      company_name: Example Company
       industry: telecom
-      email: info@creativetech.com
+      email: info@example.com
       website: 
-        url: http://creativetech.com
+        url: http://example.com
       demo_site:
         title: Demos and Examples
-        url: http://demos.creativetech.com
-      phone_number: (123) 456-7890
+        url: http://demos.example.com
+      phone_number: (555) 555-5555
       address:
         value: |
-          74 Fifth Avenue, 
-          Baltimore
+          1234 Fifth Avenue
+          Califronia
         format: 1
       established:
         value: 2008-09-09
