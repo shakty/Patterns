@@ -165,21 +165,45 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
               }
             }
             else {
+              // prepare field value provided by pattern
+              if (!isset($data['fields'][$alias])) {
+                $data['fields'][$alias] = array(0 => NULL);
+              }
+              elseif (is_array($data['fields'][$alias]) && !isset($data['fields'][$alias][0])) {
+                $data['fields'][$alias] = array(0 => $data['fields'][$alias]);
+              }
+              elseif (is_string($data['fields'][$alias])) {                
+                $data['fields'][$alias] = array(0 => array('value' =>$data['fields'][$alias]));
+              }
+              
+              // get the number of fields defined by CCK module
+              $field_count = 0;
+              while (isset($field[$field_count])) {
+                $field_count++;
+              }
+              // CCK always provides one additional empty field for multiple values fields so we remove it
+              $field_count = $field_count > 1 ? $field_count -1 : $field_count;
+              
+              $count = $field_count < count($data['fields'][$alias]) ? count($data['fields'][$alias]) : $field_count;
+
               $i = 0;
-              while (isset($field[$i])) {
-                foreach ($field[$i]['#columns'] as $col) {
+              while ($i < $count) {
+                // column names are same for all the fields so we use $field[0]['#columns'] always
+                // because $field[$i] may not exist in the case when number of fields defined by pattern
+                // is greater then number of fields defined by CCK
+                foreach ($field[0]['#columns'] as $col) {
                   if (isset($field[$i][$col])) {
-                    $value = _patterns_get_field_value($data['fields'][$alias], $col, $field[$i][$col]['#default_value']);
+                    $value = _patterns_get_field_value($data['fields'][$alias][$i], $col, $field[$i][$col]['#default_value']);
                     $defaults[$field_name][$i][$col] = array($col => $value);
                   }
                   else {
                     $default = isset($field[$i]['#default_value'][$col]) ? $field[$i]['#default_value'][$col] : NULL;
                     // fix for non-standard implementation of viewfield module
                     if (preg_match('/^(viewfield)/', $field[$i]['#type'])) {
-                      $defaults[$field_name][$i]['fieldset'][$col] = _patterns_get_field_value($data['fields'][$alias], $col, $default);
+                      $defaults[$field_name][$i]['fieldset'][$col] = _patterns_get_field_value($data['fields'][$alias][$i], $col, $default);
                     }
                     else {
-                      $defaults[$field_name][$i][$col] = _patterns_get_field_value($data['fields'][$alias], $col, $default);  
+                      $defaults[$field_name][$i][$col] = _patterns_get_field_value($data['fields'][$alias][$i], $col, $default);  
                     }
                   }
                 }
