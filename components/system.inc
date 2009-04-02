@@ -130,8 +130,7 @@ function system_patterns($op, $id = null, &$data = null) {
         	}        
         break;
         case 'form':
-          // attempt to load required include file if callback function is not defined
-
+          // attempt to load required include file
           $menu = menu_router_build(TRUE);
           foreach ($menu as $item) {
             if ($item['page arguments'][0] == $data['form_id']) {
