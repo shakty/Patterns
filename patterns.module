@@ -1771,7 +1771,7 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
 //  patterns_invoke($modules, 'prepare');
 //}
 
-function patterns_invoke(&$data, $op, $form_id = null, $a = null) {
+function patterns_invoke(&$data, $op, $form_id = null, &$a = null) {
   static $tag_modules;
 
   if (!is_array($tag_modules) || $op == 'tag modules') {

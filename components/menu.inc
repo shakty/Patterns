@@ -1,6 +1,6 @@
 <?php
 
-function menu_patterns($op, $id = null, &$data = null) {
+function menu_patterns($op, $id = null, &$data = null, &$a = null) {
   switch($op) {
     // Return the valid tags that this component can prepare and process
     case 'tags':
@@ -46,6 +46,9 @@ function menu_patterns($op, $id = null, &$data = null) {
 
           if (empty($data['menu_name']) && !empty($data['title'])) {
             $data['menu_name'] = strtolower(preg_replace('/[^a-zA-Z0-9\-]/', '-', $data['title']));
+            if (!menu_load($data['menu_name'])) {
+              $data['menu_name'] = 'menu-'. $data['menu_name']; 
+            }
           }
         break;
         case 'menu_item':
@@ -193,6 +196,11 @@ function menu_patterns($op, $id = null, &$data = null) {
         case 'menu_edit_menu':
           $menu = menu_load($data['menu_name']);
           if (empty($menu)) {
+            if (strpos($data['menu_name'], 'menu-') === 0) {
+              // this ensures that same pattern can be re-run without getting "menu exists" error
+              // $a is $form_state array that will be passed to drupal_execute()
+              $a['values']['menu_name'] = str_replace('menu-', '', $data['menu_name']);
+            }
             return 'add';
           }
           else {
