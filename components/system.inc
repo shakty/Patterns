@@ -131,21 +131,23 @@ function system_patterns($op, $id = null, &$data = null) {
         break;
         case 'form':
           // attempt to load required include file if callback function is not defined
+
+          $menu = menu_router_build(TRUE);
+          foreach ($menu as $item) {
+            if ($item['page arguments'][0] == $data['form_id']) {
+              $data['include'] = $item['include file'];
+              break;
+            }
+          }
+          if (!empty($data['include']) && is_file($data['include'])) {
+            require_once $data['include'];
+          }
+          elseif (is_array($data['include'])) {
+            $data['include'] = drupal_get_path('module', $data['include']['module']) .'/'. $data['include']['file'];
+          }
+            
           if (!function_exists($data['form_id'])) {
-            $menu = menu_router_build(TRUE);
-            foreach ($menu as $item) {
-              if ($item['page arguments'][0] == $data['form_id']) {
-                $data['include'] = $item['include file'];
-                break;
-              }
-            }
-            if (is_array($data['include'])) {
-              $data['include'] = drupal_get_path('module', $data['include']['module']) .'/'. $data['include']['file'];
-            }
-            if (!empty($data['include']) && is_file($data['include'])) {
-              require_once $data['include'];
-            }
-            elseif (!empty($data['module']) && is_string($data['module'])) {
+            if (!empty($data['module']) && is_string($data['module'])) {
               $modules = module_list();
               if (in_array($data['module'], $modules)) {
                 // try most common include file names
