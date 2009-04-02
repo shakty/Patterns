@@ -246,12 +246,11 @@
     
     <!-- create new menu -->
     <!-- 
-      After menu is created final menu_name will be 'menu-store-categories' 
-      If you later on want to edit this menu, you MUST specify 
-      full menu name: 'menu-store-categories'
+      Always add prefix 'menu-' to menu_name.
+			That way pattern can be re-run without getting "Menu already exists." error 
     -->
     <menu>
-      <name>store-categories</name>
+      <name>menu-store-categories</name>
       <title>Categories</title>
     </menu> 
     
