@@ -560,8 +560,8 @@
       Instead, create separate <modules> tags for "enable module" and "disable module" actions. 
     -->
     <modules>
-      <module delete="1">number</module>
-      <module delete="1">token_actions</module>      
+      <module disable="1">number</module>
+      <module disable="1">token_actions</module>      
     </modules>        
 
 
