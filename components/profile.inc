@@ -27,17 +27,13 @@ function profile_patterns($op, $id = null, &$data = null) {
     
     // Prepare data for processing
     case 'prepare':
-    
-      $fid = db_result(db_query('SELECT fid FROM {profile_fields} WHERE name = "%s"', $data['name']));
       
-      if ($data['delete'] && !$data['fid']) {
-        $data['fid'] = $fid;
+      if (!empty($data['name'])) {
+        $fid = db_result(db_query('SELECT fid FROM {profile_fields} WHERE name = "%s"', $data['name']));  
       }
-      else if (!$data['fid'] && $fid) {
+      
+      if ($fid && !$data['fid']) {
         $data['fid'] = $fid;
-      }
-      else if ($data['fid'] && !$fid) {
-        unset($data['fid']);
       }
 
       if ($data['type'] == 'selection') {
@@ -57,18 +53,16 @@ function profile_patterns($op, $id = null, &$data = null) {
         return t('"name" is required.');
       }
       if ($data['type'] == 'selection' && empty($data['options'])) {
-        return t('"options" tag is required for "selection" type of profile field.');
+        return t('"options" element is required for "selection" type of profile field.');
       }
     break;
     
     // Return the form_id('s) for each action
     case 'form_id':
-      // Check if the user needs updating
       if ($data['delete']) {
         if (!$data['fid']) {
           return;
         }
-        
         return 'profile_field_delete';
       }
       else {
