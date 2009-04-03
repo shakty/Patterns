@@ -32,6 +32,11 @@ function pathauto_patterns($op, $id = null, &$data = null) {
             else if (array_key_exists($i, $mappings)) {
               $new = $key .'_'. $mappings[$i];
             }
+            // remove prefix "vid_" required by XML because 
+            // element names can't begin with a number
+            elseif ($key == 'taxonomy' && strpos($i, 'vid_') === 0) {
+              $new = $key .'_'. str_replace('vid_', '', $i) .'_pattern';
+            }
             else {
               $new = $key .'_'. $i .'_pattern';
             }
