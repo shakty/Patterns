@@ -115,13 +115,18 @@ function system_patterns($op, $id = null, &$data = null) {
             unset($data['module']);
           }
   
-          // Ensure that modules with tags like <module>modulename</module>
-          // are represented as an array instead of a string
           for($i=0;$item=$data[$i];$i++) {
+            // Ensure that modules with tags like <module>modulename</module>
+            // are represented as an array instead of a string
             if (is_string($item)) {
               $data[$i] = array('value' => $item);
             }
-          }        
+            // proccess alias for delete
+            if (isset($item['disable']) && !isset($item['delete'])) {
+              $data[$i]['delete'] = $data[$i]['disable']; 
+            }
+            unset($data[$i]['disable']);
+          }      
         break;
         case 'theme':
         	if ($data['value']) {
