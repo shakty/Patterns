@@ -1476,7 +1476,7 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
   
   // Prepare actions for processing, ensure smooth pattern executions, and return form ids for execution
   $return = patterns_invoke($action, 'form_id');
-  
+
   // If prepare removed the data, dont continue with this action
   if (!$action || !$return) {
     return $result;
@@ -1494,15 +1494,15 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
   $index = $action_location['key'] + 1;
   $pattern_title = $action_location['title'];
   $pattern_file = $action_location['file'];
-   
+
   // Build the action
   foreach($form_ids as $form_id) {
     $clone = $action;
-    
+
     $action_description = isset($action_descriptions[$form_id]) ? $action_descriptions[$form_id] : t('System: Execute form');
     
     $result['action_descriptions'][$place][] = $action_description;
-    
+
     // If tokens are enabled, apply tokens to the action values
     // before processing
     if (module_exists('token')) {
@@ -1527,7 +1527,7 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
     // Get the form data for the action. This can either just be the form values,
     // or it can be the full form_state object
     $form_obj = patterns_invoke($clone, 'build', $form_id);
-  
+
     if ($message = patterns_error_get_last('build', $index, $action_description, $pattern_title, $pattern_file)) {
       $result['error_message'] = $message;
       $result['success'] = FALSE;
@@ -1650,9 +1650,10 @@ function patterns_execute_action($form_id, &$form_state, $params) {
 
   // Copy of drupal_execute until above issue is fixed
   $form = call_user_func_array('drupal_retrieve_form', $args);
+
   $form['#post'] = $form_state['values'];
   drupal_prepare_form($form_id, $form, $form_state);
-  
+
   // If you call drupal_validate_form() on the same form more 
   // than once per page request, validation is not performed 
   // on any but the first call. 
@@ -2067,6 +2068,79 @@ function patterns_theme() {
       'forms' => NULL
   )
   );
+}
+
+/**
+ * Make some modifications to the form values based on the form
+ * In particular, make sure form elements with #options and #multiple
+ * set the keys of the array as the key of the value as how FAPI does it,
+ * but XML of course does not.
+ */
+//function patterns_fix_form_values(&$form_values, $form_id, $args, $form_state) {
+function patterns_fix_form_values(&$form_values, $form_id, $form, $form_state) {
+  // Get the fully built fapi object with cloned form_state.
+  // We need to do this with a separate form_state because
+  // this can mess up the form values if they are setup incorrectly
+  // (it'll get fixed here)
+  unset($form['#post']);
+  $form = form_builder($form_id, $form, $form_state);
+
+  // Loop through all form values looking for #options
+  $queue = array(&$form);
+  $options = array();
+  
+  while (!empty($queue)) {
+    $check = &$queue[0];
+    array_shift($queue);
+    
+    if (!empty($check['#options'])) {
+      $scalar = false;
+      if (!$check['#tree'] || (isset($check['#multiple']) && !$check['#multiple']) || in_array($check['#type'], array('radio', 'radios'))) {
+        $scalar = true;
+      }
+
+      // Find possible corresponding data in form values
+      $match = &$form_values;
+      foreach($check['#parents'] as $path) {
+        if (isset($match[$path])) {
+          $found = true;
+          $match = &$match[$path];
+        }
+        else {
+          unset($match);
+          break;
+        }
+      }
+
+      if ($found && isset($match)) {
+        $values = (array)$check['#default_value'];
+        $values = array_combine($values, $values);
+        
+        foreach((array)$match as $value) {
+          // If the supplied value matches an options label, use that option
+          if ($key = array_search($value, $check['#options'])) {
+            $values[$key] = $key;
+          }
+          // Or if the supplied value is an actual options value (not the label) use that
+          else if (array_key_exists($value, $check['#options'])) {
+            $values[$value] = $value;
+          }
+        }
+
+        // If we are not on a multiple/tree form, the value should be singular/not an array
+        if ($scalar) {
+          $match = reset($values);
+        }
+        else {
+          $match = $values;
+        }
+      }
+    }
+    
+    foreach(element_children($check) as $element) {
+      $queue[] = &$check[$element];
+    }
+  }
 }
 
 /**
@@ -2528,8 +2602,12 @@ function patterns_error_get_last($op, $key, $description, $pattern_title, $patte
  */
 function _patterns_process_form($form_id, &$form, &$form_state) {
   $form_state['values'] = array();
+  
+  // Fix some parts of the #post values based on the original form
+  patterns_fix_form_values($form['#post'], $form_id, $form, $form_state);
 
   $form = form_builder($form_id, $form, $form_state);
+
   // Only process the form if it is programmed or the form_id coming
   // from the POST data is set and matches the current form_id.
   if ((!empty($form['#programmed'])) || (!empty($form['#post']) && (isset($form['#post']['form_id']) && ($form['#post']['form_id'] == $form_id)))) {
