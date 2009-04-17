@@ -2076,8 +2076,7 @@ function patterns_theme() {
  * set the keys of the array as the key of the value as how FAPI does it,
  * but XML of course does not.
  */
-//function patterns_fix_form_values(&$form_values, $form_id, $args, $form_state) {
-function patterns_fix_form_values(&$form_values, $form_id, $form, $form_state) {
+function patterns_sync_form_values(&$form_values, $form_id, $form, $form_state) {
   // Get the fully built fapi object with cloned form_state.
   // We need to do this with a separate form_state because
   // this can mess up the form values if they are setup incorrectly
@@ -2101,20 +2100,45 @@ function patterns_fix_form_values(&$form_values, $form_id, $form, $form_state) {
 
       // Find possible corresponding data in form values
       $match = &$form_values;
+      $found = true;
       foreach($check['#parents'] as $path) {
         if (isset($match[$path])) {
-          $found = true;
           $match = &$match[$path];
         }
+        // If a match is not found, lets set this to the current default
+        // value so that we avoid possible issues when a submit handler
+        // is expecting this to be there. Here we'll ensure the full path
+        // exists in the #post array.
         else {
-          unset($match);
-          break;
+          $found = false;
+          $match[$path] = array();
+          $match = &$match[$path];
         }
       }
 
-      if ($found && isset($match)) {
-        $values = (array)$check['#default_value'];
-        $values = array_combine($values, $values);
+      // Set the value to the default values if not found. We know this
+      // path exists because it was created if it didn't above
+      // TODO Set all default values for non-existing data first
+      if (!$found && $check['#input']) {
+        $match = $check['#default_value'];
+      }
+
+      if (isset($match)) {
+        // Check if we are overwriting or not
+        // First, if the pattern value is there, but empty, we obviously
+        // should be overwriting. Next is to check if overwrite was specified
+        // manually
+        if (empty($match)) {
+          $values = array();
+        }
+        else if (is_array($match) && isset($match['_overwrite_'])) {
+          $values = array();
+          $match = $match['_overwrite_'];
+        }
+        else {
+          $values = (array)$check['#default_value'];
+          $values = array_combine($values, $values);
+        }
         
         foreach((array)$match as $value) {
           // If the supplied value matches an options label, use that option
@@ -2127,9 +2151,11 @@ function patterns_fix_form_values(&$form_values, $form_id, $form, $form_state) {
           }
         }
 
-        // If we are not on a multiple/tree form, the value should be singular/not an array
+        // If we are not on a multiple/tree form, the value should be singular/not an array.
+        // We make sure to use the last value here because the last value will absolutely
+        // be the user/pattern supplied value as opposed to the default_value
         if ($scalar) {
-          $match = reset($values);
+          $match = end($values);
         }
         else {
           $match = $values;
@@ -2602,9 +2628,9 @@ function patterns_error_get_last($op, $key, $description, $pattern_title, $patte
  */
 function _patterns_process_form($form_id, &$form, &$form_state) {
   $form_state['values'] = array();
-  
+
   // Fix some parts of the #post values based on the original form
-  patterns_fix_form_values($form['#post'], $form_id, $form, $form_state);
+  patterns_sync_form_values($form['#post'], $form_id, $form, $form_state);
 
   $form = form_builder($form_id, $form, $form_state);
 

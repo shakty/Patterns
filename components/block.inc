@@ -44,17 +44,6 @@ function block_patterns($op, $id = null, &$data = null) {
         $data['info'] = db_result(db_query('SELECT info FROM {boxes} WHERE bid = "%d"', $data['delta']));
       }
       
-      if (!empty($data['roles']) && is_array($data['roles'])) {
-        // convert role names to role IDs and get rid of all invalid entries
-        foreach($data['roles'] as $key => $role) {
-          if (is_string($role)) {
-            $rid = db_result(db_query('SELECT rid FROM {role} WHERE name = "%s"', $role));
-            $roles[$rid] = $rid;
-          }
-        }
-        $data['roles'] = $roles;
-      }
-      
       if (!empty($data['pages']) && is_array($data['pages'])) {
         $pages = implode("\r\n", $data['pages']);
         $data['pages'] = str_replace('[front]', '<front>', $pages);
@@ -111,25 +100,17 @@ function block_patterns($op, $id = null, &$data = null) {
         $data['confirm'] = 1;
       }
       else if ($id == 'block_admin_display_form') {
-        if (isset($data['status']) && $data['status'] == 0) $data['region'] = -1;
-        $block = $data;
-        $data = array();
-        
-        // make sure delta is defined even for blocks that have just been created within the same action 
-        if ($block['module'] == 'block' && empty($block['delta'])) {
-          // we can do this because block descriptions are always unique
-          $block['delta'] = db_result(db_query("SELECT bid FROM {boxes} WHERE info = '%s'", $block['info']));
+        if (isset($data['status']) && $data['status'] == 0) {
+          $data['region'] = -1;
         }
         
-        foreach($blocks as $i => $v) {
-          if ($v['module'] == $block['module'] && $v['delta'] == $block['delta']) {
-            $data[$block['module'] .'_'. $block['delta']] = $block;
-            $blocks[$i] = $block;
-            // store $blocks variable for later use in 'params' op
-            $data[$block['module'] .'_'. $block['delta']]['all_blocks'] = $blocks;
-            break;
-          }
-        }   
+        // make sure delta is defined even for blocks that have just been created within the same action 
+        if ($data['module'] == 'block' && empty($data['delta'])) {
+          // we can do this because block descriptions are always unique
+          $data['delta'] = db_result(db_query("SELECT bid FROM {boxes} WHERE info = '%s'", $data['info']));
+        }
+
+        $data = array($data['module'] .'_'. $data['delta'] => $data);
       }
       
       return $data;
@@ -145,9 +126,16 @@ function block_patterns($op, $id = null, &$data = null) {
         return array($data['module'], $data['delta']);
       }
       else if ($id == 'block_admin_display_form') {
-        $block = reset($data);
-        $blocks = $block['all_blocks'];      
-        return array($blocks, $block['theme']);
+        $blocks = _block_rehash();
+        $check = current($data);
+        // Only return the block we are dealing with now
+        foreach($blocks as $key => &$block) {
+          if ($block['module'] == $check['module'] && $block['delta'] == $check['delta']) {
+            $blocks = array(&$block);
+            break;
+          }
+        }
+        return array($blocks, $check['theme']);
       }
       else if ($id == 'block_box_delete') {
         return $data['delta'];
