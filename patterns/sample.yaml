@@ -12,7 +12,6 @@ modules:
   - adminrole
 
 actions:
- pattern: foo
   - tag: content
       name: Article
       type: article
