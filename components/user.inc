@@ -161,19 +161,6 @@ function user_patterns($op, $id = null, &$data = null) {
     
     // Prepare for valid processing of this type of component
     case 'build':
-      if (!empty($data['roles'])) {
-        foreach($data['roles'] as $key => $value) {
-          
-          if (is_string($value)) {
-            $rid = db_result(db_query('SELECT rid FROM {role} WHERE name = "%s"', $value));        
-            if (is_numeric($rid)) {
-              $data['roles'][$rid] = $value;
-              unset($data['roles'][$key]);
-            }
-          }
-        }
-      }
-      
       if ($id == 'user_register') {
         if ($data['uid']) {
           unset($data['uid']);
