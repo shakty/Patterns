@@ -2086,15 +2086,44 @@ function patterns_sync_form_values(&$form_values, $form_id, $form, $form_state) 
 
   // Loop through all form values looking for #options
   $queue = array(&$form);
-  $options = array();
-  
+
   while (!empty($queue)) {
     $check = &$queue[0];
     array_shift($queue);
     
+    // Skip disabled items
+    if ($check['#disabled']) {
+      continue;
+    }
+    
+    // Set default values for everything that the form is expecting values for.
+    // This can save work in the components as well as avoid bugs when a module
+    // expects values to be there that are not.
+    if ($check['#input'] && isset($check['#default_value'])) {
+      $match = &$form_values;
+      $found = true;
+      foreach($check['#parents'] as $path) {
+        if (!isset($match[$path])) {
+          $found = false;
+          $match[$path] = array();
+        }
+        // If this is not an array, the data was probably not completed properly
+        // in the pattern. 
+        if (!is_array($match)) {
+          $message = t('Invalid pattern syntax at: !path. Expecting more child elements.', array('!path' => implode('->', $check['#parents'])));
+          patterns_error_handler(1, $message, '', '');
+          return;
+        }
+        $match = &$match[$path];
+      }
+
+      if (!$found) {
+        $match = $check['#default_value'];
+      }
+    }
     if (!empty($check['#options'])) {
       $scalar = false;
-      if (!$check['#tree'] || (isset($check['#multiple']) && !$check['#multiple']) || in_array($check['#type'], array('radio', 'radios'))) {
+      if ((!$check['#tree'] && !$check['#multiple']) || (isset($check['#multiple']) && !$check['#multiple']) || in_array($check['#type'], array('radio', 'radios'))) {
         $scalar = true;
       }
 
@@ -2105,25 +2134,13 @@ function patterns_sync_form_values(&$form_values, $form_id, $form, $form_state) 
         if (isset($match[$path])) {
           $match = &$match[$path];
         }
-        // If a match is not found, lets set this to the current default
-        // value so that we avoid possible issues when a submit handler
-        // is expecting this to be there. Here we'll ensure the full path
-        // exists in the #post array.
         else {
           $found = false;
-          $match[$path] = array();
-          $match = &$match[$path];
+          break;
         }
       }
 
-      // Set the value to the default values if not found. We know this
-      // path exists because it was created if it didn't above
-      // TODO Set all default values for non-existing data first
-      if (!$found && $check['#input']) {
-        $match = $check['#default_value'];
-      }
-
-      if (isset($match)) {
+      if ($found && isset($match)) {
         // Check if we are overwriting or not
         // First, if the pattern value is there, but empty, we obviously
         // should be overwriting. Next is to check if overwrite was specified
@@ -2135,18 +2152,29 @@ function patterns_sync_form_values(&$form_values, $form_id, $form, $form_state) 
           $values = array();
           $match = $match['_overwrite_'];
         }
-        else {
+        else if (!empty($check['#default_value'])) {
           $values = (array)$check['#default_value'];
           $values = array_combine($values, $values);
+          
+          // Occasionally the pre-processed pattern #option values will
+          //  make their way into the #default_values here
+          // (like edit-user roles), so we need to filter those out
+          $values = array_intersect_key($values, $check['#options']);
         }
-        
+        else {
+          $values = array();
+        }
+
+        // Flatten out the options in case it is trying to use optgroups
+        $options = patterns_options_flatten($check['#options']);
+
         foreach((array)$match as $value) {
           // If the supplied value matches an options label, use that option
-          if ($key = array_search($value, $check['#options'])) {
+          if ($key = array_search($value, $options)) {
             $values[$key] = $key;
           }
           // Or if the supplied value is an actual options value (not the label) use that
-          else if (array_key_exists($value, $check['#options'])) {
+          else if (array_key_exists($value, $options)) {
             $values[$value] = $value;
           }
         }
@@ -2167,6 +2195,31 @@ function patterns_sync_form_values(&$form_values, $form_id, $form, $form_state) 
       $queue[] = &$check[$element];
     }
   }
+}
+
+/**
+ * Helper function to flatter options, but keep the title/names in
+ */
+function patterns_options_flatten($array, $reset = TRUE) {
+  static $return;
+
+  if ($reset) {
+    $return = array();
+  }
+
+  foreach ($array as $key => $value) {
+    if (is_object($value)) {
+      patterns_options_flatten($value->option, FALSE);
+    }
+    else if (is_array($value)) {
+      patterns_options_flatten($value, FALSE);
+    }
+    else {
+      $return[$key] = $value;
+    }
+  }
+
+  return $return;
 }
 
 /**
@@ -2915,4 +2968,12 @@ function _patterns_menu_tree_all_data($menu_name = 'navigation', $item = NULL) {
   $tree[$cid] = $data['tree'];
 
   return $tree[$cid];
+}
+
+function patterns_debug_batch($var = null) {
+  $var = print_r($var, true);
+  $var = str_replace(" ", '&nbsp;', $var);
+  $var = str_replace("\n", "<br />", $var);
+  print drupal_to_js(array('status' => 0, 'data' => $var));
+  exit;
 }
