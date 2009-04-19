@@ -140,7 +140,7 @@
       <type>example</type>
       <name>design</name>
       <label>Design</label>
-      <option>image</option>
+      <option>filefield</option>
       <widget>imagefield_widget</widget>
       <weight>8</weight>
       <group>patterns_test</group>
@@ -675,7 +675,10 @@ Enter text in the exactly same way as you would do it in the regular node edit f
         <colors>blue</colors>
         <country>Italy</country>
         <arrival>
-          <value>2008-09-09 08:08:00</value>
+          <value>
+            <date>2008 Sept 09</date>
+            <time>08:08</time>
+          </value>
           <timezone>Europe/Rome</timezone>
         </arrival>
       </fields>
