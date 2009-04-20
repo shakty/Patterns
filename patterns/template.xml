@@ -396,8 +396,8 @@
     <vocabulary>
       <name>Food</name>
       <nodes>
-        <page />
-				<example />
+        <type>page</type>
+        <type>example</type>
       </nodes>
       <weight>-5</weight>
     </vocabulary>
@@ -442,8 +442,8 @@
     <vocabulary>
       <name>Languages</name>
       <nodes>
-        <page />
-        <example />
+        <type>page</type>
+        <type>example</type>
       </nodes>
       <weight>-2</weight>
 			<multiple>1</multiple>
@@ -457,9 +457,7 @@
 
     <vocabulary>
       <name>Keywords</name>
-      <nodes>
-        <page />
-      </nodes>
+      <nodes>page</nodes>
       <weight>2</weight>
 			<tags>1</tags>
     </vocabulary>

@@ -1169,11 +1169,10 @@ function _patterns_parse_tag($data, &$index = 0) {
             $current['value'] = $value;
           }
         }
-
-        // This enables tags like <blog /> to turn into array('blog' => 'blog')
-        // which is useful for checkbox/select type forms
+        
+        // If no value was specified, make sure an empty value is there
         if (!isset($current['value'])) {
-          $current['value'] = $current['tag'];
+          $current['value'] = '';
         }
 
         $pattern[] = $current;
@@ -1647,6 +1646,9 @@ function patterns_execute_action($form_id, &$form_state, $params) {
   // drupal_execute fails to keep $form_state in-sync through the
   // whole FAPI process. Issue http://drupal.org/node/346244
   //$return = call_user_func_array('drupal_execute', $args);
+  
+  // Fix some parts of the #post values based on the original form
+  patterns_sync_form_values($args);
 
   // Copy of drupal_execute until above issue is fixed
   $form = call_user_func_array('drupal_retrieve_form', $args);
@@ -2076,12 +2078,18 @@ function patterns_theme() {
  * set the keys of the array as the key of the value as how FAPI does it,
  * but XML of course does not.
  */
-function patterns_sync_form_values(&$form_values, $form_id, $form, $form_state) {
+function patterns_sync_form_values($args) {
+  $form_id = $args[0];
+  $form_state = $args[1];
+  $form_values = $form_state['values'];
+  $args[1]['values'] = null;
+
   // Get the fully built fapi object with cloned form_state.
   // We need to do this with a separate form_state because
   // this can mess up the form values if they are setup incorrectly
   // (it'll get fixed here)
-  unset($form['#post']);
+  $form = call_user_func_array('drupal_retrieve_form', $args);
+  drupal_prepare_form($form_id, $form, $form_state);
   $form = form_builder($form_id, $form, $form_state);
 
   // Loop through all form values looking for #options
@@ -2095,11 +2103,16 @@ function patterns_sync_form_values(&$form_values, $form_id, $form, $form_state) 
     if ($check['#disabled']) {
       continue;
     }
-    
+        
     // Set default values for everything that the form is expecting values for.
     // This can save work in the components as well as avoid bugs when a module
     // expects values to be there that are not.
-    if ($check['#input'] && isset($check['#default_value'])) {
+    // Do not set default values when it is the type of value that a form submit
+    // would not set data in $_POST for. Like selects with no options or unchecked
+    // checkboxes
+    if ($check['#input'] && isset($check['#default_value']) &&
+        !($check['#type'] == 'select' && empty($check['#options'])) && 
+        !(in_array($check['#type'], array('checkbox', 'checkboxes')) && empty($check['#default_value']))) {
       $match = &$form_values;
       $found = true;
       foreach($check['#parents'] as $path) {
@@ -2117,7 +2130,10 @@ function patterns_sync_form_values(&$form_values, $form_id, $form, $form_state) 
         $match = &$match[$path];
       }
 
+      // Set the default value unless it is a type of value that would originally
+      // not be set in $_POST during form submit, like empty selects
       if (!$found) {
+        $check['#missing_in_pattern'] = true;
         $match = $check['#default_value'];
       }
     }
@@ -2141,28 +2157,39 @@ function patterns_sync_form_values(&$form_values, $form_id, $form, $form_state) 
       }
 
       if ($found && isset($match)) {
-        // Check if we are overwriting or not
+        // Check if we are overwriting or not.
+        //
         // First, if the pattern value is there, but empty, we obviously
         // should be overwriting. Next is to check if overwrite was specified
         // manually
-        if (empty($match)) {
-          $values = array();
+        if (!$check['#missing_in_pattern'] && (empty($match) || (is_array($match) && isset($match['_overwrite_'])))) {
+          $overwrite = true;
+          if (is_array($match) && isset($match['_overwrite_'])) {
+            $match = $match['_overwrite_'];
+          }
         }
-        else if (is_array($match) && isset($match['_overwrite_'])) {
-          $values = array();
-          $match = $match['_overwrite_'];
-        }
-        else if (!empty($check['#default_value'])) {
-          $values = (array)$check['#default_value'];
-          $values = array_combine($values, $values);
-          
-          // Occasionally the pre-processed pattern #option values will
-          //  make their way into the #default_values here
-          // (like edit-user roles), so we need to filter those out
-          $values = array_intersect_key($values, $check['#options']);
+
+        // If overwriting, start the values array with all the
+        // possible values but empty. We will possibly fill them
+        // in with default values on update actions. Select types
+        // do not work when empty, non-selected, values are set
+        if (!$scalar && $overwrite && $check['#type'] != 'select') {
+          $values = $check['#options'];
+          foreach($values as &$v) {
+            $v = '';
+          }
         }
         else {
           $values = array();
+        }
+
+        if (!$overwrite && !empty($check['#default_value'])) {
+          foreach((array)$check['#default_value'] as $value) {
+            $values[$value] = $value;
+          }
+
+          // Make sure we are still restricted to values available in #options
+          $values = array_intersect_key($values, $check['#options']);
         }
 
         // Flatten out the options in case it is trying to use optgroups
@@ -2170,7 +2197,8 @@ function patterns_sync_form_values(&$form_values, $form_id, $form, $form_state) 
 
         foreach((array)$match as $value) {
           // If the supplied value matches an options label, use that option
-          if ($key = array_search($value, $options)) {
+          $key = array_search($value, $options);
+          if ($key !== FALSE) {
             $values[$key] = $key;
           }
           // Or if the supplied value is an actual options value (not the label) use that
@@ -2195,6 +2223,9 @@ function patterns_sync_form_values(&$form_values, $form_id, $form, $form_state) 
       $queue[] = &$check[$element];
     }
   }
+
+  // Make sure the new form_values will be used in the real executions
+  $args[1]['values'] = $form_values;
 }
 
 /**
@@ -2681,9 +2712,6 @@ function patterns_error_get_last($op, $key, $description, $pattern_title, $patte
  */
 function _patterns_process_form($form_id, &$form, &$form_state) {
   $form_state['values'] = array();
-
-  // Fix some parts of the #post values based on the original form
-  patterns_sync_form_values($form['#post'], $form_id, $form, $form_state);
 
   $form = form_builder($form_id, $form, $form_state);
 

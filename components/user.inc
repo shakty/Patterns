@@ -109,10 +109,6 @@ function user_patterns($op, $id = null, &$data = null) {
           return t("<br>1. you didn't supply enough data for creation of the new account (both name and mail are required)<br>or<br>2. account you are trying to update doesn't exist (invalid uid or name).");
         }
         
-        if (!empty($data['roles']) && !is_array($data['roles'])) {
-          return t('Invalid format of "roles" tag.');
-        }
-        
         if (!empty($data['timezone'])) {
           $zones = _system_zonelist();
           if (!array_key_exists($data['timezone'], $zones)) {
@@ -268,18 +264,6 @@ function user_patterns($op, $id = null, &$data = null) {
     
     // Validate the values for an action before running the pattern
     case 'validate':
-      if (!empty($data['roles'])) {
-        foreach($data['roles'] as $key => $value) {
-          if (is_string($value)) {
-            $rid = db_result(db_query('SELECT rid FROM {role} WHERE name = "%s"', $value));
-            
-            if (!$rid) {
-              return t('Invalid role %role', array('%role' => $value));
-            }
-          }
-        }
-      }      
-
       if ($id == 'user_admin_perm') {
         if (is_numeric($data['rid'])) {
           $rid = $data['rid'];

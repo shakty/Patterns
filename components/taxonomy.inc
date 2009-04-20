@@ -218,7 +218,12 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
         return $data['vid'];
       }
       else if ($id == 'taxonomy_form_vocabulary') {
-        return array($data);
+        if ($data['vid']) {
+          return array((array)taxonomy_vocabulary_load($data['vid']));
+        }
+        else {
+          return array(array());
+        }
       }
       else if ($id == 'taxonomy_form_term') {
         $vocab = taxonomy_vocabulary_load($data['vid']);
