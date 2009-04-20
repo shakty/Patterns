@@ -20,9 +20,9 @@ function block_patterns($op, $id = null, &$data = null) {
     // Prepare data for processing
     case 'prepare':
       if ($data['id']) {
-        $split = explode('-', $data['id']);
-        $data['module'] = $split[0];
-        $data['delta'] = $split[1];
+        $split = strpos($data['id'], '-');
+        $data['module'] = substr($data['id'], 0, $split);
+        $data['delta'] = substr($data['id'], $split + 1);
         
         unset($data['id']);
       }
