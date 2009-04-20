@@ -237,7 +237,7 @@ actions:
     label: Logo
     group: company_information
     widget: imagefield_widget
-    option: image
+    option: filefield
     file_path: images/logo
     custom_alt: 1
     custom_title: 1

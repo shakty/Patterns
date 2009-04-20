@@ -2080,9 +2080,11 @@ function patterns_theme() {
  */
 function patterns_sync_form_values($args) {
   $form_id = $args[0];
-  $form_state = $args[1];
+  // References inside the form_state can cause potential problems,
+  // so we'll ensure no references to outside data exists
+  $form_state = unserialize(serialize($args[1]));
   $form_values = $form_state['values'];
-  $args[1]['values'] = null;
+  unset($args[1]['values']);
 
   // Get the fully built fapi object with cloned form_state.
   // We need to do this with a separate form_state because
@@ -2137,6 +2139,7 @@ function patterns_sync_form_values($args) {
         $match = $check['#default_value'];
       }
     }
+
     if (!empty($check['#options'])) {
       $scalar = false;
       if ((!$check['#tree'] && !$check['#multiple']) || (isset($check['#multiple']) && !$check['#multiple']) || in_array($check['#type'], array('radio', 'radios'))) {
@@ -2205,6 +2208,13 @@ function patterns_sync_form_values($args) {
           else if (array_key_exists($value, $options)) {
             $values[$value] = $value;
           }
+          // If we are trying to set an invalid value, at least select
+          // the first value for select forms since it is impossible to
+          // not select a good value there
+          else if ($check['#type'] == 'select') {
+            reset($options);
+            $values[key($options)] = key($options);
+          } 
         }
 
         // If we are not on a multiple/tree form, the value should be singular/not an array.
