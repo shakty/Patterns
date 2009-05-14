@@ -145,6 +145,9 @@ function imagecache_patterns($op, $id = null, &$data = null) {
 
     // Prepare for valid processing of this type of component
     case 'build':
+
+      module_load_include('inc', 'imagecache', 'imagecache_ui.pages');
+
       if ($id == 'imagecache_ui_action_add_form') {
         unset($data['actionid']);
       }
