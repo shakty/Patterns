@@ -6,7 +6,7 @@ function user_patterns($op, $id = null, &$data = null) {
     case 'tags':
       return array('user', 'role', 'permissions');
     break;
-    
+
     // Return a list of forms/actions this component can handle
     case 'actions':
       return array(
@@ -17,7 +17,7 @@ function user_patterns($op, $id = null, &$data = null) {
         'user_admin_perm' => t('User: Configure permissions')
       );
     break;
-    
+
     // Return a summary of an action
     case 'summary':
       if ($data['uid'] && !$data['name']) {
@@ -42,19 +42,19 @@ function user_patterns($op, $id = null, &$data = null) {
         break;
       }
     break;
-    
+
     // Prepare data for processing
     case 'prepare':
       if ($id == 'user') {
         if ($data['name'] && !$data['uid']) {
           $data['uid'] = db_result(db_query('SELECT uid FROM {users} WHERE name = "%s"', $data['name']));
         }
-        
+
         if ($data['password']) {
           $data['pass'] = array('pass1' => $data['password'], 'pass2' => $data['password']);
           unset($data['password']);
         }
-        
+
         $data['timezone_original'] = $data['timezone'];
         if (in_array($data['timezone'], array('0', '+0', '-0', '0000', '-0000'))) {
           $data['timezone'] = '+0000';
@@ -63,17 +63,17 @@ function user_patterns($op, $id = null, &$data = null) {
           $seconds = $parts[2] * 3600 + $parts[3] * 60;
           $sign = $parts[1] == '+' ? '' : '-';
           $data['timezone'] = $sign . $seconds;
-        }    
+        }
       }
       else if ($id == 'role') {
         $data['name'] = $data['value'];
         unset($data['value']);
-        
+
         if (empty($data['id'])) {
           $rid = db_result(db_query("SELECT rid FROM {role} WHERE name = '%s'", $data['name']));
           if ($rid) {
             $data['id'] = $rid;
-          }        
+          }
         }
       }
       else if ($id == 'permissions') {
@@ -83,7 +83,7 @@ function user_patterns($op, $id = null, &$data = null) {
         unset($data['role']);
       }
     break;
-    
+
     // Pre validate actions
     case 'pre-validate':
       if ($id == 'user') {
@@ -91,10 +91,10 @@ function user_patterns($op, $id = null, &$data = null) {
         if (!empty($data['uid']) && !db_result(db_query("SELECT COUNT(*) FROM {users} WHERE uid = %d", $data['uid']))) {
           return t('Invalid user ID supplied: %uid', array('%uid' => $data['uid']));
         }
-        
+
         // Cannot create/edit/delete anon user
         global $user;
-        
+
         if ($data['uid'] === 0) {
           return t('Cannot modify anonymous user account.');
         }
@@ -104,11 +104,11 @@ function user_patterns($op, $id = null, &$data = null) {
         else if ($data['uid'] == $user->uid && $data['delete']) {
           return t('You cannot delete the current users account. Please login with a different account and try again.');
         }
-        
+
         if (empty($data['uid']) && (empty($data['name']) || empty($data['mail']))) {
           return t("<br>1. you didn't supply enough data for creation of the new account (both name and mail are required)<br>or<br>2. account you are trying to update doesn't exist (invalid uid or name).");
         }
-        
+
         if (!empty($data['timezone'])) {
           $zones = _system_zonelist();
           if (!array_key_exists($data['timezone'], $zones)) {
@@ -131,7 +131,7 @@ function user_patterns($op, $id = null, &$data = null) {
         }
       }
     break;
-    
+
     // Return the form_id('s) for each action
     case 'form_id':
       if ($id == 'user') {
@@ -154,7 +154,7 @@ function user_patterns($op, $id = null, &$data = null) {
         return 'user_admin_perm';
       }
     break;
-    
+
     // Prepare for valid processing of this type of component
     case 'build':
       if ($id == 'user_register') {
@@ -164,7 +164,7 @@ function user_patterns($op, $id = null, &$data = null) {
       }
       else if ($id == 'user_profile_form') {
         module_load_include('inc', 'user', 'user.pages');
-        
+
         // make sure that required fields are not left empty
         if (empty($data['mail'])) {
           $data['mail'] = db_result(db_query("SELECT mail FROM {users} WHERE uid = %d", $data['uid']));
@@ -172,7 +172,7 @@ function user_patterns($op, $id = null, &$data = null) {
         if (empty($data['name'])) {
           $data['name'] = db_result(db_query("SELECT name FROM {users} WHERE uid = %d", $data['uid']));
         }
-        
+
         static $old_q;
         $old_q = $_GET['q'];
         $_GET['q'] = 'user/'. $data['uid'] .'/edit';
@@ -191,7 +191,7 @@ function user_patterns($op, $id = null, &$data = null) {
         else {
           $_GET['q'] = '';
         }
-        
+
         if ($data['delete']) {
           $data['op'] = t('Delete role');
         }
@@ -204,14 +204,14 @@ function user_patterns($op, $id = null, &$data = null) {
         unset($data['id']);
       }
       else if ($id == 'user_admin_perm') {
-        
+
         // Get list of permissions to ensure only available permissions are saved
-        $permissions = array();         
+        $permissions = array();
         foreach (module_list(FALSE, FALSE, TRUE) as $module) {
           if ($p = module_invoke($module, 'perm')) {
             $permissions = array_merge($permissions, $p);
           }
-        }   
+        }
 
         if (is_string($data['value'])) {
           $p = explode(',', $data['value']);
@@ -220,7 +220,7 @@ function user_patterns($op, $id = null, &$data = null) {
           foreach($p as $key => $value) {
             $val = trim($value);
             if (in_array($val, $permissions)) {
-              $perms[$val] = $data['delete'] ? '0' : $val;                   
+              $perms[$val] = $data['delete'] ? '0' : $val;
             }
           }
           $data[$data['rid']] = $perms;
@@ -228,8 +228,8 @@ function user_patterns($op, $id = null, &$data = null) {
         else {
           for($i=0;$item=$data[$i];$i++) {
             if (in_array($item, $permissions)) {
-              $perms[$item] = ($data['delete'] ? 0 : $item); 
-            }      
+              $perms[$item] = ($data['delete'] ? 0 : $item);
+            }
             unset($data[$i]);
           }
           $data[$data['rid']] = $perms;
@@ -247,7 +247,7 @@ function user_patterns($op, $id = null, &$data = null) {
           $data['rid'] = $rid;
           unset($data[$role]);
         }
-        
+
         // make sure we don't overwrite all the permissions previously set for the role while assigning the new ones
         if (!$data['overwrite']) {
           $p = db_result(db_query("SELECT perm FROM {permission} WHERE rid = %d", $data['rid']));
@@ -255,13 +255,13 @@ function user_patterns($op, $id = null, &$data = null) {
           $p = array_map('trim', $p);
           $perms = array_combine($p, $p);
           if (!empty($perms)) {
-            $data[$data['rid']] = array_merge($perms, $data[$data['rid']]); 
+            $data[$data['rid']] = array_merge($perms, $data[$data['rid']]);
           }
         }
-      } 
+      }
       return $data;
     break;
-    
+
     // Validate the values for an action before running the pattern
     case 'validate':
       if ($id == 'user_admin_perm') {
@@ -271,13 +271,13 @@ function user_patterns($op, $id = null, &$data = null) {
         else if (is_string($data['rid'])) {
           $rid = db_result(db_query('SELECT rid FROM {role} WHERE name = "%s"', $data['rid']));
         }
-        
+
         if (!db_result(db_query("SELECT COUNT(*) FROM {role} WHERE rid = %d", $rid))) {
           return t('Invalid role %role to set permissions for.', array('%role' => $data['role'] ? $data['role'] : $data['rid']));
         }
       }
     break;
-    
+
     // Build a patterns actions and parameters
     case 'params':
       if ($id == 'user_confirm_delete' || $id == 'user_profile_form') {
@@ -287,7 +287,7 @@ function user_patterns($op, $id = null, &$data = null) {
         return $data['rid'];
       }
     break;
-    
+
     // Cleanup any global settings or check created data
     case 'cleanup':
       if ($id == 'user_admin_role') {
@@ -298,11 +298,11 @@ function user_patterns($op, $id = null, &$data = null) {
         }
       }
       else if ($id == 'user_profile_form') {
-        static $old_q;        
+        static $old_q;
         $_GET['q'] = $old_q;
       }
     break;
-    
+
     // Return the primary ID if possible from this action
     case 'identifier':
       switch($id) {

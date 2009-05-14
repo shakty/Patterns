@@ -6,7 +6,7 @@ function block_patterns($op, $id = null, &$data = null) {
     case 'tags':
       return array('block');
     break;
-    
+
     // Return a list of forms/actions this component can handle
     case 'actions':
       return array(
@@ -16,14 +16,14 @@ function block_patterns($op, $id = null, &$data = null) {
         'block_box_delete' => t('Block: Delete block')
       );
     break;
-    
+
     // Prepare data for processing
     case 'prepare':
       if ($data['id']) {
         $split = strpos($data['id'], '-');
         $data['module'] = substr($data['id'], 0, $split);
         $data['delta'] = substr($data['id'], $split + 1);
-        
+
         unset($data['id']);
       }
       // Block description for custom blocks is always unique so we can try to get delta by looking up info field
@@ -34,26 +34,26 @@ function block_patterns($op, $id = null, &$data = null) {
           $data['module'] = 'block';
         }
       }
-      
+
       if ($data['description']) {
         $data['info'] = $data['description'];
         unset($data['description']);
       }
-      
+
       if ($data['delete'] && empty($data['info']) && $data['module'] == 'block') {
         $data['info'] = db_result(db_query('SELECT info FROM {boxes} WHERE bid = "%d"', $data['delta']));
       }
-      
+
       if (!empty($data['pages']) && is_array($data['pages'])) {
         $pages = implode("\r\n", $data['pages']);
         $data['pages'] = str_replace('[front]', '<front>', $pages);
       }
-      
+
       if (!($data['module'] && $data['delta']) && $data['info']) {
         $data['module'] = 'block';
-      }   
+      }
     break;
-    
+
     // Pre validate actions
     case 'pre-validate':
       if (!(isset($data['module']) && isset($data['delta'])) && !$data['info']) {
@@ -63,11 +63,11 @@ function block_patterns($op, $id = null, &$data = null) {
         return t('Unable to delete non-block module blocks');
       }
     break;
-    
+
     // Return the form_id('s) for each action
     case 'form_id':
       $diff = array_diff($data, _block_patterns_display_keys());
-      
+
       if (!($data['module'] && $data['delta']) && $data['info']) {
         return array(
           'block_add_block_form',
@@ -87,7 +87,7 @@ function block_patterns($op, $id = null, &$data = null) {
         );
       }
     break;
-    
+
     // Prepare for valid processing of this type of component
     case 'build':
       module_load_include('inc', 'block', 'block.admin');
@@ -103,8 +103,8 @@ function block_patterns($op, $id = null, &$data = null) {
         if (isset($data['status']) && $data['status'] == 0) {
           $data['region'] = -1;
         }
-        
-        // make sure delta is defined even for blocks that have just been created within the same action 
+
+        // make sure delta is defined even for blocks that have just been created within the same action
         if ($data['module'] == 'block' && empty($data['delta'])) {
           // we can do this because block descriptions are always unique
           $data['delta'] = db_result(db_query("SELECT bid FROM {boxes} WHERE info = '%s'", $data['info']));
@@ -112,14 +112,14 @@ function block_patterns($op, $id = null, &$data = null) {
 
         $data = array($data['module'] .'_'. $data['delta'] => $data);
       }
-      
+
       return $data;
     break;
-    
+
     // Validate the values for an action before running the pattern
     case 'validate':
     break;
-    
+
     // Build a patterns actions and parameters
     case 'params':
       if ($id == 'block_admin_configure') {

@@ -6,7 +6,7 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
     case 'tags':
       return array('vocabulary', 'term');
     break;
-    
+
     // Return a list of forms/actions this component can handle
     case 'actions':
       return array(
@@ -16,7 +16,7 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
         'taxonomy_term_confirm_delete' => t('Taxonomy: Delete taxonomy term'),
       );
     break;
-    
+
     // Return a summary of an action
     case 'summary':
       switch($id) {
@@ -24,7 +24,7 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
           if (!$data['name'] && $data['vid']) {
             $data['name'] = db_result(db_query('SELECT name FROM {vocabulary} WHERE vid = "%d"', $data['vid']));
           }
-          
+
           if (!db_result(db_query('SELECT vid FROM {vocabulary} WHERE name = "%s"', $data['name']))) {
             return t('Create vocabulary %vocab', array('%vocab' => $data['name']));
           }
@@ -41,34 +41,34 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
           }
           else if (!taxonomy_get_term_by_name($data['name'])) {
             return t('Create category term %cat for vocabulary %vocab', array('%cat' => $data['name'], '%vocab' => $data['vocabulary']));
-          } 
+          }
           else {
             return t('Edit category %cat in vocabular %vocab', array('%cat' => $data['name'], '%vocab' => $data['vocabulary']));
           }
         break;
       }
     break;
-    
+
     // Prepare data for processing
-    case 'prepare':    
+    case 'prepare':
       if ($id == 'term') {
         if ($data['value']) {
           $data['name'] = $data['value'];
           unset($data['value']);
         }
-        
+
         if ($data['vocab']) {
           $data['vocabulary'] = $data['vocab'];
           unset($data['vocab']);
         }
-        
+
         if ($data['vocabulary'] && is_numeric($data['vocabulary'])) {
           $data['vid'] = $data['vocabulary'];
           unset($data['vocabulary']);
         }
       }
     break;
-    
+
     // Pre validate actions
     // Need to check for required tags etc...
     case 'pre-validate':
@@ -78,7 +78,7 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
         }
       }
     break;
-    
+
     // Return the form_id('s) for each action
     case 'form_id':
       if ($data['delete'] && $id == 'term') {
@@ -98,7 +98,7 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
         return 'taxonomy_form_vocabulary';
       }
     break;
-    
+
     // Prepare for valid processing of this type of component
     case 'build':
       module_load_include('inc', 'taxonomy', 'taxonomy.admin');
@@ -108,7 +108,7 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
       else if ($id == 'taxonomy_form_term') {
         if ($data['vocabulary'] && !$data['vid']) {
           $vocabs = taxonomy_get_vocabularies();
-          
+
           foreach($vocabs as $vid => $vocab) {
             if (strtolower($vocab->name) == strtolower($data['vocabulary'])) {
               $data['vid'] = $vid;
@@ -116,7 +116,7 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
             }
           }
         }
-        
+
         if ($data['vid'] && !$data['tid'] && ($terms = taxonomy_get_term_by_name($data['name']))) {
           // @TODO make sure this works even when there are multiple terms returned
           foreach($terms as $term) {
@@ -125,10 +125,10 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
             }
           }
         }
-        
+
         // <parent> and <relations> should be proccessed in exactly the same way
         $tags = array('parent', 'relations');
-        
+
         foreach($tags as $tag) {
           if (!empty($data[$tag])) {
             // handle the case of empty <parent> tag first
@@ -137,7 +137,7 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
             }
             // for now we support only term names
 //             elseif (is_numeric($data[$tag])) {
-//               $data[$tag][$data[$tag]] = $data[$tag]; 
+//               $data[$tag][$data[$tag]] = $data[$tag];
 //             }
             elseif (is_string($data[$tag])) {
               $new = array();
@@ -170,9 +170,9 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
               }
               $data[$tag] = $new;
             }
-          }        
+          }
         }
-        
+
         if (!empty($data['synonyms']) && is_array($data['synonyms'])) {
           $data['synonyms'] = implode("\n", $data['synonyms']);
         }
@@ -180,7 +180,7 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
       else if ($id == 'taxonomy_form_vocabulary' || $id == 'taxonomy_vocabulary_confirm_delete') {
         if (!$data['vid'] && !empty($data['name'])) {
           $vocabs = taxonomy_get_vocabularies();
-          
+
           foreach($vocabs as $vid => $vocab) {
             if (strtolower($vocab->name) == strtolower($data['name'])) {
               $data['vid'] = $vid;
@@ -191,27 +191,27 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
       }
       return $data;
     break;
-    
+
     // Validate the values for an action before running the pattern
     case 'validate':
       if ($id == 'taxonomy_form_term') {
         if (!$data['vid'] && !empty($data['vocabulary'])) {
           $vocabs = taxonomy_get_vocabularies();
-          
+
           foreach($vocabs as $vid => $vocab) {
             if (strtolower($vocab->name) == strtolower($data['vocabulary'])) {
               $data['vid'] = $vid;
               break;
             }
           }
-        }      
+        }
         // we can't procede without valid vocabulary ID
         if (empty($data['vid'])) {
           return t("Vocabulary %vocab doesn't exist.", array('%vocab' => $data['vocabulary']));
         }
       }
     break;
-    
+
     // Build a patterns actions and parameters
     case 'params':
       if ($id == 'taxonomy_vocabulary_confirm_delete') {

@@ -27,7 +27,7 @@ function patterns_schema() {
     'primary key' => array('pid'),
     'unique keys' => array('name' => array('name'))
   );
-  
+
   return $schema;
 }
 

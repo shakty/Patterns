@@ -8,7 +8,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
     case 'tags':
       return array('view');
     break;
-    
+
     // Return a list of forms/actions this component can handle
     case 'actions':
       return array(
@@ -30,7 +30,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
         'clone_view' => t('Clone a view')
       );
     break;
-    
+
     // Return a summary of an action
     // TODO: Finish the summaries
     case 'summary':
@@ -60,7 +60,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
         break;
       }
     break;
-    
+
     // Return the configuration object that ensures a well-formatted
     // object and determines how configurations should proceed
     case 'config':
@@ -82,11 +82,11 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
         '/display/*/style/*/name' => array('#required' => true)
       );
     break;
-    
+
     // Prepare data for views-centric structure
     case 'prepare':
     break;
-    
+
     // Validate and cleanup the values for an action before running the pattern
     case 'pre-validate':
 
@@ -110,16 +110,16 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
         }
       }
     break;
-    
+
     // Ask the user if its ok to do certain tasks
     case 'confirmation form':
     break;
-    
+
     // Validate action before processing
     case 'validate':
       // TODO validate using views_ui_ajax_forms that proper arguments are set for each form
     break;
-    
+
     // Return the form id or determine if the action does not need processing
     case 'form_id':
       // Make sure necessary files are loaded.
@@ -144,7 +144,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
       else if ($data['action'] == 'clone') {
         $form_ids[] = 'disable_view';
         $form_data[] = &$data['details'];
-      } 
+      }
       else {
         if (!($view = views_get_view($data['details']['vid'] ? $data['details']['vid'] : $data['details']['name']))) {
           $form_ids[] = 'views_ui_add_form';
@@ -159,7 +159,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
         // Add any required displays
         $matches = patterns_array_fetch('/display/*', $data);
         foreach($matches as $match) {
-          // Action is separate and not a display 
+          // Action is separate and not a display
           if ($match['key'] == 'action') {
             continue;
           }
@@ -202,7 +202,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
           $form_ids[] = 'views_ui_edit_display_form';
           $form_data[] = &$match['item'];
         }
-        
+
         // Use the patterns array fetch api to build the list of form_ids and their data
         $matches = patterns_array_fetch('/display/*/style/*', $data);
         foreach($matches as $match) {
@@ -213,7 +213,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
           $form_ids[] = 'views_ui_change_style_form';
           $form_data[] = &$match['item'];
         }
-        
+
         // Use the patterns array fetch api to build the list of form_ids and their data
         $matches = patterns_array_fetch('/display/*/config/*', $data);
         foreach($matches as $match) {
@@ -224,7 +224,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
           $form_ids[] = 'views_ui_config_type_form';
           $form_data[] = &$match['item'];
         }
-        
+
         $matches = patterns_array_fetch('/display/*/item/*', $data);
         foreach($matches as $match) {
           $parent = patterns_array_fetch('/../..', $match['item'], $match);
@@ -269,32 +269,32 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
             $form_ids[] = 'views_ui_config_item_form';
             $form_data[] = &$match['item'];
           }
-          
+
           if ($match['item']['extras']) {
             $form_ids[] = 'views_ui_config_item_extra_form';
             $form_data[] = &$match['item'];
           }
-          
+
           if ($match['item']['style']) {
             $form_ids[] = 'views_ui_config_style_form';
             $form_data[] = &$match['item'];
           }
         }
-        
+
         // Set the remove display forms
         $matches = patterns_array_fetch('/display/*/action=remove', $data);
         foreach($matches as $match) {
           $form_ids[] = 'views_ui_remove_display_form';
           $form_data[] = &$match['parent']['item'];
         }
-        
+
         $form_ids[] = 'views_ui_edit_view_form';
       }
 
       return $form_ids;
     break;
-    
-    // Add default values to the pattern where appropriate and return form data 
+
+    // Add default values to the pattern where appropriate and return form data
     case 'build':
       // Get view object if available
       if ($data['details']['vid']) {
@@ -382,7 +382,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
           $args = array();
           $values = $copy;
         }
-        
+
         // Determine the key for this particular form_id
         foreach($forms as $key => $form) {
           if ($form['form_id'] == $id) {
@@ -393,7 +393,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
         return array('storage' => null, 'submitted' => false, 'values' => $values) + views_ui_build_form_state(false, $key, $view, $display_id, $args);
       }
     break;
-    
+
     // Create extra parameters needed for a pattern execution
     case 'params':
       // The edit view form needs the view as a parameter as well
@@ -401,7 +401,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
         return views_object_cache_get('view', $data['details']['vid'] ? $data['details']['vid'] : $data['details']['name']);
       }
     break;
-    
+
     // Set new data needed for consequetive actions
     case 'cleanup':
       $form_state = &$a;
@@ -418,12 +418,12 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
         }
       }
     break;
-    
+
     // Return view identifiers
     case 'identifier':
-    
+
     break;
-   
+
     // Return the default values for an action
     case 'defaults':
     break;
