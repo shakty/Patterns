@@ -917,6 +917,7 @@ function patterns_get_patterns($reset = true) {
     $patterns_paths = array(
       conf_path() .'/patterns',
       'profiles/'. $profile .'/patterns',
+      'sites/all/patterns',
       drupal_get_path('module', 'patterns') .'/patterns'
     );
 
