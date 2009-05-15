@@ -37,6 +37,14 @@ actions:
   - tag: role
       action_label: adminrole
       value: administrator
+  - tag: permissions
+      role: administrator
+      0: administer blocks
+      1: access comments
+      2: post comments
+  - tag: permissions
+      role: administrator
+      value: access content, display source code, administer filters      
   - tag: form
       form_id: adminrole_admin_settings
       adminrole_adminrole: @adminrole@ 
