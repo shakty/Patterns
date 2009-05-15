@@ -909,6 +909,10 @@ function patterns_get_patterns($reset = true) {
 
     global $profile;
 
+    if (!isset($profile)) {
+      $profile = variable_get('install_profile', 'default');
+    }
+
     // array of all the paths where we should look for patterns
     $patterns_paths = array(
       conf_path() .'/patterns',
