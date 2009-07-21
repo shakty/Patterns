@@ -2204,14 +2204,15 @@ function patterns_sync_form_values($args) {
         $options = patterns_options_flatten($check['#options']);
 
         foreach((array)$match as $value) {
-          // If the supplied value matches an options label, use that option
           $key = array_search($value, $options);
-          if ($key !== FALSE) {
-            $values[$key] = $key;
-          }
-          // Or if the supplied value is an actual options value (not the label) use that
-          else if (array_key_exists($value, $options)) {
+
+          // If the supplied value is an actual options value (not the label) use that
+          if (array_key_exists($value, $options)) {
             $values[$value] = $value;
+          }
+          // Or if the supplied value matches an options label, use that option
+          else if ($key !== FALSE) {
+            $values[$key] = $key;
           }
           // If we are trying to set an invalid value, at least select
           // the first value for select forms since it is impossible to
@@ -3012,6 +3013,7 @@ function _patterns_menu_tree_all_data($menu_name = 'navigation', $item = NULL) {
 
   return $tree[$cid];
 }
+
 
 function patterns_debug_batch($var = null) {
   $var = print_r($var, true);
