@@ -170,6 +170,21 @@ function patterns_menu() {
   return $items;
 }
 
+
+
+/**
+ * Implementation of hook_help().
+ */
+function patterns_help($section, $arg = NULL) {
+  $output = '';
+  switch ($section) {
+    case 'admin/build/patterns':
+      $output = t('Patterns will be looked for in files under the following locations: ') . theme('item_list', patterns_paths());
+      break;
+  }
+  return $output;
+}
+
 /**
  * Display the pattern settings form
  */
@@ -186,6 +201,9 @@ function patterns_settings(&$form_state) {
     '#description' => t('When enabled, you will be able to "publish" selected patterns and make them available to other patterns users on the following URL: %url.', array('%url' => url(NULL, array('absolute' => TRUE)) . (variable_get('clean_url', 0) ? '' : '?q=') .'patterns.xml')),
     '#default_value' => variable_get('patterns_allow_publish', FALSE),
   );
+  // Reload patterns while we are here and ensure the lists are up to date
+  patterns_get_patterns(TRUE);
+  
   return system_settings_form($form);
 }
 
@@ -770,9 +788,15 @@ function patterns_edit(&$form_state, $pid = null) {
   //       '#value' => l(t('Undo update changes to the state when you enabled the pattern.'), 'admin/build/patterns/revert/'. $pid, array(), drupal_get_destination())
   //     );
   //   }
+  $form['format'] = array(
+    '#type' => 'select',
+    '#title' => t('Pattern syntax'),
+    '#options' => array_combine(patterns_file_types(), patterns_file_types()),
+    '#default_value' => 'xml'
+  );
   $form['xml'] = array(
     '#type' => 'textarea',
-    '#title' => t('Pattern\'s XML'),
+    '#title' => t('Pattern\'s code'),
     '#rows' => 25,
     '#default_value' => $xml
   );
@@ -804,7 +828,7 @@ function patterns_edit_submit($form, &$form_state) {
   if ($file = db_result(db_query('SELECT file FROM {patterns} WHERE status = 1 AND name = "%s"', $form_state['values']['name']))) {
     $dir = file_directory_path() .'/'. variable_get('patterns_save_xml', 'patterns') .'/enabled';
     file_check_directory($dir, true);
-    $path =  $dir .'/'. $form_state['values']['name'] .'.xml';
+    $path =  $dir .'/'. $form_state['values']['name'] .'.'. $form_state['values']['format'];
 
     if (!file_exists($path)) {
       file_copy($file, $path, FILE_EXISTS_ERROR);
@@ -812,14 +836,15 @@ function patterns_edit_submit($form, &$form_state) {
   }
 
   // Save the new pattern into the pattern files dir.
-  $path = file_directory_path() .'/'. variable_get('patterns_save_xml', 'patterns') .'/'. $form_state['values']['name'] .'.xml';
+  $path = file_directory_path() .'/'. variable_get('patterns_save_xml', 'patterns') .'/'. $form_state['values']['name'] .'.'. $form_state['values']['format'];
 
   file_save_data($form_state['values']['xml'], $path, FILE_EXISTS_REPLACE);
 
   $old = db_result(db_query('SELECT file FROM {patterns} WHERE name = "%s"', $form_state['values']['name']));
 
   // Load and save pattern
-  if ($pattern = patterns_load_xml($path)) {
+  $load_func = 'patterns_load_' .$form_state['values']['format']; 
+  if ($pattern = $load_func($path)) {
     if ($old) {
       db_query('UPDATE {patterns} SET file = "%s", updated = "%s" WHERE pid = "%d"', $path, time(), $form_state['values']['pid']);
     }
@@ -829,7 +854,7 @@ function patterns_edit_submit($form, &$form_state) {
     $form_state['redirect'] = 'admin/build/patterns';
   }
   else {
-    drupal_set_message(t("Pattern '%name' couldn't be saved. Make sure edited XML code is well-formed.", array('%name' => $form_state['values']['name'])), 'error');
+    drupal_set_message(t("Pattern '%name' couldn't be saved. Make sure edited code is well-formed.", array('%name' => $form_state['values']['name'])), 'error');
   }
 }
 
@@ -903,28 +928,11 @@ function patterns_get_patterns($reset = true) {
       $enabled[] = $result->file;
     }
 
-    $path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
     $priority = array();
     $errors = array();
-
-    global $profile;
-
-    if (!isset($profile)) {
-      $profile = variable_get('install_profile', 'default');
-    }
-
-    // array of all the paths where we should look for patterns
-    $patterns_paths = array(
-      conf_path() .'/patterns',
-      'profiles/'. $profile .'/patterns',
-      'sites/all/patterns',
-      drupal_get_path('module', 'patterns') .'/patterns'
-    );
-
-    // also prepend files folder if it's valid
-    if (file_check_directory($path)) {
-      array_unshift($patterns_paths, $path);
-    }
+    
+    // Get list of directories to scan for patterns
+    $patterns_paths = patterns_paths();
 
     // get valid file extensions
     $mask = '.\.('. implode('|', patterns_file_types()) .')$';
@@ -983,6 +991,32 @@ function patterns_get_patterns($reset = true) {
   }
 
   return $patterns;
+}
+
+/**
+ * return a list of paths that will be scanned for patterns
+ */
+function patterns_paths() {
+  $path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
+  global $profile;
+
+  if (!isset($profile)) {
+    $profile = variable_get('install_profile', 'default');
+  }
+
+  // array of all the paths where we should look for patterns
+  $patterns_paths = array(
+    conf_path() .'/patterns',
+    'profiles/'. $profile .'/patterns',
+    'sites/all/patterns',
+    drupal_get_path('module', 'patterns') .'/patterns'
+  );
+
+  // also prepend files folder if it's valid
+  if (file_check_directory($path)) {
+    array_unshift($patterns_paths, $path);
+  }
+  return $patterns_paths;
 }
 
 function patterns_save_pattern($pattern, $path = '', $name = '') {
@@ -1049,7 +1083,7 @@ function patterns_validate_pattern($pattern) {
  * @todo convert this into pluggable system
  */
 function patterns_file_types() {
-  $result = array('xml');
+  $result = array('xml', 'php');
   if (file_exists(drupal_get_path('module', 'patterns') .'/spyc/spyc.php')) {
     $result[] = 'yaml';
   }
@@ -1114,6 +1148,25 @@ function patterns_load_string_xml($source) {
     return FALSE;
   }
 
+  return $pattern;
+}
+
+/**
+ * Read and evaluate a php file to return a 'pattern'
+ */
+function patterns_load_php($path, $local = TRUE) {
+  if ($local && !file_exists($path)) {
+    return FALSE;
+  }
+  $pattern = array();
+
+  @include($path);
+  // That should have declared a 'pattern' into current scope.
+
+  if (!patterns_validate_pattern($pattern)) {
+    trigger_error("Failed to evaluate a useful pattern from the input file $path. Pattern did not validate. May have been invalid syntax. ", E_USER_WARNING);
+    return FALSE;
+  }
   return $pattern;
 }
 
@@ -1622,10 +1675,13 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
  */
 function patterns_execute_action($form_id, &$form_state, $params) {
   // Make sure we always have a clear cache for everything
-  $result = db_query('SHOW TABLES LIKE "cache_%"');
+  // Beware - this direct database access needs to be db-prefix-safe!
+  global $db_prefix;
+  $result = db_query('SHOW TABLES LIKE "{cache}_%"');
 
   while ($table = db_fetch_array($result)) {
-    $table = current($table);
+    // Remove the db prefix if any. cache_clear_all() will put it back again.
+    $table = substr(current($table), strlen($db_prefix));
     cache_clear_all(null, $table);
   }
 
