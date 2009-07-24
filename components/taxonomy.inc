@@ -234,6 +234,29 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
       }
     break;
 
+    // Return term/vocab identifiers
+    case 'identifier':
+      switch($id) {
+        case 'taxonomy_form_term':
+          if (is_numeric($data['tid'])) {
+            return $data['tid'];
+          }
+          else {
+            return db_result(db_query('SELECT t.tid FROM {term_data} t INNER JOIN {vocabulary} v ON t.vid = v.vid WHERE LOWER(t.name) = LOWER("%s") AND LOWER(v.name) = LOWER("%s")', $data['name'], $data['vocabulary']));
+          }
+        break;
+        case 'taxonomy_form_vocabulary':
+          patterns_debug_batch($data);
+          if (is_numeric($data['vid'])) {
+            return $data['vid'];
+          }
+          else {
+            return db_result(db_query('SELECT vid FROM {vocabulary} WHERE LOWER(name) = LOWER("%s")', $data['name']));
+          }
+        break;
+      }
+    break;
+
     // Cleanup any global settings after the action runs
     case 'cleanup':
       unset($_POST['op']);
