@@ -86,7 +86,7 @@ function system_patterns($op, $id = null, &$data = null) {
         	for($i=0;$i<count($data);$i++) {
         		$item = &$data[$i];
 
-            if (!$item['value'] && !$item['delete']) {
+            if (!isset($item['value']) && !$item['delete']) {
             	$value = $item;
               unset($value['name']);
               $item = array('name' => $item['name'], 'value' => $value);
