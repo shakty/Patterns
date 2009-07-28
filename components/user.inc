@@ -218,7 +218,7 @@ function user_patterns($op, $id = null, &$data = null) {
           unset($data['value']);
 
           foreach($p as $key => $value) {
-            $val = trim($value);
+            $val = trim(trim($value), '\'"');
             if (in_array($val, $permissions)) {
               $perms[$val] = $data['delete'] ? '0' : $val;
             }
@@ -251,8 +251,11 @@ function user_patterns($op, $id = null, &$data = null) {
         if (!$data['overwrite']) {
           $p = db_result(db_query("SELECT perm FROM {permission} WHERE rid = %d", $data['rid']));
           $p = explode(',', $p);
-          $p = array_map('trim', $p);
-          $perms = array_combine($p, $p);
+          $perms = array();
+          if (!empty($p)) {
+            $p = array_map('trim', $p);
+            $perms = array_combine($p, $p);
+          }
           if (!empty($perms)) {
             $data[$data['rid']] = array_merge($perms, array($data[$data['rid']]));
           }
