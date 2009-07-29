@@ -246,7 +246,6 @@ function taxonomy_patterns($op, $id = null, &$data = null) {
           }
         break;
         case 'taxonomy_form_vocabulary':
-          patterns_debug_batch($data);
           if (is_numeric($data['vid'])) {
             return $data['vid'];
           }
