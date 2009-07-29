@@ -257,7 +257,7 @@ function user_patterns($op, $id = null, &$data = null) {
             $perms = array_combine($p, $p);
           }
           if (!empty($perms)) {
-            $data[$data['rid']] = array_merge($perms, array($data[$data['rid']]));
+            $data[$data['rid']] = array_merge($perms, (array)$data[$data['rid']]);
           }
         }
       }
