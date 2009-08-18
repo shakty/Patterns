@@ -909,8 +909,13 @@ function patterns_load_components() {
 
   require_once drupal_get_path('module', 'patterns') .'/patterns.inc';
 
-  foreach(file_scan_directory(drupal_get_path('module', 'patterns') .'/components', '.\.inc') as $file) {
-    include_once $file->filename;
+  // Get a list of directories to search
+  $paths = module_invoke_all('patterns_directory');
+
+  foreach($paths as $path) {
+    foreach(file_scan_directory($path .'/components', '.\.inc$') as $file) {
+      include_once $file->filename;
+    }
   }
 
   $loaded = true;
@@ -1008,15 +1013,30 @@ function patterns_paths() {
   $patterns_paths = array(
     conf_path() .'/patterns',
     'profiles/'. $profile .'/patterns',
-    'sites/all/patterns',
-    drupal_get_path('module', 'patterns') .'/patterns'
+    'sites/all/patterns'
   );
+  
+  // allow any module to include patterns too
+  foreach(module_invoke_all('patterns_directory') as $path) {
+    if (is_dir($path)) {
+      $patterns_paths[] = $path .'/patterns';
+    }
+  }
 
   // also prepend files folder if it's valid
   if (file_check_directory($path)) {
     array_unshift($patterns_paths, $path);
   }
   return $patterns_paths;
+}
+
+/**
+ * Implementation of hook_patterns_directory()
+ * 
+ * Let us know about where the pattern files are at
+ */
+function patterns_patterns_directory() {
+  return drupal_get_path('module', 'patterns');
 }
 
 function patterns_save_pattern($pattern, $path = '', $name = '') {
