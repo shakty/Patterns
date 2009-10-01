@@ -1877,6 +1877,11 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
         }
 
         $a = patterns_get_pattern_details($p, TRUE, $pids);
+        if (is_array($a) && empty($a)) {
+          // An empty array is returned on infinite recursion detection
+          drupal_set_message(t('Action #%key in %file: Infinite recursion detected while attempting to run pattern %pattern.<br>Pattern execution will try to continue without it.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'warning');
+          continue;
+        }
         // array_merge doesn't preserve numeric array keys
         // so we handle 'info' separately
         $info = $result['info'];
@@ -1893,11 +1898,11 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
     }
     $result['modules'] = array_merge(array_unique($result['modules']));
     // Remove pid from recursion stack
-    unset($pids[$pattern->pid]);
+    //unset($pids[$pattern->pid]);
     return $result;
   }
   // Remove pid from recursion stack
-  unset($pids[$pattern->pid]);
+  //unset($pids[$pattern->pid]);
   return array('actions' => $actions, 'modules' => $modules, 'info' => $patterns);
 }
 
