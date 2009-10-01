@@ -248,18 +248,18 @@ function user_patterns($op, $id = null, &$data = null) {
           unset($data[$role]);
         }
         // make sure we don't overwrite all the permissions previously set for the role while assigning the new ones
-        if (!$data['overwrite']) {
-          $p = db_result(db_query("SELECT perm FROM {permission} WHERE rid = %d", $data['rid']));
-          $p = explode(',', $p);
-          $perms = array();
-          if (!empty($p)) {
-            $p = array_map('trim', $p);
-            $perms = array_combine($p, $p);
-          }
-          if (!empty($perms)) {
-            $data[$data['rid']] = array_merge($perms, (array)$data[$data['rid']]);
-          }
-        }
+//        if (!$data['overwrite']) {
+//          $p = db_result(db_query("SELECT perm FROM {permission} WHERE rid = %d", $data['rid']));
+//          $p = explode(',', $p);
+//          $perms = array();
+//          if (!empty($p)) {
+//            $p = array_map('trim', $p);
+//            $perms = array_combine($p, $p);
+//          }
+//          if (!empty($perms)) {
+//            $data[$data['rid']] = array_merge($perms, (array)$data[$data['rid']]);
+//          }
+//        }
       }
       return $data;
     break;
