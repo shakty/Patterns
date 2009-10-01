@@ -1806,7 +1806,7 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
 
   // prevent infinite recursion
   if (in_array($pattern->pid, $pids)) return array();
-  $pids[] = $pattern->pid;
+  $pids[$pattern->pid] = $pattern->pid;
 
   $actions = !empty($pattern->pattern['actions']) ? $pattern->pattern['actions'] : array();
   $modules = !empty($pattern->pattern['modules']) ? $pattern->pattern['modules'] : array();
@@ -1892,8 +1892,12 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
       }
     }
     $result['modules'] = array_merge(array_unique($result['modules']));
+    // Remove pid from recursion stack
+    unset($pids[$pattern->pid]);
     return $result;
   }
+  // Remove pid from recursion stack
+  unset($pids[$pattern->pid]);
   return array('actions' => $actions, 'modules' => $modules, 'info' => $patterns);
 }
 
