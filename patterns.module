@@ -1279,7 +1279,23 @@ function patterns_enable_pattern(&$form_state, $pid) {
     '#type' => 'value',
     '#value' => $pid
   );
-
+  
+  $options = array(
+    'first-update' => t('only if disabled or if updated since last run (recommended)'),  
+    'always' => t('always'),
+    'update' => t('only if updated since last run'),
+    'first' => t('only if disabled'),
+    'never' => t("don't run sub-patterns at all"),
+  );
+  
+  $form['run-subpatterns'] = array(
+    '#type' => 'radios',
+    '#title' => t('Run sub-patterns:'),
+    '#description' => t("Decide when to run sub-patterns that are called by the currently run pattern. If unsure, stick to recommended setting. Note that your choice won't have any effect if your pattern doesn't contain sub-patterns or if this setting has been defined within the pattern file itself."),
+    '#options' => $options,
+    '#default_value' => 'first-update',
+  );
+  
   $disclaimer = t('Please be sure to backup your site before running a pattern. Patterns are not guaranteed to be reversable in case they do not execute well or if unforseen side effects occur.');
 
   $pattern = patterns_get_pattern($pid);
@@ -1362,6 +1378,7 @@ function patterns_execute_pattern_batch($pattern, $params = array()) {
     }
   }
 
+  $pattern->subpatterns_run_mode = $params['run-subpatterns'];
   $pattern_details = patterns_get_pattern_details($pattern, TRUE);
 
   $modules = $pattern_details['modules'];
@@ -1815,6 +1832,50 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
           drupal_set_message(t('Action #%key in %file: Pattern %pattern not found.<br>Pattern execution will try to continue without it.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'warning');
           continue;
         }
+        
+        // Decide if sub-pattern needs to be run based on the mode defined within the pattern or selected in UI at the time of form submission
+        // @TODO: UI setting should be able to override a setting defined within the pattern 
+        $modes = array('first-update', 'always', 'update', 'first', 'never');
+        if (!empty($action['run']) && in_array($action['run'], $modes)) {
+          $mode = $action['run'];
+        }
+        else {
+          $mode = $pattern->subpatterns_run_mode;
+        }
+
+        switch ($mode) {
+          case 'never':
+            // don't run sub-pattern 
+            drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to be skipped.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status'); 
+            continue 2;
+            break;
+          case 'first':
+            // Only run on first run
+            if ($p->status) {
+              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on the first run.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
+              continue 2;
+            }
+            break;
+          case 'update':
+            // Only run on pattern update
+            if ($p->enabled >= $p->updated) {
+              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on pattern update.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
+              continue 2;
+            }
+            break;
+          case 'first-update':
+            // Only run on first run or pattern update
+            if ($p->status && $p->enabled >= $p->updated) {
+              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on first run or update.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
+              continue 2;
+            }
+            break;
+          case 'always':
+          default:
+            // Run always
+            break;
+        }
+
         $a = patterns_get_pattern_details($p, TRUE, $pids);
         // array_merge doesn't preserve numeric array keys
         // so we handle 'info' separately
