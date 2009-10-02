@@ -2231,6 +2231,14 @@ function patterns_theme() {
  */
 function patterns_sync_form_values($args) {
   $form_id = $args[0];
+  
+  // this functionality is not working well with 
+  // node forms (create/update node)
+  // so skip them until this issue is fixed 
+  if (strpos($form_id, 'node_form') !== FALSE) {
+    return;
+  }
+    
   // References inside the form_state can cause potential problems,
   // so we'll ensure no references to outside data exists
   $form_state = unserialize(serialize($args[1]));
