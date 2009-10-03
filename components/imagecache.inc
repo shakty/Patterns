@@ -10,12 +10,10 @@ function imagecache_patterns($op, $id = null, &$data = null) {
     // Return a list of forms/actions this component can handle
     case 'actions':
       return array(
-        'imagecache_ui_preset_add_form' => t('Imagecache: Add preset'),
-        'imagecache_ui_preset_form' => t('Imagecache: Edit preset'),
+        'imagecache_ui_preset_form' => t('Imagecache: Add or Edit preset'),
         'imagecache_ui_preset_flush_form' => t('Imagecache: Flush preset'),
         'imagecache_ui_preset_delete_form' => t('Imagecache: Delete preset'),
-        'imagecache_ui_action_add_form' => t('Imagecache: Add action'),
-        'imagecache_ui_action_form' => t('Imagecache: Configure action'),
+        'imagecache_ui_action_form' => t('Imagecache: Add or Configure action'),
         'imagecache_ui_action_delete_form' => t('Imagecache: Delete action'),
       );
     break;
@@ -40,6 +38,10 @@ function imagecache_patterns($op, $id = null, &$data = null) {
             $presetid = db_result(db_query("SELECT presetid FROM {imagecache_preset} WHERE presetname = '%s'", $data['presetname']));
             if (is_numeric($presetid)) $data['presetid'] = $presetid;
           }
+          
+          if (empty($data['actions'])) {
+            $data['actions'] = array();
+          }
 
         break;
         case 'imagecache_action':
@@ -62,11 +64,8 @@ function imagecache_patterns($op, $id = null, &$data = null) {
             }
           }
 
-          if (empty($data['actionid']) && is_string($data['action'])) {
-            $count = db_result(db_query("SELECT COUNT(*) FROM {imagecache_action} WHERE presetid = %d AND action = '%s'", $data['presetid'], $data['action']));
-            if ($count == 1 && $actionid = db_result(db_query("SELECT actionid FROM {imagecache_action} WHERE presetid = %d AND action = '%s'", $data['presetid'], $data['action']))) {
-              $data['actionid'] = $actionid;
-            }
+          if (empty($data['actionid']) && is_string($data['action'])) {            
+            $data['actionid'] = _imagecache_get_actionid($data['presetid'], $data['action']);
           }
 
           $skip = array('action', 'actionid', 'presetid', 'weight', 'delete', 'preset');
@@ -84,27 +83,41 @@ function imagecache_patterns($op, $id = null, &$data = null) {
     case 'pre-validate':
       switch ($id) {
         case 'imagecache_preset':
-          if ($data['delete'] && empty($data['presetid'])) {
-            return t('You must specify valid preset.');
-          }
           if (is_numeric($data['presetid'])) {
             $preset = imagecache_preset($data['presetid']);
             if (empty($preset)) {
               return t('Invalid preset id');
             }
-            $data['old_presetname'] = $preset['presetname'];;
           }
-          if (is_numeric($data['presetid']) && empty($data['presetname']) && !$data['delete']) {
-            return t("presetname is missing.");
+          if (($data['delete'] || $data['flush']) && empty($data['presetid'])) {
+            return t('You must specify existing imagecache preset.');
+          }
+          if (empty($data['presetname']) && !$data['delete'] && !$data['flush']) {
+            return t("Preset name is missing.");
           }
         break;
-        case 'imagecache_action':
-          if (is_numeric($data['weight']) && ($data['weight'] < -10 || $data['weight'] > 10)) {
-            return t('Weight should be a number between -10 and 10');
-          }
-          if (!empty($data['actionid']) && !imagecache_action_load($data['actionid'])) {
+        case 'imagecache_action':         
+          if (!empty($data['actionid']) && !($action = imagecache_action_load($data['actionid']))) {
             return t('Invalid action ID: %id', array('%id' => $data['actionid']));
           }
+          
+          if (empty($data['actionid']) && empty($data['action'])) {
+            return t('Action name is missing.');
+          }
+          elseif (empty($data['actionid']) && !empty($data['action'])) {
+            $action_definition = imagecache_action_definition($data['action']);
+            if (empty($action_definition)) {
+              return t("Action name is not valid: %action", array('%action' => $data['action']));
+            }
+          }
+          else {
+            // If both action id and action name are defined, id will take precedence and name will be ignored.
+            $data['action'] = $action['action'];
+          }
+
+          if (is_numeric($data['weight']) && ($data['weight'] < -10 || $data['weight'] > 10)) {
+            return t('Weight should be a number between -10 and 10');
+          }          
         break;
       }
     break;
@@ -119,25 +132,19 @@ function imagecache_patterns($op, $id = null, &$data = null) {
           else if ($data['flush']) {
             return 'imagecache_ui_preset_flush_form';
           }
-          else if ($data['presetid'] && $data['presetname'] && $data['old_presetname'] != $data['presetname']) {
+          else {
             return 'imagecache_ui_preset_form';
-          }
-          else if (empty($data['presetid'])) {
-            return 'imagecache_ui_preset_add_form';
           }
         break;
         case 'imagecache_action':
           if ($data['delete']) {
             return 'imagecache_ui_action_delete_form';
           }
-          else if (is_numeric($data['actionid']) && is_numeric($data['weight'])) {
+          else if (is_numeric($data['weight'])) {
             return array('imagecache_ui_action_form', 'imagecache_ui_preset_form');
           }
-          else if (is_numeric($data['actionid'])) {
-            return 'imagecache_ui_action_form';
-          }
           else {
-            return 'imagecache_ui_action_add_form';
+            return 'imagecache_ui_action_form';
           }
         break;
       }
@@ -148,11 +155,7 @@ function imagecache_patterns($op, $id = null, &$data = null) {
 
       module_load_include('inc', 'imagecache', 'imagecache_ui.pages');
 
-      if ($id == 'imagecache_ui_action_add_form') {
-        unset($data['actionid']);
-      }
-
-      if ($id == 'imagecache_ui_preset_form' && is_numeric($data['actionid'])) {
+      if ($id == 'imagecache_ui_preset_form' && is_numeric($data['weight'])) {
         $preset = imagecache_preset($data['presetid'], TRUE);
 
         foreach ($preset['actions'] as $key => $action) {
@@ -168,30 +171,29 @@ function imagecache_patterns($op, $id = null, &$data = null) {
 
     // Validate the values for an action before running the pattern
     case 'validate':
-      if (strpos($id, 'ui_action')) {
-        // try once again to determine presetid and actionid now that previous actions are executed
-        // (this is required because all the actions are executed only after 'prepare' op so there
-        //  is a good chance that required preset was still not created at that time)
-        if(empty($data['presetid']) && !empty($data['preset'])) {
-          $presetid = db_result(db_query("SELECT presetid FROM {imagecache_preset} WHERE presetname = '%s'", $data['preset']));
-          if (is_numeric($presetid)) {
-            $data['presetid'] = $presetid;
-            unset($data['preset']);
-          }
-        }
-        if (empty($data['actionid']) && is_string($data['action'])) {
-          $count = db_result(db_query("SELECT COUNT(*) FROM {imagecache_action} WHERE presetid = %d AND action = '%s'", $data['presetid'], $data['action']));
-          if ($count == 1 && $actionid = db_result(db_query("SELECT actionid FROM {imagecache_action} WHERE presetid = %d AND action = '%s'", $data['presetid'], $data['action']))) {
-            $data['actionid'] = $actionid;
-          }
+      // Now that previous actions are executed, try once again to determine presetid and actionid. 
+      // This is required because all the actions are actually executed only after 'prepare' op so there
+      // is a good chance that specified preset didn't exist at the time of first attempt.
+      if(empty($data['presetid']) && !empty($data['preset'])) {
+        $presetid = db_result(db_query("SELECT presetid FROM {imagecache_preset} WHERE presetname = '%s'", $data['preset']));
+        if (is_numeric($presetid)) {
+          $data['presetid'] = $presetid;
+          unset($data['preset']);
         }
       }
-
-      if ($id == 'imagecache_ui_action_add_form') {
-        if (!is_numeric($data['presetid']) || !imagecache_preset($data['presetid'], TRUE)) {
-          return t('Unknown preset.');
+      if (empty($data['actionid']) && is_string($data['action'])) {
+        $aid = _imagecache_get_actionid($data['presetid'], $data['action']);
+        if (!empty($aid)) {
+          $data['actionid'] = $aid;
         }
       }
+      
+      if (($id == 'imagecache_ui_action_form' || $id == 'imagecache_ui_action_delete_form')) {
+        if (!is_numeric($data['presetid'])) {
+          return t('You must specify valid preset.');  
+        }
+      }
+      
     break;
 
     // Build a patterns actions and parameters
@@ -199,10 +201,10 @@ function imagecache_patterns($op, $id = null, &$data = null) {
       if ($id == 'imagecache_ui_preset_delete_form' || $id == 'imagecache_ui_preset_flush_form' || $id == 'imagecache_ui_preset_form') {
         return array($data);
       }
-      else if ($id == 'imagecache_ui_action_add_form') {
-        return array(imagecache_preset($data['presetid']), $data['action']);
+      else if ($id == 'imagecache_ui_action_form') {
+        return array(imagecache_preset($data['presetid']), $data);
       }
-      else if ($id == 'imagecache_ui_action_delete_form' || $id == 'imagecache_ui_action_form') {
+      else if ($id == 'imagecache_ui_action_delete_form') {
         return array(imagecache_preset($data['presetid']), imagecache_action($data['actionid']));
       }
     break;
@@ -215,12 +217,18 @@ function imagecache_patterns($op, $id = null, &$data = null) {
 
     // Return the primary ID if possible from this action
     case 'identifier':
-      if ($id == 'imagecache_ui_preset_add_form') {
+      if ($id == 'imagecache_ui_preset_form') {
         return db_result(db_query("SELECT presetid FROM {imagecache_preset} WHERE presetname = '%s'", $data['presetname']));
-      }
-      else if ($id == 'imagecache_ui_action_add_form') {
-
       }
     break;
   }
+}
+
+function _imagecache_get_actionid($presetid, $action) {
+  $actionid = NULL;
+  $count = db_result(db_query("SELECT COUNT(*) FROM {imagecache_action} WHERE presetid = %d AND action = '%s'", $presetid, $action));
+  if ($count == 1) {
+    $actionid = db_result(db_query("SELECT actionid FROM {imagecache_action} WHERE presetid = %d AND action = '%s'", $presetid, $action));
+  }
+  return $actionid;
 }
