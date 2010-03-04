@@ -792,7 +792,7 @@ function patterns_edit(&$form_state, $pid = null) {
     '#type' => 'select',
     '#title' => t('Pattern syntax'),
     '#options' => array_combine(patterns_file_types(), patterns_file_types()),
-    '#default_value' => 'xml'
+    '#default_value' => pathinfo($pattern->file, PATHINFO_EXTENSION),
   );
   $form['xml'] = array(
     '#type' => 'textarea',
