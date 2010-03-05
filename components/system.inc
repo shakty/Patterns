@@ -95,7 +95,7 @@ function system_patterns($op, $id = null, &$data = null) {
         break;
         case 'modules':
           // Make a <modules>modulename</modules> style tag work
-          if (is_string($data) || ($data['value'] && !$data[0])) {
+          if (is_string($data) || (isset($data['value']) && !isset($data[0]))) {
             $data = array($data);
           }
 
@@ -138,7 +138,7 @@ function system_patterns($op, $id = null, &$data = null) {
           // attempt to load required include file
           $menu = menu_router_build(TRUE);
           foreach ($menu as $item) {
-            if ($item['page arguments'][0] == $data['form_id']) {
+            if (isset($item['page arguments'][0]) && $item['page arguments'][0] == $data['form_id']) {
               $data['include'] = $item['include file'];
               break;
             }
@@ -281,7 +281,7 @@ function system_patterns($op, $id = null, &$data = null) {
             $data['status'] += array($module => $module);
           }
           else {
-            unset($data['status'][$module]);
+            $data['status'][$module] = 0;
           }
 
           unset($data[$i]);

@@ -1,6 +1,18 @@
 <?php
 
 function block_patterns($op, $id = null, &$data = null) {
+  $defaults = array(
+    'id'          => NULL, // May be a combo of module+delta
+    'module'      => NULL,
+    #'delta'       => NULL, // Always use isset with delta, because 0 is a legal value
+    'description' => NULL,
+    'info'        => NULL,
+    'pages'       => NULL,
+    'delete'      => NULL,
+  );
+  // Initialize the expected attributes to avoid PHP warnings. Makes later logic easier.
+  $data = array_merge($defaults, (array)$data);
+
   switch($op) {
     // Return the valid tags that this component can prepare and process
     case 'tags':
@@ -27,9 +39,9 @@ function block_patterns($op, $id = null, &$data = null) {
         unset($data['id']);
       }
       // Block description for custom blocks is always unique so we can try to get delta by looking up info field
-      elseif (!empty($data['info'])) {
+      elseif ($data['info']) {
         $delta = db_result(db_query('SELECT delta FROM {blocks} bl INNER JOIN {boxes} bo ON bl.delta = bo.bid AND bl.module = "block" WHERE info = "%s"', $data['info']));
-        if (!empty($delta)) {
+        if ($delta) {
           $data['delta'] = $delta;
           $data['module'] = 'block';
         }
@@ -40,23 +52,23 @@ function block_patterns($op, $id = null, &$data = null) {
         unset($data['description']);
       }
 
-      if ($data['delete'] && empty($data['info']) && $data['module'] == 'block') {
+      if ($data['delete'] && !$data['info'] && $data['module'] == 'block') {
         $data['info'] = db_result(db_query('SELECT info FROM {boxes} WHERE bid = "%d"', $data['delta']));
       }
 
-      if (!empty($data['pages']) && is_array($data['pages'])) {
+      if ($data['pages'] && is_array($data['pages'])) {
         $pages = implode("\r\n", $data['pages']);
         $data['pages'] = str_replace('[front]', '<front>', $pages);
       }
 
-      if (!($data['module'] && $data['delta']) && $data['info']) {
+      if (!($data['module'] && isset($data['delta'])) && $data['info']) {
         $data['module'] = 'block';
       }
     break;
 
     // Pre validate actions
     case 'pre-validate':
-      if (!(isset($data['module']) && isset($data['delta'])) && !$data['info']) {
+      if (!($data['module'] && isset($data['delta'])) && !$data['info']) {
         return t('Missing required &lt;module&gt;, &lt;delta&gt; tags. Possibly malformed &lt;id&gt; tag could be the problem too. If creating a new block, tag &lt;info&gt; is required.');
       }
       else if ($data['delete'] && $data['module'] != 'block') {

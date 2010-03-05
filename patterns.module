@@ -682,11 +682,12 @@ function patterns_list() {
     $title = '<span id="pid-'. $pid .'" class="pattern-title">'. $pattern->title .'</span>';
     //     $view_more = '<div>'. t('Clik on pattern title to see more details.') .'</div>';
     $info = array();
-    $info[] = t('Author: ') . $pattern->info['author'];
-    $info[] = t('Email: ') . $pattern->info['author_email'];
-    $info[] = t('Web: ') . $pattern->info['author_website'];
+    $info[] = t('Author: ') . @$pattern->info['author'];
+    $info[] = t('Email: ') . @$pattern->info['author_email'];
+    $info[] = t('Web: ') . @$pattern->info['author_website'];
     $author = theme('item_list', $info);
-    $title .= '<div id="pid-'. $pid .'-info" class="pattern-info">'. $author . $pattern->description . $view_more .'</div>';
+    //    $title .= '<div id="pid-'. $pid .'-info" class="pattern-info">'. $author . $pattern->description . $view_more .'</div>';
+    $title .= '<div id="pid-'. $pid .'-info" class="pattern-info">'. $author . $pattern->description .'</div>';
     $cells[] = array('data' => $title, 'class' => 'title');
     $cells[] = array('data' => $pattern->status ? t('Enabled') : t('Disabled'), 'class' => 'status');
     $cells[] = array('data' => $pattern->info['version'], 'class' => 'version');
@@ -697,6 +698,7 @@ function patterns_list() {
   }
 
   ksort($rows);
+  $output = '';
   foreach ($rows as $title => $category) {
     $fieldset = array(
       '#title' => t($title),
@@ -930,7 +932,7 @@ function patterns_get_patterns($reset = true) {
     $result = db_query('SELECT file FROM {patterns} WHERE status = 1');
 
     while ($pattern = db_fetch_object($result)) {
-      $enabled[] = $result->file;
+      $enabled[] = $pattern->file;
     }
 
     $priority = array();
@@ -1213,18 +1215,20 @@ function patterns_from_source($xml) {
 function _patterns_parse_tag($data, &$index = 0) {
   $pattern = array();
 
-  while ($current = $data[$index]) {
+  while (isset($data[$index]) && $current = $data[$index]) {
     $type = $current['type'];
 
-    foreach((array)$current['attributes'] as $key => $value) {
-      $current[strtolower($key)] = $value;
+    if (!empty($current['attributes'])) {
+      foreach((array)$current['attributes'] as $key => $value) {
+        $current[strtolower($key)] = $value;
+      }
     }
 
     $current['tag'] = strtolower($current['tag']);
 
     unset($current['type'], $current['level'], $current['attributes']);
 
-    if (!trim($current['value']) && $current['value'] != "0") {
+    if (isset($current['value']) && !trim($current['value']) && $current['value'] != "0") {
       unset($current['value']);
     }
 
@@ -1240,7 +1244,7 @@ function _patterns_parse_tag($data, &$index = 0) {
         break;
       case 'complete':
         // In order to support more complex/non-standard features we can use serialized data
-        if ($current['attributes']['serialized']) {
+        if (!empty($current['attributes']['serialized'])) {
           $value = unserialize($current['value']);
 
           if (isset($value)) {
@@ -1477,6 +1481,8 @@ function patterns_prepare_actions(&$actions, $actions_map) {
     patterns_invoke($actions[$key], 'prepare');
   }
 
+  $errors = array();
+  
   // Pre validate tags with their appropriate components
   foreach($actions as $key => &$data) {
 
@@ -1544,7 +1550,7 @@ function patterns_batch_actions($action, $place, $actions_map, &$context) {
  */
 function patterns_batch_finish($success, $results, $operations) {
   $info = $_SESSION['patterns_batch_info'];
-  if (!($results['abort'])) {
+  if (empty($results['abort'])) {
     foreach ($info as $key => $i) {
       drupal_set_message(t('Pattern "@pattern" ran successfully.', array('@pattern' => $i['title'])));
       db_query('UPDATE {patterns} SET status = 1, enabled = "%s" WHERE pid = %d', time(), $key);
@@ -1973,11 +1979,13 @@ function _patterns_rearrange_data($data, $parent = '') {
   $count=0;
 
   foreach($data as $key => $value) {
-    if ($value['value'] == 'false') {
-      $value['value'] = false;
-    }
-    else if ($value['value'] == 'true') {
-      $value['value'] = true;
+    if (isset($value['value'])) {
+      if ($value['value'] == 'false') {
+        $value['value'] = false;
+      }
+      else if ($value['value'] == 'true') {
+        $value['value'] = true;
+      }
     }
 
     if (is_numeric($key) && is_array($value) && count($value) == 2 && isset($value['tag']) && isset($value['value'])) {
