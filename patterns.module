@@ -2332,13 +2332,20 @@ function patterns_sync_form_values($args) {
         // First, if the pattern value is there, but empty, we obviously
         // should be overwriting. Next is to check if overwrite was specified
         // manually
-        if (!$check['#missing_in_pattern'] && (empty($match) || (is_array($match) && isset($match['_overwrite_'])))) {
-          $overwrite = true;
-          if (is_array($match) && isset($match['_overwrite_'])) {
-            $match = $match['_overwrite_'];
+        $overwrite = FALSE;
+        if (!$check['#missing_in_pattern'] && (empty($match) || (is_array($match) && !empty($match['overwrite'])))) {
+          $overwrite = TRUE;
+          if (is_array($match) && isset($match['overwrite'])) {
+            unset($match['overwrite']);
           }
         }
 
+        $delete = FALSE;
+        if (is_array($match) && !empty($match['delete'])) {
+          $delete = TRUE;
+          unset($match['delete']);
+        }
+        
         // If overwriting, start the values array with all the
         // possible values but empty. We will possibly fill them
         // in with default values on update actions. Select types
@@ -2370,11 +2377,11 @@ function patterns_sync_form_values($args) {
 
           // If the supplied value is an actual options value (not the label) use that
           if (array_key_exists($value, $options)) {
-            $values[$value] = $value;
+            $values[$value] = $delete ? 0 : $value;
           }
           // Or if the supplied value matches an options label, use that option
           else if ($key !== FALSE) {
-            $values[$key] = $key;
+            $values[$key] = $delete ? 0 : $key;
           }
           // If we are trying to set an invalid value, at least select
           // the first value for select forms since it is impossible to

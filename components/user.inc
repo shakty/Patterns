@@ -220,7 +220,7 @@ function user_patterns($op, $id = null, &$data = null) {
           foreach($p as $key => $value) {
             $val = trim(trim($value), '\'"');
             if (in_array($val, $permissions)) {
-              $perms[$val] = $data['delete'] ? '0' : $val;
+              $perms[$val] = $val;
             }
           }
           $data[$data['rid']] = $perms;
@@ -228,7 +228,7 @@ function user_patterns($op, $id = null, &$data = null) {
         else {
           for($i=0;$item=$data[$i];$i++) {
             if (in_array($item, $permissions)) {
-              $perms[$item] = ($data['delete'] ? 0 : $item);
+              $perms[$item] = $item;
             }
             unset($data[$i]);
           }
@@ -247,19 +247,13 @@ function user_patterns($op, $id = null, &$data = null) {
           $data['rid'] = $rid;
           unset($data[$role]);
         }
-        // make sure we don't overwrite all the permissions previously set for the role while assigning the new ones
-//        if (!$data['overwrite']) {
-//          $p = db_result(db_query("SELECT perm FROM {permission} WHERE rid = %d", $data['rid']));
-//          $p = explode(',', $p);
-//          $perms = array();
-//          if (!empty($p)) {
-//            $p = array_map('trim', $p);
-//            $perms = array_combine($p, $p);
-//          }
-//          if (!empty($perms)) {
-//            $data[$data['rid']] = array_merge($perms, (array)$data[$data['rid']]);
-//          }
-//        }
+
+        if (!empty($data['delete'])) {
+          $data[$data['rid']]['delete'] = 1;
+        }
+        if (!empty($data['overwrite'])) {
+          $data[$data['rid']]['overwrite'] = 1;
+        }
       }
       return $data;
     break;

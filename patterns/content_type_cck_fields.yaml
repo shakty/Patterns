@@ -198,6 +198,7 @@ actions:
     widget: date_popup
     default_value: now
     granularity:
+      overwrite: 1
       year: year
       month: month
       day: day

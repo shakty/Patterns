@@ -167,7 +167,14 @@
       <default_value>now</default_value>
       <input_format>Y M j - H:i</input_format>
       <year_range>-1:+1</year_range>
-      <output_format_date>Y M j - H:i</output_format_date>      
+      <output_format_date>Y M j - H:i</output_format_date>
+      <granularity overwrite="1"> <!-- if you don't specify overwrite=1, previous or default values for granularity will be preserved which is usually not what you want -->
+        <value>year</value>
+        <value>month</value>
+        <value>day</value>
+        <value>hour</value>
+        <value>minute</value>
+      </granularity>
       <tz_handling>date</tz_handling>
     </field>
 
@@ -557,9 +564,9 @@
       IMPORTANT: Don't try to mix both enable and disable actions within the same <modules> tag. 
       Instead, create separate <modules> tags for "enable module" and "disable module" actions. 
     -->
-    <modules>
-      <module disable="1">number</module>
-      <module disable="1">token_actions</module>      
+    <modules disable="1">
+      <module>number</module>
+      <module>token_actions</module>      
     </modules>        
 
 
