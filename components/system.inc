@@ -179,7 +179,7 @@ function system_patterns($op, $id = null, &$data = null) {
             }
           }
           // Ensure a module and all of its dependencies exist
-          else if (!array_key_exists($module, $modules)) {
+          else if (empty($data['delete']) && !array_key_exists($module, $modules)) {
             if (!array_key_exists($module, $modules_info)) {
               $required[] = $module;
             }
