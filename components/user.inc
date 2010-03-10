@@ -148,7 +148,12 @@ function user_patterns($op, $id = null, &$data = null) {
         if (!$data['delete'] && $data['id'] && $data['name'] && db_result(db_query("SELECT COUNT(*) FROM {role} WHERE name = '%s' AND rid != %d", $data['name'], $data['id']))) {
           return;
         }
-        return 'user_admin_role';
+        elseif ($data['delete']) {
+          return 'user_admin_role';
+        }
+        else {
+          return 'user_admin_new_role';
+        }
       }
       else if ($id == 'permissions') {
         return 'user_admin_perm';
@@ -181,7 +186,7 @@ function user_patterns($op, $id = null, &$data = null) {
         module_load_include('inc', 'user', 'user.pages');
         $data['confirm'] = 1;
       }
-      else if ($id == 'user_admin_role') {
+      else if ($id == 'user_admin_role' || $id == 'user_admin_new_role') {
         module_load_include('inc', 'user', 'user.admin');
         static $old_q;
         $old_q = $_GET['q'];

@@ -1758,6 +1758,8 @@ function patterns_execute_action($form_id, &$form_state, $params) {
   $form = call_user_func_array('drupal_retrieve_form', $args);
 
   $form['#post'] = $form_state['values'];
+  // Some modules depend on existence of 'post' array
+  $form_state['post'] = $form_state['values'];
   drupal_prepare_form($form_id, $form, $form_state);
 
   // If you call drupal_validate_form() on the same form more
