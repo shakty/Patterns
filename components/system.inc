@@ -99,18 +99,9 @@ function system_patterns($op, $id = null, &$data = null) {
             $data = array($data);
           }
 
-          // Ensure proper data format for cases when "delete" (disable module) option is used
-          // or when <modules> tag contains only single <module> tag
-          if (!empty($data['module']) && is_array($data['module']) && count($data) == 1) {
-            if (isset($data['module'][0])) {
-              $data = $data['module'];
-            }
-            elseif (isset($data['module']['value'])) {
-              $data[0] = $data['module'];
-            }
-            unset($data['module']);
-          }
-          elseif (!empty($data['module']) && is_string($data['module']) && count($data) == 1) {
+          // Ensure proper data format for cases when <modules> tag contains 
+          // only single <module> tag.
+          if (!empty($data['module']) && is_string($data['module'])) {
             $data[0]['value'] = $data['module'];
             unset($data['module']);
           }
