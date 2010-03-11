@@ -1717,15 +1717,15 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
  * Execute an action
  */
 function patterns_execute_action($form_id, &$form_state, $params) {
-  // Make sure we always have a clear cache for everything
-  // Beware - this direct database access needs to be db-prefix-safe!
-  global $db_prefix;
-  $result = db_query('SHOW TABLES LIKE "{cache}_%"');
+  // Make sure we always have a clear cache for everything.
+  // Code taken from drupal_flush_all_caches().
 
-  while ($table = db_fetch_array($result)) {
-    // Remove the db prefix if any. cache_clear_all() will put it back again.
-    $table = substr(current($table), strlen($db_prefix));
-    cache_clear_all(null, $table);
+  // Don't clear cache_form - in-progress form submissions may break.
+  // Ordered so clearing the page cache will always be the last action.
+  $core = array('cache', 'cache_block', 'cache_filter', 'cache_page');
+  $cache_tables = array_merge(module_invoke_all('flush_caches'), $core);
+  foreach ($cache_tables as $table) {
+    cache_clear_all('*', $table, TRUE);
   }
 
   $args = array($form_id, &$form_state);
