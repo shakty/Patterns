@@ -6,7 +6,7 @@ function system_patterns($op, $id = null, &$data = null) {
   switch($op) {
     // Return the valid tags that this component can prepare and process
     case 'tags':
-      return array('modules', 'form', 'variables', 'variable', 'theme');
+      return array('modules', 'form', 'variables', 'variable', 'theme', 'call_php_func');
     break;
 
     // Return a list of forms/actions this component can handle
@@ -16,7 +16,8 @@ function system_patterns($op, $id = null, &$data = null) {
         'variables' => t('System: Set or delete variables'),
         'variable' => t('System: Set or delete variable'),
         'system_themes_form' => t('System: Set active theme'),
-        'form' => t('System: Execute form')
+        'form' => t('System: Execute form'),
+        'call_php_func_form' => t('Call PHP function: Call function'),
       );
     break;
 
@@ -54,6 +55,9 @@ function system_patterns($op, $id = null, &$data = null) {
 //        break;
 //        case 'form':
 //          return t('Executing form: %name', array('%name' => $data['form_id']));
+//        break;
+//        case 'call_php_func_form':
+//          return t('Calling PHP function %func', array('%pattern' => $data['func']));
 //        break;
 //      }
 //    break;
@@ -154,6 +158,8 @@ function system_patterns($op, $id = null, &$data = null) {
             }
           }
         break;
+        case 'call_php_func_form':
+        break;
       }
     break;
 
@@ -217,6 +223,20 @@ function system_patterns($op, $id = null, &$data = null) {
           return t("Couldn't load the form %form. Check if all required modules are enabled and try to define 'include' or 'module' for this action.", array('%form' => $data['form_id']));
       	}
       }
+      else if ($id == 'call_php_func') {
+        if (empty($data['function'])) {
+          return t("A function is required for this tag");
+        }
+        else if (!empty($data['type']) && empty($data['module'])) {
+          return t("If you specify a type you must specify a module. See the documentation for module_load_include.");
+        }
+        else if (empty($data['type']) && !empty($data['module'])) {
+          return t("If you specify a module you must specify a type. See the documentation for module_load_include.");
+        }
+        else if (!empty($data['filepath']) && !file_exists($data['filepath'])) {
+          return t('The file that you specified does not exist: %file', array('%file' => $data['filepath']));
+        }
+      }
     break;
 
     // Return the form_id('s) for each action
@@ -244,6 +264,9 @@ function system_patterns($op, $id = null, &$data = null) {
           }
         }
       	return $data['form_id'];
+      }
+      else if ($id == 'call_php_func') {
+        return 'call_php_func_form';
       }
     break;
 
@@ -316,15 +339,38 @@ function system_patterns($op, $id = null, &$data = null) {
         }
         return $form_state;
       }
+      else if ($id == 'call_php_func_form') {
+        $data['type'] = empty($data['type']) ? '' : $data['type'];
+        $data['module'] = empty($data['module']) ? '' : $data['module'];
+        $data['name'] = empty($data['name']) ? '' : $data['name'];
+        $data['filepath'] = empty($data['filepath']) ? '' : $data['filepath'];
+        
+        if (empty($data['arguments'])) {
+          $data['arguments'] = array();
+        }
+        else if (!is_array($data['arguments'])) {
+          $data['arguments'] = array($data['arguments']);
+        }
+      return $data;
+      }
     break;
 
     // Validate the values for an action before running the pattern
     case 'validate':
+      if ($id == 'call_php_func_form') {
+         _call_php_func_include_files($data);
+        if (!is_callable($data['function'])) {
+          return t('The given function %func is not callable', array('%func' => $data['function']));
+        }
+      }
     break;
 
     // Build a patterns actions and parameters
     case 'params':
-      if ($id == $data['form_id'] && isset($data['args'])) {
+      if ($id == 'call_php_func_form') {
+        return array($data['function'], $data['type'], $data['module'], $data['name'], $data['filepath'], $data['arguments']);
+      }
+      else if ($id == $data['form_id'] && isset($data['args'])) {
         $params = $data['args'];
         unset($data['args']);
         return $params;
@@ -337,5 +383,33 @@ function system_patterns($op, $id = null, &$data = null) {
         menu_rebuild();
       }
     break;
+  }
+}
+
+function call_php_func_form($form_state, $func, $type, $module, $name, $filepath, $args) {
+  return array(
+    '#call_php_func' => array(
+      'function' => $func,
+      'type' => $type,
+      'module' => $module,
+      'name' => $name,
+      'filepath' => $filepath,
+      'arguments' => $args,
+    ),
+  );
+}
+
+function call_php_func_form_submit($form, &$form_state) {
+  $values = $form['#call_php_func'];
+  _call_php_func_include_files($values);
+  call_user_func_array($values['function'], $values['arguments']);
+}
+
+function _call_php_func_include_files($values) {
+  if ($values['type'] && $values['module']) {
+    module_load_include($values['type'], $values['module'], $values['name']);
+  }
+  else if($values['filepath']) {
+    require_once($values['filepath']);
   }
 }

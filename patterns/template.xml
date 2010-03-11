@@ -699,5 +699,39 @@ Enter text in the exactly same way as you would do it in the regular node edit f
       </fields>
     </node>
 
+    <call_php_func>
+      <function>devel_generate_vocabs</function>
+      <arguments>
+        <argument>5</argument>
+        <argument>12</argument>
+        <argument>
+          <value>page</value>
+          <value>story</value>
+          <value>example</value>
+        </argument>
+      </arguments>
+      <type>inc</type>
+      <module>devel</module>
+      <name>devel_generate</name>    
+    </call_php_func>
+
+    <!--
+      The following action demonstrates the use of 'filepath' tag. 
+      It should be used only if type/module/name combination can't be used.  
+      
+      <call_php_func>
+        <function>devel_generate_vocabs</function>
+        <arguments>
+          <argument>5</argument>
+          <argument>12</argument>
+          <argument>
+            <value>page</value>
+            <value>story</value>
+          </argument>
+        </arguments>
+        <filepath>sites/default/modules/devel/devel_generate.inc</filepath>
+      </call_php_func>
+    -->
+
   </actions>  
 </pattern>
