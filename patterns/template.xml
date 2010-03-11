@@ -106,6 +106,16 @@
       <weight>-2</weight>
       <max_length>128</max_length>
       <text_processing>0</text_processing> <!-- 0 - plain text, 1 - filtered text -->
+      <!-- 
+        Syntax for default value would require us to use <0> which is not valid XML.
+        By specifying _numeric_keys="1", we can prefix our numeric values with a single character  
+        which will later on be stripped out and produce numeric array keys 
+      -->
+      <default_value _numeric_keys="1">    
+        <n0>                               
+           <value>default country</value>
+        </n0>
+      </default_value>      
     </field>
 
     <field>

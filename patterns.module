@@ -2019,6 +2019,17 @@ function _patterns_rearrange_data($data, $parent = '') {
     }
   }
 
+  // This workaround enables us to define numeric keys in XML by
+  // prefixing the number with single character. E.g <n0>value</n0>
+  // will result in 0 => 'value' (first character of the key will be removed).
+  if (isset($data['_numeric_keys'])) {
+    unset($data['_numeric_keys']);
+    foreach ($data as $key => $value) {
+      $data[substr($key, 1)] = $value;
+      unset($data[$key]);
+    }
+  }
+
   return $data;
 }
 
