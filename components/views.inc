@@ -243,13 +243,13 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
               $form_data[] = &$match['item'];
             }
             // Get a list of items and determine if there is one to update
-            else if ($match['item']['id'] && !$view->get_item($parent[0]['key'], $match['item']['type'], $match['item']['id'])) {
+            else if ($match['item']['id'] && !$view->get_item($parent[0]['item']['display_id'], $match['item']['type'], $match['item']['id'])) {
               $form_ids[] = 'views_ui_add_item_form';
               $form_data[] = &$match['item'];
             }
             else {
               unset($match['item']['id']);
-              $items = $view->get_items($match['item']['type'], $parent[0]['key']);
+              $items = $view->get_items($match['item']['type'], $parent[0]['item']['display_id']);
               $split = explode('.', $match['item']['name']);
               foreach($items as $key => $item) {
                 if ($item['table'] == $split[0] && $item['field'] == $split[1]) {
@@ -263,6 +263,11 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
                 $form_data[] = &$match['item'];
               }
             }
+          }
+          elseif ($match['item']['action'] == 'remove') {
+            $form_ids[] = 'views_ui_config_item_form';
+            $match['item']['op'] = t('Remove');
+            $form_data[] = &$match['item'];
           }
 
           if ($match['item']['data']) {
@@ -341,6 +346,12 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
       else {
         $display_id = $copy['display_id'];
 
+        if (!empty($copy['override']) && $view) {
+          $view->init_display();
+          $display = &$view->display[$display_id];
+          $display->handler->options_override(array(), $copy);
+        }
+        
         // Build the arg and values list
         if ($id == 'views_ui_edit_display_form') {
           $args = array($copy['section']);
@@ -376,6 +387,8 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
           }
           else {
             $values = array('options' => $copy['data']);
+            $values = array_merge($copy, array('options' => $copy['data']));
+            unset($values['data']);
           }
         }
         else {
