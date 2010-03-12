@@ -3204,3 +3204,58 @@ function patterns_debug_batch($var = null) {
   print drupal_to_js(array('status' => 0, 'data' => $var));
   exit;
 }
+
+/**
+ * Implementation of hook_requirements().
+ *
+ * @param string $phase The phase in which hook_requirements is run (install|runtime)
+ */
+function patterns_requirements($phase) {
+  $requirements = array();
+
+  switch ($phase) {
+    case 'runtime':
+      $path = drupal_get_path('module', 'patterns') .'/spyc/spyc.php';
+      
+      if (!file_exists($path)) {
+        $requirements['spyc'] = array(
+          'title'       => t('Spyc library (YAML parser)'),
+          'description' => t('Patterns module requires Spyc library for working with YAML patterns. To enable YAML support, download the !spyc package and copy spyc.php to the spyc directory inside patterns module directory.',
+                              array('!spyc' => l('spyc', 'http://code.google.com/p/spyc/', array('absolute' => TRUE)))),
+          'severity'    => REQUIREMENT_WARNING,
+          'value'       => t('Missing'),
+        );
+      }
+      else {
+        require_once($path);
+        $requirements['spyc'] = array(
+          'title'       => t('Spyc library (YAML parser)'),
+          'severity'    => REQUIREMENT_OK,
+          'value'       => _get_file_phpdoc_version($path),
+        );
+      }
+      break;
+  }
+  return $requirements;
+}
+
+/**
+ * Helper function to get PHPDoc @version tag from a file
+ */
+function _get_file_phpdoc_version($path) {
+  $version = 'unknown';
+  $needle  = '@version ';
+
+  if (file_exists($path)) {
+    $fp = @fopen($path, 'r');
+    if ($fp) {
+      while (!feof($fp)) {
+        $occurence = stristr(fgets($fp), $needle);
+        if ($occurence) { // false if stristr found nothing
+          return rtrim(substr($occurence, strlen($needle)));
+        }
+      }
+    }
+  }
+  return $version;
+}
