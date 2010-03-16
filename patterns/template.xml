@@ -311,22 +311,7 @@
       <path>[front]</path>
       <weight>-10</weight>
     </menu_item>
-    
-    <menu_item>
-      <menu>Primary Links</menu>
-      <title>About</title>
-      <path>user</path>
-      <weight>-8</weight>
-    </menu_item>
-    
-    <menu_item>
-      <menu>Primary Links</menu>
-      <title>Bio</title>
-      <path>user</path>
-      <weight>-5</weight>
-      <parent>About</parent>
-    </menu_item>
-    
+
     <menu_item>
       <menu>Primary Links</menu>
       <title>Media</title>
@@ -354,7 +339,7 @@
 
 
     <!-- execute pattern "news" -->
-    <pattern>news</pattern>
+    <pattern>views_import</pattern>
 
 
     <role>test role</role>
@@ -532,7 +517,13 @@
       <theme>garland</theme>
       <status>0</status>
     </block> 
- 
+    
+    <!-- enable views block created by views_import action -->
+    <block id="views-whats_new-block_1">
+      <theme>garland</theme>
+      <weight>-8</weight>
+      <region>left</region>
+    </block>
 
    
 
@@ -698,6 +689,41 @@ Enter text in the exactly same way as you would do it in the regular node edit f
         </arrival>
       </fields>
     </node>
+
+    <node>
+      <action_label>about</action_label>
+      <type>page</type>
+      <title>About</title>
+      <body>This is about page.</body>
+      <format>1</format>
+      <teaser_include>0</teaser_include>
+      <promote>1</promote>
+    </node>
+
+    <node>
+      <action_label>bio</action_label>
+      <type>page</type>
+      <title>Bio</title>
+      <body>Short biography.</body>
+      <format>1</format>
+      <teaser_include>0</teaser_include>
+      <promote>1</promote>
+    </node>
+
+    <menu_item>
+      <menu>Primary Links</menu>
+      <title>About</title>
+      <path>node/@about@</path>
+      <weight>-8</weight>
+    </menu_item>
+    
+    <menu_item>
+      <menu>Primary Links</menu>
+      <title>Bio</title>
+      <path>node/@bio@</path>
+      <weight>-5</weight>
+      <parent>About</parent>
+    </menu_item>
 
     <call_php_func>
       <function>devel_generate_vocabs</function>
