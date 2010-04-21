@@ -827,7 +827,7 @@ function patterns_edit_validate($form, &$form_state) {
  */
 function patterns_edit_submit($form, &$form_state) {
   // If this is an enabled pattern, make sure the enabled pattern is saved in its current state
-  if ($file = db_result(db_query('SELECT file FROM {patterns} WHERE status = 1 AND name = "%s"', $form_state['values']['name']))) {
+  if ($file = db_result(db_query("SELECT file FROM {patterns} WHERE status = 1 AND name = '%s'", $form_state['values']['name']))) {
     $dir = file_directory_path() .'/'. variable_get('patterns_save_xml', 'patterns') .'/enabled';
     file_check_directory($dir, true);
     $path =  $dir .'/'. $form_state['values']['name'] .'.'. $form_state['values']['format'];
@@ -842,13 +842,13 @@ function patterns_edit_submit($form, &$form_state) {
 
   file_save_data($form_state['values']['xml'], $path, FILE_EXISTS_REPLACE);
 
-  $old = db_result(db_query('SELECT file FROM {patterns} WHERE name = "%s"', $form_state['values']['name']));
+  $old = db_result(db_query("SELECT file FROM {patterns} WHERE name = '%s'", $form_state['values']['name']));
 
   // Load and save pattern
   $load_func = 'patterns_load_' .$form_state['values']['format']; 
   if ($pattern = $load_func($path)) {
     if ($old) {
-      db_query('UPDATE {patterns} SET file = "%s", updated = "%s" WHERE pid = "%d"', $path, time(), $form_state['values']['pid']);
+      db_query("UPDATE {patterns} SET file = '%s', updated = '%s' WHERE pid = '%d'", $path, time(), $form_state['values']['pid']);
     }
 
     patterns_save_pattern($pattern, $path, $form_state['values']['name']);
@@ -1052,26 +1052,26 @@ function patterns_save_pattern($pattern, $path = '', $name = '') {
   $description = $pattern['info']['description'];
   $author = $pattern['info']['author'];
 
-  if ($pid = db_result(db_query('SELECT pid FROM {patterns} WHERE name = "%s"', $name))) {
-    $updated = db_result(db_query('SELECT updated FROM {patterns} WHERE pid = "%d"', $pid));
+  if ($pid = db_result(db_query("SELECT pid FROM {patterns} WHERE name = '%s'", $name))) {
+    $updated = db_result(db_query("SELECT updated FROM {patterns} WHERE pid = '%d'", $pid));
     if (($new_updated = filemtime($path)) > $updated) {
-      db_query('UPDATE {patterns} SET pattern = "%s", title = "%s", file = "%s", updated = "%s", description = "%s" WHERE pid = %d', serialize($pattern), $title, $path, $new_updated, $description, $pid);
+      db_query("UPDATE {patterns} SET pattern = '%s', title = '%s', file = '%s', updated = '%s', description = '%s' WHERE pid = %d", serialize($pattern), $title, $path, $new_updated, $description, $pid);
     }
     else {
-      db_query('UPDATE {patterns} SET pattern = "%s", title = "%s", file = "%s", description = "%s" WHERE pid = %d', serialize($pattern), $title, $path, $description, $pid);
+      db_query("UPDATE {patterns} SET pattern = '%s', title = '%s', file = '%s', description = '%s' WHERE pid = %d", serialize($pattern), $title, $path, $description, $pid);
     }
   }
   else {
-    db_query('INSERT INTO {patterns} (name, status, file, updated, enabled, title, description, pattern) VALUES ( "%s", 0, "%s", "%s", 0, "%s", "%s", "%s")', $name, $path, time(), $title, $description, serialize($pattern));
+    db_query("INSERT INTO {patterns} (name, status, file, updated, enabled, title, description, pattern) VALUES ( '%s', 0, '%s', '%s', 0, '%s', '%s', '%s')", $name, $path, time(), $title, $description, serialize($pattern));
   }
 }
 
 function patterns_get_pattern($id) {
   if (is_numeric($id)) {
-    $pattern = db_fetch_object(db_query('SELECT * FROM {patterns} WHERE pid = "%d"', $id));
+    $pattern = db_fetch_object(db_query("SELECT * FROM {patterns} WHERE pid = '%d'", $id));
   }
   else if (is_string($id)) {
-    $pattern = db_fetch_object(db_query('SELECT * FROM {patterns} WHERE name = "%s"', $id));
+    $pattern = db_fetch_object(db_query("SELECT * FROM {patterns} WHERE name = '%s'", $id));
   }
 
   if (!$pattern) return FALSE;
@@ -1558,7 +1558,7 @@ function patterns_batch_finish($success, $results, $operations) {
   if (empty($results['abort'])) {
     foreach ($info as $key => $i) {
       drupal_set_message(t('Pattern "@pattern" ran successfully.', array('@pattern' => $i['title'])));
-      db_query('UPDATE {patterns} SET status = 1, enabled = "%s" WHERE pid = %d', time(), $key);
+      db_query("UPDATE {patterns} SET status = 1, enabled = '%s' WHERE pid = %d", time(), $key);
     }
   }
   else {
