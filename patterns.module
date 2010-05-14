@@ -1780,7 +1780,6 @@ function patterns_execute_action($form_id, &$form_state, $params) {
   patterns_executing(false);
   $batch = $batch_clone;
 
-  return $return;
 }
 
 function patterns_executing($b = null) {
