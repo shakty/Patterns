@@ -2393,7 +2393,7 @@ function patterns_sync_form_values($args) {
           $key = array_search($value, $options);
 
           // If the supplied value is an actual options value (not the label) use that
-          if (array_key_exists($value, $options)) {
+          if ((is_string($value) || is_int($value)) && array_key_exists($value, $options)) {
             $values[$value] = $delete ? 0 : $value;
           }
           // Or if the supplied value matches an options label, use that option
