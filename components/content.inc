@@ -430,23 +430,28 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
           $data = array_merge($defaults, $data);
         }
 
-        $node_options = array('status', 'published', 'promote', 'moderate');
-        $default_options = variable_get('node_options_'. $type, null);
+        if (empty($data['node_options'])) {
+          $node_options = array('status', 'promote', 'sticky', 'revision');
+          $default_options = variable_get('node_options_'. $type, null);
 
-        if (!empty($default_options)) {
-          $data['node_options'] = array_combine($default_options, $default_options);
-        }
-
-        foreach($data as $key => $value) {
-          if (in_array($key, $node_options)) {
-            if ($value) {
-              $data['node_options'][$key] = $key;
-            }
-            else {
-              $data['node_options'][$key] = '';
-            }
-            unset($data[$key]);
+          $options = array();
+          if (!empty($default_options)) {
+            $options = array_combine($default_options, $default_options);
           }
+  
+          foreach($data as $key => $value) {
+            if (in_array($key, $node_options)) {
+              if (!empty($value)) {
+                $options[$key] = $key;
+              }
+              else {
+                unset($options[$key]);    
+              }
+              unset($data[$key]);
+            }
+          }
+          $data['node_options'] = array_values($options);
+          $data['node_options']['overwrite'] = TRUE;
         }
 
         if (isset($data['has_body']) && !$data['has_body']) {
