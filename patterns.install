@@ -94,3 +94,21 @@ function patterns_schema() {
 function patterns_uninstall() {
   drupal_uninstall_schema('patterns');
 }
+
+/**
+ * Implementation of hook_update_N().
+ */
+function patterns_update_6100() {
+  $ret = array();
+  
+  // Increase size of the field 'pattern'.
+  $new_field = array(
+    'type' => 'text',
+    'size' => 'medium',
+    'not null' => TRUE,
+    'description' => 'A serialized array containing pattern code.',
+  );
+  db_change_field($ret, 'patterns', 'pattern', 'pattern', $new_field);
+  
+  return $ret;
+}
