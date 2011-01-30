@@ -1202,6 +1202,7 @@ function patterns_load_php($path, $local = TRUE) {
  */
 function patterns_from_source($xml) {
   $parse = drupal_xml_parser_create($xml);
+  xml_parser_set_option($parse, XML_OPTION_CASE_FOLDING, 0);
 
   if (!xml_parse_into_struct($parse, $xml, $vals, $index)) {
     return false;
@@ -1225,11 +1226,9 @@ function _patterns_parse_tag($data, &$index = 0) {
 
     if (!empty($current['attributes'])) {
       foreach((array)$current['attributes'] as $key => $value) {
-        $current[strtolower($key)] = $value;
+        $current[$key] = $value;
       }
     }
-
-    $current['tag'] = strtolower($current['tag']);
 
     unset($current['type'], $current['level'], $current['attributes']);
 
