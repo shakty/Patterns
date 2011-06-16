@@ -1,9 +1,9 @@
 <?php
 
-function views_patterns($op, $id = null, &$data = null, $a = null) {
+function views_patterns($op, $id = NULL, &$data = NULL, $a = NULL) {
   static $forms, $form_data = array();
 
-  switch($op) {
+  switch ($op) {
     // Return the valid tags that this component can prepare and process
     case 'tags':
       return array('view');
@@ -36,7 +36,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
     case 'summary':
       // TODO add the rest of the form_ids here for summary
       $variables = array('%name' => $data['name']);
-      switch($id) {
+      switch ($id) {
         case 'views_ui_add_form':
           return t('Create view %name', $variables);
         break;
@@ -65,21 +65,21 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
     // object and determines how configurations should proceed
     case 'config':
       return array(
-        '/display' => array('#array' => true, '#required' => true, '#create' => 'action', '#create value' => 'update'),
+        '/display' => array('#array' => TRUE, '#required' => TRUE, '#create' => 'action', '#create value' => 'update'),
         '/display/*' => array('#key' => '/name', '#default key' => 'default'),
-        '/display/details' => array('#required' => true),
-        '/display/*/section' => array('#array' => true),
+        '/display/details' => array('#required' => TRUE),
+        '/display/*/section' => array('#array' => TRUE),
         '/display/*/section/*' => array('#create' => 'values', '#create value' => array()),
-        '/display/*/section/*/section' => array('#required' => true),
+        '/display/*/section/*/section' => array('#required' => TRUE),
         '/display/*/section/*/value' => array('#key' => '/../section', '#move' => '/../values'),
-        '/display/*/item' => array('#array' => true),
+        '/display/*/item' => array('#array' => TRUE),
         '/display/*/item/*' => array('#create' => 'action', '#create value' => 'update'),
-        '/display/*/item/*/type' => array('#required' => true),
-        '/display/*/item/*/id' => array('#required' => true),
-        '/display/*/config' => array('#array' => true),
-        '/display/*/style' => array('#array' => true),
-        '/display/*/style/*/type' => array('#required' => true),
-        '/display/*/style/*/name' => array('#required' => true)
+        '/display/*/item/*/type' => array('#required' => TRUE),
+        '/display/*/item/*/id' => array('#required' => TRUE),
+        '/display/*/config' => array('#array' => TRUE),
+        '/display/*/style' => array('#array' => TRUE),
+        '/display/*/style/*/type' => array('#required' => TRUE),
+        '/display/*/style/*/name' => array('#required' => TRUE)
       );
     break;
 
@@ -103,7 +103,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
         return t('Missing required display element.');
       }
       if ($data['display']) {
-        foreach($data['display'] as $key => $display) {
+        foreach ($data['display'] as $key => $display) {
           if (!$key) {
             return t('Missing required name element inside of a display.');
           }
@@ -123,7 +123,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
     // Return the form id or determine if the action does not need processing
     case 'form_id':
       // Make sure necessary files are loaded.
-      require_once(drupal_get_path('module', 'views') .'/includes/admin.inc');
+      require_once(drupal_get_path('module', 'views') . '/includes/admin.inc');
 
       // Get a list of forms so we can have needed info for mapping and validating
       $forms = views_ui_ajax_forms();
@@ -133,15 +133,15 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
         $form_ids[] = 'views_ui_delete_confirm';
         $form_data[] = &$data['details'];
       }
-      else if ($data['action'] == 'enable') {
+      elseif ($data['action'] == 'enable') {
         $form_ids[] = 'enable_view';
         $form_data[] = &$data['details'];
       }
-      else if ($data['action'] == 'disable') {
+      elseif ($data['action'] == 'disable') {
         $form_ids[] = 'disable_view';
         $form_data[] = &$data['details'];
       }
-      else if ($data['action'] == 'clone') {
+      elseif ($data['action'] == 'clone') {
         $form_ids[] = 'disable_view';
         $form_data[] = &$data['details'];
       }
@@ -150,7 +150,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
           $form_ids[] = 'views_ui_add_form';
           $form_data[] = &$data['details'];
         }
-        else if(isset($data['details'])) {
+        elseif (isset($data['details'])) {
           // Set the edit view details form
           $form_ids[] = 'views_ui_edit_details_form';
           $form_data[] = &$data['details'];
@@ -158,7 +158,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
 
         // Add any required displays
         $matches = patterns_array_fetch('/display/*', $data);
-        foreach($matches as $match) {
+        foreach ($matches as $match) {
           // Action is separate and not a display
           if ($match['key'] == 'action') {
             continue;
@@ -167,34 +167,34 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
 
           // Default display is always just default
           if ($match['key'] == 'default') {
-          	$match['item']['display_id'] = $match['key'];
+            $match['item']['display_id'] = $match['key'];
             continue;
           }
 
           // Check if we can update and a display exists
           if ($action != 'add') {
-            foreach((array)$view->display as $key => $check) {
-            	if ($check->display_plugin == $match['key']) {
-            		$display = $check;
-            	}
+            foreach ((array)$view->display as $key => $check) {
+              if ($check->display_plugin == $match['key']) {
+                $display = $check;
+              }
             }
             if ($display) {
-            	$match['item']['display_id'] = $display->id;
+              $match['item']['display_id'] = $display->id;
             }
             else {
-            	$form_ids[] = 'views_ui_add_display_form';
+              $form_ids[] = 'views_ui_add_display_form';
               $form_data[] = array('display' => $match['key']);
             }
           }
           else {
-          	$form_ids[] = 'views_ui_add_display_form';
+            $form_ids[] = 'views_ui_add_display_form';
             $form_data[] = array('display' => $match['key']);
           }
         }
 
         // Use the patterns array fetch api to build the list of form_ids and their data
         $matches = patterns_array_fetch('/display/*/section/*', $data);
-        foreach($matches as $match) {
+        foreach ($matches as $match) {
           $parent = patterns_array_fetch('/../..', $match['item'], $match);
           // Make sure display_id value is set so it can be retreived later
           $parent[0]['item']['display_id'] = $parent[0]['item']['display_id'];
@@ -205,7 +205,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
 
         // Use the patterns array fetch api to build the list of form_ids and their data
         $matches = patterns_array_fetch('/display/*/style/*', $data);
-        foreach($matches as $match) {
+        foreach ($matches as $match) {
           $parent = patterns_array_fetch('/../..', $match['item'], $match);
           // Make sure display_id value is set so it can be retreived later
           $parent[0]['item']['display_id'] = $parent[0]['item']['display_id'];
@@ -216,7 +216,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
 
         // Use the patterns array fetch api to build the list of form_ids and their data
         $matches = patterns_array_fetch('/display/*/config/*', $data);
-        foreach($matches as $match) {
+        foreach ($matches as $match) {
           $parent = patterns_array_fetch('/../..', $match['item'], $match);
           // Make sure display_id value is set so it can be retreived later
           $parent[0]['item']['display_id'] = $parent[0]['item']['display_id'];
@@ -226,7 +226,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
         }
 
         $matches = patterns_array_fetch('/display/*/item/*', $data);
-        foreach($matches as $match) {
+        foreach ($matches as $match) {
           $parent = patterns_array_fetch('/../..', $match['item'], $match);
           // Make sure display_id value is set so it can be retreived later
           $parent[0]['item']['display_id'] = $parent[0]['item']['display_id'];
@@ -235,7 +235,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
             $form_ids[] = 'views_ui_add_item_form';
             $form_data[] = &$match['item'];
           }
-          else if ($match['item']['action'] == 'update') {
+          elseif ($match['item']['action'] == 'update') {
             // If the view isn't created, then neither is this field
             // TODO Support adding a field and then updating it in a later <item> element
             if (!$view) {
@@ -243,7 +243,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
               $form_data[] = &$match['item'];
             }
             // Get a list of items and determine if there is one to update
-            else if ($match['item']['id'] && !$view->get_item($parent[0]['item']['display_id'], $match['item']['type'], $match['item']['id'])) {
+            elseif ($match['item']['id'] && !$view->get_item($parent[0]['item']['display_id'], $match['item']['type'], $match['item']['id'])) {
               $form_ids[] = 'views_ui_add_item_form';
               $form_data[] = &$match['item'];
             }
@@ -251,7 +251,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
               unset($match['item']['id']);
               $items = $view->get_items($match['item']['type'], $parent[0]['item']['display_id']);
               $split = explode('.', $match['item']['name']);
-              foreach($items as $key => $item) {
+              foreach ($items as $key => $item) {
                 if ($item['table'] == $split[0] && $item['field'] == $split[1]) {
                   $match['item']['id'] = $key;
                   break;
@@ -288,7 +288,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
 
         // Set the remove display forms
         $matches = patterns_array_fetch('/display/*/action=remove', $data);
-        foreach($matches as $match) {
+        foreach ($matches as $match) {
           $form_ids[] = 'views_ui_remove_display_form';
           $form_data[] = &$match['parent']['item'];
         }
@@ -305,7 +305,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
       if ($data['details']['vid']) {
         $view = views_get_view($data['vid']);
       }
-      else if ($data['details']['name']) {
+      elseif ($data['details']['name']) {
         if (!($view = views_object_cache_get('view', $data['details']['name']))) {
           $view = views_get_view($data['details']['name']);
         }
@@ -321,24 +321,24 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
       // TODO Test and split these forms out
       if (in_array($id, array('enable_view', 'disable_view', 'clone_view', 'views_ui_delete_confirm', 'views_ui_add_display_form'))) {
         return array(
-          'storage' => null,
-          'submitted' => false,
+          'storage' => NULL,
+          'submitted' => FALSE,
           'view' => $view,
           'values' => $copy
         );
       }
-      else if ($id == 'views_ui_edit_details_form' || $id == 'views_ui_add_form') {
+      elseif ($id == 'views_ui_edit_details_form' || $id == 'views_ui_add_form') {
         return array(
-          'storage' => null,
-          'submitted' => false,
+          'storage' => NULL,
+          'submitted' => FALSE,
           'view' => $view,
           'values' => $copy
         );
       }
-      else if ($id == 'views_ui_edit_view_form') {
+      elseif ($id == 'views_ui_edit_view_form') {
         return array(
-          'storage' => null,
-          'submitted' => false,
+          'storage' => NULL,
+          'submitted' => FALSE,
           'view' => $view,
           'values' => array()
         );
@@ -357,7 +357,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
           $args = array($copy['section']);
           $values = $copy['values'];
         }
-        else if (in_array($id, array('views_ui_config_type_form', 'views_ui_rearrange_form', 'views_ui_add_item_form'))) {
+        elseif (in_array($id, array('views_ui_config_type_form', 'views_ui_rearrange_form', 'views_ui_add_item_form'))) {
           $args = array($copy['type']);
           if ($id == 'views_ui_add_item_form') {
             $values = array('name' => array($copy['name'] => $copy['name']));
@@ -366,11 +366,11 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
             $values = $copy;
           }
         }
-        else if (in_array($id, array('views_ui_config_item_form', 'views_ui_config_item_extra_form', 'views_ui_change_style_form', 'views_ui_config_style_form'))) {
+        elseif (in_array($id, array('views_ui_config_item_form', 'views_ui_config_item_extra_form', 'views_ui_change_style_form', 'views_ui_config_style_form'))) {
           if (!$copy['id']) {
             $items = $view->get_items($copy['type'], $display_id);
             $split = explode('.', $copy['name']);
-            foreach($items as $key => $item) {
+            foreach ($items as $key => $item) {
               if ($item['table'] == $split[0] && $item['field'] == $split[1]) {
                 $copy['id'] = $key;
                 break;
@@ -382,7 +382,7 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
           if ($id == 'views_ui_config_item_extra_form') {
             $values = array('options' => $copy['extras']);
           }
-          else if ($id == 'views_ui_config_style_form') {
+          elseif ($id == 'views_ui_config_style_form') {
             $values = array('style_options' => $copy['style']);
           }
           else {
@@ -397,13 +397,13 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
         }
 
         // Determine the key for this particular form_id
-        foreach($forms as $key => $form) {
+        foreach ($forms as $key => $form) {
           if ($form['form_id'] == $id) {
             break;
           }
         }
 
-        return array('storage' => null, 'submitted' => false, 'values' => $values) + views_ui_build_form_state(false, $key, $view, $display_id, $args);
+        return array('storage' => NULL, 'submitted' => FALSE, 'values' => $values) + views_ui_build_form_state(FALSE, $key, $view, $display_id, $args);
       }
     break;
 
@@ -421,13 +421,13 @@ function views_patterns($op, $id = null, &$data = null, $a = null) {
       // Set a displays id when adding one
       if ($id == 'views_ui_add_display_form') {
         $type = $a['values']['display'];
-        foreach($form_state['view']->display as $key => $check) {
-        	if ($check->display_plugin == $type) {
-        		$display = $check;
-        	}
+        foreach ($form_state['view']->display as $key => $check) {
+          if ($check->display_plugin == $type) {
+            $display = $check;
+          }
         }
         if ($display) {
-        	$data['display'][$type]['display_id'] = $display->id;
+          $data['display'][$type]['display_id'] = $display->id;
         }
       }
     break;

@@ -1,7 +1,7 @@
 <?php
 
-function imagecache_patterns($op, $id = null, &$data = null) {
-  switch($op) {
+function imagecache_patterns($op, $id = NULL, &$data = NULL) {
+  switch ($op) {
     // Return the valid tags that this component can prepare and process
     case 'tags':
       return array('imagecache_preset', 'imagecache_action');
@@ -20,7 +20,7 @@ function imagecache_patterns($op, $id = null, &$data = null) {
 
     // Prepare data for processing
     case 'prepare':
-      imagecache_presets(true);
+      imagecache_presets(TRUE);
 
       switch ($id) {
         case 'imagecache_preset':
@@ -56,7 +56,7 @@ function imagecache_patterns($op, $id = null, &$data = null) {
             unset($data['name']);
           }
 
-          if(empty($data['presetid']) && !empty($data['preset'])) {
+          if (empty($data['presetid']) && !empty($data['preset'])) {
             $presetid = db_result(db_query("SELECT presetid FROM {imagecache_preset} WHERE presetname = '%s'", $data['preset']));
             if (is_numeric($presetid)) {
               $data['presetid'] = $presetid;
@@ -69,7 +69,7 @@ function imagecache_patterns($op, $id = null, &$data = null) {
           }
 
           $skip = array('action', 'actionid', 'presetid', 'weight', 'delete', 'preset');
-          foreach($data as $key => $value) {
+          foreach ($data as $key => $value) {
             if (in_array($key, $skip)) continue;
             $values[$key] = $value;
             unset($data[$key]);
@@ -129,7 +129,7 @@ function imagecache_patterns($op, $id = null, &$data = null) {
           if ($data['delete']) {
             return 'imagecache_ui_preset_delete_form';
           }
-          else if ($data['flush']) {
+          elseif ($data['flush']) {
             return 'imagecache_ui_preset_flush_form';
           }
           else {
@@ -140,7 +140,7 @@ function imagecache_patterns($op, $id = null, &$data = null) {
           if ($data['delete']) {
             return 'imagecache_ui_action_delete_form';
           }
-          else if (is_numeric($data['weight'])) {
+          elseif (is_numeric($data['weight'])) {
             return array('imagecache_ui_action_form', 'imagecache_ui_preset_form');
           }
           else {
@@ -174,7 +174,7 @@ function imagecache_patterns($op, $id = null, &$data = null) {
       // Now that previous actions are executed, try once again to determine presetid and actionid. 
       // This is required because all the actions are actually executed only after 'prepare' op so there
       // is a good chance that specified preset didn't exist at the time of first attempt.
-      if(empty($data['presetid']) && !empty($data['preset'])) {
+      if (empty($data['presetid']) && !empty($data['preset'])) {
         $presetid = db_result(db_query("SELECT presetid FROM {imagecache_preset} WHERE presetname = '%s'", $data['preset']));
         if (is_numeric($presetid)) {
           $data['presetid'] = $presetid;
@@ -201,10 +201,10 @@ function imagecache_patterns($op, $id = null, &$data = null) {
       if ($id == 'imagecache_ui_preset_delete_form' || $id == 'imagecache_ui_preset_flush_form' || $id == 'imagecache_ui_preset_form') {
         return array($data);
       }
-      else if ($id == 'imagecache_ui_action_form') {
+      elseif ($id == 'imagecache_ui_action_form') {
         return array(imagecache_preset($data['presetid']), $data);
       }
-      else if ($id == 'imagecache_ui_action_delete_form') {
+      elseif ($id == 'imagecache_ui_action_delete_form') {
         return array(imagecache_preset($data['presetid']), imagecache_action($data['actionid']));
       }
     break;

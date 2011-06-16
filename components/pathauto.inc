@@ -1,7 +1,10 @@
 <?php
-
-function pathauto_patterns($op, $id = null, &$data = null) {
-  switch($op) {
+/*
+ * @file
+ * Patterns component for pathauto.
+ */
+function pathauto_patterns($op, $id = NULL, &$data = NULL) {
+  switch ($op) {
     // Return the valid tags that this component can prepare and process
     case 'tags':
       return array('pathauto');
@@ -21,24 +24,24 @@ function pathauto_patterns($op, $id = null, &$data = null) {
 
     // Prepare data for processing
     case 'prepare':
-      foreach($data as $key => $value) {
+      foreach ($data as $key => $value) {
         if (is_array($value)) {
           $mappings = array('default' => 'pattern');
           $skip = array('bulkupdate', 'applytofeeds');
-          foreach($value as $i => $v) {
+          foreach ($value as $i => $v) {
             if (in_array($i, $skip)) {
-              $new = $key .'_'. $i;
+              $new = $key . '_' . $i;
             }
-            else if (array_key_exists($i, $mappings)) {
-              $new = $key .'_'. $mappings[$i];
+            elseif (array_key_exists($i, $mappings)) {
+              $new = $key . '_' . $mappings[$i];
             }
             // remove prefix "vid_" required by XML because
             // element names can't begin with a number
             elseif ($key == 'taxonomy' && strpos($i, 'vid_') === 0) {
-              $new = $key .'_'. str_replace('vid_', '', $i) .'_pattern';
+              $new = $key . '_' . str_replace('vid_', '', $i) . '_pattern';
             }
             else {
-              $new = $key .'_'. $i .'_pattern';
+              $new = $key . '_' . $i . '_pattern';
             }
 
             $data[$new] = $v;
@@ -49,12 +52,12 @@ function pathauto_patterns($op, $id = null, &$data = null) {
       }
 
       $mappings = array('update' => 'update_action');
-      foreach($data as $key => $value) {
+      foreach ($data as $key => $value) {
         if (array_key_exists($key, $mappings)) {
           $new = $mappings[$key];
         }
         else {
-          $new = 'pathauto_'. $key;
+          $new = 'pathauto_' . $key;
         }
 
         if (strpos($key, 'pathauto_') === FALSE && $key != 'reset') {

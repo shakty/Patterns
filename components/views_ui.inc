@@ -7,9 +7,9 @@
  */
 
 
-function views_ui_patterns($op, $id = null, &$data = null) {
+function views_ui_patterns($op, $id = NULL, &$data = NULL) {
 
-  switch($op) {
+  switch ($op) {
     // Return the valid tags that this component can prepare and process
     case 'tags':
       return array('views_import');

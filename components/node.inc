@@ -1,7 +1,10 @@
 <?php
-
-function node_patterns($op, $id = null, &$data = null, $a = null) {
-  switch($op) {
+/*
+ * @file
+ * Patterns component for nodes.
+ */
+function node_patterns($op, $id = NULL, &$data = NULL, $a = NULL) {
+  switch ($op) {
     // Return the valid tags that this component can prepare and process
     case 'tags':
       return array('node');
@@ -10,7 +13,7 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
     // Return a list of forms/actions this component can handle
     case 'actions':
       return array(
-        $data['type'] .'_node_form' => t('Node: Create/update content.'),
+        $data['type'] . '_node_form' => t('Node: Create/update content.'),
         'node_delete_confirm' => t('Node: Delete content.'),
       );
     break;
@@ -40,7 +43,7 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
         $data['nid'] = $data['id'];
       }
       unset($data['id']);
-
+      
       if (empty($data['name']) && !empty($data['author'])) {
         $data['name'] = $data['author'];
       }
@@ -79,10 +82,10 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
     // Return the form_id('s) for each action
     case 'form_id':
       if ($data['delete']) {
-        return 'node_delete_confirm';
+        return 'node_delete_confirm'; // TODO: syntax has changed?
       }
       else {
-        return $data['type'] .'_node_form';
+        return $data['type'] . '_node_form';
       }
     break;
 
@@ -98,12 +101,12 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
       $data['changed'] = time();
 
       $data['op'] = t('Save');
-      $node = drupal_clone($data['node']);
+      $node = clone $data['node'];
 
       if (module_exists('content')) {
         // build CCK fields
         $type = $data['type'];
-        $form_id = $type .'_node_form';
+        $form_id = $type . '_node_form';
         $form_state = array();
         $form = drupal_retrieve_form($form_id, $form_state, $node);
         drupal_prepare_form($form_id, $form, $form_state);
@@ -114,11 +117,10 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
           $groups = fieldgroup_groups($type, FALSE, TRUE);
         }
 
-        // TODO: make this work for PHP4
         $fields = array();
         $fields_diff = array();
         if (!empty($groups)) {
-          foreach($groups as $key => $group) {
+          foreach ($groups as $key => $group) {
             $fields = array_merge($fields, array_intersect_ukey($form[$key], $group['fields'], '_patterns_compare_keys'));
           }
           $fields_diff = array_diff_ukey($fields_info, $fields, '_patterns_compare_keys');
@@ -130,7 +132,7 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
 
         if (!empty($fields)) {
           $defaults = array();
-          foreach($fields as $field_name => $field) {
+          foreach ($fields as $field_name => $field) {
             $alias = str_replace('field_', '', $field_name);
 
             if (isset($field['#default_value']) && !isset($field[0])) {
@@ -173,7 +175,7 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
                 $data['fields'][$alias] = array(0 => $data['fields'][$alias]);
               }
               elseif (is_string($data['fields'][$alias])) {
-                $data['fields'][$alias] = array(0 => array('value' =>$data['fields'][$alias]));
+                $data['fields'][$alias] = array(0 => array('value' => $data['fields'][$alias]));
               }
 
               // get the number of fields defined by CCK module
@@ -251,7 +253,7 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
           else {
             // get tids for all term names
             $tids = array();
-            foreach($terms as $name) {
+            foreach ($terms as $name) {
               if (!is_string($name)) continue;
 
               $term = taxonomy_get_term_by_name($name);
@@ -308,7 +310,7 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
           foreach ($form['taxonomy']['tags'] as $vid => $tags) {
             $defaults['tags'][$vid] = $tags['#default_value'];
             if (!empty($new_taxonomy['tags'][$vid])) {
-              $taxonomy['tags'][$vid] = !empty($defaults['tags'][$vid]) ? $defaults['tags'][$vid] .','. $new_taxonomy['tags'][$vid] : $new_taxonomy['tags'][$vid];
+              $taxonomy['tags'][$vid] = !empty($defaults['tags'][$vid]) ? $defaults['tags'][$vid] . ',' . $new_taxonomy['tags'][$vid] : $new_taxonomy['tags'][$vid];
             }
             else {
               $taxonomy['tags'][$vid] = $defaults['tags'][$vid];
@@ -352,7 +354,9 @@ function node_patterns($op, $id = null, &$data = null, $a = null) {
     case 'validate':
       // TODO: validate name field - should be valid/existing username
 
-      if (!node_get_types('types', $data['type'], TRUE) && !$data['delete']) {
+      node_types_rebuild(); // Reset the node type cache.
+      $node_types = node_type_get_types();
+      if (!isset($node_types[$data['type']]) && !$data['delete']) {
         return t('Invalid content type: %type', array('%type' => $data['type']));
       }
     break;

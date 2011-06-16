@@ -1,6 +1,9 @@
 <?php
-
-function block_patterns($op, $id = null, &$data = null) {
+/*
+ * @file
+ * Patterns component for blocks.
+ */
+function block_patterns($op, $id = NULL, &$data = NULL) {
   $defaults = array(
     'id'          => NULL, // May be a combo of module+delta
     'module'      => NULL,
@@ -13,7 +16,7 @@ function block_patterns($op, $id = null, &$data = null) {
   // Initialize the expected attributes to avoid PHP warnings. Makes later logic easier.
   $data = array_merge($defaults, (array)$data);
 
-  switch($op) {
+  switch ($op) {
     // Return the valid tags that this component can prepare and process
     case 'tags':
       return array('block');
@@ -71,7 +74,7 @@ function block_patterns($op, $id = null, &$data = null) {
       if (!($data['module'] && isset($data['delta'])) && !$data['info']) {
         return t('Missing required &lt;module&gt;, &lt;delta&gt; tags. Possibly malformed &lt;id&gt; tag could be the problem too. If creating a new block, tag &lt;info&gt; is required.');
       }
-      else if ($data['delete'] && $data['module'] != 'block') {
+      elseif ($data['delete'] && $data['module'] != 'block') {
         return t('Unable to delete non-block module blocks');
       }
     break;
@@ -86,10 +89,10 @@ function block_patterns($op, $id = null, &$data = null) {
           'block_admin_display_form'
         );
       }
-      else if ($data['delete']) {
+      elseif ($data['delete']) {
         return 'block_box_delete';
       }
-      else if (empty($diff)) {
+      elseif (empty($diff)) {
         return 'block_admin_display_form';
       }
       else {
@@ -111,7 +114,7 @@ function block_patterns($op, $id = null, &$data = null) {
         $data['op'] = t('Delete');
         $data['confirm'] = 1;
       }
-      else if ($id == 'block_admin_display_form') {
+      elseif ($id == 'block_admin_display_form') {
         if (isset($data['status']) && $data['status'] == 0) {
           $data['region'] = -1;
         }
@@ -119,10 +122,10 @@ function block_patterns($op, $id = null, &$data = null) {
         // make sure delta is defined even for blocks that have just been created within the same action
         if ($data['module'] == 'block' && empty($data['delta'])) {
           // we can do this because block descriptions are always unique
-          $data['delta'] = db_result(db_query("SELECT bid FROM {boxes} WHERE info = '%s'", $data['info']));
+          $data['delta'] = db_result(db_query('SELECT bid FROM {boxes} WHERE info = "%s"', $data['info']));
         }
 
-        $data = array($data['module'] .'_'. $data['delta'] => $data);
+        $data = array($data['module'] . '_' . $data['delta'] => $data);
       }
 
       return $data;
@@ -137,11 +140,11 @@ function block_patterns($op, $id = null, &$data = null) {
       if ($id == 'block_admin_configure') {
         return array($data['module'], $data['delta']);
       }
-      else if ($id == 'block_admin_display_form') {
+      elseif ($id == 'block_admin_display_form') {
         $blocks = _block_rehash();
         $check = current($data);
         // Only return the block we are dealing with now
-        foreach($blocks as $key => &$block) {
+        foreach ($blocks as $key => &$block) {
           if ($block['module'] == $check['module'] && $block['delta'] == $check['delta']) {
             $blocks = array(&$block);
             break;
@@ -149,7 +152,7 @@ function block_patterns($op, $id = null, &$data = null) {
         }
         return array($blocks, $check['theme']);
       }
-      else if ($id == 'block_box_delete') {
+      elseif ($id == 'block_box_delete') {
         return $data['delta'];
       }
     break;

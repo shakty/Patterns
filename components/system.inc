@@ -1,9 +1,12 @@
 <?php
-
-function system_patterns($op, $id = null, &$data = null) {
+/*
+ * @file
+ * Patterns component for system related operations.
+ */
+function system_patterns($op, $id = NULL, &$data = NULL) {
   static $modules_info;
 
-  switch($op) {
+  switch ($op) {
     // Return the valid tags that this component can prepare and process
     case 'tags':
       return array('modules', 'form', 'variables', 'variable', 'theme', 'call_php_func');
@@ -23,7 +26,7 @@ function system_patterns($op, $id = null, &$data = null) {
 
 //    // Return a summary of an action
 //    case 'summary':
-//      switch($id) {
+//      switch ($id) {
 //        case 'system_modules':
 //          $enable = $disable = array();
 //          for($i=0;$item=$data[$i];$i++) {
@@ -64,7 +67,7 @@ function system_patterns($op, $id = null, &$data = null) {
 
     // Prepare data for processing
     case 'prepare':
-      switch($id) {
+      switch ($id) {
         case 'variable':
           // Turn <variable>value</variable> style tag function the same as <variables>
           $id = 'variables';
@@ -87,15 +90,15 @@ function system_patterns($op, $id = null, &$data = null) {
             }
           }
 
-        	for($i=0;$i<count($data);$i++) {
-        		$item = &$data[$i];
+          for ($i=0, $total = count($data); $i < $total; $i++) {
+            $item = &$data[$i];
 
             if (!isset($item['value']) && !$item['delete']) {
-            	$value = $item;
+              $value = $item;
               unset($value['name']);
               $item = array('name' => $item['name'], 'value' => $value);
             }
-        	}
+          }
         break;
         case 'modules':
           // Make a <modules>modulename</modules> style tag work
@@ -110,7 +113,7 @@ function system_patterns($op, $id = null, &$data = null) {
             unset($data['module']);
           }
 
-          for($i=0;$item=$data[$i];$i++) {
+          for ($i = 0; $item = $data[$i]; $i++) {
             // Ensure that modules with tags like <module>modulename</module>
             // are represented as an array instead of a string
             if (is_string($item)) {
@@ -125,10 +128,10 @@ function system_patterns($op, $id = null, &$data = null) {
           unset($data['disable']);
         break;
         case 'theme':
-        	if ($data['value']) {
-        		$data['theme_default'] = $data['value'];
-            $data['status'][$data['value']] = $data['value'];
-        	}
+            if ($data['value']) {
+                $data['theme_default'] = $data['value'];
+                $data['status'][$data['value']] = $data['value'];
+            }
         break;
         case 'form':
           // attempt to load required include file
@@ -143,7 +146,7 @@ function system_patterns($op, $id = null, &$data = null) {
             require_once $data['include'];
           }
           elseif (is_array($data['include'])) {
-            $data['include'] = drupal_get_path('module', $data['include']['module']) .'/'. $data['include']['file'];
+            $data['include'] = drupal_get_path('module', $data['include']['module']) . '/' . $data['include']['file'];
           }
 
           if (!function_exists($data['form_id'])) {
@@ -152,8 +155,8 @@ function system_patterns($op, $id = null, &$data = null) {
               if (in_array($data['module'], $modules)) {
                 // try most common include file names
                 module_load_include('inc', $data['module']);
-                module_load_include('inc', $data['module'], $data['module'] .'.admin');
-                module_load_include('inc', $data['module'], $data['module'] .'.page');
+                module_load_include('inc', $data['module'], $data['module'] . '.admin');
+                module_load_include('inc', $data['module'], $data['module'] . '.page');
               }
             }
           }
@@ -167,16 +170,16 @@ function system_patterns($op, $id = null, &$data = null) {
     case 'pre-validate':
       if ($id == 'modules') {
         if (!is_array($modules_info)) {
-          $modules_info = module_rebuild_cache();
+          $modules_info = system_rebuild_module_data();
         }
 
         $modules = module_list();
-        for($i=0;$item=$data[$i];$i++) {
+        for ($i = 0; $item = $data[$i]; $i++) {
           $module = $item['value'];
 
           // Ensure a module can be disabled safely
           if (!empty($data['delete']) && array_key_exists($module, $modules)) {
-            foreach((array)$modules_info[$module]->info['dependents'] as $dependent) {
+            foreach ((array)$modules_info[$module]->info['dependents'] as $dependent) {
               if (array_key_exists($dependent, $modules)) {
                 $remove[] = $i;
                 drupal_set_message(t('Warning: Could not disable %module because other modules depend on it.', array('%module' => $module)), "warning");
@@ -185,12 +188,12 @@ function system_patterns($op, $id = null, &$data = null) {
             }
           }
           // Ensure a module and all of its dependencies exist
-          else if (empty($data['delete']) && !array_key_exists($module, $modules)) {
+          elseif (empty($data['delete']) && !array_key_exists($module, $modules)) {
             if (!array_key_exists($module, $modules_info)) {
               $required[] = $module;
             }
 
-            foreach((array)$modules_info[$module]->info['dependencies'] as $dependency) {
+            foreach ((array)$modules_info[$module]->info['dependencies'] as $dependency) {
               if (!array_key_exists($dependency, $modules) && !array_key_exists($dependency, $modules_info)) {
                 $required[] = $dependency;
               }
@@ -198,7 +201,7 @@ function system_patterns($op, $id = null, &$data = null) {
 
             if (!empty($required)) {
               return t('%module can not be installed because the module or its dependencies are missing. Please download them and try again.', array('%module' => $module)) .
-                     t('!title%dependencies', array('!title' => '<br /><b>'. t('Missing module(s): ') .'</b>', '%dependencies' => implode(', ', $required)));
+                     t('!title%dependencies', array('!title' => '<br/><b>' . t('Missing module(s): ') . '</b>', '%dependencies' => implode(', ', $required)));
             }
           }
         }
@@ -209,31 +212,31 @@ function system_patterns($op, $id = null, &$data = null) {
           $data = $result;
         }
       }
-      else if ($id == 'theme') {
-      	$themes = system_theme_data();
+      elseif ($id == 'theme') {
+        $themes = system_get_theme_data();
         if (!array_key_exists($data['theme_default'], $themes)) {
-        	return t('%theme is not a valid theme.', array('%theme' => $data['theme_default']));
+            return t('%theme is not a valid theme.', array('%theme' => $data['theme_default']));
         }
       }
-      else if ($id == 'form') {
-      	if (!array_key_exists('form_id', $data)) {
-      		return t('"form_id" is missing.');
-      	}
-      	if (!function_exists($data['form_id'])) {
-          return t("Couldn't load the form %form. Check if all required modules are enabled and try to define 'include' or 'module' for this action.", array('%form' => $data['form_id']));
-      	}
+      elseif ($id == 'form') {
+        if (!array_key_exists('form_id', $data)) {
+            return t('"form_id" is missing.');
+        }
+        if (!function_exists($data['form_id'])) {
+            return t("Couldn't load the form %form. Check if all required modules are enabled and try to define 'include' or 'module' for this action.", array('%form' => $data['form_id']));
+        }
       }
-      else if ($id == 'call_php_func') {
+      elseif ($id == 'call_php_func') {
         if (empty($data['function'])) {
           return t("A function is required for this tag");
         }
-        else if (!empty($data['type']) && empty($data['module'])) {
+        elseif (!empty($data['type']) && empty($data['module'])) {
           return t("If you specify a type you must specify a module. See the documentation for module_load_include.");
         }
-        else if (empty($data['type']) && !empty($data['module'])) {
+        elseif (empty($data['type']) && !empty($data['module'])) {
           return t("If you specify a module you must specify a type. See the documentation for module_load_include.");
         }
-        else if (!empty($data['filepath']) && !file_exists($data['filepath'])) {
+        elseif (!empty($data['filepath']) && !file_exists($data['filepath'])) {
           return t('The file that you specified does not exist: %file', array('%file' => $data['filepath']));
         }
       }
@@ -244,13 +247,13 @@ function system_patterns($op, $id = null, &$data = null) {
       if ($id == 'modules') {
         return 'system_modules';
       }
-      else if ($id == 'variables' || $id == 'variable') {
+      elseif ($id == 'variables' || $id == 'variable') {
         return 'variables';
       }
-      else if ($id == 'theme') {
-      	return 'system_themes_form';
+      elseif ($id == 'theme') {
+        return 'system_themes_form';
       }
-      else if ($id == 'form') {
+      elseif ($id == 'form') {
         if (!empty($data['include']) && is_file($data['include'])) {
           require_once $data['include'];
         }
@@ -259,13 +262,13 @@ function system_patterns($op, $id = null, &$data = null) {
           if (in_array($data['module'], $modules)) {
             // try most common include file names
             module_load_include('inc', $data['module']);
-            module_load_include('inc', $data['module'], $data['module'] .'.admin');
-            module_load_include('inc', $data['module'], $data['module'] .'.page');
+            module_load_include('inc', $data['module'], $data['module'] . '.admin');
+            module_load_include('inc', $data['module'], $data['module'] . '.page');
           }
         }
-      	return $data['form_id'];
+        return $data['form_id'];
       }
-      else if ($id == 'call_php_func') {
+      elseif ($id == 'call_php_func') {
         return 'call_php_func_form';
       }
     break;
@@ -279,14 +282,14 @@ function system_patterns($op, $id = null, &$data = null) {
         $data['status'] = array();
 
         if (!is_array($modules_info)) {
-          $modules_info = module_rebuild_cache();
+          $modules_info = system_rebuild_module_data();
         }
 
-        for($i=0;$item=$data[$i];$i++) {
+        for ($i = 0; $item = $data[$i]; $i++) {
           $module = $item['value'];
 
           // Set all the dependencies for the module
-          foreach((array)$modules_info[$module]->info['dependencies'] as $dependency) {
+          foreach ((array)$modules_info[$module]->info['dependencies'] as $dependency) {
             if (!array_key_exists($dependency, $modules)) {
               $data['status'][$dependency] = $dependency;
             }
@@ -301,9 +304,9 @@ function system_patterns($op, $id = null, &$data = null) {
         }
         return $data;
       }
-      else if ($id == 'variables') {
+      elseif ($id == 'variables') {
         $names = array();
-        for($i=0;$variable=$data[$i];$i++) {
+        for ($i = 0; $variable = $data[$i]; $i++) {
           if ($variable['delete']) {
             variable_del($variable['name']);
           }
@@ -323,12 +326,12 @@ function system_patterns($op, $id = null, &$data = null) {
 
         return t('Variables %vars updated.', array('%vars' => implode(', ', $names)));
       }
-      else if ($id == 'system_themes_form') {
+      elseif ($id == 'system_themes_form') {
         $data['op'] = t('Save configuration');
         module_load_include('inc', 'system', 'system.admin');
-      	return $data;
+        return $data;
       }
-      else if ($id == $data['form_id']) {
+      elseif ($id == $data['form_id']) {
         $form_state = $data['form_state_extras'];
         unset($data['form_state_extras']);
         unset($data['include']);
@@ -339,7 +342,7 @@ function system_patterns($op, $id = null, &$data = null) {
         }
         return $form_state;
       }
-      else if ($id == 'call_php_func_form') {
+      elseif ($id == 'call_php_func_form') {
         $data['type'] = empty($data['type']) ? '' : $data['type'];
         $data['module'] = empty($data['module']) ? '' : $data['module'];
         $data['name'] = empty($data['name']) ? '' : $data['name'];
@@ -348,7 +351,7 @@ function system_patterns($op, $id = null, &$data = null) {
         if (empty($data['arguments'])) {
           $data['arguments'] = array();
         }
-        else if (!is_array($data['arguments'])) {
+        elseif (!is_array($data['arguments'])) {
           $data['arguments'] = array($data['arguments']);
         }
       return $data;
@@ -370,7 +373,7 @@ function system_patterns($op, $id = null, &$data = null) {
       if ($id == 'call_php_func_form') {
         return array($data['function'], $data['type'], $data['module'], $data['name'], $data['filepath'], $data['arguments']);
       }
-      else if ($id == $data['form_id'] && isset($data['args'])) {
+      elseif ($id == $data['form_id'] && isset($data['args'])) {
         $params = $data['args'];
         unset($data['args']);
         return $params;
@@ -409,7 +412,7 @@ function _call_php_func_include_files($values) {
   if ($values['type'] && $values['module']) {
     module_load_include($values['type'], $values['module'], $values['name']);
   }
-  else if($values['filepath']) {
+  elseif ($values['filepath']) {
     require_once($values['filepath']);
   }
 }

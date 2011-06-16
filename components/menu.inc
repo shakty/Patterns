@@ -1,7 +1,10 @@
 <?php
-
-function menu_patterns($op, $id = null, &$data = null, &$a = null) {
-  switch($op) {
+/*
+ * @file
+ * Patterns component for the menu system.
+ */
+function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
+  switch ($op) {
     // Return the valid tags that this component can prepare and process
     case 'tags':
       return array('menu', 'menu_item');
@@ -19,7 +22,7 @@ function menu_patterns($op, $id = null, &$data = null, &$a = null) {
 
     // Return a summary of an action
     case 'summary':
-      switch($id) {
+      switch ($id) {
         case 'menu_edit_item':
 
         break;
@@ -47,7 +50,7 @@ function menu_patterns($op, $id = null, &$data = null, &$a = null) {
           if (empty($data['menu_name']) && !empty($data['title'])) {
             $data['menu_name'] = strtolower(preg_replace('/[^a-zA-Z0-9\-]/', '-', $data['title']));
             if (!menu_load($data['menu_name'])) {
-              $data['menu_name'] = 'menu-'. $data['menu_name'];
+              $data['menu_name'] = 'menu-' . $data['menu_name'];
             }
           }
         break;
@@ -81,10 +84,10 @@ function menu_patterns($op, $id = null, &$data = null, &$a = null) {
         break;
         case 'menu_item':
           if (empty($data['mlid'])) {
-            if(empty($data['link_path'])) {
+            if (empty($data['link_path'])) {
               return t('"path" is required.');
             }
-            if(empty($data['link_title'])) {
+            if (empty($data['link_title'])) {
               return t('"title" is required.');
             }
           }
@@ -102,11 +105,11 @@ function menu_patterns($op, $id = null, &$data = null, &$a = null) {
           return 'menu_edit_menu';
         }
       }
-      else if ($id == 'menu_item') {
+      elseif ($id == 'menu_item') {
         if ($data['delete']) {
           return 'menu_item_delete_form';
         }
-//         else if ($data['reset']) {
+//         elseif ($data['reset']) {
 //           return 'menu_reset_item_confirm';
 //         }
         else {
@@ -121,10 +124,10 @@ function menu_patterns($op, $id = null, &$data = null, &$a = null) {
       if ($id == 'menu_item_delete_form' || $id == 'menu_delete_menu_confirm') {
         $data['confirm'] = 1;
       }
-      else if ($id == 'menu_reset_item_confirm') {
+      elseif ($id == 'menu_reset_item_confirm') {
         // @TODO
       }
-      else if ($id == 'menu_edit_item') {
+      elseif ($id == 'menu_edit_item') {
         $data['customized'] = 1;
         $data['module'] = 'menu';
         if ($data['disable']) {
@@ -164,17 +167,17 @@ function menu_patterns($op, $id = null, &$data = null, &$a = null) {
           }
 
           if ($data['parent'] == '0') {
-            $data['parent'] = $data['menu_name'] .':0';
+            $data['parent'] = $data['menu_name'] . ':0';
           }
-          else if (is_numeric($data['parent']) && !empty($data['menu_name']) && db_result(db_query("SELECT mlid FROM {menu_links} WHERE menu_name = '%s' AND mlid = %d", $data['menu_name'], $data['parent']))) {
-            $data['parent'] = $data['menu_name'] .':'. $data['parent'];
+          elseif (is_numeric($data['parent']) && !empty($data['menu_name']) && db_result(db_query("SELECT mlid FROM {menu_links} WHERE menu_name = '%s' AND mlid = %d", $data['menu_name'], $data['parent']))) {
+            $data['parent'] = $data['menu_name'] . ':' . $data['parent'];
           }
           // @TODO this may not work if there is more then one menu item with the same title within the same menu
-          else if (is_string($data['parent']) && !empty($data['menu_name']) && $plid = db_result(db_query("SELECT mlid FROM {menu_links} WHERE menu_name = '%s' AND link_title = '%s'", $data['menu_name'], $data['parent']))) {
-            $data['parent'] = $data['menu_name'] .':'. $plid;
+          elseif (is_string($data['parent']) && !empty($data['menu_name']) && $plid = db_result(db_query("SELECT mlid FROM {menu_links} WHERE menu_name = '%s' AND link_title = '%s'", $data['menu_name'], $data['parent']))) {
+            $data['parent'] = $data['menu_name'] . ':' . $plid;
           }
-          else if (empty($data['mlid']) && empty($data['parent']) && !empty($data['link_title']) && !empty($data['link_path'])) {
-            $data['parent'] = $data['menu_name'] .':0';
+          elseif (empty($data['mlid']) && empty($data['parent']) && !empty($data['link_title']) && !empty($data['link_path'])) {
+            $data['parent'] = $data['menu_name'] . ':0';
           }
 
           if (!empty($data['parent'])) {
@@ -183,7 +186,7 @@ function menu_patterns($op, $id = null, &$data = null, &$a = null) {
               return t('"parent" is not valid.');
             }
           }
-          else if (empty($data['mlid'])) {
+          elseif (empty($data['mlid'])) {
             return t('"parent" is required.');
           }
         break;
@@ -237,12 +240,12 @@ function menu_patterns($op, $id = null, &$data = null, &$a = null) {
       if ($id == 'menu_edit_menu') {
         return $data['menu_name'];
       }
-      else if ($id == 'menu_edit_item') {
+      elseif ($id == 'menu_edit_item') {
         $data = reset($data);
         if ($data['mlid']) {
           return $data['mlid'];
         }
-        else if ($mlid = db_result(db_query("SELECT mlid FROM {menu_links} WHERE menu_name = '%s' AND link_path = '%s' AND link_title = '%s' ORDER BY mlid DESC", $data['menu_name'], $data['link_path'], $data['link_title']))) {
+        elseif ($mlid = db_result(db_query("SELECT mlid FROM {menu_links} WHERE menu_name = '%s' AND link_path = '%s' AND link_title = '%s' ORDER BY mlid DESC", $data['menu_name'], $data['link_path'], $data['link_title']))) {
           return $mlid;
         }
       }

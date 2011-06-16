@@ -1,7 +1,7 @@
 <?php
 
-function content_patterns($op, $id = null, &$data = null, $a = null) {
-  switch($op) {
+function content_patterns($op, $id = NULL, &$data = NULL, $a = NULL) {
+  switch ($op) {
     // Return the valid tags that this component can prepare and process
     case 'tags':
       return array('content', 'field', 'display', 'group');
@@ -15,7 +15,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
         'content_field_overview_form' => t('CCK: Add Field or Group'),
         'content_field_remove_form' => t('CCK: Delete Field'),
         'content_field_edit_form' => t('CCK: Update Field'),
-        'display'=> t("CCK: Configure field's display settings"),
+        'display' => t('CCK: Configure field\'s display settings'),
         'fieldgroup_group_edit_form' => t('CCK: Edit Group'),
         'fieldgroup_remove_group' => t('CCK: Delete Group')
       );
@@ -25,7 +25,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
     case 'prepare':
       if ($id == 'field') {
         if ($data['name'] && !$data['field_name']) {
-          $data['field_name'] = 'field_'. $data['name'];
+          $data['field_name'] = 'field_' . $data['name'];
           unset($data['name']);
         }
 
@@ -34,7 +34,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
           'widget' => 'widget_type',
           'option' => 'type'
         );
-        foreach($mappings as $old => $new) {
+        foreach ($mappings as $old => $new) {
           if (!empty($data[$old]) && empty($data[$new])) {
             $data[$new] = $data[$old];
             unset($data[$old]);
@@ -42,29 +42,29 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
         }
 
         if (!empty($data['group']) && !preg_match('/^group_/i', $data['group'])) {
-          $data['group'] = 'group_'. $data['group'];
+          $data['group'] = 'group_' . $data['group'];
         }
 
         if (!empty($data['allowed_values']) && is_array($data['allowed_values'])) {
           $data['allowed_values'] = implode("\n", $data['allowed_values']);
         }
       }
-      else if ($id == 'display') {
+      elseif ($id == 'display') {
 
         $data['type'] = check_plain($data['type']);
         $data['field'] = check_plain($data['field']);
         if (empty($data['field']) && !empty($data['group'])) {
           $data['field'] = check_plain($data['group']);
-          $data['is_group'] = true;
+          $data['is_group'] = TRUE;
         }
         unset($data['group']);
 
 
         if (!$data['is_group'] && strpos($data['field'], 'field_') !== 0) {
-          $data['field'] = 'field_'. $data['field'];
+          $data['field'] = 'field_' . $data['field'];
         }
-        else if ($data['is_group'] && strpos($data['field'], 'group_') !== 0) {
-          $data['field'] = 'group_'. $data['field'];
+        elseif ($data['is_group'] && strpos($data['field'], 'group_') !== 0) {
+          $data['field'] = 'group_' . $data['field'];
         }
 
         $build_modes_tabs = content_build_modes('_tabs');
@@ -73,7 +73,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
           if (is_string($data['rss'])) {
             $data[key($build_modes_tabs['rss']['build modes'])] = check_plain($data['rss']);
           }
-          else if (is_array($data['rss'])) {
+          elseif (is_array($data['rss'])) {
             if (!empty($data['rss']['format'])) {
               $data[key($build_modes_tabs['rss']['build modes'])]['format'] = check_plain($data['rss']['format']);
             }
@@ -102,7 +102,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
             $data[$data['field']][$key]['format'] = check_plain($value);
             $data[$data['field']][$key]['exclude'] = 0;
           }
-          else if (is_array($value)) {
+          elseif (is_array($value)) {
             if (!empty($value['format'])) {
               $data[$data['field']][$key]['format'] = check_plain($value['format']);
             }
@@ -113,7 +113,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
           unset($data[$key]);
         }
       }
-      else if ($id == 'group') {
+      elseif ($id == 'group') {
         if ($data['name']) {
           $data['group_name'] = $data['name'];
           unset($data['name']);
@@ -129,7 +129,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
         }
 
         if (!empty($data['group_name']) && !preg_match('/^group_/i', $data['group_name'])) {
-          $data['group_name'] = 'group_'. $data['group_name'];
+          $data['group_name'] = 'group_' . $data['group_name'];
         }
 
         if (is_array($data['form'])) {
@@ -169,7 +169,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
           return t('&lt;type&gt; tag is missing.');
         }
       }
-      else if ($id == 'field') {
+      elseif ($id == 'field') {
         if (empty($data['type_name'])) {
           return t('&lt;type&gt; tag is missing.');
         }
@@ -177,11 +177,11 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
           return t('&lt;name&gt; tag is missing.');
         }
       }
-      else if ($id == 'group') {
+      elseif ($id == 'group') {
         if (empty($data['type_name'])) {
           return t('&lt;type&gt; tag is missing.');
         }
-        else if (preg_match('/[^a-z0-9_]/', $data['type_name'])) {
+        elseif (preg_match('/[^a-z0-9_]/', $data['type_name'])) {
           return t('&lt;type&gt; tag is invalid.');
         }
 
@@ -189,7 +189,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
           return t('&lt;name&gt; tag is missing.');
         }
       }
-      else if ($id = 'display') {
+      elseif ($id = 'display') {
 
         if (empty($data['type'])) {
           return t('&lt;type&gt; tag is missing.');
@@ -199,7 +199,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
         }
 
         if (empty($data[$data['field']])) {
-          return t("&lt;display&gt; doesn't contain any valid tags to process.");
+          return t('&lt;display&gt; doesn\'t contain any valid tags to process.');
         }
       }
     break;
@@ -208,11 +208,11 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
     case 'validate':
 
         if (!empty($data['type_name']) || $id == 'display') {
-          _content_type_info(true);
+          _content_type_info(TRUE);
           $type_name = $id == 'display' ? $data['type'] : $data['type_name'];
           $content_type = content_types($type_name);
           if ($content_type['type'] != $type_name) {
-            return t("Invalid tag &lt;type&gt;. '%type' is not a valid content type name or such content type doesn't exist.", array('%type' => $type_name));
+            return t("Invalid tag &lt;type&gt;. \'%type\' is not a valid content type name or such content type doesn't exist.", array('%type' => $type_name));
           }
         }
 
@@ -223,7 +223,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
             return t("Field %field doesn't exist within %type content type.", array('%field' => $data['field_name'], '%type' => $data['type_name']));
           }
         }
-        else if ($id == 'content_field_overview_form') {
+        elseif ($id == 'content_field_overview_form') {
           if (!empty($data['group'])) {
             $groups = fieldgroup_groups($data['type_name'], FALSE, TRUE);
             if (!$groups[$data['group']]) {
@@ -231,14 +231,14 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
             }
           }
         }
-        else if ($id == 'display') {
+        elseif ($id == 'display') {
           if ($data['is_group']) {
             $groups = fieldgroup_groups($data['type'], FALSE, TRUE);
             if (!$groups[$data['field']]) {
               return t('Group %group is not available in %type content type.', array('%group' => $data['field'], '%type' => $data['type']));
             }
           }
-          else if (!content_fields($data['field'], $data['type'])) {
+          elseif (!content_fields($data['field'], $data['type'])) {
             return t("Field %field doesn't exist within %type content type.", array('%field' => $data['field'], '%type' => $data['type']));
           }
         }
@@ -258,10 +258,10 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
           return 'node_type_form';
         }
       }
-      else if ($id == 'field') {
+      elseif ($id == 'field') {
         // Make sure content type info is up-to-date
-        _content_type_info(true);
-        node_get_types('types', NULL, true);
+        _content_type_info(TRUE);
+        node_types_rebuild(); // Reset the node type cache.
 
         static $field;
         $field = content_fields($data['field_name'], $data['type_name']);
@@ -363,10 +363,10 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
           }
         }
       }
-      else if ($id == 'display') {
+      elseif ($id == 'display') {
         return 'display';
       }
-      else if ($id == 'group') {
+      elseif ($id == 'group') {
         cache_clear_all('fieldgroup_data', content_cache_tablename());
         $groups = fieldgroup_groups($data['type_name'], FALSE, TRUE);
         $group = $groups[$data['group_name']];
@@ -374,7 +374,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
         if ($data['delete'] && $group) {
           return 'fieldgroup_remove_group';
         }
-        else if (!$group && !$data['delete']) {
+        elseif (!$group && !$data['delete']) {
 
           $data['_add_new_group'] = array(
             'label' => $data['label'],
@@ -401,7 +401,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
 
           return $forms;
         }
-        else if ($group) {
+        elseif ($group) {
           return 'fieldgroup_group_edit_form';
         }
       }
@@ -432,14 +432,14 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
 
         if (empty($data['node_options'])) {
           $node_options = array('status', 'promote', 'sticky', 'revision');
-          $default_options = variable_get('node_options_'. $type, null);
+          $default_options = variable_get('node_options_' . $type, NULL);
 
           $options = array();
           if (!empty($default_options)) {
             $options = array_combine($default_options, $default_options);
           }
   
-          foreach($data as $key => $value) {
+          foreach ($data as $key => $value) {
             if (in_array($key, $node_options)) {
               if (!empty($value)) {
                 $options[$key] = $key;
@@ -458,10 +458,10 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
           $data['body_label'] = '';
         }
       }
-      else if ($id == 'node_type_delete_confirm') {
+      elseif ($id == 'node_type_delete_confirm') {
         module_load_include('inc', 'node', 'content_types');
       }
-      else if ($id == 'display') {
+      elseif ($id == 'display') {
 
         if ($data['is_group']) {
           $groups = fieldgroup_groups($data['type'], FALSE, TRUE);
@@ -498,20 +498,20 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
         $type = (object)content_types($data['type']);
         return array($type);
       }
-      else if ($id == 'node_type_form') {
+      elseif ($id == 'node_type_form') {
         $type = (object)content_types($data['type']);
         return array($type);
       }
-      else if ($id == 'content_field_edit_form' || $id == 'content_field_remove_form') {
+      elseif ($id == 'content_field_edit_form' || $id == 'content_field_remove_form') {
         return array($data['type_name'], $data['field_name']);
       }
-      else if ($id == 'content_field_basic_form') {
+      elseif ($id == 'content_field_basic_form') {
         return array($data);
       }
-      else if ($id == 'content_field_overview_form') {
+      elseif ($id == 'content_field_overview_form') {
         return $data['type_name'];
       }
-      else if ($id == 'fieldgroup_group_edit_form' || $id == 'fieldgroup_remove_group') {
+      elseif ($id == 'fieldgroup_group_edit_form' || $id == 'fieldgroup_remove_group') {
         return array($data['type_name'], $data['group_name']);
       }
     break;
@@ -530,7 +530,7 @@ function content_patterns($op, $id = null, &$data = null, $a = null) {
       // filter out confusing warning about 'allowed values' produced by optionwidgets module
       if ($id == 'content_field_edit_form' && strpos($data['widget_type'], 'optionwidget') === 0 && $warnings = drupal_get_messages('warning')) {
         foreach ($warnings['warning'] as $warning) {
-          if ($warning != "You need to specify the 'allowed values' for this field.") {
+          if ($warning != 'You need to specify the \'allowed values\' for this field.') { // TODO: t() needed?
             drupal_set_message($warning, 'warning');
           }
         }

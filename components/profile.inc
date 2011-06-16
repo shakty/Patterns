@@ -1,7 +1,10 @@
 <?php
-
-function profile_patterns($op, $id = null, &$data = null) {
-  switch($op) {
+/*
+ * @file
+ * Patterns component for profiles.
+ */
+function profile_patterns($op, $id = NULL, &$data = NULL) {
+  switch ($op) {
     // Return the valid tags that this component can prepare and process
     case 'tags':
       return array('profile');
@@ -20,7 +23,7 @@ function profile_patterns($op, $id = null, &$data = null) {
       if ($id == 'profile_field_form') {
         return t('Creating profile field %name', array('%name' => $data['title']));
       }
-      else if ($id == 'profile_field_delete') {
+      elseif ($id == 'profile_field_delete') {
         return t('Deleting profile field %name', array('%name' => $data['name']));
       }
     break;
@@ -76,11 +79,11 @@ function profile_patterns($op, $id = null, &$data = null) {
       if ($id == 'profile_field_delete') {
         $data['confirm'] = 1;
       }
-      else if ($id == 'profile_field_form') {
+      elseif ($id == 'profile_field_form') {
         if ($data['fid']) {
           static $old_q;
           $old_q = $_GET['q'];
-          $_GET['q'] = 'admin/user/profile/edit/'. $data['fid'];
+          $_GET['q'] = 'admin/user/profile/edit/' . $data['fid'];
         }
       }
       return $data;
@@ -96,14 +99,14 @@ function profile_patterns($op, $id = null, &$data = null) {
         if (!$data['type'] && !$data['fid']) {
           return array('textfield');
         }
-        else if (!$data['fid']) {
+        elseif (!$data['fid']) {
           return $data['type'];
         }
         else {
           return $data['fid'];
         }
       }
-      else if ($id == 'profile_field_delete') {
+      elseif ($id == 'profile_field_delete') {
         return $data['fid'];
       }
     break;
