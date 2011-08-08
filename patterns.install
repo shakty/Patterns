@@ -1,0 +1,121 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function patterns_install() {
+  // Automatically done in DR7
+  //drupal_install_schema('patterns');
+}
+
+/**
+* Implementation of hook_schema().
+*/
+function patterns_schema() {
+  $schema['patterns'] = array(
+    'description' => 'Stores patterns information.',
+    'fields' => array(
+      'pid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique pattern ID.',
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 55,
+        'default' => '',
+        'description' => 'Machine readable name of this pattern.',
+      ),
+      'status' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Boolean indicating whether the pattern has been executed (enabled).',
+      ),
+      'public' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Boolean indicating whether the pattern is published (available for sharing via patterns server).',
+      ),
+      'file' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Path of the pattern file relative to Drupal root.',
+      ),
+      'updated' => array(
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => TRUE,
+        'default' => '0',
+        'description' => 'The Unix timestamp indicating when the pattern file was last time updated (modified).',
+      ),
+      'enabled' => array(
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => TRUE,
+        'default' => '0',
+        'description' => 'The Unix timestamp indicating when the pattern was last time executed.',
+      ),
+      'title' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Title of the pattern.',
+      ),
+      'description' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+        'description' => 'Description of the pattern.',
+      ),
+      'pattern' => array(
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => TRUE,
+        'description' => 'A serialized array containing pattern code.',
+      )
+    ),
+    'primary key' => array('pid'),
+    'unique keys' => array('name' => array('name'))
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function patterns_uninstall() {
+  drupal_uninstall_schema('patterns');
+}
+
+
+
+
+// Included in the new schema 7.0
+
+/**
+ * Implementation of hook_update_N().
+ */
+//function patterns_update_6100() {
+//  $ret = array();
+//  
+//  // Increase size of the field 'pattern'.
+//  $new_field = array(
+//    'type' => 'text',
+//    'size' => 'medium',
+//    'not null' => TRUE,
+//    'description' => 'A serialized array containing pattern code.',
+//  );
+//  db_change_field($ret, 'patterns', 'pattern', 'pattern', $new_field);
+//  
+//  return $ret;
+//}

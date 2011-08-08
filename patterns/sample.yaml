@@ -1,0 +1,78 @@
+info:
+  title: YAML example
+  description: sample YAML pattern
+  author: Vaish
+  category: Examples
+  author_email: vnd@graviteklabs.com
+
+modules:
+  - content
+  - text
+  - taxonomy
+  - adminrole
+
+actions:
+  - tag: content
+      name: Article
+      type: article
+      comment: 0
+      status: 1
+  - tag: field
+      type: article
+      name: summary
+      label: Article Summary
+      option: text
+      widget: text_textarea
+      rows: 3
+      text_processing: 1
+      weight: -1
+  - tag: vocabulary
+      name: Article Keywords
+      nodes: 
+        article: article
+      tags: 1
+  - tag: variable
+      name: site_footer
+      value: YAML file format Test
+  - tag: role
+      action_label: adminrole
+      value: administrator
+  - tag: permissions
+      role: administrator
+      0: administer blocks
+      1: access comments
+      2: post comments
+  - tag: permissions
+      role: administrator
+      value: access content, display source code, administer filters      
+  - tag: form
+      form_id: adminrole_admin_settings
+      adminrole_adminrole: @adminrole@ 
+  - tag: node
+      action_label: aboutus
+      type: page
+      title: About Us
+      body: |
+        <p>By using | character on the line above, we are able to enter <strong>HTML</strong> mark up and have all the line breaks preserved.</p>
+ 
+        <p>Enter text in the exactly same way as you would do it in the regular node edit form.</p>
+       
+        <p>
+          Unfortunately, indentation seems to be lost.
+          <ul>
+            <li>item 1</li>
+            <li>item 2</li>
+            <li>item 3</li>
+          </ul>
+        </p>
+  - tag: menu_item
+      menu: Primary Links
+      title: About Us
+      path: node/@aboutus@
+      weight: 5
+  - tag: variable
+      name: theme_settings
+      toggle_node_info_page: 0
+      toggle_node_info_story: 1
+      toggle_favicon: 0      
+      

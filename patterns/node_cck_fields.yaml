@@ -1,0 +1,56 @@
+---
+info: 
+  title: |
+    Node: CCK Fields example
+  description: |
+    Creates a node and provides examples for CCK fields syntax. Depends on "Content Type: CCK Fields example".
+  author: Vaish
+  author_email: vaish@graviteklabs.com
+  version: 0.1
+  author_date: 03.26.2009
+  category: Examples
+  core: 6.x
+actions:
+  - 
+    tag: node
+    type: company
+    title: Example Company
+    body: lorem ipsum ...
+    taxonomy:
+      - vocabulary: Company Type
+        term: Vendor
+    fields:
+      company_name: Example Company
+      industry: telecom
+      email: info@example.com
+      website: 
+        url: http://example.com
+      demo_site:
+        title: Demos and Examples
+        url: http://demos.example.com
+      phone_number: (555) 555-5555
+      address:
+        value: |
+          1234 Fifth Avenue
+          Califronia
+        format: 1
+      established:
+        value: 2008-09-09
+      primary_contact:
+        nid: 3
+      sysadmin:
+        uid:
+          4: 4
+          3: 3
+      num_employees: 500
+      features:
+        value:
+          1: 1
+          3: 3
+      public: 0
+      posts:
+        view_id: 9
+        arguments:
+      testimonials:
+        vname: tracker|default
+        vargs: 1

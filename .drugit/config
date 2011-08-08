@@ -1,0 +1,11 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "origin"]
+	fetch = +refs/heads/*:refs/remotes/origin/*
+	url = http://git.drupal.org/project/patterns.git
+[branch "7.x-1.x"]
+	remote = origin
+	merge = refs/heads/7.x-1.x
