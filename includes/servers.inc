@@ -113,7 +113,7 @@ function patterns_import_server_submit($form, &$form_state) {
   $errors = array();
 
   foreach ($pids as $pid) {
-    $url = $feed['info']['url'] . '/admin/build/patterns/get/' . $pid;
+    $url = $feed['info']['url'] . '/admin/patterns/get/' . $pid;
     $pattern_info = $feed['patterns'][$pid];
 
     if (!$source = file_get_contents($url)) {
@@ -159,7 +159,7 @@ function patterns_import_server_submit($form, &$form_state) {
   }
 
   unset($form_state['storage']);
-  $form_state['redirect'] = 'admin/build/patterns';
+  $form_state['redirect'] = 'admin/patterns';
 
 }
 
@@ -207,7 +207,7 @@ function patterns_publish_pattern($pid) {
     $result = db_query("UPDATE {patterns} SET public = 1 WHERE pid = :pid", array('pid' => $pid));
   }
   drupal_set_message(t('Pattern published. Only in the db.'));
-  drupal_goto('admin/build/patterns');
+  drupal_goto('admin/patterns');
 }
 
 function patterns_unpublish_pattern($pid) {
@@ -215,7 +215,7 @@ function patterns_unpublish_pattern($pid) {
     $result = db_query("UPDATE {patterns} SET public = 0 WHERE pid = :pid", array('pid' => $pid));
   }
   drupal_set_message(t('Pattern unpublished.'));
-  drupal_goto('admin/build/patterns');
+  drupal_goto('admin/patterns');
 }
 
 /**
@@ -382,5 +382,5 @@ function patterns_import_submit($form, &$form_state) {
   else {
     drupal_set_message(t('File couldn\'t be saved on the server. Import failed.'), 'error');
   }
-  $form_state['redirect'] = 'admin/build/patterns';
+  $form_state['redirect'] = 'admin/patterns';
 }

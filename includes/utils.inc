@@ -107,7 +107,7 @@ function patterns_edit($form, &$form_state, $pid = NULL) {
   //   if ($pattern->enabled <= $pattern->updated) {
   //     $form['revert'] = array(
   //       '#type' => 'markup',
-  //       '#value' => l(t('Undo update changes to the state when you enabled the pattern.'), 'admin/build/patterns/revert/'. $pid, array(), drupal_get_destination())
+  //       '#value' => l(t('Undo update changes to the state when you enabled the pattern.'), 'admin/patterns/revert/'. $pid, array(), drupal_get_destination())
   //     );
   //   }
   $form['format'] = array(
@@ -194,7 +194,7 @@ function patterns_edit_submit($form, &$form_state) {
           }
           patterns_save_pattern($pattern, $path, $form_state['values']['name']);
           drupal_set_message(t('%name was saved.', array('%name' => $form_state['values']['name'])));
-          $form_state['redirect'] = 'admin/build/patterns';
+          $form_state['redirect'] = 'admin/patterns';
         }
         else {
           drupal_set_message(t("Pattern '%name' couldn't be saved. Make sure edited code is well-formed.", array('%name' => $form_state['values']['name'])), 'error');
@@ -276,7 +276,7 @@ function patterns_modules_page($pid) {
     drupal_set_message(t('Some modules are not availalble, please download them before running this pattern.'), 'error');
   }
   else {
-    drupal_set_message(t('All modules required by this module are available. Click !here to run this pattern.', array('!here' => l(t('here'), 'admin/build/patterns/enable/' . $pid))));
+    drupal_set_message(t('All modules required by this module are available. Click !here to run this pattern.', array('!here' => l(t('here'), 'admin/patterns/enable/' . $pid))));
   }
 
   //Ste: was
