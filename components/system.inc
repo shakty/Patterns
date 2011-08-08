@@ -409,7 +409,6 @@ function set_active_theme_submit($form, &$form_state) {
   $theme = $values['theme_default']['values']['theme_default'];
   patterns_system_theme_default($theme);
 
-  // TODO: set theme
 }
 // Modified version of system_theme_default
 function patterns_system_theme_default($theme) {
