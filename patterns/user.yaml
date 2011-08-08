@@ -1,0 +1,24 @@
+# YAML User Pattern
+# QScience
+
+info:
+  title: Import or create some users and user fields
+  description: as title
+  author: QScience
+  category: QScience
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: xxx
+
+actions:
+  
+  - tag: user 
+      name: lul
+      mail: lul@mailinator.org     
+      password: lul
+      timezone: +1
+      roles: 2
+      status: 1
+
+---

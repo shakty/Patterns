@@ -1,0 +1,35 @@
+# YAML User Pattern
+# QScience
+
+info:
+  title: Create users!
+  description: as title
+  author: QScience
+  category: QScience
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qscience.csko.hu
+
+actions:
+  
+  - tag: user 
+      name: fujico
+      mail: fujico@mailinator.org     
+      password: fujico
+      timezone: Europe/Berlin
+      roles: 2
+      status: 1
+
+  - tag: user 
+      name: lupin
+      mail: lupin@mailinator.org     
+      password: lupin
+      roles: 2
+      status: 1  
+---
+
+
+#  - tag: field
+#      name: unfieldo
+#      type: text

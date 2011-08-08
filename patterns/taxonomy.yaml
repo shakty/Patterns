@@ -1,0 +1,33 @@
+ # YAML Taxonomies Pattern
+# QScience
+
+info:
+  title: Add a vocabulary for Disciplines with some terms
+  description: as title
+  author: QScience
+  category: QScience
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qscience.csko.hu
+  
+  
+
+actions:
+
+#    - tag: vocabulary
+#        name: anothervoc
+#        description: There is nothing useful in anothervoc
+#        machine_name: anothervoc
+        
+    - tag: term
+        name: Term2
+        descr: This is a 2-term
+        vid: 2
+        #vocabulary: anothervoc
+
+
+        
+#    - tag: term
+#        name: Term2
+#        vid: 2 # VocTest

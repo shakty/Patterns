@@ -1,0 +1,31 @@
+ # YAML Taxonomies Pattern
+# QScience
+
+info:
+  title: Add a Field, Create Instances, etc.
+  description: as title
+  author: QScience
+  category: QScience
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: shakty.org
+  
+  
+
+actions:
+
+  - tag: field
+      name: urcaurcatirulero26
+      label:urcaurcatirulero26
+      type: taxonomy_term_reference
+      widget: autocomplete 
+      vocabulary: anothervoc
+      # for the user instance
+      required: 1
+      registration: 1
+      cardinality: 5
+      weight: -10
+      description: Stefano is cool
+      default: Economics
+      
