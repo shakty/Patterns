@@ -116,7 +116,7 @@ function patterns_menu() {
     'page callback' => 'drupal_get_form',
      // Ste: was
      // 'page arguments' => array('patterns_edit'),
-    'page arguments' => array('patterns_edit', 4),
+    'page arguments' => array('patterns_edit', 3),
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
