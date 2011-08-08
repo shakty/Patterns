@@ -1,5 +1,8 @@
 <?php
 /*
+ * TODO: there is an error when defaulting a theme that is not enabled.
+ */
+/*
  * @file
  * Patterns component for system related operations.
  */
@@ -18,7 +21,7 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         'system_modules' => t('System: Enable or disable module'),
         'variables' => t('System: Set or delete variables'),
         'variable' => t('System: Set or delete variable'),
-        'system_themes_form' => t('System: Set active theme'),
+        'set_active_theme' => t('System: Set active theme'), // Drupal7.x removed the theme setting form, so we use a custom one
         'form' => t('System: Execute form'),
         'call_php_func_form' => t('Call PHP function: Call function'),
       );
@@ -130,7 +133,7 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         case 'theme':
             if ($data['value']) {
                 $data['theme_default'] = $data['value'];
-                $data['status'][$data['value']] = $data['value'];
+//                $data['status'][$data['value']] = $data['value'];
             }
         break;
         case 'form':
@@ -213,7 +216,8 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         }
       }
       elseif ($id == 'theme') {
-        $themes = system_get_theme_data();
+      	// TODO: do this the Drupal7.x way
+        $themes = system_rebuild_theme_data();
         if (!array_key_exists($data['theme_default'], $themes)) {
             return t('%theme is not a valid theme.', array('%theme' => $data['theme_default']));
         }
@@ -251,7 +255,7 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         return 'variables';
       }
       elseif ($id == 'theme') {
-        return 'system_themes_form';
+        return 'set_active_theme';
       }
       elseif ($id == 'form') {
         if (!empty($data['include']) && is_file($data['include'])) {
@@ -326,9 +330,9 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
 
         return t('Variables %vars updated.', array('%vars' => implode(', ', $names)));
       }
-      elseif ($id == 'system_themes_form') {
+      elseif ($id == 'set_active_theme') {
         $data['op'] = t('Save configuration');
-        module_load_include('inc', 'system', 'system.admin');
+        //module_load_include('inc', 'system', 'system.admin');
         return $data;
       }
       elseif ($id == $data['form_id']) {
@@ -378,6 +382,9 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         unset($data['args']);
         return $params;
       }
+      elseif ($id == 'set_active_theme') {
+      	return array($data['theme_default']);
+      }
     break;
 
     // Any last cleanup items
@@ -389,8 +396,63 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
   }
 }
 
-function call_php_func_form($form_state, $func, $type, $module, $name, $filepath, $args) {
+function set_active_theme($form_state, $theme_default) {
   return array(
+    '#theme' => array(
+      'theme_default' => $theme_default
+    ),
+  );
+}
+
+function set_active_theme_submit($form, &$form_state) {
+  $values = $form['#theme'];
+  $theme = $values['theme_default']['values']['theme_default'];
+  patterns_system_theme_default($theme);
+
+  // TODO: set theme
+}
+// Modified version of system_theme_default
+function patterns_system_theme_default($theme) {
+		// Get current list of themes.
+		$themes = list_themes();
+
+		// Check if the specified theme is one recognized by the system.
+		if (!empty($themes[$theme])) {
+			// Enable the theme if it is currently disabled.
+			if (empty($themes[$theme]->status)) {
+				theme_enable(array($theme));
+			}
+			// Set the default theme.
+			variable_set('theme_default', $theme);
+
+			// Rebuild the menu. This duplicates the menu_rebuild() in theme_enable().
+			// However, modules must know the current default theme in order to use
+			// this information in hook_menu() or hook_menu_alter() implementations,
+			// and doing the variable_set() before the theme_enable() could result
+			// in a race condition where the theme is default but not enabled.
+			menu_rebuild();
+
+			// The status message depends on whether an admin theme is currently in use:
+			// a value of 0 means the admin theme is set to be the default theme.
+// 			$admin_theme = variable_get('admin_theme', 0);
+// 			if ($admin_theme != 0 && $admin_theme != $theme) {
+// 				drupal_set_message(t('Please note that the administration theme is still set to the %admin_theme theme; consequently, the theme on this page remains unchanged. All non-administrative sections of the site, however, will show the selected %selected_theme theme by default.', array(
+//           '%admin_theme' => $themes[$admin_theme]->info['name'],
+//           '%selected_theme' => $themes[$theme]->info['name'],
+// 				)));
+// 			}
+// 			else {
+//				drupal_set_message(t('%theme is now the default theme.', array('%theme' => $themes[$theme]->info['name'])));
+//			}
+		}
+		else {
+//			drupal_set_message(t('The %theme theme was not found.', array('%theme' => $theme)), 'error');
+		}
+
+}
+
+function call_php_func_form($form_state, $func, $type, $module, $name, $filepath, $args) {
+	return array(
     '#call_php_func' => array(
       'function' => $func,
       'type' => $type,
@@ -398,14 +460,14 @@ function call_php_func_form($form_state, $func, $type, $module, $name, $filepath
       'name' => $name,
       'filepath' => $filepath,
       'arguments' => $args,
-    ),
-  );
+	),
+	);
 }
 
 function call_php_func_form_submit($form, &$form_state) {
-  $values = $form['#call_php_func'];
-  _call_php_func_include_files($values);
-  call_user_func_array($values['function'], $values['arguments']);
+	$values = $form['#call_php_func'];
+	_call_php_func_include_files($values);
+	call_user_func_array($values['function'], $values['arguments']);
 }
 
 function _call_php_func_include_files($values) {
