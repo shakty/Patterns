@@ -5,7 +5,7 @@ function patterns_load_yaml($path, $local = TRUE) {
     return FALSE;
   }
 
-  include_once drupal_get_path('module', 'patterns') . '/spyc/spyc.php';
+  include_once libraries_get_path('spyc') . '/spyc.php';
   $pattern = Spyc::YAMLLoad($path);
 
   if (!patterns_validate_pattern($pattern)) {

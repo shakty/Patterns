@@ -71,12 +71,12 @@ function patterns_requirements($phase) {
 
   switch ($phase) {
     case 'runtime':
-      $path = drupal_get_path('module', 'patterns') . '/spyc/spyc.php';
+      $path = libraries_get_path('spyc') . '/spyc.php';
       
       if (!file_exists($path)) {
         $requirements['spyc'] = array(
           'title'       => t('Spyc library (YAML parser)'),
-          'description' => t('Patterns module requires Spyc library for working with YAML patterns. To enable YAML support, download the !spyc package and copy spyc.php to the spyc directory inside patterns module directory.',
+          'description' => t('Patterns module requires Spyc library for working with YAML patterns. To enable YAML support, download the !spyc package to obtain spyc.php. Create a directory for the library (e.g. sites/all/libraries/spyc/) and place spyc.php there.',
                               array('!spyc' => l(t('spyc'), 'http://code.google.com/p/spyc/', array('absolute' => TRUE)))),
           'severity'    => REQUIREMENT_WARNING,
           'value'       => t('Missing'),
