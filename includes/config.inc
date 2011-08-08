@@ -146,7 +146,7 @@ function patterns_paths() {
  */
 function patterns_file_types() {
   $result = array('xml', 'php');
-  if (file_exists(drupal_get_path('module', 'patterns') . '/spyc/spyc.php')) {
+  if (file_exists(libraries_get_path('spyc') . '/spyc.php')) {
     $result[] = 'yaml';
   }
   return $result;
