@@ -70,68 +70,107 @@ function _patterns_array_trace($obj) {
   return $trace;
 }
 
-/**
- * Menu callback to edit a patterns data
+
+/*
+ * Display the page for editing patterns.
+ * 
  */
-function patterns_edit($form, &$form_state, $pid = NULL) {
-  if (!is_numeric($pid)) {
+function patterns_edit_page($pid = NULL) {
+	
+ if (!is_numeric($pid)) {
     drupal_set_message(t('You must specify a pattern to edit.'));
     return;
   }
 
   $pattern = patterns_get_pattern($pid);
-
-  // TODO: Turn php into xml here.
-
-  // For now just allow modifying the original xml, which
-  // means the modification cannot be further modified
-
-  // Ste: think if this is reasonable
-  
   
   if (!$pattern->file) {
-    drupal_set_message(t('This pattern does not seem to have an XML source file to base the modifications off of.'), 'error');
+    drupal_set_message(t('This pattern does not seem to be associated with a valid source file.'), 'error');
     return;
   }
+  
+  $info = array();
+  $info['Path'][] = 'Path: ';
+  $info['Path'][] = $pattern->file;
+  $info['Enabled'][] = t('Enabled:');
+  $info['Enabled'][] = ($pattern->enabled) ? t('Yes') : t('No');
 
-  $xml = file_get_contents($pattern->file);
+  $out = '<h6>Info</h6>';
+  $out.= theme('table', array('rows' => $info, 'attributes' => array('class' => 'patterns-list')));  
+  $form = drupal_get_form('patterns_edit', $pattern);
+  $out.=drupal_render($form);
+  
+  return $out;
+}
+
+
+/**
+ * Create the form to edit patterns
+ */
+function patterns_edit($form, &$form_state, $pattern) {
+  
+  $content = file_get_contents($pattern->file);
 
   $form['name'] = array(
     '#type' => 'value',
-    '#value' => $pattern->name
+    '#value' => $pattern->name,
   );
+  
   $form['pid'] = array(
     '#type' => 'value',
     '#value' => $pattern->pid
   );
-  //   if ($pattern->enabled <= $pattern->updated) {
-  //     $form['revert'] = array(
-  //       '#type' => 'markup',
-  //       '#value' => l(t('Undo update changes to the state when you enabled the pattern.'), 'admin/patterns/revert/'. $pid, array(), drupal_get_destination())
-  //     );
-  //   }
+  
+  
+//   if ($pattern->enabled) {
+//    $form['enable'] = array(
+//      '#type' => 'markup',
+//      '#value' => l(t('Undo update changes to the state when you enabled the pattern.'), 'admin/patterns/revert/'. $pid, array(), drupal_get_destination())
+//    );
+//  }
+  
+  
+  
   $form['format'] = array(
     '#type' => 'select',
     '#title' => t('Pattern syntax'),
     '#options' => array_combine(patterns_file_types(), patterns_file_types()),
     '#default_value' => pathinfo($pattern->file, PATHINFO_EXTENSION),
   );
-  $form['xml'] = array(
+  $form['content'] = array(
     '#type' => 'textarea',
     '#title' => t('Pattern\'s code'),
     '#rows' => 25,
-    '#default_value' => $xml
+    '#default_value' => $content,
   );
+  
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Submit')
+    '#value' => t('Save Modifications'),
   );
-
+  
+  $form['run'] = array(
+	  '#prefix' => '<span style=\'margin-right:10px\'>',  
+	  '#markup' => l(t('Run current pattern'),'admin/patterns/enable/'.$pattern->pid),
+	  '#suffix' => '</span> ',
+  );
+  
+  $form['cancel'] = array(
+    '#markup' => l(t('Cancel'),'admin/patterns'),
+  );
+  
+//  $form['run'] = array(
+//    '#prefix' => '<a href='.url('admin/patterns/enable/'.$pattern->pid).'>',
+//    '#type' => 'button',
+//    '#value' =>  t('Run saved pattern'),
+//    '#suffix' => '</a>',
+//  );
+  
   return $form;
 }
 
 /**
- * Validate pattern modifications (make sure proper XML)
+ * Validate pattern modifications (still to do...)
  */
 function patterns_edit_validate($form, &$form_state) {
   // @TODO Do validations....
@@ -139,7 +178,7 @@ function patterns_edit_validate($form, &$form_state) {
   //$path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
   
   // real_path(public) returns the path to the files dir
-  $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_xml', 'patterns');
+  $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
 
   if (!file_prepare_directory($path, TRUE)) {
     form_set_error('form_token', t('Unable to create @path to save the new pattern to.', array('@path' => $path)));
@@ -154,30 +193,36 @@ function patterns_edit_validate($form, &$form_state) {
 function patterns_edit_submit($form, &$form_state) {
   // If this is an enabled pattern, make sure the enabled pattern is saved in its current state
   
-  // Ste: was
-  //if ($file = db_result(db_query("SELECT file FROM {patterns} WHERE status = 1 AND name = '%s'", $form_state['values']['name']))) {
-  if ($file = db_query("SELECT file FROM {patterns} WHERE status = 1 AND name = :name", array('name' => $form_state['values']['name']))->fetchField()) {
+	$tmp = $form_state['values']['name'];
+	
+	// Ste: Removed STATUS = 1: Why should it matter?
+	if ($results = db_query("SELECT file,status FROM {patterns} WHERE name = :name", array('name' => $form_state['values']['name']))->fetchAssoc()) {
   
-    // Ste: was
-    //$dir = file_directory_path() .'/'. variable_get('patterns_save_xml', 'patterns') .'/enabled';
-    $dir = drupal_realpath('public://') . "/" . variable_get('patterns_save_xml', 'patterns') . '/enabled';
+	  $file    = $results['file'];
+	  $enabled = $results['status'];
+		
+    $dir = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
 
+    if ($enabled) {
+    	$dir.= '/enabled';
+    }
+    
     // Ste: was
     //file_check_directory($dir, TRUE);
     
     if (file_prepare_directory($dir, TRUE)) {
       $path =  $dir . '/' . $form_state['values']['name'] . '.' . $form_state['values']['format'];
 
-      if (!file_exists($path)) {
-        // Ste: was
-        //file_copy($file, $path, FILE_EXISTS_ERROR);
-        file_unmanaged_copy($file, 'public://' . $path, FILE_EXISTS_ERROR);
-      }
+//      if (!file_exists($path)) {
+//        // Ste: was
+//        //file_copy($file, $path, FILE_EXISTS_ERROR);
+//        file_unmanaged_copy($file, 'public://' . $path, FILE_EXISTS_ERROR);
+//      }
       
         // Save the new pattern into the pattern files dir.
-      $path = drupal_realpath('public://') . '/' . variable_get('patterns_save_xml', 'patterns') . '/' . $form_state['values']['name'] . '.' . $form_state['values']['format'];
+      $path = drupal_realpath('public://') . '/' . variable_get('patterns_save_file', 'patterns') . '/' . $form_state['values']['name'] . '.' . $form_state['values']['format'];
     
-      if (file_unmanaged_save_data($form_state['values']['xml'], $path, FILE_EXISTS_REPLACE)) {
+      if (file_unmanaged_save_data($form_state['values']['content'], $path, FILE_EXISTS_REPLACE)) {
     
         // Ste: was
         //$old = db_result(db_query("SELECT file FROM {patterns} WHERE name = '%s'", $form_state['values']['name']));
@@ -207,6 +252,9 @@ function patterns_edit_submit($form, &$form_state) {
     else {
       drupal_set_message(t('Error: the pattern is not writable. Please check the file system permissions.'), 'error');
     }
+  }
+  else {
+  	drupal_set_message(t('Error: file not found ?!.'), 'error');
   }
 
   
