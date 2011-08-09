@@ -18,7 +18,7 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         'system_modules' => t('System: Enable or disable module'),
         'variables' => t('System: Set or delete variables'),
         'variable' => t('System: Set or delete variable'),
-        'system_themes_form' => t('System: Set active theme'),
+        'set_active_theme' => t('System: Set active theme'), // Drupal7.x removed the theme setting form, so we use a custom one
         'form' => t('System: Execute form'),
         'call_php_func_form' => t('Call PHP function: Call function'),
       );
@@ -74,6 +74,7 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
           $data = array($data);
         case 'variables':
           // Make a <variables>modulename</variables> style tag work
+
           if (!$data[0]) {
             if ($data['variable'] && isset($data['variable'][0])) {
               $data = $data['variable'];
@@ -93,12 +94,14 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
           for ($i=0, $total = count($data); $i < $total; $i++) {
             $item = &$data[$i];
 
-            if (!isset($item['value']) && !$item['delete']) {
+            if (!isset($item['value']) && (!isset($item['delete']) || !$item['delete'])) {
               $value = $item;
               unset($value['name']);
               $item = array('name' => $item['name'], 'value' => $value);
             }
+
           }
+
         break;
         case 'modules':
           // Make a <modules>modulename</modules> style tag work
@@ -130,7 +133,7 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         case 'theme':
             if ($data['value']) {
                 $data['theme_default'] = $data['value'];
-                $data['status'][$data['value']] = $data['value'];
+//                $data['status'][$data['value']] = $data['value'];
             }
         break;
         case 'form':
@@ -213,7 +216,8 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         }
       }
       elseif ($id == 'theme') {
-        $themes = system_get_theme_data();
+        // TODO: do this the Drupal7.x way
+        $themes = system_rebuild_theme_data();
         if (!array_key_exists($data['theme_default'], $themes)) {
             return t('%theme is not a valid theme.', array('%theme' => $data['theme_default']));
         }
@@ -251,7 +255,7 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         return 'variables';
       }
       elseif ($id == 'theme') {
-        return 'system_themes_form';
+        return 'set_active_theme';
       }
       elseif ($id == 'form') {
         if (!empty($data['include']) && is_file($data['include'])) {
@@ -308,12 +312,12 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         $names = array();
         for ($i = 0; $variable = $data[$i]; $i++) {
           if ($variable['delete']) {
-            variable_del($variable['name']);
-          }
+            variable_del($variable['name']);          }
           else {
             $var = variable_get($variable['name'], NULL);
             if (is_array($var)) {
-              // make sure we don't loose parts of the array that were not defined by pattern's action
+              // make sure we don't lose parts of the array that were not defined by pattern's action
+              // TODO: is this a good practice?
               $var = array_merge($var, $variable['value']);
               variable_set($variable['name'], $var);
             }
@@ -321,14 +325,15 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
               variable_set($variable['name'], $variable['value']);
             }
           }
+          //die();
           $names[] = $variable['name'];
         }
 
-        return t('Variables %vars updated.', array('%vars' => implode(', ', $names)));
+        return t('Variable(s) %vars updated.', array('%vars' => implode(', ', $names)));
       }
-      elseif ($id == 'system_themes_form') {
+      elseif ($id == 'set_active_theme') {
         $data['op'] = t('Save configuration');
-        module_load_include('inc', 'system', 'system.admin');
+        //module_load_include('inc', 'system', 'system.admin');
         return $data;
       }
       elseif ($id == $data['form_id']) {
@@ -378,6 +383,9 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         unset($data['args']);
         return $params;
       }
+      elseif ($id == 'set_active_theme') {
+        return array($data['theme_default']);
+      }
     break;
 
     // Any last cleanup items
@@ -389,7 +397,46 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
   }
 }
 
-function call_php_func_form($form_state, $func, $type, $module, $name, $filepath, $args) {
+function set_active_theme($form, $form_state, $theme_default) {
+  return array(
+    '#theme' => array(
+      'theme_default' => $theme_default
+    ),
+  );
+}
+
+function set_active_theme_submit($form, &$form_state) {
+  $values = $form['#theme'];
+  $theme = $values['theme_default'];
+  patterns_system_theme_default($theme);
+
+}
+// Modified version of system_theme_default
+function patterns_system_theme_default($theme) {
+  // Get current list of themes.
+  $themes = list_themes();
+
+  // Check if the specified theme is one recognized by the system.
+  if (!empty($themes[$theme])) {
+    // Enable the theme if it is currently disabled.
+    if (empty($themes[$theme]->status)) {
+    // NOTE: this assumes sites/default/css exists.
+    theme_enable(array($theme));
+    }
+  // Set the default theme.
+  variable_set('theme_default', $theme);
+
+  // Rebuild the menu. This duplicates the menu_rebuild() in theme_enable().
+  // However, modules must know the current default theme in order to use
+  // this information in hook_menu() or hook_menu_alter() implementations,
+  // and doing the variable_set() before the theme_enable() could result
+  // in a race condition where the theme is default but not enabled.
+  menu_rebuild();
+  }
+
+}
+
+function call_php_func_form($form, $form_state, $func, $type, $module, $name, $filepath, $args) {
   return array(
     '#call_php_func' => array(
       'function' => $func,
@@ -398,13 +445,14 @@ function call_php_func_form($form_state, $func, $type, $module, $name, $filepath
       'name' => $name,
       'filepath' => $filepath,
       'arguments' => $args,
-    ),
-  );
+      ),
+    );
 }
 
 function call_php_func_form_submit($form, &$form_state) {
   $values = $form['#call_php_func'];
   _call_php_func_include_files($values);
+
   call_user_func_array($values['function'], $values['arguments']);
 }
 

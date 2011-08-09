@@ -1,0 +1,18 @@
+# YAML Theme Pattern
+# QScience
+
+info:
+  title: Set theme
+  description: as title
+  author: QScience
+  category: QScience
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qscience.csko.hu
+
+actions: 
+
+  - tag: theme
+      value: garland
+

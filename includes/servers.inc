@@ -279,7 +279,7 @@ function patterns_import_source($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Pattern Identifier'),
     '#description' => t('Machine readable name for the pattern. The actual title should be included in the pattern itself.'),
-    '#required' => true
+    '#required' => TRUE
   );
   $form['xmlsource'] = array(
     '#type' => 'textarea',

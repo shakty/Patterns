@@ -450,10 +450,11 @@ function patterns_rearrange_data($pattern) {
  */
 function patterns_array_map($function, $array, $params) {
   $new_array = array();
-  foreach( $array as $key => $value ) {
+  foreach ($array as $key => $value) {
     if (is_array($value)) {
       $new_array[$key] = patterns_array_map($function, $value, $params);
-    } else {
+    }
+    else {
       $params[] = $key;
       $key = call_user_func_array($function, $params);
       array_pop($params);
@@ -477,7 +478,10 @@ function patterns_array_map($function, $array, $params) {
 function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = array()) {
 
   // prevent infinite recursion
-  if (in_array($pattern->pid, $pids)) return array();
+  // Disabled! Infinite recursion is possible!
+  // This allows the same pattern to be re-executed with different parameters
+  // TODO: detect recursion, and protect users from it
+  // if (in_array($pattern->pid, $pids)) return array();
   $pids[$pattern->pid] = $pattern->pid;
 
   $actions = !empty($pattern->pattern['actions']) ? $pattern->pattern['actions'] : array();
@@ -553,6 +557,17 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
           // An empty array is returned on infinite recursion detection
           drupal_set_message(t('Action #%key in %file: Infinite recursion detected while attempting to run pattern %pattern.<br/>Pattern execution will try to continue without it.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'warning');
           continue;
+        }
+        // we replace for tokens in the generated pattern
+        // this is just a proof of concept, so far
+        if (!empty($action['parameters'])) {
+          $tokens = array_keys($action['parameters']);
+          $values = array_values($action['parameters']);
+          // give tokens their delimiters
+          foreach ($tokens as &$token) {
+            $token = "__".$token."__";
+          }
+          $a = patterns_array_map('str_replace', $a, array($tokens, $values));
         }
         // array_merge doesn't preserve numeric array keys
         // so we handle 'info' separately
@@ -1301,7 +1316,7 @@ function patterns_restore_error_handler() {
  */
 function patterns_error_handler($errno, $message, $filename, $line, $context) {
 
-  if ($errno & (E_ALL ^ E_NOTICE)) {
+  if ($errno & (E_ALL ^ E_NOTICE ^ E_DEPRECATED)) {
 
     $types = array(1 => 'error', 2 => 'warning', 4 => 'parse error', 8 => 'notice', 16 => 'core error', 32 => 'core warning', 64 => 'compile error', 128 => 'compile warning', 256 => 'user error', 512 => 'user warning', 1024 => 'user notice', 2048 => 'strict warning', 4096 => 'recoverable fatal error');
 

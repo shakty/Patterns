@@ -252,6 +252,7 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
       ////////////////////
       // Execute action
       ///////////////////
+      var_dump($form_id);
       patterns_execute_action($form_id, $action_state, $params);
 
       if ($message = patterns_error_get_last('execute', $index, $action_description, $pattern_title, $pattern_file)) {
@@ -386,7 +387,7 @@ function patterns_execute_action_old($form_id, &$form_state, $params) {
   patterns_sync_form_values($args);
 
   // Copy of drupal_execute until above issue is fixed
-  
+  // TODO: check if this is fixed for drupal_form_submit()
   $form = call_user_func_array('drupal_retrieve_form', $args);
   
   // Copy the #post values from the form state
