@@ -447,10 +447,11 @@ function patterns_rearrange_data($pattern) {
  */
 function patterns_array_map($function, $array, $params) {
   $new_array = array();
-  foreach( $array as $key => $value ) {
+  foreach ($array as $key => $value) {
     if (is_array($value)) {
       $new_array[$key] = patterns_array_map($function, $value, $params);
-    } else {
+    }
+    else {
       $params[] = $key;
       $key = call_user_func_array($function, $params);
       array_pop($params);

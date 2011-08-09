@@ -213,7 +213,7 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         }
       }
       elseif ($id == 'theme') {
-      	// TODO: do this the Drupal7.x way
+        // TODO: do this the Drupal7.x way
         $themes = system_rebuild_theme_data();
         if (!array_key_exists($data['theme_default'], $themes)) {
             return t('%theme is not a valid theme.', array('%theme' => $data['theme_default']));
@@ -380,7 +380,7 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         return $params;
       }
       elseif ($id == 'set_active_theme') {
-      	return array($data['theme_default']);
+        return array($data['theme_default']);
       }
     break;
 
@@ -409,31 +409,31 @@ function set_active_theme_submit($form, &$form_state) {
 }
 // Modified version of system_theme_default
 function patterns_system_theme_default($theme) {
-		// Get current list of themes.
-		$themes = list_themes();
+  // Get current list of themes.
+  $themes = list_themes();
 
-		// Check if the specified theme is one recognized by the system.
-		if (!empty($themes[$theme])) {
-			// Enable the theme if it is currently disabled.
-			if (empty($themes[$theme]->status)) {
-				// NOTE: this assumes sites/default/css exists.
-				theme_enable(array($theme));
-			}
-			// Set the default theme.
-			variable_set('theme_default', $theme);
+  // Check if the specified theme is one recognized by the system.
+  if (!empty($themes[$theme])) {
+    // Enable the theme if it is currently disabled.
+    if (empty($themes[$theme]->status)) {
+    // NOTE: this assumes sites/default/css exists.
+    theme_enable(array($theme));
+    }
+  // Set the default theme.
+  variable_set('theme_default', $theme);
 
-			// Rebuild the menu. This duplicates the menu_rebuild() in theme_enable().
-			// However, modules must know the current default theme in order to use
-			// this information in hook_menu() or hook_menu_alter() implementations,
-			// and doing the variable_set() before the theme_enable() could result
-			// in a race condition where the theme is default but not enabled.
-			menu_rebuild();
-		}
+  // Rebuild the menu. This duplicates the menu_rebuild() in theme_enable().
+  // However, modules must know the current default theme in order to use
+  // this information in hook_menu() or hook_menu_alter() implementations,
+  // and doing the variable_set() before the theme_enable() could result
+  // in a race condition where the theme is default but not enabled.
+  menu_rebuild();
+  }
 
 }
 
 function call_php_func_form($form, $form_state, $func, $type, $module, $name, $filepath, $args) {
-	return array(
+  return array(
     '#call_php_func' => array(
       'function' => $func,
       'type' => $type,
@@ -441,15 +441,15 @@ function call_php_func_form($form, $form_state, $func, $type, $module, $name, $f
       'name' => $name,
       'filepath' => $filepath,
       'arguments' => $args,
-	),
-	);
+      ),
+    );
 }
 
 function call_php_func_form_submit($form, &$form_state) {
-	$values = $form['#call_php_func'];
-	_call_php_func_include_files($values);
-	
-	call_user_func_array($values['function'], $values['arguments']);
+  $values = $form['#call_php_func'];
+  _call_php_func_include_files($values);
+
+  call_user_func_array($values['function'], $values['arguments']);
 }
 
 function _call_php_func_include_files($values) {
