@@ -20,6 +20,7 @@ actions:
       timezone: Europe/Berlin
       roles: 2
       status: 1
+      delete: 3
 
   - tag: user 
       name: lupin
