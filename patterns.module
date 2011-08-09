@@ -113,10 +113,12 @@ function patterns_menu() {
   // $items['admin/patterns/edit'] = array(
   $items['admin/patterns/edit/%'] = array(
     'title' => 'Edit Pattern',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'patterns_edit_page',
+    //'page callback' => 'drupal_get_form',
      // Ste: was
      // 'page arguments' => array('patterns_edit'),
-    'page arguments' => array('patterns_edit', 3),
+    //'page arguments' => array('patterns_edit', 3),
+    'page arguments' => array(3),
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
@@ -318,6 +320,7 @@ function patterns_list() {
   $output = '';
   foreach ($rows as $title => $category) {
     $fieldset = array('element' => array(
+      '#title' => t($title),
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
       '#children' => t($title), 
