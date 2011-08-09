@@ -312,7 +312,8 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         $names = array();
         for ($i = 0; $variable = $data[$i]; $i++) {
           if ($variable['delete']) {
-            variable_del($variable['name']);          }
+            variable_del($variable['name']);
+          }
           else {
             $var = variable_get($variable['name'], NULL);
             if (is_array($var)) {
