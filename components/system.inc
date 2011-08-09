@@ -1,8 +1,5 @@
 <?php
 /*
- * TODO: there is an error when defaulting a theme that is not enabled.
- */
-/*
  * @file
  * Patterns component for system related operations.
  */
@@ -396,7 +393,7 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
   }
 }
 
-function set_active_theme($form_state, $theme_default) {
+function set_active_theme($form, $form_state, $theme_default) {
   return array(
     '#theme' => array(
       'theme_default' => $theme_default
@@ -406,7 +403,7 @@ function set_active_theme($form_state, $theme_default) {
 
 function set_active_theme_submit($form, &$form_state) {
   $values = $form['#theme'];
-  $theme = $values['theme_default']['values']['theme_default'];
+  $theme = $values['theme_default'];
   patterns_system_theme_default($theme);
 
 }
@@ -419,6 +416,7 @@ function patterns_system_theme_default($theme) {
 		if (!empty($themes[$theme])) {
 			// Enable the theme if it is currently disabled.
 			if (empty($themes[$theme]->status)) {
+				// NOTE: this assumes sites/default/css exists.
 				theme_enable(array($theme));
 			}
 			// Set the default theme.
@@ -430,27 +428,11 @@ function patterns_system_theme_default($theme) {
 			// and doing the variable_set() before the theme_enable() could result
 			// in a race condition where the theme is default but not enabled.
 			menu_rebuild();
-
-			// The status message depends on whether an admin theme is currently in use:
-			// a value of 0 means the admin theme is set to be the default theme.
-// 			$admin_theme = variable_get('admin_theme', 0);
-// 			if ($admin_theme != 0 && $admin_theme != $theme) {
-// 				drupal_set_message(t('Please note that the administration theme is still set to the %admin_theme theme; consequently, the theme on this page remains unchanged. All non-administrative sections of the site, however, will show the selected %selected_theme theme by default.', array(
-//           '%admin_theme' => $themes[$admin_theme]->info['name'],
-//           '%selected_theme' => $themes[$theme]->info['name'],
-// 				)));
-// 			}
-// 			else {
-//				drupal_set_message(t('%theme is now the default theme.', array('%theme' => $themes[$theme]->info['name'])));
-//			}
-		}
-		else {
-//			drupal_set_message(t('The %theme theme was not found.', array('%theme' => $theme)), 'error');
 		}
 
 }
 
-function call_php_func_form($form_state, $func, $type, $module, $name, $filepath, $args) {
+function call_php_func_form($form, $form_state, $func, $type, $module, $name, $filepath, $args) {
 	return array(
     '#call_php_func' => array(
       'function' => $func,
@@ -466,6 +448,7 @@ function call_php_func_form($form_state, $func, $type, $module, $name, $filepath
 function call_php_func_form_submit($form, &$form_state) {
 	$values = $form['#call_php_func'];
 	_call_php_func_include_files($values);
+	
 	call_user_func_array($values['function'], $values['arguments']);
 }
 

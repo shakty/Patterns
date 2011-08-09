@@ -1,0 +1,30 @@
+# YAML PHP Function Pattern
+# QScience
+
+info:
+  title: Execute PHP functions
+  description: as title
+  author: QScience
+  category: QScience
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qscience.csko.hu
+
+actions: 
+
+  - tag: call_php_func
+    function: var_dump
+    arguments:
+        - abcString
+        - defArray:
+            - item1
+            - item2
+
+# TODO: create an example
+#  - tag: call_php_func
+#    function:
+#    arguments:
+#    type: inc
+#    module: my_module
+#    name: include_name
