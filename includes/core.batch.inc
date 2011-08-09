@@ -252,6 +252,7 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
       ////////////////////
       // Execute action
       ///////////////////
+      var_dump($form_id);
       patterns_execute_action($form_id, $action_state, $params);
 
       if ($message = patterns_error_get_last('execute', $index, $action_description, $pattern_title, $pattern_file)) {

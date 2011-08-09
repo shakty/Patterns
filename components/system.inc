@@ -74,6 +74,7 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
           $data = array($data);
         case 'variables':
           // Make a <variables>modulename</variables> style tag work
+
           if (!$data[0]) {
             if ($data['variable'] && isset($data['variable'][0])) {
               $data = $data['variable'];
@@ -93,12 +94,14 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
           for ($i=0, $total = count($data); $i < $total; $i++) {
             $item = &$data[$i];
 
-            if (!isset($item['value']) && !$item['delete']) {
+            if (!isset($item['value']) && (!isset($item['delete']) || !$item['delete'])) {
               $value = $item;
               unset($value['name']);
               $item = array('name' => $item['name'], 'value' => $value);
             }
+
           }
+
         break;
         case 'modules':
           // Make a <modules>modulename</modules> style tag work
@@ -309,12 +312,12 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         $names = array();
         for ($i = 0; $variable = $data[$i]; $i++) {
           if ($variable['delete']) {
-            variable_del($variable['name']);
-          }
+            variable_del($variable['name']);          }
           else {
             $var = variable_get($variable['name'], NULL);
             if (is_array($var)) {
-              // make sure we don't loose parts of the array that were not defined by pattern's action
+              // make sure we don't lose parts of the array that were not defined by pattern's action
+              // TODO: is this a good practice?
               $var = array_merge($var, $variable['value']);
               variable_set($variable['name'], $var);
             }
@@ -322,10 +325,11 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
               variable_set($variable['name'], $variable['value']);
             }
           }
+          //die();
           $names[] = $variable['name'];
         }
 
-        return t('Variables %vars updated.', array('%vars' => implode(', ', $names)));
+        return t('Variable(s) %vars updated.', array('%vars' => implode(', ', $names)));
       }
       elseif ($id == 'set_active_theme') {
         $data['op'] = t('Save configuration');
