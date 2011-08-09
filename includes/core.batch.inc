@@ -43,7 +43,6 @@ function patterns_execute_pattern($pattern, $params = array()) {
   }
   
   // Install modules, if necessary
-  // NOT UPDATED to DR7!
   $result = patterns_install_modules($modules);
   if (!$result['success']) {
     drupal_set_message($result['error_message'], 'error');
@@ -330,7 +329,6 @@ function patterns_execute_action($form_id, &$form_state, $params) {
   $batch =& batch_get();
   $batch_clone = $batch;
   $batch = NULL;
-
   $return = call_user_func_array('drupal_form_submit', $args);
   
   patterns_executing(FALSE);

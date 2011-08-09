@@ -1,5 +1,7 @@
 <?php
 /*
+ * TODO: module enabling/disabling is done using a workaround because
+ *       the form submitting way does not work for some reason
  * @file
  * Patterns component for system related operations.
  */
@@ -116,11 +118,11 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
             unset($data['module']);
           }
 
-          for ($i = 0; $item = $data[$i]; $i++) {
+          foreach ($data as &$item) {
             // Ensure that modules with tags like <module>modulename</module>
             // are represented as an array instead of a string
             if (is_string($item)) {
-              $data[$i] = array('value' => $item);
+              $item = array('value' => $item);
             }
           }
           
@@ -177,7 +179,7 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         }
 
         $modules = module_list();
-        for ($i = 0; $item = $data[$i]; $i++) {
+        for ($i = 0; isset($data[$i]) && ($item = $data[$i]); $i++) {
           $module = $item['value'];
 
           // Ensure a module can be disabled safely
@@ -280,6 +282,7 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
     // Prepare for valid processing of this type of component
     case 'build':
       if ($id == 'system_modules') {
+
         module_load_include('inc', 'system', 'system.admin');
         $modules = module_list();
 
@@ -288,7 +291,6 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         if (!is_array($modules_info)) {
           $modules_info = system_rebuild_module_data();
         }
-
         for ($i = 0; $item = $data[$i]; $i++) {
           $module = $item['value'];
 
@@ -299,9 +301,19 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
             }
           }
           $data['status'] += array($module => $module);
-          unset($data[$i]);
+          //unset($data[$i]);
         }
-        
+        // WORKAROUND
+//         var_dump($data);
+        $data = $data[0];
+        $module=$data['value'];
+        if (!empty($data['delete'])) {
+        	//var_dump($module, array($module));
+        	module_disable(array($module), TRUE);
+        }
+        else {
+        	module_enable(array($module), TRUE);
+        }       
         if (!empty($data['delete'])) {
           $data['status']['delete'] = 1;
           unset($data['delete']);
@@ -326,7 +338,6 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
               variable_set($variable['name'], $variable['value']);
             }
           }
-          //die();
           $names[] = $variable['name'];
         }
 
