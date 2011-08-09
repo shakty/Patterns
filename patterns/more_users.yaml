@@ -14,7 +14,8 @@ info:
 actions:
   
   - tag: user 
-      name: fujico
+      uid: 3
+      name: fujicoAsdasda
       mail: fujico@mailinator.org     
       password: fujico
       timezone: Europe/Berlin
