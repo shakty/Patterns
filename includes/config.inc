@@ -20,7 +20,7 @@ function patterns_permission() {
 function patterns_help($section, $arg = NULL) {
   $output = '';
   switch ($section) {
-    case 'admin/build/patterns':
+    case 'admin/patterns':
       $output = t('Patterns will be looked for in files under the following locations:') . ' ' . theme('item_list', array('items' => patterns_paths()));
       break;
   }

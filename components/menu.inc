@@ -201,7 +201,7 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
           if (empty($menu)) {
             if (strpos($data['menu_name'], 'menu-') === 0) {
               // this ensures that same pattern can be re-run without getting "menu exists" error
-              // $a is $form_state array that will be passed to drupal_execute()
+              // $a is $form_state array that will be passed to drupal_form_submit()
               $a['values']['menu_name'] = str_replace('menu-', '', $data['menu_name']);
             }
             return 'add';

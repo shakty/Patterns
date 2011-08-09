@@ -4,8 +4,6 @@
  * Implementation of hook_install().
  */
 function patterns_install() {
-  // Automatically done in DR7
-  //drupal_install_schema('patterns');
 }
 
 /**
@@ -94,28 +92,4 @@ function patterns_schema() {
  * Implementation of hook_uninstall().
  */
 function patterns_uninstall() {
-  drupal_uninstall_schema('patterns');
 }
-
-
-
-
-// Included in the new schema 7.0
-
-/**
- * Implementation of hook_update_N().
- */
-//function patterns_update_6100() {
-//  $ret = array();
-//  
-//  // Increase size of the field 'pattern'.
-//  $new_field = array(
-//    'type' => 'text',
-//    'size' => 'medium',
-//    'not null' => TRUE,
-//    'description' => 'A serialized array containing pattern code.',
-//  );
-//  db_change_field($ret, 'patterns', 'pattern', 'pattern', $new_field);
-//  
-//  return $ret;
-//}
