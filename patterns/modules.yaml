@@ -17,8 +17,19 @@ modules:
 actions: 
 
   - tag: modules
-      value: blog
-      delete: 1
+    - value: blog
+    delete: 1
+
+# TODO: this is not working as expected
+#  - tag: modules
+#     value: blog
+#     delete: 1
+
+  - tag: modules
+    - value: admin_menu
+    - value: blog
+    - value: forum
+    disable: 1
 
   - tag: modules
     value: devel
@@ -26,3 +37,4 @@ actions:
   - tag: modules
     value: search
 
+ 
