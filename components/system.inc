@@ -138,7 +138,7 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         break;
         case 'form':
           // attempt to load required include file
-          $menu = menu_router_build(TRUE);
+          list($menu,$masks) = menu_router_build();
           foreach ($menu as $item) {
             if (isset($item['page arguments'][0]) && $item['page arguments'][0] == $data['form_id']) {
               $data['include'] = $item['include file'];
