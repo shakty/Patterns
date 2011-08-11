@@ -3,7 +3,7 @@
 
 info:
   title: add/edit/delete menu
-  description: Based on http://drupal.org/node/516332
+  description: Based on http://drupal.org/node/408952
   author: QScience
   category: QScience
   version: 1.0
@@ -28,4 +28,3 @@ actions:
     mlid: (menu link id)
     disable:1
     
-	  
