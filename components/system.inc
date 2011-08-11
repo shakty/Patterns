@@ -139,7 +139,7 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         break;
         case 'form':
           // attempt to load required include file
-          list($menu,$masks) = menu_router_build();
+          list($menu, $masks) = menu_router_build();
           foreach ($menu as $item) {
             if (isset($item['page arguments'][0]) && $item['page arguments'][0] == $data['form_id']) {
               $data['include'] = $item['include file'];
@@ -184,10 +184,10 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
 
           // Ensure a module can be disabled safely
           if ($delete) {
-          	if (array_key_exists($module, $modules_info)) { // Module is available
-          	  if (array_key_exists($module, $modules)) { // Module is enabled
-          	  	/*
-          	  	 * TODO: no more dependents field in Drupal7.x
+            if (array_key_exists($module, $modules_info)) { // Module is available
+              if (array_key_exists($module, $modules)) { // Module is enabled
+              /*
+          	   * TODO: no more dependents field in Drupal7.x
                 foreach ((array)$modules_info[$module]->info['dependents'] as $dependent) { // Dependency check
                   if (array_key_exists($dependent, $modules)) {
                     $remove[] = $i;
@@ -198,14 +198,14 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
                 */
               }
               else {
-              	$remove[] = $i;
-              	drupal_set_message(t('Warning: Did not disable %module because it is already disabled.', array('%module' => $module)), "warning");
+                $remove[] = $i;
+                drupal_set_message(t('Warning: Did not disable %module because it is already disabled.', array('%module' => $module)), "warning");
               }
-          	}
-          	else {
-          		$remove[] = $i;
-          		drupal_set_message(t('Warning: Could not disable %module because it is missing.', array('%module' => $module)), "warning");
-          	}
+            }
+            else {
+              $remove[] = $i;
+              drupal_set_message(t('Warning: Could not disable %module because it is missing.', array('%module' => $module)), "warning");
+            }
           }
           // Ensure a module and all of its dependencies exist
           else {
@@ -227,12 +227,13 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
               }
             }
             else {
-            	drupal_set_message(t('Warning: Did not enable %module because it is already enabled.', array('%module' => $module)), "warning");
+              drupal_set_message(t('Warning: Did not enable %module because it is already enabled.', array('%module' => $module)), "warning");
             }
             
           }
         }
         if (!empty($remove)) {
+          $result = array();
           foreach ($data as $key => $item) {
             if (!in_array($key, $remove)) $result[$key] = $item;
           }
@@ -308,18 +309,18 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         $enabled = $disabled = array();
         $delete = (!empty($data['delete']) || !empty($item['delete']));
         for ($i = 0; $module = $data[$i]; $i++) {
-        	if ($delete) {
-                module_disable(array($module['value']), TRUE);
-                $disabled[] = $module['value'];
-        	}
-        	else {
-        		if (!module_enable(array($module['value']), TRUE)) {
-        			drupal_set_message(t('Warning: Could not enable %module because a dependency is missing.', array('%module' => $module)), "warning");
-        		}
-        		else {
-        			$enabled[] = $module['value'];
-        		}
-        	}
+          if ($delete) {
+            module_disable(array($module['value']), TRUE);
+            $disabled[] = $module['value'];
+          }
+          else {
+            if (!module_enable(array($module['value']), TRUE)) {
+              drupal_set_message(t('Warning: Could not enable %module because a dependency is missing.', array('%module' => $module)), "warning");
+            }
+            else {
+              $enabled[] = $module['value'];
+            }
+          }
 
         }
  

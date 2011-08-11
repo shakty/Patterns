@@ -213,8 +213,9 @@
         else {
           // Ste: was
           //return 'user_register';
-          if(!$data['delete'])
-          return 'user_register_form';
+          if (!$data['delete']) {
+            return 'user_register_form';
+          }
         }
       }
       elseif ($id == 'role') {
@@ -388,19 +389,19 @@
       elseif ($id == 'user_cancel_confirm_form') {
         module_load_include('inc', 'user', 'user.pages');        
         $data['confirm'] = 1;
-        switch ($data['delete']){
-        	case '1' :
-        		$data['user_cancel_method'] = 'user_cancel_block';
-        		break;
-        	case '2' :
-        		$data['user_cancel_method'] = 'user_cancel_block_unpublish';
-        		break;
-        	case '3' :
-        		$data['user_cancel_method'] = 'user_cancel_reassign';
-        		break;
-        	case '4' :
-        		$data['user_cancel_method'] = 'user_cancel_delete';
-        		break;        	
+        switch ($data['delete']) {
+          case '1' :
+            $data['user_cancel_method'] = 'user_cancel_block';
+            break;
+          case '2' :
+            $data['user_cancel_method'] = 'user_cancel_block_unpublish';
+            break;
+          case '3' :
+            $data['user_cancel_method'] = 'user_cancel_reassign';
+            break;
+          case '4' :
+            $data['user_cancel_method'] = 'user_cancel_delete';
+            break;
         }
       }
       elseif ($id == 'user_admin_role' || $id == 'user_admin_new_role') {
