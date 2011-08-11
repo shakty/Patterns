@@ -11,8 +11,6 @@ info:
   author_email: sbalietti@ethz.ch
   author_website: qscience.csko.hu
 
-modules:
-  - tracker
 
 actions: 
 

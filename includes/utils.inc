@@ -151,12 +151,12 @@ function patterns_edit($form, &$form_state, $pattern) {
   
   $form['run'] = array(
     '#prefix' => '<span style=\'margin-right:10px\'>',  
-    '#markup' => l(t('Run current pattern'),'admin/patterns/enable/'.$pattern->pid),
+    '#markup' => l(t('Run current pattern'), 'admin/patterns/enable/' . $pattern->pid),
     '#suffix' => '</span> ',
   );
   
   $form['cancel'] = array(
-    '#markup' => l(t('Cancel'),'admin/patterns'),
+    '#markup' => l(t('Cancel'), 'admin/patterns'),
   );
   
 //  $form['run'] = array(

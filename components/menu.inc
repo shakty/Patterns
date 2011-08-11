@@ -75,7 +75,7 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
     case 'pre-validate':
       switch ($id) {
         case 'menu':
-          if ($data['delete'] && empty($data['menu_name'])) {
+          if (isset($data['delete']) && empty($data['menu_name'])) {
             return t('"menu_name" is required.');
           }
           if (!empty($data['menu_name']) && preg_match('/[^a-z0-9\-]/', $data['menu_name'])) {
@@ -157,7 +157,7 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
                 unset($data['menu']);
               }
               else {
-                return t("Menu name couldn't be determined accurately because more then one menu has exactly the same title. You need to provide menu_name instead of the title: '%title'", array('%title' => $data['menu']));
+                return t("Menu name couldn't be determined accurately because more than one menu has exactly the same title. You need to provide menu_name instead of the title: '%title'", array('%title' => $data['menu']));
               }
             }
           }
@@ -197,8 +197,9 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
     case 'params':
       switch ($id) {
         case 'menu_edit_menu':
+          
           $menu = menu_load($data['menu_name']);
-          if (empty($menu)) {
+          if (!$menu) {
             if (strpos($data['menu_name'], 'menu-') === 0) {
               // this ensures that same pattern can be re-run without getting "menu exists" error
               // $a is $form_state array that will be passed to drupal_form_submit()

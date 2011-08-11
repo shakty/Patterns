@@ -1,0 +1,23 @@
+# YAML Menus Pattern
+# QScience
+
+info:
+  title: Menus
+  description: Based on http://drupal.org/node/408952
+  author: QScience
+  category: QScience
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qscience.csko.hu
+
+#modules:
+#  - menu
+
+actions: 
+
+  - tag: menu
+#    delete: 1
+    name: menu-footer-links
+    title: Footer Links123456
+    description: Menu description.
