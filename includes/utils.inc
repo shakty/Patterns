@@ -101,11 +101,12 @@ function patterns_edit_page($pid = NULL) {
   $info['Path'][] = $pattern->file;
   $info['Enabled'][] = t('Enabled:');
   $info['Enabled'][] = ($pattern->enabled) ? t('Yes') : t('No');
-  $info['Edited'][] = t('Edited:');
   
-  $info['Edited'][] = (variable_get(PATTERNS_FAILED_EDIT) == '' ) ?  
-                                                                   t('Latest version of the pattern displayed.') :
-                                                                   t('This is a NOT saved, edited version of the original pattern!!') ;
+//  $info['Edited'][] = t('Edited:');
+//  
+//  $info['Edited'][] = (variable_get(PATTERNS_FAILED_EDIT) == '' ) ?  
+//                                                                   t('Latest version of the pattern displayed.') :
+//                                                                   t('This is a NOT saved, edited version of the original pattern!!') ;
                                                                       
   
   
@@ -115,21 +116,7 @@ function patterns_edit_page($pid = NULL) {
   $form = drupal_get_form('patterns_edit', $pattern);
   $out.=drupal_render($form);
   
-// Load the CodeMirror Editor if installed in the libraries folder
-  $co2_path = libraries_get_path('codemirror2');
-  if (!empty($co2_path)) {
-    $co2_js = $co2_path . '/lib/codemirror.js';
-    $co2_css = $co2_path . '/lib/codemirror.css';
-    $co2_mode_yaml = $co2_path . '/mode/yaml/yaml.js';
-    $co2_css_theme = $co2_path . '/theme/default.css';
-    
-    drupal_add_css($co2_css);
-    drupal_add_css($co2_css_theme);
-    drupal_add_js($co2_js);
-    drupal_add_js($co2_mode_yaml);
-    
-    drupal_add_js(drupal_get_path('module', 'patterns').'/js/editor.js');
-  }
+  patterns_load_co2 ();
   
   return $out;
 }
@@ -295,7 +282,8 @@ function patterns_edit_submit($form, &$form_state) {
           patterns_save_pattern($pattern, $path, $form_state['values']['name']);
           drupal_set_message(t('%name was saved.', array('%name' => $form_state['values']['name'])));
           $form_state['redirect'] = 'admin/patterns';
-          _patterns_clear_failed_edit();
+          // Not for now
+          //_patterns_clear_failed_edit();
         }
         else {
           drupal_set_message(t("Pattern '%name' couldn't be saved. Make sure edited code is well-formed.", array('%name' => $form_state['values']['name'])), 'error');
@@ -579,6 +567,33 @@ function patterns_token_values($type, $object = NULL, $options = array()) {
 
 /**
  * 
+ * Load the Co2 Editing TextArea
+ * 
+ */
+function patterns_load_co2 () {
+  
+// Load the CodeMirror Editor if installed in the libraries folder
+  $co2_path = libraries_get_path('codemirror2');
+  if (!empty($co2_path)) {
+    $co2_js = $co2_path . '/lib/codemirror.js';
+    $co2_css = $co2_path . '/lib/codemirror.css';
+    $co2_mode_yaml = $co2_path . '/mode/yaml/yaml.js';
+    $co2_css_theme = $co2_path . '/theme/default.css';
+    
+    
+    drupal_add_css($co2_css);
+    drupal_add_css($co2_css_theme);
+    drupal_add_js($co2_js);
+    drupal_add_js($co2_mode_yaml);
+    
+    // Adding Pattern Customization for Co2
+    drupal_add_css(drupal_get_path('module', 'patterns').'/css/editor.css');
+    drupal_add_js(drupal_get_path('module', 'patterns').'/js/editor.js');
+  }
+}
+
+/**
+ * 
  * @TODO: find a suitable place for this, and check who is calling it
  * 
  * @param unknown_type $b
@@ -592,7 +607,6 @@ function patterns_executing($b = NULL) {
 
   return $executing;
 }
-
 
 /**
  * Helper function to get PHPDoc @version tag from a file
