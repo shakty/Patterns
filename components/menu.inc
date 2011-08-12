@@ -138,9 +138,9 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
           $data['enabled'] = 1;
           unset($data['enable']);
         }
-        $d = array();
-        $d['menu'] = $data;
-        $data = $d;
+      //  $d = array();
+      //  $d['menu'] = $data;
+      //  $data = $d;
       }
       return $data;
     break;
@@ -151,9 +151,9 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
         case 'menu_edit_item':
 
           if (empty($data['menu_name']) && !empty($data['menu'])) {
-            if ($count = db_result(db_query("SELECT COUNT(*) FROM {menu_custom} WHERE title = '%s'", $data['menu']))) {
+            if ($count = db_query("SELECT COUNT(*) FROM {menu_custom} WHERE title = :menu", array('menu' => $data['menu']))->fetchField()) {
               if ($count == 1) {
-                $data['menu_name'] = db_result(db_query("SELECT menu_name FROM {menu_custom} WHERE title = '%s'", $data['menu']));
+                $data['menu_name'] = db_query("SELECT menu_name FROM {menu_custom} WHERE title = :menu", array('menu' => $data['menu']))->fetchField();
                 unset($data['menu']);
               }
               else {
@@ -169,11 +169,11 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
           if ($data['parent'] == '0') {
             $data['parent'] = $data['menu_name'] . ':0';
           }
-          elseif (is_numeric($data['parent']) && !empty($data['menu_name']) && db_result(db_query("SELECT mlid FROM {menu_links} WHERE menu_name = '%s' AND mlid = %d", $data['menu_name'], $data['parent']))) {
+          elseif (is_numeric($data['parent']) && !empty($data['menu_name']) && db_query("SELECT mlid FROM {menu_links} WHERE menu_name = :menu AND mlid = :mlid", array('menu' => $data['menu_name'],'mlid'=>$data['parent']))->fetchField()) {
             $data['parent'] = $data['menu_name'] . ':' . $data['parent'];
           }
           // @TODO this may not work if there is more then one menu item with the same title within the same menu
-          elseif (is_string($data['parent']) && !empty($data['menu_name']) && $plid = db_result(db_query("SELECT mlid FROM {menu_links} WHERE menu_name = '%s' AND link_title = '%s'", $data['menu_name'], $data['parent']))) {
+          elseif (is_string($data['parent']) && !empty($data['menu_name']) && $plid = db_query("SELECT mlid FROM {menu_links} WHERE menu_name = :menu AND link_title = :title", array('menu' => $data['menu_name'],'title'=>$data['parent']))->fetchField()) {
             $data['parent'] = $data['menu_name'] . ':' . $plid;
           }
           elseif (empty($data['mlid']) && empty($data['parent']) && !empty($data['link_title']) && !empty($data['link_path'])) {
@@ -182,7 +182,7 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
 
           if (!empty($data['parent'])) {
             list($menu_name, $mlid) = explode(':', $data['parent']);
-            if ($mlid != 0 && !db_result(db_query("SELECT count(*) FROM {menu_links} WHERE menu_name = '%s' AND mlid = %d", $menu_name, $mlid))) {
+            if ($mlid != 0 && !db_query("SELECT count(*) FROM {menu_links} WHERE menu_name = :menu AND mlid = :mlid",array('menu' => $menu_name,'mlid'=>$mlid))->fetchField()) {
               return t('"parent" is not valid.');
             }
           }
@@ -246,7 +246,7 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
         if ($data['mlid']) {
           return $data['mlid'];
         }
-        elseif ($mlid = db_result(db_query("SELECT mlid FROM {menu_links} WHERE menu_name = '%s' AND link_path = '%s' AND link_title = '%s' ORDER BY mlid DESC", $data['menu_name'], $data['link_path'], $data['link_title']))) {
+        elseif ($mlid = db_query("SELECT mlid FROM {menu_links} WHERE menu_name = :menu AND link_path = :path AND link_title = :title ORDER BY mlid DESC", array('nemu'=>$data['menu_name'],'path'=> $data['link_path'], 'title'=>$data['link_title']))->fetchField()) {
           return $mlid;
         }
       }
