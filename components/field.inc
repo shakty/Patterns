@@ -200,10 +200,6 @@ function field_patterns($op, $id = NULL, &$data = NULL, $a = NULL) {
   	          $data[$fname]['und'] = $data['default'];
   	          unset($data['default']); 
   	        }
-          
-  	      // All together now  
-          //}
-          //else if ($id = 'instance') {
           	
             // INSTANCE
             
@@ -235,16 +231,16 @@ function field_patterns($op, $id = NULL, &$data = NULL, $a = NULL) {
             $data['instance']['widget']['weight'] = $data['fields'][$EXISTING]['weight'];
             $data['instance']['widget']['type'] = $data['fields'][$EXISTING]['widget_type'];
             
-  //          $data['instance']['widget']['module'] = 'taxonomy';
-  //          $data['instance']['widget']['active'] = 0;
-  //          
-  //          $data['instance']['display']['weight'] = 45;
-  //          $data['instance']['display']['type'] = 'taxonomy_term_reference_link';
-  //          $data['instance']['display']['module'] = 'taxonomy';
-  //          $data['instance']['display']['label'] = 'above';
-  //          $data['instance']['display']['settings'] = array();
+            $data['instance']['widget']['module'] = 'taxonomy';
+            $data['instance']['widget']['active'] = 0;
+            
+            $data['instance']['display']['weight'] = 45;
+            $data['instance']['display']['type'] = 'taxonomy_term_reference_link';
+            $data['instance']['display']['module'] = 'taxonomy';
+            $data['instance']['display']['label'] = 'above';
+            $data['instance']['display']['settings'] = array();
   
-            //$data['instance']['default_value_widget']  = 'user';
+            $data['instance']['default_value_widget']  = 'user';
             
       
           }// End: create field/instance
