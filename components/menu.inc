@@ -215,11 +215,11 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
           return array(menu_load($data['menu_name']));
         break;
         case 'menu_edit_item':
-          if (!$data['menu']['mlid']) {
-            return array('add', NULL, menu_load($data['menu']['menu_name']));
+          if (!$data['mlid']) {
+            return array('add', NULL, menu_load($data['menu_name']));
           }
           else {
-            return array('edit', menu_link_load($data['menu']['mlid']), NULL);
+            return array('edit', menu_link_load($data['mlid']), NULL);
           }
         break;
         case 'menu_item_delete_form':
