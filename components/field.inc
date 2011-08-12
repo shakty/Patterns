@@ -8,13 +8,14 @@ function field_patterns($op, $id = NULL, &$data = NULL, $a = NULL) {
   switch ($op) {
     // Return the valid tags that this component can prepare and process
     case 'tags':
-      return array('field,instance');
+      return array('field','instance'); // instance not used now
     break;
 
     // Return a list of forms/actions this component can handle
     case 'actions':
       return array(
-        'field_ui_field_overview_form' => t('Add/Create a Fields'),
+        'field_ui_field_overview_form' => t('Add/Create a Field'),
+        'field_ui_field_delete_form' => t('Delete a Field/Istance'),
         //'field_ui_field_edit_form' => t('Define extra settings for Instances') // to edit a field already created
         'field_ui_field_settings_form' => t('Define extra settings for Instances'),
       );
@@ -22,204 +23,234 @@ function field_patterns($op, $id = NULL, &$data = NULL, $a = NULL) {
 
     // Prepare the data
     case 'prepare':
+      
+      // @TODO: remove unnecessary stuff from $data array;
+      
+      
 
       if (isset($data['name'])) {
-
-      	// Is a new field?
-      	$all_fields = field_info_fields();     
-        $EXISTING = (array_key_exists($PREFIX.$data['name'],$all_fields)) ? $EXISTING_F : $NEW_F;
-
-        // NAME
-        $fname = $PREFIX . $data['name'];
-        $data['fields'][$EXISTING]['field_name'] = $fname;
-        // @TODO: Check if we need to unset it 
-        unset($data['name']);
-              
+  
         // FIELD
         if ($id == 'field') {
-        
-	        $data['fields'] = array();
-	        
-	        // Setting default values which can be overriden later
-	        
-	        $default_type = 'text'; //text_textfield';
-	        $default_parent = '';
-	        $default_weight = 1;
-	        $default_widget_type = 'text_textfield';
-	        $default_cardinality = 1;
-	        $default_label = $fname;
-	        
-	        // Not needed anymore?
-	        //$default_storage_type = 'field_sql_storage';
-
-	        // LABEL
-	        if (isset($data['label'])) {
-	          $data['fields'][$EXISTING]['label'] = $data['label'];
-	          unset($data['label']);
-	        }
-	        else {
-	          $data['fields'][$EXISTING]['label'] = $default_label;
-	        }
-	       
-	        // WEIGHT
-	        if (isset($data['weight'])) {
-            $data['fields'][$EXISTING]['weight'] = $data['weight'];
-            unset($data['weight']);
-          }
-          else {  
-            $data['fields'][$EXISTING]['weight'] = $default_weight;
-          }
           
-          // PARENT
-          if (isset($data['parent'])) {
-            $data['fields'][$EXISTING]['parent'] = $data['parent'];
-            unset($data['parent']);
-          }
-          else {  
-            $data['fields'][$EXISTING]['parent'] = $default_parent;
-          }
-          
-	        // TYPE
-	        if (isset($data['type'])) {
-	          $data['fields'][$EXISTING]['type'] = $data['type']; 
-	          unset($data['type']);
-	        }
-	        else {
-	          $data['fields'][$EXISTING]['type'] = $default_type;
-	        }
-	        
-	        // WIDGET
-	        
-	        // @TODO: check for incompatible widget_type and field_type
-	        // @TODO: add aliases for long names
-	        
-	        // Term Reference:
-	        // taxonomy_autocomplete
-	        // options_buttons
-	        if (isset($data['widget'])) {
-	          
-	          switch ($data['widget']) {
-	
-	            case 'autocomplete':
-	              $w = 'taxonomy_autocomplete';
-	              break;
-	            case 'buttons':
-	              $w = 'options_buttons';
-	              break;
-	            default:
-	              $w = $data['widget'];
-	          }        
-	          $data['fields'][$EXISTING]['widget_type'] = $w;
-	          unset($data['widget']);
-	        }
-	        else {
-	          $data['fields'][$EXISTING]['widget_type'] =  $default_widget_type;
-	        }
-	        
-	        
-	        // FIELD-SPECIFIC OPTIONS
-	        switch ($data['fields'][$EXISTING]['type']) {
-	          
-	          case 'taxonomy_term_reference':
-	            if (isset($data['vocabulary'])) {
-	              $data['field']['settings']['allowed_values'][0]['vocabulary'] = $data['vocabulary'];
-	              unset($data['vocabulary']);
-	            }
-	            else {
-	              //@TODO If not vocabulary selected pick up the first one
-	            }
-	        
-	        }  
-	        
-	        // INSTANCE
-	        
-	        
-	        // CARDINALITY
-	        if (isset($data['cardinality'])) {
-	           //$c = array('und' => array(array('value' =>$data['cardinality'],'safe_value'=>$data['cardinality'])));
-	           $data['field']['cardinality'] = $data['cardinality'];
-	           unset($data['cardinality']);
-	        }
-	        else {
-	          $data['field']['cardinality'] = $default_cardinality;
-	        }
-	                
-	        // REQUIRED
-	        if (isset($data['required']) && $data['required']) {
-	          $data['instance']['required'] = 1;
-	          unset($data['required']);
-	        }
-	        
-	        // PRESENTED AT REGISTRATION TIME
-	        if (isset($data['registration']) && $data['registration']) {
-	          $data['instance']['settings']['user_register_form'] = 1;
-	          unset($data['registration']);
-	        }
-	        
-//	        if (isset($data['storage'])) {
-//	          $data['instance']['settings']['storage']['type'] = $data['storage'];
-//	          unset($data['storage']);
-//	        }
-//	        else {
-//	          $data['instance']['settings']['storage']['type'] = $default_storage_type;
-//	        }
-	        
-	        if (isset($data['default'])) {
-	          $data[$fname]['und'] = $data['default'];
-	          unset($data['default']); 
-	        }
-        }
-        else if ($id = 'instance') {
-        	
-          // INSTANCE
-          
-          $data['instance']['label'] = $data['fields'][$EXISTING]['label'];
-          $data['instance']['field_name'] = $fname;  
-          
-          if (isset($data['entity'])) {
-            $data['instance']['entity_type'] = $data['entity'];
-            unset($data['entity']); 
-          }
-          
-          if (isset($data['bundle'])) {
-            $data['instance']['bundle'] = $data['bundle'];
-            unset($data['bundle']); 
-          }
-
-          // HELP DESCR
-          if (isset($data['description'])) {
-            $data['instance']['description'] = $data['description'];
-            unset($data['description']);
-          }    
-
-          // WIDGET
-          if (isset($data['description'])) {
-            $data['instance']['description'] = $data['fields'][$EXISTING]['weight'];
-            unset($data['description']);
-          }   
-          
-          $data['instance']['widget']['weight'] = $data['fields'][$EXISTING]['weight'];
-          $data['instance']['widget']['type'] = $data['fields'][$EXISTING]['widget_type'];
-          
-//          $data['instance']['widget']['module'] = 'taxonomy';
-//          $data['instance']['widget']['active'] = 0;
-//          
-//          $data['instance']['display']['weight'] = 45;
-//          $data['instance']['display']['type'] = 'taxonomy_term_reference_link';
-//          $data['instance']['display']['module'] = 'taxonomy';
-//          $data['instance']['display']['label'] = 'above';
-//          $data['instance']['display']['settings'] = array();
-
-          //$data['instance']['default_value_widget']  = 'user';
-          
-    
-        
-        }
-        
+          // DELETE
+          if (isset($data['delete'])) {
+            
+            if (isset($data['name'])) {
+              $data['field_name'] = $data['name'];
+              unset($data['name']); 
+            }
+             
+            if (isset($data['entity'])) {
+              $data['entity_type'] = $data['entity'];
+              unset($data['entity']); 
+            }
+            
+            // not relevant
+//            if (isset($data['bundle'])) {
+//              $data['bundle'] = $data['bundle'];
+//            }
+  
+            $data['confirm'] =  1;
+            $data['op'] = 'Delete';
 
         
-      }
+          }// End: delete
+          
+          // CREATE
+          else {
+                 
+            $data['fields'] = array();
+        
+            // Is a new field?
+            $all_fields = field_info_fields();     
+            $EXISTING = (array_key_exists($PREFIX.$data['name'],$all_fields)) ? $EXISTING_F : $NEW_F;
+            
+            // NAME
+            $fname = $PREFIX . $data['name'];
+            $data['fields'][$EXISTING]['field_name'] = $fname;
+            unset($data['name']);
+            
+  	        // Setting default values which can be overriden later
+  	        
+  	        $default_type = 'text'; //text_textfield';
+  	        $default_parent = '';
+  	        $default_weight = 1;
+  	        $default_widget_type = 'text_textfield';
+  	        $default_cardinality = 1;
+  	        $default_label = $fname;
+  	        
+  	        // Not needed anymore?
+  	        $default_storage_type = 'field_sql_storage';
+  
+  	        // LABEL
+  	        if (isset($data['label'])) {
+  	          $data['fields'][$EXISTING]['label'] = $data['label'];
+  	          unset($data['label']);
+  	        }
+  	        else {
+  	          $data['fields'][$EXISTING]['label'] = $default_label;
+  	        }
+  	       
+  	        // WEIGHT
+  	        if (isset($data['weight'])) {
+              $data['fields'][$EXISTING]['weight'] = $data['weight'];
+              unset($data['weight']);
+            }
+            else {  
+              $data['fields'][$EXISTING]['weight'] = $default_weight;
+            }
+            
+            // PARENT
+            if (isset($data['parent'])) {
+              $data['fields'][$EXISTING]['parent'] = $data['parent'];
+              unset($data['parent']);
+            }
+            else {  
+              $data['fields'][$EXISTING]['parent'] = $default_parent;
+            }
+            
+  	        // TYPE
+  	        if (isset($data['type'])) {
+  	          $data['fields'][$EXISTING]['type'] = $data['type']; 
+  	          unset($data['type']);
+  	        }
+  	        else {
+  	          $data['fields'][$EXISTING]['type'] = $default_type;
+  	        }
+  	        
+  	        // WIDGET
+  	        
+  	        // @TODO: check for incompatible widget_type and field_type
+  	        // @TODO: add aliases for long names
+  	        
+  	        // Term Reference:
+  	        // taxonomy_autocomplete
+  	        // options_buttons
+  	        if (isset($data['widget'])) {
+  	          
+  	          switch ($data['widget']) {
+  	
+  	            case 'autocomplete':
+  	              $w = 'taxonomy_autocomplete';
+  	              break;
+  	            case 'buttons':
+  	              $w = 'options_buttons';
+  	              break;
+  	            default:
+  	              $w = $data['widget'];
+  	          }        
+  	          $data['fields'][$EXISTING]['widget_type'] = $w;
+  	          unset($data['widget']);
+  	        }
+  	        else {
+  	          $data['fields'][$EXISTING]['widget_type'] =  $default_widget_type;
+  	        }
+  	        
+  	        
+  	        // FIELD-SPECIFIC OPTIONS
+  	        switch ($data['fields'][$EXISTING]['type']) {
+  	          
+  	          case 'taxonomy_term_reference':
+  	            if (isset($data['vocabulary'])) {
+  	              $data['field']['settings']['allowed_values'][0]['vocabulary'] = $data['vocabulary'];
+  	              unset($data['vocabulary']);
+  	            }
+  	            else {
+  	              //@TODO If not vocabulary selected pick up the first one
+  	            }
+  	        
+  	        }  
+  	        
+  	        // INSTANCE
+  	        
+  	        
+  	        // CARDINALITY
+  	        if (isset($data['cardinality'])) {
+  	           //$c = array('und' => array(array('value' =>$data['cardinality'],'safe_value'=>$data['cardinality'])));
+  	           $data['field']['cardinality'] = $data['cardinality'];
+  	           unset($data['cardinality']);
+  	        }
+  	        else {
+  	          $data['field']['cardinality'] = $default_cardinality;
+  	        }
+  	                
+  	        // REQUIRED
+  	        if (isset($data['required']) && $data['required']) {
+  	          $data['instance']['required'] = 1;
+  	          unset($data['required']);
+  	        }
+  	        
+  	        // PRESENTED AT REGISTRATION TIME
+  	        if (isset($data['registration']) && $data['registration']) {
+  	          $data['instance']['settings']['user_register_form'] = 1;
+  	          unset($data['registration']);
+  	        }
+  	        
+  	        // STORAGE ENGINE
+  	        if (isset($data['storage'])) {
+  	          $data['instance']['settings']['storage']['type'] = $data['storage'];
+  	          unset($data['storage']);
+  	        }
+  	        else {
+  	          $data['instance']['settings']['storage']['type'] = $default_storage_type;
+  	        }
+  	        
+  	        if (isset($data['default'])) {
+  	          $data[$fname]['und'] = $data['default'];
+  	          unset($data['default']); 
+  	        }
+          
+  	      // All together now  
+          //}
+          //else if ($id = 'instance') {
+          	
+            // INSTANCE
+            
+            $data['instance']['label'] = $data['fields'][$EXISTING]['label'];
+            $data['instance']['field_name'] = $fname;  
+            
+            if (isset($data['entity'])) {
+              $data['instance']['entity_type'] = $data['entity'];
+              unset($data['entity']); 
+            }
+            
+            if (isset($data['bundle'])) {
+              $data['instance']['bundle'] = $data['bundle'];
+              unset($data['bundle']); 
+            }
+  
+            // HELP DESCR
+            if (isset($data['description'])) {
+              $data['instance']['description'] = $data['description'];
+              unset($data['description']);
+            }    
+  
+            // WIDGET
+            if (isset($data['description'])) {
+              $data['instance']['description'] = $data['fields'][$EXISTING]['weight'];
+              unset($data['description']);
+            }   
+            
+            $data['instance']['widget']['weight'] = $data['fields'][$EXISTING]['weight'];
+            $data['instance']['widget']['type'] = $data['fields'][$EXISTING]['widget_type'];
+            
+  //          $data['instance']['widget']['module'] = 'taxonomy';
+  //          $data['instance']['widget']['active'] = 0;
+  //          
+  //          $data['instance']['display']['weight'] = 45;
+  //          $data['instance']['display']['type'] = 'taxonomy_term_reference_link';
+  //          $data['instance']['display']['module'] = 'taxonomy';
+  //          $data['instance']['display']['label'] = 'above';
+  //          $data['instance']['display']['settings'] = array();
+  
+            //$data['instance']['default_value_widget']  = 'user';
+            
       
+          }// End: create field/instance
+        }// End: $id = field
+      }// End: case = prepare
+    
 
     break;
 
@@ -248,12 +279,16 @@ function field_patterns($op, $id = NULL, &$data = NULL, $a = NULL) {
     case 'form_id':
       if ($id == 'field') {
   
-        return array(
+        if (isset($data['delete'])) {
+          return array('field_ui_field_delete_form');
+        }
+        else {
+          return array(
                       'field_ui_field_overview_form',
                       //'field_ui_field_edit_form'
                       'field_ui_field_settings_form',
-                      'field_ui_field_settings_form'
-                     );
+                     );  
+        }
         
       }
       
@@ -278,7 +313,7 @@ function field_patterns($op, $id = NULL, &$data = NULL, $a = NULL) {
         return array($entity,$bundle);
       }
       //else if ($id == 'field_ui_field_edit_form' ) {
-      elseif ($id == 'field_ui_field_settings_form' ) {
+      else if ($id == 'field_ui_field_settings_form' ) {
         
         // Was
       	//$fname = $PREFIX . $data['fields'][$EXISTING]['field_name'];
@@ -286,6 +321,14 @@ function field_patterns($op, $id = NULL, &$data = NULL, $a = NULL) {
       	$instance = db_query("SELECT * FROM {field_config_instance} WHERE field_name = :fname", array('fname' => $fname))->fetchAssoc();
         return array($instance);
       }
+      
+      else if ( $id == 'field_ui_field_delete_form') {
+        
+        $fname = $data['field_name'];
+        $instance = db_query("SELECT * FROM {field_config_instance} WHERE field_name = :fname", array('fname' => $fname))->fetchAssoc();
+        return array($instance);
+      }
+      
       
     break;
 

@@ -202,13 +202,13 @@ function patterns_edit($form, &$form_state, $pattern) {
   return $form;
 }
 
-function patterns_edit_validate_save($form, &$form_state) {
-  return true;
-}
-
-function patterns_edit_submit_save($form, &$form_state) {
-  drupal_goto('admin/patterns/enable/'.$pattern->pid);
-}
+//function patterns_edit_validate_save($form, &$form_state) {
+//  return true;
+//}
+//
+//function patterns_edit_submit_save($form, &$form_state) {
+//  drupal_goto('admin/patterns/enable/'.$pattern->pid);
+//}
 
 
 /**
