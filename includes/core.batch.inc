@@ -43,7 +43,6 @@ function patterns_execute_pattern($pattern, $params = array()) {
   }
   
   // Install modules, if necessary
-  // NOT UPDATED to DR7!
   $result = patterns_install_modules($modules);
   if (!$result['success']) {
     drupal_set_message($result['error_message'], 'error');
@@ -185,8 +184,7 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
     // VALIDATE
     //////////////////////////////////
     $error = patterns_invoke($clone, 'validate', $form_id);
-    
-    
+
     if ($message = patterns_error_get_last('validate', $index, $action_description, $pattern_title, $pattern_file)) {
       $result['error_message'] = $message;
       $result['success'] = FALSE;
@@ -212,6 +210,29 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
       return $result;
     }
 
+    // Dont execute the action if a string was returned, indicating the pattern component
+    // most likely handled the action on its own and this is the message to display.
+    if (is_string($form_obj)) {
+    	drupal_set_message($form_obj);
+    }
+    else {
+    	// We check for the 'storage' and 'submitted' values in the object to see
+    	// if it is a form_state instead of form_values. There could be a better way
+    	// to do this.
+    	if (array_key_exists('submitted', (array)$form_obj) && array_key_exists('storage', (array)$form_obj)) {
+    		$action_state = $form_obj;
+    	}
+    	else {
+    		$action_state = array(
+    		      // @TODO Ste: check if storage is needed here
+              //'storage' => NULL,
+              'submitted' => FALSE,
+              'build_info' => array('args' => $params, 'files' => array('modules/user/user.admin.inc')), // @TODO Change the file passed to the form
+              'values' => $form_obj
+    		);
+    	}
+
+    // NOTE: In some versions, the params block was before these action_state-setting blocks. Try to change them if bugs arise.
     ////////////////////////////////////////////////////
     // Get any extra parameters required for the action
     ////////////////////////////////////////////////////
@@ -227,28 +248,6 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
     if (isset($params) && !is_array($params)) {
       $params = array($params);
     }
-    
-    // Dont execute the action if a string was returned, indicating the pattern component
-    // most likely handled the action on its own and this is the message to display.
-    if (is_string($form_obj)) {
-      drupal_set_message($form_obj);
-    }
-    else {
-      // We check for the 'storage' and 'submitted' values in the object to see
-      // if it is a form_state instead of form_values. There could be a better way
-      // to do this.
-      if (array_key_exists('submitted', (array)$form_obj) && array_key_exists('storage', (array)$form_obj)) {
-        $action_state = $form_obj;
-      }
-      else {
-        $action_state = array(
-          // STE: 11 Aug
-          //'storage' => NULL,
-          'submitted' => FALSE,
-          'build_info' => array('args' => $params, 'files' => array('modules/user/user.admin.inc')), // @TODO Change the file passed to the form
-          'values' => $form_obj
-        );
-      }
 
       ////////////////////
       // Execute action
@@ -331,7 +330,6 @@ function patterns_execute_action($form_id, &$form_state, $params) {
   $batch =& batch_get();
   $batch_clone = $batch;
   $batch = NULL;
-
   $return = call_user_func_array('drupal_form_submit', $args);
   
   patterns_executing(FALSE);

@@ -149,22 +149,6 @@ function patterns_implement_action_php($action, $place = 0, $actions_map = NULL)
       $result['success'] = FALSE;
       return $result;
     }
-
-    ////////////////////////////////////////////////////
-    // Get any extra parameters required for the action
-    ////////////////////////////////////////////////////
-    $params = patterns_invoke($clone, 'params', $form_id, $action_state);
-    if ($message = patterns_error_get_last('params', $index, $action_description, $pattern_title, $pattern_file)) {
-      $result['error_message'] = $message;
-      $result['success'] = FALSE;
-      return $result;
-    }
-
-    // A single, simple value can be returned as a parameter, which is then
-    // put into an array here.
-    if (isset($params) && !is_array($params)) {
-      $params = array($params);
-    }
     
     // Dont execute the action if a string was returned, indicating the pattern component
     // most likely handled the action on its own and this is the message to display.
@@ -186,7 +170,24 @@ function patterns_implement_action_php($action, $place = 0, $actions_map = NULL)
           'values' => $form_obj
         );
       }
+      
+    // NOTE: In some versions, the params block was before these action_state-setting blocks. Try to change them if bugs arise.
+    ////////////////////////////////////////////////////
+    // Get any extra parameters required for the action
+    ////////////////////////////////////////////////////
+    $params = patterns_invoke($clone, 'params', $form_id, $action_state);
+    if ($message = patterns_error_get_last('params', $index, $action_description, $pattern_title, $pattern_file)) {
+      $result['error_message'] = $message;
+      $result['success'] = FALSE;
+      return $result;
+    }
 
+    // A single, simple value can be returned as a parameter, which is then
+    // put into an array here.
+    if (isset($params) && !is_array($params)) {
+      $params = array($params);
+    }
+      
       ////////////////////
       // Execute action
       ///////////////////

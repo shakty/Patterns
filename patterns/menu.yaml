@@ -1,0 +1,30 @@
+# YAML Forms Pattern
+# QScience
+
+info:
+  title: add/edit/delete menu
+  description: Based on http://drupal.org/node/408952
+  author: QScience
+  category: QScience
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qscience.csko.hu
+  
+modules:
+	- system
+actions: 
+  - tag: menu
+    name: menu-footer-links
+    title: Footer Links
+    description: Menu description.
+  - tag: menu_item
+    menu: menu-footer-links
+    menu_name: menu_name
+    link_path:222
+    path - alias for link_path
+    link_title: menu link title
+    title:alias for link_title
+    mlid: (menu link id)
+    disable:1
+    

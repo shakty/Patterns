@@ -1,5 +1,7 @@
 <?php
 /*
+ * TODO: module enabling/disabling is done using a workaround because
+ *       the form submitting way does not work for some reason
  * @file
  * Patterns component for system related operations.
  */
@@ -116,11 +118,11 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
             unset($data['module']);
           }
 
-          for ($i = 0; $item = $data[$i]; $i++) {
+          foreach ($data as &$item) {
             // Ensure that modules with tags like <module>modulename</module>
             // are represented as an array instead of a string
             if (is_string($item)) {
-              $data[$i] = array('value' => $item);
+              $item = array('value' => $item);
             }
           }
           
@@ -133,12 +135,11 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
         case 'theme':
             if ($data['value']) {
                 $data['theme_default'] = $data['value'];
-//                $data['status'][$data['value']] = $data['value'];
             }
         break;
         case 'form':
           // attempt to load required include file
-          $menu = menu_router_build(TRUE);
+          list($menu, $masks) = menu_router_build();
           foreach ($menu as $item) {
             if (isset($item['page arguments'][0]) && $item['page arguments'][0] == $data['form_id']) {
               $data['include'] = $item['include file'];
@@ -173,42 +174,66 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
     case 'pre-validate':
       if ($id == 'modules') {
         if (!is_array($modules_info)) {
-          $modules_info = system_rebuild_module_data();
+          $modules_info = system_rebuild_module_data(); // list of available modules
         }
 
-        $modules = module_list();
-        for ($i = 0; $item = $data[$i]; $i++) {
+        $modules = module_list(); // list of enabled modules
+        for ($i = 0; isset($data[$i]) && ($item = $data[$i]); $i++) {
           $module = $item['value'];
+          $delete = (!empty($data['delete']) || !empty($item['delete']));
 
           // Ensure a module can be disabled safely
-          if (!empty($data['delete']) && array_key_exists($module, $modules)) {
-            foreach ((array)$modules_info[$module]->info['dependents'] as $dependent) {
-              if (array_key_exists($dependent, $modules)) {
-                $remove[] = $i;
-                drupal_set_message(t('Warning: Could not disable %module because other modules depend on it.', array('%module' => $module)), "warning");
-                break;
+          if ($delete) {
+            if (array_key_exists($module, $modules_info)) { // Module is available
+              if (array_key_exists($module, $modules)) { // Module is enabled
+              /*
+          	   * TODO: no more dependents field in Drupal7.x
+                foreach ((array)$modules_info[$module]->info['dependents'] as $dependent) { // Dependency check
+                  if (array_key_exists($dependent, $modules)) {
+                    $remove[] = $i;
+                    drupal_set_message(t('Warning: Could not disable %module because other modules depend on it.', array('%module' => $module)), "warning");
+                    break;
+                  }
+                }
+                */
               }
+              else {
+                $remove[] = $i;
+                drupal_set_message(t('Warning: Did not disable %module because it is already disabled.', array('%module' => $module)), "warning");
+              }
+            }
+            else {
+              $remove[] = $i;
+              drupal_set_message(t('Warning: Could not disable %module because it is missing.', array('%module' => $module)), "warning");
             }
           }
           // Ensure a module and all of its dependencies exist
-          elseif (empty($data['delete']) && !array_key_exists($module, $modules)) {
-            if (!array_key_exists($module, $modules_info)) {
-              $required[] = $module;
-            }
+          else {
+            if (!array_key_exists($module, $modules)) { // Module not yet enabled
+              if (!array_key_exists($module, $modules_info)) { // Module does not exist
+                $required[] = $module;
+              }
+              else {
+                foreach ((array)$modules_info[$module]->info['dependencies'] as $dependency) {
+                  if (!array_key_exists($dependency, $modules) && !array_key_exists($dependency, $modules_info)) {
+                    $required[] = $dependency;
+                  }
+                }
+              }
 
-            foreach ((array)$modules_info[$module]->info['dependencies'] as $dependency) {
-              if (!array_key_exists($dependency, $modules) && !array_key_exists($dependency, $modules_info)) {
-                $required[] = $dependency;
+              if (!empty($required)) {
+                return t('%module can not be installed because the module or its dependencies are missing. Please download them and try again.', array('%module' => $module)) .
+                       t('!title%dependencies', array('!title' => '<br/><b>' . t('Missing module(s): ') . '</b>', '%dependencies' => implode(', ', $required)));
               }
             }
-
-            if (!empty($required)) {
-              return t('%module can not be installed because the module or its dependencies are missing. Please download them and try again.', array('%module' => $module)) .
-                     t('!title%dependencies', array('!title' => '<br/><b>' . t('Missing module(s): ') . '</b>', '%dependencies' => implode(', ', $required)));
+            else {
+              drupal_set_message(t('Warning: Did not enable %module because it is already enabled.', array('%module' => $module)), "warning");
             }
+            
           }
         }
         if (!empty($remove)) {
+          $result = array();
           foreach ($data as $key => $item) {
             if (!in_array($key, $remove)) $result[$key] = $item;
           }
@@ -280,33 +305,27 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
     // Prepare for valid processing of this type of component
     case 'build':
       if ($id == 'system_modules') {
-        module_load_include('inc', 'system', 'system.admin');
-        $modules = module_list();
 
-        $data['status'] = array();
-
-        if (!is_array($modules_info)) {
-          $modules_info = system_rebuild_module_data();
-        }
-
-        for ($i = 0; $item = $data[$i]; $i++) {
-          $module = $item['value'];
-
-          // Set all the dependencies for the module
-          foreach ((array)$modules_info[$module]->info['dependencies'] as $dependency) {
-            if (!array_key_exists($dependency, $modules)) {
-              $data['status'][$dependency] = $dependency;
+        $enabled = $disabled = array();
+        $delete = (!empty($data['delete']) || !empty($item['delete']));
+        for ($i = 0; $module = $data[$i]; $i++) {
+          if ($delete) {
+            module_disable(array($module['value']), TRUE);
+            $disabled[] = $module['value'];
+          }
+          else {
+            if (!module_enable(array($module['value']), TRUE)) {
+              drupal_set_message(t('Warning: Could not enable %module because a dependency is missing.', array('%module' => $module)), "warning");
+            }
+            else {
+              $enabled[] = $module['value'];
             }
           }
-          $data['status'] += array($module => $module);
-          unset($data[$i]);
+
         }
-        
-        if (!empty($data['delete'])) {
-          $data['status']['delete'] = 1;
-          unset($data['delete']);
-        }
-        return $data;
+ 
+        return ((count($enabled) > 0) ? t('Module(s) %vars enabled.', array('%vars' => implode(', ', $enabled))) : t('No modules have been enabled.')) . ' ' .
+               ((count($disabled) > 0) ? t('Module(s) %vars disabled.', array('%vars' => implode(', ', $disabled))) : t('No modules have been disabled.')) ;
       }
       elseif ($id == 'variables') {
         $names = array();
@@ -326,7 +345,6 @@ function system_patterns($op, $id = NULL, &$data = NULL) {
               variable_set($variable['name'], $variable['value']);
             }
           }
-          //die();
           $names[] = $variable['name'];
         }
 

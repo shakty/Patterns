@@ -83,7 +83,6 @@ function _patterns_array_trace($obj) {
  * 
  */
 function patterns_edit_page($pid = NULL) {
-	
   if (!is_numeric($pid)) {
     drupal_set_message(t('You must specify a pattern to edit.'));
     return;
@@ -112,9 +111,9 @@ function patterns_edit_page($pid = NULL) {
   
 
   $out = '<h6>Info</h6>';
-  $out.= theme('table', array('rows' => $info, 'attributes' => array('class' => 'patterns-list')));  
+  $out .= theme('table', array('rows' => $info, 'attributes' => array('class' => 'patterns-list')));  
   $form = drupal_get_form('patterns_edit', $pattern);
-  $out.=drupal_render($form);
+  $out .=drupal_render($form);
   
   patterns_load_co2 ();
   
@@ -177,9 +176,9 @@ function patterns_edit($form, &$form_state, $pattern) {
 //  );
   
   $form['run'] = array(
-	  '#prefix' => '<span style=\'margin-right:10px\'>',  
-	  '#markup' => l(t('Run current pattern'),'admin/patterns/enable/'.$pattern->pid),
-	  '#suffix' => '</span> ',
+    '#prefix' => '<span style=\'margin-right:10px\'>',  
+    '#markup' => l(t('Run current pattern'), 'admin/patterns/enable/' . $pattern->pid),
+    '#suffix' => '</span> ',
   );
   
 // CHECK THIS  
@@ -190,7 +189,7 @@ function patterns_edit($form, &$form_state, $pattern) {
 //  );
   
   $form['cancel'] = array(
-    '#markup' => l(t('Cancel'),'admin/patterns'),
+    '#markup' => l(t('Cancel'), 'admin/patterns'),
   );
   
 //  $form['run'] = array(
@@ -476,8 +475,6 @@ function patterns_feed() {
 
 
 /**
- * NOT UPDATED: probably in DR7 we need to use module_enable()
- * 
  * Install required modules for executing the pattern.
  * 
  * @param array $modules

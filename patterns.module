@@ -41,7 +41,8 @@ require_once 'includes/servers.inc';
  * - 'validate':      - Validate the data for the form_id and raise errors, if any.
  * 
  * - 'build':         - Get the form data for the action. This can either just be the form values, or 
- *                      it can be the full //form_state object//.
+ *                      it can be the full //form_state object//. If a string is returned, the batch phase terminates
+ *                      and the string will be displayed. This way there is no Form API involved.
  *                      
  * - 'params':        - Get any extra parameters required by the form function.
  * 

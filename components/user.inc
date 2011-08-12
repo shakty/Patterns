@@ -34,7 +34,7 @@
       return array(
         'user_register_form' => t('User: Add user with the Register Form'),
         'user_profile_form' => t('User: Edit user'),
-        'user_confirm_delete' => t('User: Delete user'),
+        'user_cancel_confirm_form' => t('User: Delete user'),
         'user_admin_role' => t('User: Add, edit or remove role'),
         'user_admin_perm' => t('User: Configure permissions')
       );
@@ -58,7 +58,7 @@
         case 'user_profile_form':
           return t('Edit user account %user', $variables);
         break;
-        case 'user_confirm_delete':
+        case 'user_cancel_confirm_form':
           return t('Delete user account %user', $variables);
         break;
         case 'user_admin_role':
@@ -208,12 +208,14 @@
       if ($id == 'user') {
         // Check if the user needs updating
         if ($data['uid']) {
-          return $data['delete'] ? 'user_confirm_delete' : 'user_profile_form';
+          return $data['delete'] ? 'user_cancel_confirm_form': 'user_profile_form';
         }
         else {
           // Ste: was
           //return 'user_register';
-          return 'user_register_form';
+          if (!$data['delete']) {
+            return 'user_register_form';
+          }
         }
       }
       elseif ($id == 'role') {
@@ -384,9 +386,23 @@
         $old_q = $_GET['q'];
         $_GET['q'] = 'user/' . $data['uid'] . '/edit';
       }
-      elseif ($id == 'user_confirm_delete') {
-        module_load_include('inc', 'user', 'user.pages');
+      elseif ($id == 'user_cancel_confirm_form') {
+        module_load_include('inc', 'user', 'user.pages');        
         $data['confirm'] = 1;
+        switch ($data['delete']) {
+          case '1' :
+            $data['user_cancel_method'] = 'user_cancel_block';
+            break;
+          case '2' :
+            $data['user_cancel_method'] = 'user_cancel_block_unpublish';
+            break;
+          case '3' :
+            $data['user_cancel_method'] = 'user_cancel_reassign';
+            break;
+          case '4' :
+            $data['user_cancel_method'] = 'user_cancel_delete';
+            break;
+        }
       }
       elseif ($id == 'user_admin_role' || $id == 'user_admin_new_role') {
         module_load_include('inc', 'user', 'user.admin');
@@ -484,7 +500,7 @@
 
     // Build a patterns actions and parameters
     case 'params':
-      if ($id == 'user_confirm_delete' || $id == 'user_profile_form') {
+      if ($id == 'user_cancel_confirm_form' || $id == 'user_profile_form') {
         return array(user_load($data['uid']));
       }
       elseif ($id == 'user_admin_perm') {
