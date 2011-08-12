@@ -2,30 +2,37 @@
 # QScience
 
 info:
-  title: Add a Field, Create Instances, etc.
-  description: as title
+  title: Add custom fields to USER
+  description: Add custom fields to USER
   author: QScience
   category: QScience
   version: 1.0
   core: 7.x
   author_email: sbalietti@ethz.ch
-  author_website: shakty.org
+  author_website: http://www.qlectives.eu
   
   
 
 actions:
 
   - tag: field
-      name: urcaurcatirulero26
-      label:urcaurcatirulero26
-      type: taxonomy_term_reference
-      widget: autocomplete 
-      vocabulary: anothervoc
-      # for the user instance
-      required: 1
-      registration: 1
-      cardinality: 5
-      weight: -10
-      description: Stefano is cool
-      default: Economics
+      entity: node
+      bundle: custom_content
+      name: sponsor
+      label: Sponsor Name
+      weight: 1
+
+
+#  - tag: field
+#      name: skills
+#      label: Personal Skills
+#      type: taxonomy_term_reference
+#      widget: autocomplete 
+#      vocabulary: tags
+#      required: 1
+#      registration: 1
+#      cardinality: 5
+#      weight: -10
+#      description: A list of your personal skills
+#      default: PHP
       

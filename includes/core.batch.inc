@@ -224,7 +224,8 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
     	}
     	else {
     		$action_state = array(
-              'storage' => NULL,
+    		      // @TODO Ste: check if storage is needed here
+              //'storage' => NULL,
               'submitted' => FALSE,
               'build_info' => array('args' => $params, 'files' => array('modules/user/user.admin.inc')), // @TODO Change the file passed to the form
               'values' => $form_obj

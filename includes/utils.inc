@@ -1,6 +1,13 @@
 <?php
 
 
+define('PATTERNS_FAILED_EDIT', 'patterns_failed_edit');
+
+function _patterns_clear_failed_edit(){
+	variable_del(PATTERNS_FAILED_EDIT);
+	return true;
+}
+
 /**
  * Helper function to create a context array based on the supplied object
  * Supplying a parent object will set the parent for this context
@@ -76,12 +83,11 @@ function _patterns_array_trace($obj) {
  * 
  */
 function patterns_edit_page($pid = NULL) {
-
- if (!is_numeric($pid)) {
+  if (!is_numeric($pid)) {
     drupal_set_message(t('You must specify a pattern to edit.'));
     return;
   }
-
+  
   $pattern = patterns_get_pattern($pid);
   
   if (!$pattern->file) {
@@ -90,15 +96,26 @@ function patterns_edit_page($pid = NULL) {
   }
   
   $info = array();
-  $info['Path'][] = 'Path: ';
+  $info['Path'][] = t('Path:');
   $info['Path'][] = $pattern->file;
   $info['Enabled'][] = t('Enabled:');
   $info['Enabled'][] = ($pattern->enabled) ? t('Yes') : t('No');
+  
+//  $info['Edited'][] = t('Edited:');
+//  
+//  $info['Edited'][] = (variable_get(PATTERNS_FAILED_EDIT) == '' ) ?  
+//                                                                   t('Latest version of the pattern displayed.') :
+//                                                                   t('This is a NOT saved, edited version of the original pattern!!') ;
+                                                                      
+  
+  
 
   $out = '<h6>Info</h6>';
   $out .= theme('table', array('rows' => $info, 'attributes' => array('class' => 'patterns-list')));  
   $form = drupal_get_form('patterns_edit', $pattern);
   $out .=drupal_render($form);
+  
+  patterns_load_co2 ();
   
   return $out;
 }
@@ -108,9 +125,8 @@ function patterns_edit_page($pid = NULL) {
  * Create the form to edit patterns
  */
 function patterns_edit($form, &$form_state, $pattern) {
-  
-  $content = file_get_contents($pattern->file);
 
+	
   $form['name'] = array(
     '#type' => 'value',
     '#value' => $pattern->name,
@@ -120,8 +136,10 @@ function patterns_edit($form, &$form_state, $pattern) {
     '#type' => 'value',
     '#value' => $pattern->pid
   );
-  
-  
+		
+    $content = file_get_contents($pattern->file);
+	 //$content = variable_get(PATTERNS_FAILED_EDIT,file_get_contents($pattern->file));
+
 //   if ($pattern->enabled) {
 //    $form['enable'] = array(
 //      '#type' => 'markup',
@@ -137,6 +155,7 @@ function patterns_edit($form, &$form_state, $pattern) {
     '#options' => array_combine(patterns_file_types(), patterns_file_types()),
     '#default_value' => pathinfo($pattern->file, PATHINFO_EXTENSION),
   );
+  
   $form['content'] = array(
     '#type' => 'textarea',
     '#title' => t('Pattern\'s code'),
@@ -146,14 +165,28 @@ function patterns_edit($form, &$form_state, $pattern) {
   
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Save Modifications'),
+    '#value' => t('Save'),
   );
+  
+//  $form['submit'] = array(
+//    '#type' => 'button',
+//    '#validate' => array(),
+//    '#submit' => array('patterns_edit_submit_drop_mod'),
+//    '#value' => t('Drop Modifications'),
+//  );
   
   $form['run'] = array(
     '#prefix' => '<span style=\'margin-right:10px\'>',  
     '#markup' => l(t('Run current pattern'), 'admin/patterns/enable/' . $pattern->pid),
     '#suffix' => '</span> ',
   );
+  
+// CHECK THIS  
+//  $form['submit'] = array(
+//    '#type' => 'submit',
+//    '#submit' => array('patterns_edit_submit_save');
+//    '#value' => t('Save Modifications'),
+//  );
   
   $form['cancel'] = array(
     '#markup' => l(t('Cancel'), 'admin/patterns'),
@@ -168,6 +201,15 @@ function patterns_edit($form, &$form_state, $pattern) {
   
   return $form;
 }
+
+function patterns_edit_validate_save($form, &$form_state) {
+  return true;
+}
+
+function patterns_edit_submit_save($form, &$form_state) {
+  drupal_goto('admin/patterns/enable/'.$pattern->pid);
+}
+
 
 /**
  * Validate pattern modifications (still to do...)
@@ -187,8 +229,6 @@ function patterns_edit_validate($form, &$form_state) {
 
 /**
  * Submit edits to the pattern
- * @TODO Currently, there are some problems with saving/overwriting the patterns. When u
- * @TODO modify a pattern it is saved into another location and the db is not updated.
  */
 function patterns_edit_submit($form, &$form_state) {
   // If this is an enabled pattern, make sure the enabled pattern is saved in its current state
@@ -230,6 +270,7 @@ function patterns_edit_submit($form, &$form_state) {
         
         // Load and save pattern
         $load_func = 'patterns_load_' . $form_state['values']['format']; 
+        
         if ($pattern = $load_func($path)) {
           if ($old) {
             // Ste: was
@@ -240,6 +281,8 @@ function patterns_edit_submit($form, &$form_state) {
           patterns_save_pattern($pattern, $path, $form_state['values']['name']);
           drupal_set_message(t('%name was saved.', array('%name' => $form_state['values']['name'])));
           $form_state['redirect'] = 'admin/patterns';
+          // Not for now
+          //_patterns_clear_failed_edit();
         }
         else {
           drupal_set_message(t("Pattern '%name' couldn't be saved. Make sure edited code is well-formed.", array('%name' => $form_state['values']['name'])), 'error');
@@ -257,6 +300,7 @@ function patterns_edit_submit($form, &$form_state) {
   	drupal_set_message(t('Error: file not found ?!.'), 'error');
   }
 
+  variable_set(PATTERNS_FAILED_EDIT,$form_state['values']['content']);
   
 }
 
@@ -520,6 +564,33 @@ function patterns_token_values($type, $object = NULL, $options = array()) {
 
 /**
  * 
+ * Load the Co2 Editing TextArea
+ * 
+ */
+function patterns_load_co2 () {
+  
+// Load the CodeMirror Editor if installed in the libraries folder
+  $co2_path = libraries_get_path('codemirror2');
+  if (!empty($co2_path)) {
+    $co2_js = $co2_path . '/lib/codemirror.js';
+    $co2_css = $co2_path . '/lib/codemirror.css';
+    $co2_mode_yaml = $co2_path . '/mode/yaml/yaml.js';
+    $co2_css_theme = $co2_path . '/theme/default.css';
+    
+    
+    drupal_add_css($co2_css);
+    drupal_add_css($co2_css_theme);
+    drupal_add_js($co2_js);
+    drupal_add_js($co2_mode_yaml);
+    
+    // Adding Pattern Customization for Co2
+    drupal_add_css(drupal_get_path('module', 'patterns').'/css/editor.css');
+    drupal_add_js(drupal_get_path('module', 'patterns').'/js/editor.js');
+  }
+}
+
+/**
+ * 
  * @TODO: find a suitable place for this, and check who is calling it
  * 
  * @param unknown_type $b
@@ -533,7 +604,6 @@ function patterns_executing($b = NULL) {
 
   return $executing;
 }
-
 
 /**
  * Helper function to get PHPDoc @version tag from a file
