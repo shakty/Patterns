@@ -88,6 +88,7 @@ function taxonomy_patterns($op, $id = NULL, &$data = NULL) {
     // Return the form_id('s) for each action
     case 'form_id':
      
+        // VOCABULARY
         if ($id =='vocabulary') {
           if (isset($data['delete'])) {
             return 'taxonomy_vocabulary_confirm_delete';
@@ -96,8 +97,14 @@ function taxonomy_patterns($op, $id = NULL, &$data = NULL) {
             return 'taxonomy_form_vocabulary';
           }
         }
+        // TERM
         elseif ($id == 'term') {
-          return 'taxonomy_form_term';
+         if (isset($data['delete'])) {
+            return 'taxonomy_term_confirm_delete';
+          }
+          else {
+            return 'taxonomy_form_term';
+          }
         }
     break;
 
@@ -139,12 +146,12 @@ function taxonomy_patterns($op, $id = NULL, &$data = NULL) {
           return array(array());
         }
       }
-      elseif ($id == 'taxonomy_form_term') {
+      else if ($id == 'taxonomy_form_term') {
         $vocab = taxonomy_vocabulary_load($data['vid']);
         return array($data, $vocab);
       }
-      else if ($id == 'taxonomy_vocabulary_confirm_delete') {
-        return $data['vid'];
+      else if ($id == 'taxonomy_term_confirm_delete') {
+        return array($data['tid']);
       }
       
     break;
@@ -187,8 +194,7 @@ function taxonomy_patterns($op, $id = NULL, &$data = NULL) {
  */
 function _taxonomy_patterns_prepare_term ($data, $vid = NULL) {
   
-  $default_weight = 0;
-  $default_textformat = 'filtered_html';
+  // Get the vid first
   
   if (isset($data['vocabulary'])) {
     $data['vocabulary_machine_name'] = $data['vocabulary'];
@@ -209,28 +215,52 @@ function _taxonomy_patterns_prepare_term ($data, $vid = NULL) {
    
   }
   
-  if (!isset($data['format'])) {
-    $data['format'] = $default_textformat; // was ''
-  }
-  
-  if (!isset($data['weight'])) {
-    $data['weight'] = $default_weight;
-  }
-  
-  // @TODO: Check 'tid' => NULL,
-
-  if (isset($data['descr'])) {
-    $data['description']['value'] = $data['descr'];
-    if (isset($data['descr-format'])) {
-      $data['description']['format'] = $data['descr-format'];
-      unset($data['descr-format']);
+  if (!isset($data['tid'])) {
+    if (isset($data['name'])) {
+      // TODO: Check this
+      $terms = taxonomy_get_term_by_name($data['name']);
+      
+      // We set it only if there is one and only term with the same name.
+      if(count($terms)==1){
+        $term = array_pop($terms);
+        $data['tid'] = $term->tid;
+      }
     }
-    else {
-      $data['description']['format'] = $default_textformat;  
+  }
+  //return 'taxonomy_form_term';
+  
+  
+  if(isset($data['delete'])) {
+    $data['confirm_delete'] = TRUE;
+  }
+  else { // If it was not a delete request do a lot more
+    
+    $default_weight = 0;
+    $default_textformat = 'filtered_html';
+
+    if (!isset($data['format'])) {
+      $data['format'] = $default_textformat; // was ''
     }
     
-    unset($data['descr']);
-  }
+    if (!isset($data['weight'])) {
+      $data['weight'] = $default_weight;
+    }
+    
+    // @TODO: Check 'tid' => NULL,
+  
+    if (isset($data['descr'])) {
+      $data['description']['value'] = $data['descr'];
+      if (isset($data['descr-format'])) {
+        $data['description']['format'] = $data['descr-format'];
+        unset($data['descr-format']);
+      }
+      else {
+        $data['description']['format'] = $default_textformat;  
+      }
+      
+      unset($data['descr']);
+    }
+  }// End Not Delete
   
   return $data;
 }
@@ -270,18 +300,60 @@ function _taxonomy_patterns_prepare_vocabulary_delete ($data) {
   return $data;
 }
 
-///*
-// * Return the id of a vocabulary given its machine name
-// */
-//function _taxonomy_getvid ($machine_name = NULL) {
-//  
-//  if (empty($machine_name)) {
-//    return;
-//  }
-//  
-//  $query = "SELECT vid FROM {taxonomy_vocabulary} WHERE machine_name = :mname";
-//  $vid = db_query($query,array('mname'=>$machine_name))->fetchField();
-//  return $vid;
-//}
+// @TODO: Check This
 
+//function patterns_form_alter(&$form, &$form_state, $form_id) {
+//
+//  if (user_access('administer patterns') && variable_get('patterns_form_helper', FALSE)) {
+//    $form['#after_build'][] = 'patterns_form_helper';
+//  }
+//
+//  if (patterns_executing()) {
+//    // Ensure that parent and related dropdowns display all the terms
+//    // including those created during current pattern execution.
+//    // Without this, those terms would be omitted due to the static
+//    // caching within taxonomy_get_tree().
+//    $form_ids = array('taxonomy_form_term');
+//    if (in_array($form_id, $form_ids)) {
+//      $tid = $form['#term']['tid'];
+//      $vid = $form['#vocabulary']['vid'];
+//      $parent = array_keys(taxonomy_get_parents($tid));
+//
+//      $children = _patterns_taxonomy_get_tree($vid, $tid);
+//      // A term can't be the child of itself, nor of its children.
+//      foreach ($children as $child) {
+//        $exclude[] = $child->tid;
+//      }
+//      $exclude[] = $tid;
+//
+//      $form['advanced']['parent'] = _patterns_taxonomy_term_select(t('Parents'), 'parent', $parent, $vid, t('Parent terms') . '.', 1, '<' . t('root') . '>', $exclude);
+//      $form['advanced']['relations'] = _patterns_taxonomy_term_select(t('Related terms'), 'relations', array_keys(taxonomy_get_related($tid)), $vid, NULL, 1, '<' . t('none') . '>', array($tid));
+//    }
+//
+//    // Ensure that parent item dropdown displays all the menu items
+//    // including those created during current pattern execution.
+//    // Without this, those menu items would be omitted due to the
+//    // static caching within menu_tree_all_data().
+//    $form_ids = array('menu_edit_item');
+//    if (in_array($form_id, $form_ids)) {
+//      if (empty($form['menu']['#item'])) {
+//        $item = array('link_title' => '', 'mlid' => 0, 'plid' => 0, 'menu_name' => $form_state['values']['menu']['menu_name'], 'weight' => 0, 'link_path' => '', 'options' => array(), 'module' => 'menu', 'expanded' => 0, 'hidden' => 0, 'has_children' => 0);
+//      }
+//      else {
+//        $item = $form['menu']['#item'];
+//      }
+//      $form['menu']['parent']['#options'] = _patterns_menu_parent_options(menu_get_menus(), $item);
+//    }
+//
+//    // Ensure that taxonomy dropdowns on node edit form display all the terms
+//    // including those created during current pattern execution.
+//    if (!empty($form['taxonomy']) && isset($form['type']) && isset($form['#node']) && $form['type']['#value'] . '_node_form' == $form_id) {
+//      foreach ($form['taxonomy'] as $vid => $v) {
+//        if (!is_numeric($vid)) continue;
+//        $form['taxonomy'][$vid] = _patterns_taxonomy_form($vid, $form['taxonomy'][$vid]['#default_value'], $form['taxonomy'][$vid]['#description']);
+//      }
+//    }
+//  }
+//
+//}
 

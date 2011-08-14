@@ -237,7 +237,7 @@ function patterns_validate_service () {
     $analysis = _patterns_scan_pattern($_POST['pattern']);
     
     if ($analysis['valid']) {
-      $out = 'This pattern is valid. ' . $analysis['actions'] . ' actions found.';
+      $out = 'This pattern is valid. ' . $analysis['actions'] . ' action(s) found.';
     }
     else {
       $keys = implode(',',$analysis['invalid_keys']);
