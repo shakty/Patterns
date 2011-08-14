@@ -50,11 +50,12 @@ function patterns_execute_pattern($pattern, $params = array()) {
   }
   
   ////////////////////////////////
-  // 'prepare' and 'pre-validate'
+  // 'prepare' and 'prevalidate'
   ///////////////////////////////
   
   // $actions passed as reference
   $result = patterns_prepare_actions($actions, $actions_map);
+  
   if (!$result['success']) {
     drupal_set_message($result['error_message'], 'error');
     return FALSE;
