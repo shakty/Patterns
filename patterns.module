@@ -164,6 +164,15 @@ function patterns_menu() {
     'access callback' => TRUE,
     'type' => MENU_CALLBACK
   );
+  
+  $items['admin/patterns/validate'] = array(
+    'title' => 'Validate Pattern YAML Source',
+    'page callback' => 'patterns_validate_service',
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK
+  );
+  
+  
 
   //     $items[] = array('path' => 'admin/patterns/configure',
   //       'title' => t('Configure Pattern'),

@@ -189,3 +189,61 @@ function patterns_validate_pattern($pattern) {
   return empty($diff) ? TRUE : FALSE;
 }
 
+/**
+ * Check if pattern array contains only allowed keys
+ *
+ * @param $pattern
+ *   pattern array obtained by parsing pattern file
+ * @return
+ *   TRUE when only allowed array keys are found, FALSE otherwise
+ *
+ * @todo expand this function to include much more detailed validation
+ */
+function _patterns_scan_pattern ($pattern_text) {
+  
+  $result = array();
+  
+  if (empty($pattern_text)) {
+    return $result;
+  }
+
+  include_once libraries_get_path('spyc') . '/spyc.php';
+  $pattern = Spyc::YAMLLoad($pattern_text);
+  $allowed_keys = array('info'=>'info', 'modules'=>'modules', 'actions'=>'actions');
+  
+  $result['actions'] = count($pattern['actions']);
+  $diff = array_diff(array_keys($pattern), $allowed_keys);
+  
+  if (empty($diff)) {
+    $result['valid'] = TRUE;
+  }
+  else {
+    $result['valid'] = FALSE;
+    $result['invalid_keys'] = $diff;
+  }
+  
+  return $result;
+}
+
+
+
+/**
+ * Callback of the url patterns/validate. Returns validation info about the 
+ * pattern passed in the $_POST array
+ * 
+ */
+function patterns_validate_service () {
+    
+    $analysis = _patterns_scan_pattern($_POST['pattern']);
+    
+    if ($analysis['valid']) {
+      $out = 'This pattern is valid. ' . $analysis['actions'] . ' actions found.';
+    }
+    else {
+      $keys = implode(',',$analysis['invalid_keys']);
+      $out = 'This pattern is NOT valid. Invalid key(s) found: ' . $keys;   
+    }
+ 
+    print $out;
+}
+

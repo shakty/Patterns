@@ -147,7 +147,11 @@ function patterns_edit($form, &$form_state, $pattern) {
 //    );
 //  }
   
-  
+  $form['validation_result'] = array(
+    '#markup' => 'This pattern has not been validated yet.',
+    '#prefix' => '<div id="validation_result">',
+    '#suffix' => '</div>',
+  );
   
   $form['format'] = array(
     '#type' => 'select',
@@ -167,6 +171,22 @@ function patterns_edit($form, &$form_state, $pattern) {
     '#type' => 'submit',
     '#value' => t('Save'),
   );
+    
+  $form['validate'] = array(
+    '#prefix' => '<span style=\'margin-right:10px\'>',  
+    '#markup' => "<a href='#' id='validate_pattern'>" .t('Validate'). "</a>",
+    '#suffix' => '</span> ',
+  );
+  
+   
+//    '#ajax' => array(
+//      'callback' => 'patterns_validate_service',
+//      'wrapper' => 'replace_textfield_div',
+//      'effect' => 'fade',
+//     ),
+//  );
+  
+ 
   
 //  $form['submit'] = array(
 //    '#type' => 'button',
@@ -190,7 +210,7 @@ function patterns_edit($form, &$form_state, $pattern) {
   
   $form['cancel'] = array(
     '#markup' => l(t('Cancel'), 'admin/patterns'),
-  );
+  );  
   
 //  $form['run'] = array(
 //    '#prefix' => '<a href='.url('admin/patterns/enable/'.$pattern->pid).'>',

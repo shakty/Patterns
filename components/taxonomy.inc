@@ -6,7 +6,7 @@ function taxonomy_patterns($op, $id = NULL, &$data = NULL) {
   switch ($op) {
     // Return the valid tags that this component can prepare and process
     case 'tags':
-      return array('vocabulary', 'term');
+      return array('vocabulary', 'term', 'terms');
     break;
 
     // Return a list of forms/actions this component can handle
@@ -53,14 +53,20 @@ function taxonomy_patterns($op, $id = NULL, &$data = NULL) {
       }
       else if ($id == 'terms') {       
         // Get the vid first, so that we do not re-request always  
-        if (!isset($data['vid'])) {
-          $taxo = taxonomy_vocabulary_machine_name_load($data['vocabulary_machine_name']);
+        if (isset($data['vid'])) {
+          $vid = $data['vid'];
+        }
+        else if (isset($data['vocabulary'])) {
+          $taxo = taxonomy_vocabulary_machine_name_load($data['vocabulary']);
           $vid = $taxo->vid;
         }
         
-        foreach ($data as $term) {
-          $terms[] = _taxonomy_patterns_prepare_term($data,$vid);
+        if (isset($vid)) {
+          foreach ($data as $term) {
+            $terms[] = _taxonomy_patterns_prepare_term($data,$vid);
+          }
         }
+        
       } // End vocabulary,term,terms
       
     break;
