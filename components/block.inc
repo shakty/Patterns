@@ -1,5 +1,6 @@
 <?php
 /*
+ * TODO: the region value somehow turns (string:"0") between block_admin_display_form and block_admin_display_form_submit
  * @file
  * Patterns component for blocks.
  */
@@ -37,7 +38,9 @@ function block_patterns($op, $id = NULL, &$data = NULL) {
       // Get the module and delta from the id, if provided
       if ($data['id']) {
         $split = strpos($data['id'], '-');
-        // TODO: check if "-" is present?
+        if($split === FALSE) {
+        	// TODO: check if "-" is present?
+        }
         $data['module'] = substr($data['id'], 0, $split);
         $data['delta'] = substr($data['id'], $split + 1);
 
@@ -45,22 +48,23 @@ function block_patterns($op, $id = NULL, &$data = NULL) {
       }
       // Block description for custom blocks is always unique so we can try to get delta by looking up info field
       elseif ($data['info']) {
-      	// TODO: no such table
-        $delta = db_result(db_query('SELECT delta FROM {blocks} bl INNER JOIN {boxes} bo ON bl.delta = bo.bid AND bl.module = "block" WHERE info = "%s"', $data['info']));
+        $delta = db_query('SELECT delta FROM {block} bl INNER JOIN {block_custom} bo ON bl.delta = bo.bid AND bl.module = :module WHERE bo.info = :info', array('module' => 'block', 'info' => $data['info']))->fetchField();
         if ($delta) {
           $data['delta'] = $delta;
           $data['module'] = 'block';
         }
       }
+      else {
+      	// TODO: Error: you must provide either id or info.
+      }
 
-      if ($data['description']) {
+      if ($data['description']) { // TODO: Move this up before the previous block?
         $data['info'] = $data['description'];
         unset($data['description']);
       }
 
       if ($data['delete'] && !$data['info'] && $data['module'] == 'block') {
-      	// TODO: no such table
-        $data['info'] = db_result(db_query('SELECT info FROM {boxes} WHERE bid = "%d"', $data['delta']));
+        $data['info'] = db_query('SELECT info FROM {block_custom} WHERE bid = :delta', array('delta' => $data['delta']))->fetchField();
       }
 
       if ($data['pages'] && is_array($data['pages'])) {
@@ -79,7 +83,7 @@ function block_patterns($op, $id = NULL, &$data = NULL) {
         return t('Missing required &lt;module&gt;, &lt;delta&gt; tags. Possibly malformed &lt;id&gt; tag could be the problem too. If creating a new block, tag &lt;info&gt; is required.');
       }
       elseif ($data['delete'] && $data['module'] != 'block') {
-        return t('Unable to delete non-block module blocks');
+        return t('Unable to delete non-block module blocks.');
       }
     break;
 
@@ -87,6 +91,7 @@ function block_patterns($op, $id = NULL, &$data = NULL) {
     case 'form_id':
       $diff = array_diff($data, _block_patterns_display_keys());
 
+      // TODO: document, make this clearer
       if (!($data['module'] && $data['delta']) && $data['info']) {
         return array(
           'block_add_block_form',
@@ -126,8 +131,7 @@ function block_patterns($op, $id = NULL, &$data = NULL) {
         // make sure delta is defined even for blocks that have just been created within the same action
         if ($data['module'] == 'block' && empty($data['delta'])) {
           // we can do this because block descriptions are always unique
-          // TODO: no such table
-          $data['delta'] = db_result(db_query('SELECT bid FROM {boxes} WHERE info = "%s"', $data['info']));
+          $data['delta'] = db_query('SELECT bid FROM {block_custom} WHERE info = ":info"', array('info' => $data['info']))->fetchField();
         }
 
         $data = array($data['module'] . '_' . $data['delta'] => $data);

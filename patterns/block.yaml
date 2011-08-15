@@ -1,0 +1,22 @@
+# YAML Block Pattern
+# QScience
+
+info:
+  title: Blocks
+  description: Based on http://drupal.org/node/408950
+  author: QScience
+  category: QScience
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qscience.csko.hu
+
+actions:
+  - tag: block
+    module: user
+    delta: online
+    status: 1
+    weight: -6
+    theme: seven
+    region: dashboard_inactive # not working
+
