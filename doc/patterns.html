@@ -459,8 +459,7 @@ function generateToc(toclevels) {
 <body>
 <div id="header">
 <h1>Drupal 7 Patterns Documentation</h1>
-<span id="author">QScience Team</span><br />
-<span id="email"><tt>&lt;<a href="mailto:qlectives.eu">qlectives.eu</a>&gt;</tt></span><br />
+<span id="author">Qscience Team</span><br />
 <span id="revision">version 0.1,</span>
 Aug 2011
 <div id="toc">
@@ -487,11 +486,11 @@ site deployment.</p></div>
 </div>
 <h2 id="pattern-example">2. What is a Pattern?</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>A pattern is a file is composed by a <tt>info</tt> section and a sequence of
-directives of the type <tt>create</tt>, <tt>modify</tt>, <tt>delete</tt> grouped in
-categories.</p></div>
+<div class="paragraph"><p>A pattern is a file is composed by a <strong><tt>info</tt></strong> section and a sequence of
+<em>actions</em> of the type <strong><tt>create</tt></strong>, <strong><tt>modify</tt></strong>, <strong><tt>delete</tt></strong> grouped in
+categories (sections).</p></div>
 <div class="paragraph"><p>Categories can be arbitrarily defined (except for the reserved word
-<tt>info</tt>) and are executed sequentially.</p></div>
+<strong><tt>info</tt></strong>) and are executed sequentially.</p></div>
 <div class="listingblock">
 <div class="content">
 <pre><tt># This is a comment
@@ -521,7 +520,105 @@ actions: # any name is good for this category
         # vid: 2</tt></pre>
 </div></div>
 </div>
-<h2 id="_pattern_execution_modes">3. Pattern execution modes</h2>
+<h2 id="_how_patterns_works">3. How Patterns works</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Pattern works by parsing the pattern file and then constructing a form
+which contains already the values for specific elements. The form is
+then validated and submitted, as the <em>submit</em> button was pressed from
+a browser window. The only difference is that the process is sent to
+the Drupal <em>batch</em> system, which makes sure that the php script will not
+timeout.</p></div>
+</div>
+<h2 id="_how_to_implement_patterns_in_your_custom_module">4. How to implement Patterns in your custom module</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>You need to implement 5 patterns hooks, here explained in the same
+order as they are called by Patterns module.</p></div>
+<div class="sidebarblock">
+<div class="sidebar-content">
+<div class="ulist"><ul>
+<li>
+<p>
+<strong><tt>hook_patterns()</tt></strong>: tells Drupal that the module is able to handle
+  pattern configurations, and specifies which tags and forms are
+  supported.
+</p>
+</li>
+<li>
+<p>
+<strong><tt>hook_patterns_prepare($action, $tag, &amp;$data)</tt></strong>: checks the input and adds default
+ values. Eventually, it can raise errors which halts further execution
+ of the pattern.
+</p>
+</li>
+<li>
+<p>
+<strong><tt>hook_patterns_build($action, $tag, &amp;$data)</tt></strong>: gets the form data for the
+ action. This can either be just the form values, or it can be the
+ full <em>form_state</em> object.
+</p>
+</li>
+<li>
+<p>
+<strong><tt>hook_patterns_params($action, $tag, &amp;$data)</tt></strong>: returns extra parameters that the form may require.
+</p>
+</li>
+<li>
+<p>
+<strong><tt>hook_patterns_cleanup($action, $tag, &amp;$data)</tt></strong>: performs optional additional operations,
+   after the execution of the action is finished.
+</p>
+</li>
+</ul></div>
+</div></div>
+<div class="paragraph"><p>where <strong><tt>$action</tt></strong> is one of the actions <strong><tt>create</tt></strong>, <strong><tt>modify</tt></strong>,
+<strong><tt>delete</tt></strong>, and <strong><tt>$tag</tt></strong> is the specific command to execute
+(e.g. <strong><tt>vocabulary</tt></strong>, <strong><tt>field</tt></strong>, etc.).</p></div>
+<div class="paragraph"><p><strong><tt>hook_patterns</tt></strong> is called independently from the others hooks, which
+ are invoked sequentially to perform an action. In particular, if
+ calling <strong><tt>hook_patterns_prepare</tt></strong> does not raise error, a batch set
+ will be created which will:</p></div>
+<div class="olist arabic"><ol class="arabic">
+<li>
+<p>
+execute <strong><tt>hook_patterns_build</tt></strong>, and <strong><tt>hook_patterns_params</tt></strong>;
+</p>
+</li>
+<li>
+<p>
+submit the form;
+</p>
+</li>
+<li>
+<p>
+execute <strong><tt>hook_patterns_cleanup</tt></strong>.
+</p>
+</li>
+</ol></div>
+<h3 id="_return_values">4.1. Return values</h3><div style="clear:left"></div>
+<h4 id="_strong_tt_hook_patterns_tt_strong">4.1.1. <strong><tt>hook_patterns()</tt></strong></h4>
+<div class="paragraph"><p>Returns the following array of actions:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>$action[] = array('action' =&gt; $action, 'tag' =&gt; $tag, 'descr' =&gt; 'Description', form_ids =&gt; array('form1_id','form2_id',...));
+$action[] = ...</tt></pre>
+</div></div>
+<div class="paragraph"><p>where <strong><tt>$action</tt></strong> is one of the actions <strong><tt>create</tt></strong>, <strong><tt>modify</tt></strong>,
+<strong><tt>delete</tt></strong>, and <strong><tt>$tag</tt></strong> is the specific command to execute
+(e.g. <strong><tt>vocabulary</tt></strong>, <strong><tt>field</tt></strong>, etc.), and <strong><tt>form_ids</tt></strong> is an array
+which contains the id of the forms which will be called when running
+that specific action.</p></div>
+<h4 id="_strong_tt_hook_patterns_build_tt_strong_strong_tt_hook_patterns_params_tt_strong_strong_tt_hook_patterns_cleanup_tt_strong">4.1.2. <strong><tt>hook_patterns_build</tt></strong>, <strong><tt>hook_patterns_params</tt></strong>, <strong><tt>hook_patterns_cleanup</tt></strong></h4>
+<div class="paragraph"><p>All the other hooks returns the following special associative array:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>$result['success'] = TRUE/FALSE;
+$result['msg']     = array (msg  =&gt; 'some text', type =&gt; 'ERR'/'WARN'/'NOTICE');
+$result['return']  = 'whatever_return_value';
+
+return $result;</tt></pre>
+</div></div>
+</div>
+<h2 id="_pattern_execution_modes">5. Pattern execution modes</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>Patterns execution can follow two distinct behaviors:</p></div>
 <div class="olist arabic"><ol class="arabic">
@@ -540,8 +637,9 @@ actions: # any name is good for this category
 </p>
 </li>
 </ol></div>
-<div class="paragraph"><p>The action performed by directive <tt>create</tt> changes according to the
-behavior selected for the execution.</p></div>
+<h3 id="_differences_between_extend_and_run_over">5.1. Differences between Extend and Run-Over</h3><div style="clear:left"></div>
+<div class="paragraph"><p>The action <tt>create</tt> changes according to the behavior selected for the
+execution.</p></div>
 <div class="ulist"><ul>
 <li>
 <p>
@@ -555,7 +653,7 @@ behavior selected for the execution.</p></div>
 </li>
 <li>
 <p>
-<em>run-over</em>:  always check if the target entity is existing, if not creates it.
+<em>run-over</em>:  always check if the target entity is existing, if not creates it.;
 </p>
 </li>
 </ol></div>
@@ -573,14 +671,34 @@ behavior selected for the execution.</p></div>
 </p>
 </li>
 </ul></div>
-<h3 id="_entity_matching">3.1. Entity Matching</h3><div style="clear:left"></div>
+<h4 id="_entity_matching">5.1.1. Entity Matching</h4>
 <div class="paragraph"><p>Entities are matched on the base of their <tt>id</tt>, if provided, or more
-commonly their <tt>machine name</tt>.</p></div>
+commonly on their <tt>machine name</tt>.</p></div>
+</div>
+<h2 id="_list_of_all_currently_supported_tags">6. List of all currently supported tags</h2>
+<div class="sectionbody">
+<div class="ulist"><ul>
+<li>
+<p>
+field
+</p>
+</li>
+<li>
+<p>
+vocabulary
+</p>
+</li>
+<li>
+<p>
+term
+</p>
+</li>
+</ul></div>
 </div>
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br />
-Last updated 2011-08-15 12:44:41 CEST
+Last updated 2011-08-15 15:21:17 CEST
 </div>
 </div>
 </body>

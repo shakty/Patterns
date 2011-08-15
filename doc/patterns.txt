@@ -1,7 +1,10 @@
 Drupal 7 Patterns Documentation
 ===============================
-QScience Team <qlectives.eu>
+Qscience Team
 v0.1, Aug 2011
+
+// QScience Team <www.qlectives.eu>
+
 
 // meta-data
 :keywords: patterns, drupal, configuration, import, export
@@ -26,12 +29,12 @@ site deployment.
 What is a Pattern?
 ------------------
 
-A pattern is a file is composed by a +info+ section and a sequence of
-directives of the type +create+, +modify+, +delete+ grouped in
-categories.
+A pattern is a file is composed by a *+info+* section and a sequence of
+_actions_ of the type *+create+*, *+modify+*, *+delete+* grouped in
+categories (sections).
 
 Categories can be arbitrarily defined (except for the reserved word
-+info+) and are executed sequentially.
+*+info+*) and are executed sequentially.
 
 
 ----------------------
@@ -64,6 +67,88 @@ actions: # any name is good for this category
 
 -------------------
 
+How Patterns works
+------------------
+
+Pattern works by parsing the pattern file and then constructing a form
+which contains already the values for specific elements. The form is
+then validated and submitted, as the 'submit' button was pressed from
+a browser window. The only difference is that the process is sent to
+the Drupal _batch_ system, which makes sure that the php script will not
+timeout. 
+
+How to implement Patterns in your custom module
+-----------------------------------------------
+
+You need to implement 5 patterns hooks, here explained in the same
+order as they are called by Patterns module.
+
+*******************************************************************
+* *+hook_patterns()+*: tells Drupal that the module is able to handle
+  pattern configurations, and specifies which tags and forms are
+  supported.
+
+* *+hook_patterns_prepare($action, $tag, &$data)+*: checks the input and adds default
+ values. Eventually, it can raise errors which halts further execution
+ of the pattern.
+
+* *+hook_patterns_build($action, $tag, &$data)+*: gets the form data for the
+ action. This can either be just the form values, or it can be the
+ full _form_state_ object.
+
+* *+hook_patterns_params($action, $tag, &$data)+*: returns extra parameters that the form may require.
+
+* *+hook_patterns_cleanup($action, $tag, &$data)+*: performs optional additional operations,
+   after the execution of the action is finished.
+******************************************************************
+
+where *+$action+* is one of the actions *+create+*, *+modify+*,
+*+delete+*, and *+$tag+* is the specific command to execute
+(e.g. *+vocabulary+*, *+field+*, etc.).
+
+*+hook_patterns+* is called independently from the others hooks, which
+ are invoked sequentially to perform an action. In particular, if
+ calling *+hook_patterns_prepare+* does not raise error, a batch set
+ will be created which will:
+
+ . execute *+hook_patterns_build+*, and *+hook_patterns_params+*; 
+ . submit the form;
+ . execute *+hook_patterns_cleanup+*.
+
+
+Return values
+~~~~~~~~~~~~~
+
+*+hook_patterns()+* 
+^^^^^^^^^^^^^^^^^^^
+
+Returns the following array of actions:
+------------------
+$action[] = array('action' => $action, 'tag' => $tag, 'descr' => 'Description', form_ids => array('form1_id','form2_id',...));
+$action[] = ...
+-----------------
+
+where *+$action+* is one of the actions *+create+*, *+modify+*,
+*+delete+*, and *+$tag+* is the specific command to execute
+(e.g. *+vocabulary+*, *+field+*, etc.), and *+form_ids+* is an array
+which contains the id of the forms which will be called when running
+that specific action.
+
+
+*+hook_patterns_build+*, *+hook_patterns_params+*, *+hook_patterns_cleanup+*
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+All the other hooks returns the following special associative array:
+
+------------------
+$result['success'] = TRUE/FALSE;
+$result['msg'] 	   = array (msg  => 'some text', type => 'ERR'/'WARN'/'NOTICE');
+$result['return']  = 'whatever_return_value';
+
+return $result;
+-----------------
+
+
 Pattern execution modes
 ----------------------
 
@@ -77,14 +162,15 @@ Patterns execution can follow two distinct behaviors:
     instance with _exactly_ the settings defined by the pattern, and
     removes everything not explicitly specified.
 
-The action performed by directive +create+ changes according to the
-behavior selected for the execution.
+Differences between Extend and Run-Over
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
+The action +create+ changes according to the behavior selected for the
+execution.
 
 - *create*:  
 	     . _extends_ : always create a new entity;
-	     . _run-over_:  always check if the target entity is existing, if not creates it. 
+	     . _run-over_:  always check if the target entity is existing, if not creates it.;
 
 - *modify*: checks if the target entity is existing and then modify
    it. Does nothing if the entity is not found;
@@ -92,9 +178,16 @@ behavior selected for the execution.
 - *delete*: checks if the target entity is existing and then delete
    it. Does nothing if the entity is not found.
 
-
 Entity Matching
-~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^
 
 Entities are matched on the base of their +id+, if provided, or more
-commonly their +machine name+. 
+commonly on their +machine name+.
+
+
+List of all currently supported tags
+------------------------------------
+
+- field
+- vocabulary
+- term
