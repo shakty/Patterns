@@ -34,8 +34,10 @@ function block_patterns($op, $id = NULL, &$data = NULL) {
 
     // Prepare data for processing
     case 'prepare':
+      // Get the module and delta from the id, if provided
       if ($data['id']) {
         $split = strpos($data['id'], '-');
+        // TODO: check if "-" is present?
         $data['module'] = substr($data['id'], 0, $split);
         $data['delta'] = substr($data['id'], $split + 1);
 
@@ -43,6 +45,7 @@ function block_patterns($op, $id = NULL, &$data = NULL) {
       }
       // Block description for custom blocks is always unique so we can try to get delta by looking up info field
       elseif ($data['info']) {
+      	// TODO: no such table
         $delta = db_result(db_query('SELECT delta FROM {blocks} bl INNER JOIN {boxes} bo ON bl.delta = bo.bid AND bl.module = "block" WHERE info = "%s"', $data['info']));
         if ($delta) {
           $data['delta'] = $delta;
@@ -56,6 +59,7 @@ function block_patterns($op, $id = NULL, &$data = NULL) {
       }
 
       if ($data['delete'] && !$data['info'] && $data['module'] == 'block') {
+      	// TODO: no such table
         $data['info'] = db_result(db_query('SELECT info FROM {boxes} WHERE bid = "%d"', $data['delta']));
       }
 
@@ -110,18 +114,19 @@ function block_patterns($op, $id = NULL, &$data = NULL) {
       $blocks = _block_rehash();
       usort($blocks, '_block_compare');
 
-      if ($id == 'block_box_delete') {
+      if ($id == 'block_box_delete') { // TODO: no such form
         $data['op'] = t('Delete');
         $data['confirm'] = 1;
       }
       elseif ($id == 'block_admin_display_form') {
         if (isset($data['status']) && $data['status'] == 0) {
-          $data['region'] = -1;
+          $data['region'] = -1; // BLOCK_REGION_NONE, modules/block/block.module
         }
 
         // make sure delta is defined even for blocks that have just been created within the same action
         if ($data['module'] == 'block' && empty($data['delta'])) {
           // we can do this because block descriptions are always unique
+          // TODO: no such table
           $data['delta'] = db_result(db_query('SELECT bid FROM {boxes} WHERE info = "%s"', $data['info']));
         }
 
@@ -142,11 +147,12 @@ function block_patterns($op, $id = NULL, &$data = NULL) {
       }
       elseif ($id == 'block_admin_display_form') {
         $blocks = _block_rehash();
-        $check = current($data);
+        $check = end($data); // this used to be current()
+
         // Only return the block we are dealing with now
-        foreach ($blocks as $key => &$block) {
+        foreach ($blocks as $key => &$block) { // TODO: is there a function for this?
           if ($block['module'] == $check['module'] && $block['delta'] == $check['delta']) {
-            $blocks = array(&$block);
+            $blocks = array(&$check); // NOTE: this used to be array(&$block)
             break;
           }
         }
