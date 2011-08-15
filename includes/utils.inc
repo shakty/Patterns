@@ -115,7 +115,10 @@ function patterns_edit_page($pid = NULL) {
   $form = drupal_get_form('patterns_edit', $pattern);
   $out .=drupal_render($form);
   
-  patterns_load_co2 ();
+  if(!patterns_load_co2()) {
+    $co2 = l('Codemirror','http://codemirror.net/');
+    $out.= t('Install the !co2 library in sites/all/libraries for advanced editing functionalities',array('!co2'=>$co2));
+  }
   
   return $out;
 }
@@ -606,7 +609,12 @@ function patterns_load_co2 () {
     // Adding Pattern Customization for Co2
     drupal_add_css(drupal_get_path('module', 'patterns').'/css/editor.css');
     drupal_add_js(drupal_get_path('module', 'patterns').'/js/editor.js');
+    
+    return TRUE;
   }
+  
+  return FALSE;
+  
 }
 
 /**
