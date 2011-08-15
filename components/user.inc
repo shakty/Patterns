@@ -35,7 +35,8 @@
         'user_register_form' => t('User: Add user with the Register Form'),
         'user_profile_form' => t('User: Edit user'),
         'user_cancel_confirm_form' => t('User: Delete user'),
-        'user_admin_role' => t('User: Add, edit or remove role'),
+        'user_admin_roles' => t('User: Add or edit role'),
+      	'user_admin_role_delete_confirm'=>t('User: Delete role'),
         'user_admin_perm' => t('User: Configure permissions')
       );
     break;
@@ -61,8 +62,11 @@
         case 'user_cancel_confirm_form':
           return t('Delete user account %user', $variables);
         break;
-        case 'user_admin_role':
+        case 'user_admin_roles':
           return t('Create user role %role', $variables);
+        break;
+        case 'user_admin_role_delete_confirm':
+          return t('Delete user role %role', $variables);
         break;
         case 'user_admin_perm':
           return t('Add permissions for %role', $variables);
@@ -125,8 +129,10 @@
        
       }
       elseif ($id == 'role') {
-        $data['name'] = $data['value'];
-        unset($data['value']);
+      	if(isset($data['value'])){
+        	$data['name'] = $data['value'];
+        	unset($data['value']);
+      	}
 
         if (empty($data['id'])) {
           $rid = db_query("SELECT rid FROM {role} WHERE name = :name", array('name' => $data['name']))->fetchField();
@@ -180,7 +186,7 @@
           //$zones = _system_zonelist();
           $zones = system_time_zones();
           if (!array_key_exists($data['timezone'], $zones)) {
-            return t('Invalid timezone: %zone. Use the following format: +0100 or -0930', array('%zone' => $data['timezone']));
+            return t('Invalid timezone: %zone. Use the following format: America/New_York or Europe/Berlin', array('%zone' => $data['timezone']));
           }
         }
         //unset($data['timezone_original']);
@@ -224,10 +230,10 @@
           return;
         }
         elseif ($data['delete']) {
-          return 'user_admin_role';
+          return 'user_admin_role_delete_confirm';
         }
         else {
-          return 'user_admin_new_role';
+          return 'user_admin_roles';
         }
       }
       elseif ($id == 'permissions') {
@@ -404,7 +410,7 @@
             break;
         }
       }
-      elseif ($id == 'user_admin_role' || $id == 'user_admin_new_role') {
+      elseif ($id == 'user_admin_roles' || $id == 'user_admin_role_delete_confirm') {
         module_load_include('inc', 'user', 'user.admin');
         static $old_q;
         $old_q = $_GET['q'];

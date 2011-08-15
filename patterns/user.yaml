@@ -15,9 +15,9 @@ actions:
   
   - tag: user 
       name: lul
-      mail: lul@mailinator.org     
+      mail: luli@mailinator.org     
       password: lul
-      timezone: +1
+      timezone: America/New_York
       roles: 2
       status: 1
 
