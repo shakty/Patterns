@@ -293,13 +293,14 @@ function patterns_get_patterns($reset = TRUE) {
 
 /**
  * Load the pattern from the db and return a stdClass obj, containing 
- * the pattern code as array (unsereliazed)
+ * the pattern code as array (unserialized)
  * 
  * @param mixed $id Numeric id or alphanumeric name of the pattern
  * @return stdClass $pattern the Pattern obj containing the unsereliazed pattern 
  */
 function patterns_get_pattern($id) {
   
+  $pattern = FALSE;
   if (is_numeric($id)) {
     $pattern = db_query("SELECT * FROM {patterns} WHERE pid = :pid", array('pid' => $id))->FetchAll();
   }

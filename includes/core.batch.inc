@@ -210,7 +210,33 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
       return $result;
     }
 
-    // NOTE: In some versions, the params block was before these action_state-setting blocks. Try to change them if bugs arise.
+    // Dont execute the action if a string was returned, indicating the pattern component
+    // most likely handled the action on its own and this is the message to display.
+    $need_buildinfo = FALSE;
+    if (is_string($form_obj)) {
+    	drupal_set_message($form_obj);
+    }
+    else {
+    	// We check for the 'storage' and 'submitted' values in the object to see
+    	// if it is a form_state instead of form_values. There could be a better way
+    	// to do this.
+    	if (array_key_exists('submitted', (array)$form_obj) && array_key_exists('storage', (array)$form_obj)) {
+    		$action_state = $form_obj;
+    	}
+    	else {
+            // @TODO Change the file passed to the form
+            $files = array('modules/user/user.admin.inc',
+                           'modules/field/field_ui.admin.inc',
+            );
+    		$action_state = array(
+    		  // @TODO Ste: check if storage is needed here
+              'storage' => NULL,
+              'submitted' => FALSE,
+              'values' => $form_obj
+    		);
+    		$need_buildinfo = TRUE;
+    	}
+
     ////////////////////////////////////////////////////
     // Get any extra parameters required for the action
     ////////////////////////////////////////////////////
@@ -226,37 +252,11 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
     if (isset($params) && !is_array($params)) {
       $params = array($params);
     }
-    
-    // Dont execute the action if a string was returned, indicating the pattern component
-    // most likely handled the action on its own and this is the message to display.
-    if (is_string($form_obj)) {
-    	drupal_set_message($form_obj);
+
+    if ($need_buildinfo) {
+      $action_state['build_info'] = array('args' => $params, 'files' => $files);
     }
-    else {
-    	// We check for the 'storage' and 'submitted' values in the object to see
-    	// if it is a form_state instead of form_values. There could be a better way
-    	// to do this.
-    	if (array_key_exists('submitted', (array)$form_obj) && array_key_exists('storage', (array)$form_obj)) {
-    		$action_state = $form_obj;
-    	}
-    	else {
-    	  // @TODO Change the file passed to the form
-    	  $files = array('modules/user/user.admin.inc',
-    	                 'modules/field/field_ui.admin.inc',
-    	                 );
-    	  
-    		$action_state = array(
-    		      // @TODO Ste: check if storage is needed here
-              'storage' => NULL,
-              'submitted' => FALSE,
-              'build_info' => array('args' => $params, 'files' => $files), 
-              'values' => $form_obj
-    		);
-    	}
-
-  
-
-      ////////////////////
+      ///////////////////
       // Execute action
       ///////////////////
       patterns_execute_action($form_id, $action_state, $params);
