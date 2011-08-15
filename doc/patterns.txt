@@ -25,6 +25,26 @@ XML files called Patterns which are easy to read, modify, manage, &
 share and can be executed manually or as a part of an automated web
 site deployment.
 
+
+Installation
+------------
+
+Patterns is installed as any other Drupal module. However, it makes
+uses of external libraries which must be installed separately:
+*+Spyc+* and *+Codemirror+*.
+
+
+* http://code.google.com/p/spyc/[*+Spyc+*] is a native PHP library used to parse YAML files. It is
+   necessary for the correct functioning of Patterns.
+
+* http://codemirror.net/[*+Codemirror+*] is a Javascript library which
+   considerably enhances the interface of the Patterns editor page. It
+   is _not_ necessary, for the correct functioning of Patterns, but
+   recommended.
+
+Both libraries should be installed under *+sites/all/libraries/+*. 
+
+
 [[pattern-example]]
 What is a Pattern?
 ------------------
@@ -191,3 +211,4 @@ List of all currently supported tags
 - field
 - vocabulary
 - term
+

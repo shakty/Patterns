@@ -484,7 +484,30 @@ XML files called Patterns which are easy to read, modify, manage, &amp;
 share and can be executed manually or as a part of an automated web
 site deployment.</p></div>
 </div>
-<h2 id="pattern-example">2. What is a Pattern?</h2>
+<h2 id="_installation">2. Installation</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Patterns is installed as any other Drupal module. However, it makes
+uses of external libraries which must be installed separately:
+<strong><tt>Spyc</tt></strong> and <strong><tt>Codemirror</tt></strong>.</p></div>
+<div class="ulist"><ul>
+<li>
+<p>
+<a href="http://code.google.com/p/spyc/"><strong><tt>Spyc</tt></strong></a> is a native PHP library used to parse YAML files. It is
+   necessary for the correct functioning of Patterns.
+</p>
+</li>
+<li>
+<p>
+<a href="http://codemirror.net/"><strong><tt>Codemirror</tt></strong></a> is a Javascript library which
+   considerably enhances the interface of the Patterns editor page. It
+   is <em>not</em> necessary, for the correct functioning of Patterns, but
+   recommended.
+</p>
+</li>
+</ul></div>
+<div class="paragraph"><p>Both libraries should be installed under <strong><tt>sites/all/libraries/</tt></strong>.</p></div>
+</div>
+<h2 id="pattern-example">3. What is a Pattern?</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>A pattern is a file is composed by a <strong><tt>info</tt></strong> section and a sequence of
 <em>actions</em> of the type <strong><tt>create</tt></strong>, <strong><tt>modify</tt></strong>, <strong><tt>delete</tt></strong> grouped in
@@ -520,7 +543,7 @@ actions: # any name is good for this category
         # vid: 2</tt></pre>
 </div></div>
 </div>
-<h2 id="_how_patterns_works">3. How Patterns works</h2>
+<h2 id="_how_patterns_works">4. How Patterns works</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>Pattern works by parsing the pattern file and then constructing a form
 which contains already the values for specific elements. The form is
@@ -529,7 +552,7 @@ a browser window. The only difference is that the process is sent to
 the Drupal <em>batch</em> system, which makes sure that the php script will not
 timeout.</p></div>
 </div>
-<h2 id="_how_to_implement_patterns_in_your_custom_module">4. How to implement Patterns in your custom module</h2>
+<h2 id="_how_to_implement_patterns_in_your_custom_module">5. How to implement Patterns in your custom module</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>You need to implement 5 patterns hooks, here explained in the same
 order as they are called by Patterns module.</p></div>
@@ -594,8 +617,8 @@ execute <strong><tt>hook_patterns_cleanup</tt></strong>.
 </p>
 </li>
 </ol></div>
-<h3 id="_return_values">4.1. Return values</h3><div style="clear:left"></div>
-<h4 id="_strong_tt_hook_patterns_tt_strong">4.1.1. <strong><tt>hook_patterns()</tt></strong></h4>
+<h3 id="_return_values">5.1. Return values</h3><div style="clear:left"></div>
+<h4 id="_strong_tt_hook_patterns_tt_strong">5.1.1. <strong><tt>hook_patterns()</tt></strong></h4>
 <div class="paragraph"><p>Returns the following array of actions:</p></div>
 <div class="listingblock">
 <div class="content">
@@ -607,7 +630,7 @@ $action[] = ...</tt></pre>
 (e.g. <strong><tt>vocabulary</tt></strong>, <strong><tt>field</tt></strong>, etc.), and <strong><tt>form_ids</tt></strong> is an array
 which contains the id of the forms which will be called when running
 that specific action.</p></div>
-<h4 id="_strong_tt_hook_patterns_build_tt_strong_strong_tt_hook_patterns_params_tt_strong_strong_tt_hook_patterns_cleanup_tt_strong">4.1.2. <strong><tt>hook_patterns_build</tt></strong>, <strong><tt>hook_patterns_params</tt></strong>, <strong><tt>hook_patterns_cleanup</tt></strong></h4>
+<h4 id="_strong_tt_hook_patterns_build_tt_strong_strong_tt_hook_patterns_params_tt_strong_strong_tt_hook_patterns_cleanup_tt_strong">5.1.2. <strong><tt>hook_patterns_build</tt></strong>, <strong><tt>hook_patterns_params</tt></strong>, <strong><tt>hook_patterns_cleanup</tt></strong></h4>
 <div class="paragraph"><p>All the other hooks returns the following special associative array:</p></div>
 <div class="listingblock">
 <div class="content">
@@ -618,7 +641,7 @@ $result['return']  = 'whatever_return_value';
 return $result;</tt></pre>
 </div></div>
 </div>
-<h2 id="_pattern_execution_modes">5. Pattern execution modes</h2>
+<h2 id="_pattern_execution_modes">6. Pattern execution modes</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>Patterns execution can follow two distinct behaviors:</p></div>
 <div class="olist arabic"><ol class="arabic">
@@ -637,7 +660,7 @@ return $result;</tt></pre>
 </p>
 </li>
 </ol></div>
-<h3 id="_differences_between_extend_and_run_over">5.1. Differences between Extend and Run-Over</h3><div style="clear:left"></div>
+<h3 id="_differences_between_extend_and_run_over">6.1. Differences between Extend and Run-Over</h3><div style="clear:left"></div>
 <div class="paragraph"><p>The action <tt>create</tt> changes according to the behavior selected for the
 execution.</p></div>
 <div class="ulist"><ul>
@@ -671,11 +694,11 @@ execution.</p></div>
 </p>
 </li>
 </ul></div>
-<h4 id="_entity_matching">5.1.1. Entity Matching</h4>
+<h4 id="_entity_matching">6.1.1. Entity Matching</h4>
 <div class="paragraph"><p>Entities are matched on the base of their <tt>id</tt>, if provided, or more
 commonly on their <tt>machine name</tt>.</p></div>
 </div>
-<h2 id="_list_of_all_currently_supported_tags">6. List of all currently supported tags</h2>
+<h2 id="_list_of_all_currently_supported_tags">7. List of all currently supported tags</h2>
 <div class="sectionbody">
 <div class="ulist"><ul>
 <li>
@@ -698,7 +721,7 @@ term
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br />
-Last updated 2011-08-15 15:21:17 CEST
+Last updated 2011-08-15 16:29:02 CEST
 </div>
 </div>
 </body>
