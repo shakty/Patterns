@@ -38,18 +38,18 @@ function block_patterns($op, $id = NULL, &$data = NULL) {
 
     // Prepare data for processing.
     case 'prepare':
-    	
-    	// Alias.
-    	if ($data['description']) {
-    	  $data['info'] = $data['description'];
-    	  unset($data['description']);
-    	}
+
+      // Alias.
+      if ($data['description']) {
+        $data['info'] = $data['description'];
+        unset($data['description']);
+      }
 
       // Get the module and delta from the id, if provided.
       if ($data['id']) {
         $split = strpos($data['id'], '-');
-        if($split === FALSE) {
-        	// NOTE: No warning needed.
+        if ($split === FALSE) {
+          // NOTE: No warning needed.
         }
         else {
           $data['module'] = substr($data['id'], 0, $split);
@@ -67,7 +67,7 @@ function block_patterns($op, $id = NULL, &$data = NULL) {
         }
       }
       else {
-      	// TODO: Error: you must provide either id or info?
+        // TODO: Error: you must provide either id or info?
       }
 
       // The info field is needed for deletion.
