@@ -20,5 +20,18 @@ actions:
       timezone: America/New_York
       roles: 2
       status: 1
+      
+  - tag: role 
+     #rid:5
+      name: manager
+     # delete:1
+     create:1
+     #edit:1
+      
+  - tag: permissions
+      rid:5
+      value: administer menu, bypass node access
+      #delete:1
+      overwrite:1
 
 ---

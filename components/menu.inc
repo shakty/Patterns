@@ -136,7 +136,7 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
         }
         elseif ($data['enable']) {
           $data['enabled'] = 1;
-          unset($data['enable']);
+          unset($data['disable']);
         }
       //  $d = array();
       //  $d['menu'] = $data;

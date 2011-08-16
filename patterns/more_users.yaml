@@ -27,7 +27,7 @@ actions:
       mail: lupin@mailinator.org     
       password: lupin
       roles: 2
-      status: 1  
+      status: 1 
 ---
 
 

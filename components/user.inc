@@ -35,9 +35,10 @@
         'user_register_form' => t('User: Add user with the Register Form'),
         'user_profile_form' => t('User: Edit user'),
         'user_cancel_confirm_form' => t('User: Delete user'),
-        'user_admin_roles' => t('User: Add or edit role'),
+        'user_admin_roles' => t('User: Add role'),
+        'user_admin_role' => t('User: Edit role'),
       	'user_admin_role_delete_confirm'=>t('User: Delete role'),
-        'user_admin_perm' => t('User: Configure permissions')
+        'user_admin_permissions' => t('User: Configure permissions')
       );
     break;
 
@@ -65,10 +66,13 @@
         case 'user_admin_roles':
           return t('Create user role %role', $variables);
         break;
+        case 'user_admin_role':
+          return t('Edit user role %role', $variables);
+        break;
         case 'user_admin_role_delete_confirm':
           return t('Delete user role %role', $variables);
         break;
-        case 'user_admin_perm':
+        case 'user_admin_permissions':
           return t('Add permissions for %role', $variables);
         break;
       }
@@ -88,13 +92,7 @@
         }
         else {  
           if (!isset($data['uid'])) {
-            $data['uid'] = db_query('SELECT uid FROM {users} WHERE name = :name', array('name' => $data['name']))->fetchField();
-            
-            
-            //@TODO move this to PRE-validation
-            if (!empty($data['uid'])) {
-              return t('Modification of existing users is not allowed now.');
-            }
+            $data['uid'] = db_query('SELECT uid FROM {users} WHERE name = :name', array('name' => $data['name']))->fetchField();                           
           }
         }
         
@@ -134,15 +132,15 @@
         	unset($data['value']);
       	}
 
-        if (empty($data['id'])) {
+        if (empty($data['rid'])) {
           $rid = db_query("SELECT rid FROM {role} WHERE name = :name", array('name' => $data['name']))->fetchField();
           if ($rid) {
-            $data['id'] = $rid;
+            $data['rid'] = $rid;
           }
         }
       }
       elseif ($id == 'permissions') {
-        if ($data['role'] && !$data['rid']) {
+        if (isset($data['role']) && !$data['rid']) {
           $data['rid'] = $data['role'];
         }
         unset($data['role']);
@@ -171,6 +169,8 @@
         }
         elseif ($data['uid'] == $user->uid && $data['delete']) {
           return t('You cannot delete the current users account. Please login with a different account and try again.');
+        }elseif($data['uid']&& isset($data['create'])){
+              return t('The user %name already exist.',array('%name'=>$data['name']));
         }
 
         if (empty($data['uid']) && (empty($data['name']) || empty($data['mail']))) {
@@ -193,13 +193,16 @@
       }
       
       elseif ($id == 'role') {
-        if (DRUPAL_ANONYMOUS_RID == $data['id'] || DRUPAL_AUTHENTICATED_RID == $data['id']) {
+        if (isset($data['rid'])&&(DRUPAL_ANONYMOUS_RID == $data['rid'] || DRUPAL_AUTHENTICATED_RID == $data['rid'])) {
           return t('The authenticated or anonymous roles cannot be updated or deleted.');
         }
         // Ste: was
         // if (!empty($data['id']) && !db_result(db_query("SELECT COUNT(*) FROM {role} WHERE rid = %d", $data['id']))) {
-        if (!empty($data['id']) && !db_query("SELECT COUNT(*) FROM {role} WHERE rid = :id", array('id' => $data['id']))->fetchField()) {
-          return t('Invalid role id: %rid.', array('%rid' => $data['id']));
+        if (!empty($data['rid']) && !db_query("SELECT COUNT(*) FROM {role} WHERE rid = :id", array('id' => $data['rid']))->fetchField()) {
+          return t('Invalid role id: %rid.', array('%rid' => $data['rid']));
+        }
+        if(isset($data['create'])&&!empty($data['rid'])){
+        	return t('You cannot create a role with fixed rid id');
         }
       }
       elseif ($id == 'permissions') {
@@ -214,7 +217,12 @@
       if ($id == 'user') {
         // Check if the user needs updating
         if ($data['uid']) {
-          return $data['delete'] ? 'user_cancel_confirm_form': 'user_profile_form';
+        	if($data['delete'])
+            return 'user_cancel_confirm_form';
+          elseif($data['edit'])
+            return 'user_profile_form';
+          else
+            return;
         }
         else {
           // Ste: was
@@ -226,18 +234,20 @@
       }
       elseif ($id == 'role') {
         // role names should always be unique
-        if (!$data['delete'] && $data['id'] && $data['name'] && db_query("SELECT COUNT(*) FROM {role} WHERE name = :name AND rid <> :rid", array('name' => $data['name'], 'rid' => $data['id']))->fetchField()) {
-          return;
+       if($data['rid'] && $data['name'] && isset($data['edit'])){
+        	return 'user_admin_role';
         }
         elseif ($data['delete']) {
           return 'user_admin_role_delete_confirm';
         }
-        else {
+        elseif($data['create']) {
           return 'user_admin_roles';
+        }else{
+        	return;
         }
       }
       elseif ($id == 'permissions') {
-        return 'user_admin_perm';
+        return 'user_admin_permissions';
       }
     break;
 
@@ -410,46 +420,60 @@
             break;
         }
       }
-      elseif ($id == 'user_admin_roles' || $id == 'user_admin_role_delete_confirm') {
+      elseif ($id == 'user_admin_roles' || $id == 'user_admin_role_delete_confirm'||$id == 'user_admin_role') {
         module_load_include('inc', 'user', 'user.admin');
         static $old_q;
         $old_q = $_GET['q'];
-        if ($data['id']) {
-          $_GET['q'] = 'admin/user/roles/edit/' . $data['id'];
+        if ($data['rid']) {
+        	if($data['delete']){
+        		$data['confirm'] = 1;
+        		$_GET['q'] = 'admin/people/permissions/roles/delete/' . $data['rid'];
+        	}else{
+         		 $_GET['q'] = 'admin/people/permissions/roles/edit/' . $data['rid'];
+        	}
         }
         else {
           $_GET['q'] = '';
         }
 
         if ($data['delete']) {
-          $data['op'] = t('Delete role');
+          $data['op'] = t('Delete');
         }
-        elseif ($data['id']) {
+        elseif ($data['rid']) {
           $data['op'] = t('Save role');
         }
         else {
           $data['op'] = t('Add role');
         }
-        unset($data['id']);
+       // unset($data['rid']);
       }
-      elseif ($id == 'user_admin_perm') {
+      elseif ($id == 'user_admin_permissions') {
 
         // Get list of permissions to ensure only available permissions are saved
         $permissions = array();
         foreach (module_list(FALSE, FALSE, TRUE) as $module) {
-          if ($p = module_invoke($module, 'perm')) {
-            $permissions = array_merge($permissions, $p);
+          if ($p = module_invoke($module, 'permission')) {
+            $permissions = array_merge($permissions, array_keys($p));
           }
         }
-
+        
+      	if(!empty($data['overwrite'])) {
+            	foreach($permissions as $p){
+            		$perms[$p]=NULL;
+            	}
+         }
+         
         if (is_string($data['value'])) {
           $p = explode(',', $data['value']);
           unset($data['value']);
-
           foreach ($p as $key => $value) {
             $val = trim(trim($value), '\'"');
             if (in_array($val, $permissions)) {
-              $perms[$val] = $val;
+            	if (!empty($data['delete'])) {
+            		$perms[$val]=NULL;
+            	}else{
+              		$perms[$val] = $val;
+            	}
             }
           }
           $data[$data['rid']] = $perms;
@@ -457,13 +481,16 @@
         else {
           for ($i = 0; $item = $data[$i]; $i++) {
             if (in_array($item, $permissions)) {
-              $perms[$item] = $item;
+            if (!empty($data['delete'])) {
+            		$perms[$item]=0;
+            	}else{
+              		$perms[$item] = $item;
+            	}
             }
             unset($data[$i]);
           }
           $data[$data['rid']] = $perms;
         }
-
 
         module_load_include('inc', 'user', 'user.admin');
         if (is_numeric($data['rid'])) {
@@ -476,13 +503,7 @@
           $data['rid'] = $rid;
           unset($data[$role]);
         }
-
-        if (!empty($data['delete'])) {
-          $data[$data['rid']]['delete'] = 1;
-        }
-        if (!empty($data['overwrite'])) {
-          $data[$data['rid']]['overwrite'] = 1;
-        }
+        	$data['op'] = t('Save permissions');
       }
       
       return $data;
@@ -490,7 +511,7 @@
 
     // Validate the values for an action before running the pattern
     case 'validate':
-      if ($id == 'user_admin_perm') {
+      if ($id == 'user_admin_permissions') {
         if (is_numeric($data['rid'])) {
           $rid = $data['rid'];
         }
@@ -506,17 +527,19 @@
 
     // Build a patterns actions and parameters
     case 'params':
-      if ($id == 'user_cancel_confirm_form' || $id == 'user_profile_form') {
+      if ($id == 'user_cancel_confirm_form') {
         return array(user_load($data['uid']));
+      }elseif($id == 'user_admin_role_delete_confirm'||$id='user_admin_role'){
+      	return (object)$data;
       }
-      elseif ($id == 'user_admin_perm') {
+      elseif ($id == 'user_admin_permissions') {
         return $data['rid'];
       }
     break;
 
     // Cleanup any global settings or check created data
     case 'cleanup':
-      if ($id == 'user_admin_role') {
+      if ($id == 'user_admin_roles' || $id='user_admin_role'||$id == 'user_cancel_confirm_form') {
         static $old_q;
         if ($old_q) {
           $_GET['q'] = $old_q;
