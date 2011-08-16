@@ -1273,7 +1273,21 @@ function patterns_error_handler($errno, $message, $filename, $line, $context) {
   // @TODO  E_DEPRECATED does not work in PHP < 5.3
   if ($errno & (E_ALL ^ E_NOTICE)) { // ^ E_DEPRECATED)) {
 
-    $types = array(1 => 'error', 2 => 'warning', 4 => 'parse error', 8 => 'notice', 16 => 'core error', 32 => 'core warning', 64 => 'compile error', 128 => 'compile warning', 256 => 'user error', 512 => 'user warning', 1024 => 'user notice', 2048 => 'strict warning', 4096 => 'recoverable fatal error');
+    $types = array(
+      1 =>array('Error', WATCHDOG_ERROR),
+      2 => array('Warning', WATCHDOG_WARNING),
+      4 => array('Parse error', WATCHDOG_ERROR), 
+      8 => array('Notice', WATCHDOG_NOTICE),
+      16 => array('Core error', WATCHDOG_ERROR),
+      32 => array('Core warning', WATCHDOG_WARNING),
+      64 => array('Compile error', WATCHDOG_ERROR),
+      128 =>  array('Compile warning', WATCHDOG_WARNING),
+      256 => array('User error', WATCHDOG_ERROR),
+      512 => array('User warning', WATCHDOG_WARNING),
+      1024 => array('User notice', WATCHDOG_NOTICE),
+      2048 => array('Strict warning', WATCHDOG_DEBUG),
+      4096 => array('Recoverable fatal error', WATCHDOG_ERROR),
+     );
 
     // For database errors, we want the line number/file name of the place that
     // the query was originally called, not _db_query().
@@ -1296,8 +1310,9 @@ function patterns_error_handler($errno, $message, $filename, $line, $context) {
 
     // 'patterns_error' is not a real error and should be skipped
     if ($message != 'patterns_error') {
-      watchdog('php', '%message in %file on line %line.', array('%error' => $types[$errno], '%message' => $message, '%file' => $filename, '%line' => $line), WATCHDOG_ERROR);
-      patterns_error_set_last(array('message' => $message, 'type' => $errno, 'file' => $filename, 'line' => $line));
+      watchdog('php', '%message in %file on line %line.', array('%error' => $types[$errno][0], '%message' => $message, '%file' => $filename, '%line' => $line), $types[$errno][1]);
+      if($types[$errno][1]==WATCHDOG_ERROR)
+        patterns_error_set_last(array('message' => $message, 'type' => $errno, 'file' => $filename, 'line' => $line));
     }
   }
   return TRUE;
@@ -1334,8 +1349,24 @@ function patterns_error_get_last($op, $key, $description, $pattern_title, $patte
   $error = patterns_error_set_last();
 
   if (!empty($error) && $error['message'] != 'patterns_error') {
-    $types = array(1 => 'error', 2 => 'warning', 4 => 'parse error', 8 => 'notice', 16 => 'core error', 32 => 'core warning', 64 => 'compile error', 128 => 'compile warning', 256 => 'user error', 512 => 'user warning', 1024 => 'user notice', 2048 => 'strict warning', 4096 => 'recoverable fatal error');
-    $php_error_message = $types[$error['type']] . ': ' . $error['message'] . ' in ' . $error['file'] . ' on line ' . $error['line'] . '.';
+   // $types = array(1 => 'error', 2 => 'warning', 4 => 'parse error', 8 => 'notice', 16 => 'core error', 32 => 'core warning', 64 => 'compile error', 128 => 'compile warning', 256 => 'user error', 512 => 'user warning', 1024 => 'user notice', 2048 => 'strict warning', 4096 => 'recoverable fatal error');
+       $types = array(
+      1 =>array('Error', WATCHDOG_ERROR),
+      2 => array('Warning', WATCHDOG_WARNING),
+      4 => array('Parse error', WATCHDOG_ERROR), 
+      8 => array('Notice', WATCHDOG_NOTICE),
+      16 => array('Core error', WATCHDOG_ERROR),
+      32 => array('Core warning', WATCHDOG_WARNING),
+      64 => array('Compile error', WATCHDOG_ERROR),
+      128 =>  array('Compile warning', WATCHDOG_WARNING),
+      256 => array('User error', WATCHDOG_ERROR),
+      512 => array('User warning', WATCHDOG_WARNING),
+      1024 => array('User notice', WATCHDOG_NOTICE),
+      2048 => array('Strict warning', WATCHDOG_DEBUG),
+      4096 => array('Recoverable fatal error', WATCHDOG_ERROR),
+     );
+  	
+  	$php_error_message = $types[$error['type']][0] . ': ' . $error['message'] . ' in ' . $error['file'] . ' on line ' . $error['line'] . '.';
     $message = t('Pattern %title (%pattern_file)<br/>Action #%key: %description (op "%op")<br/>PHP error occured:<br/>%error', array('%key' => $key, '%title' => $pattern_title, '%op' => $op, '%description' => $description, '%error' => $php_error_message, '%pattern_file' => $pattern_file));
     return $message;
   }

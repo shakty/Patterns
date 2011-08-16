@@ -20,14 +20,16 @@ actions:
       timezone: Europe/Berlin
       roles: 2
       status: 1
-      delete: 3
+      #delete: 3
+      #create:1
+      edit:1
 
   - tag: user 
       name: lupin
       mail: lupin@mailinator.org     
       password: lupin
       roles: 2
-      status: 1 
+      status: 1
 ---
 
 
