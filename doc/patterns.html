@@ -512,8 +512,8 @@ uses of external libraries which must be installed separately:
 <div class="paragraph"><p>A pattern is a file is composed by a <strong><tt>info</tt></strong> section and a sequence of
 <em>actions</em> of the type <strong><tt>create</tt></strong>, <strong><tt>modify</tt></strong>, <strong><tt>delete</tt></strong> grouped in
 categories (sections).</p></div>
-<div class="paragraph"><p>Categories can be arbitrarily defined (except for the reserved word
-<strong><tt>info</tt></strong>) and are executed sequentially.</p></div>
+<div class="paragraph"><p>Categories can be arbitrarily defined (excluding the
+<a href="#reserved-words">reserved words</a>) and are executed sequentially.</p></div>
 <div class="listingblock">
 <div class="content">
 <pre><tt># This is a comment
@@ -527,21 +527,46 @@ info: # mandatory name
 
 actions: # any name is good for this category
 
-  - create: vocabulary
+  create:
+        tag: vocabulary
         name: Another Vocabulary
         machine_name: anothervoc
         description: Another interesting vocabulary
         hierarchy: 0
 
-  - modify: vocabulary
+  modify:
+        tag: vocabulary
         machine_name: anothervoc
         description: It was not that interesting after all
         # vid: 2
 
-  - delete: vocabulary
+  delete:
+        tag: vocabulary
         machine_name: anothervoc
         # vid: 2</tt></pre>
 </div></div>
+<div class="paragraph"><p>Two other optional sections names are <strong><tt>modules</tt></strong>, which explicitly
+defines a list of modules to enable during the execution of the
+pattern, and <strong><tt>include</tt></strong>, which gives include the actions of another
+pattern in the current one. <strong>More explanation later</strong> <strong>TODO</strong></p></div>
+<h3 id="reserved-words">3.1. Reserved Words</h3><div style="clear:left"></div>
+<div class="ulist"><ul>
+<li>
+<p>
+<strong><tt>info</tt></strong>
+</p>
+</li>
+<li>
+<p>
+<strong><tt>modules</tt></strong>
+</p>
+</li>
+<li>
+<p>
+<strong><tt>include</tt></strong>
+</p>
+</li>
+</ul></div>
 </div>
 <h2 id="_how_patterns_works">4. How Patterns works</h2>
 <div class="sectionbody">
@@ -721,7 +746,7 @@ term
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br />
-Last updated 2011-08-15 16:29:02 CEST
+Last updated 2011-08-16 10:11:40 CEST
 </div>
 </div>
 </body>

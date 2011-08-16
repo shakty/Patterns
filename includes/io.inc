@@ -202,6 +202,7 @@ function patterns_get_patterns($reset = TRUE) {
   if ($reset || !variable_get('patterns_loaded', FALSE)) {
     // Get a listing of enabled patterns
     $enabled = array();
+    
     // Below SQL query commented out for the time being because it's preventing 
     // pattern code stored in the patterns table to be updated/refreshed after 
     // pattern file has been modified.
@@ -235,18 +236,11 @@ function patterns_get_patterns($reset = TRUE) {
 
         $priority[] = $file->name;
 
-        // choose appropriate function based on the file extension
-        // Ste was
-        // $func = 'patterns_load_'. substr($file->basename, strlen($file->name) + 1);
+        // choose appropriate function based on the file extension: YAML or XML
         $func = 'patterns_load_' . substr($file->filename, strlen($file->name) + 1);
-        
-        
+             
         // Load and save pattern
-        // Ste: was
-        //if ($pattern = $func($file->filename)) {
         if ($pattern = $func($file->uri)) {
-          // Ste: was
-          //patterns_save_pattern($pattern, $file->filename, $file->name);
           patterns_save_pattern($pattern, $file->uri, $file->name);
         }
         else {
@@ -264,8 +258,6 @@ function patterns_get_patterns($reset = TRUE) {
 
   $messages = array();
   
-  // Ste: was
-  //while ($pattern = db_fetch_object($result)) {
   foreach ($result as $pattern) {
   
     // skip pattern if its file is missing

@@ -45,16 +45,17 @@ uses of external libraries which must be installed separately:
 Both libraries should be installed under *+sites/all/libraries/+*. 
 
 
+
 [[pattern-example]]
 What is a Pattern?
 ------------------
 
 A pattern is a file is composed by a *+info+* section and a sequence of
 _actions_ of the type *+create+*, *+modify+*, *+delete+* grouped in
-categories (sections).
+categories (sections). 
 
-Categories can be arbitrarily defined (except for the reserved word
-*+info+*) and are executed sequentially.
+Categories can be arbitrarily defined (excluding the
+<<reserved-words,reserved words>>) and are executed sequentially.
 
 
 ----------------------
@@ -69,23 +70,40 @@ info: # mandatory name
   
 actions: # any name is good for this category
 
-  - create: vocabulary
+  create: 
+  	tag: vocabulary
         name: Another Vocabulary
         machine_name: anothervoc
         description: Another interesting vocabulary
         hierarchy: 0
 
-  - modify: vocabulary
+  modify: 
+  	tag: vocabulary
         machine_name: anothervoc
 	description: It was not that interesting after all
 	# vid: 2
 
-  - delete: vocabulary
+  delete: 
+  	tag: vocabulary
         machine_name: anothervoc
         # vid: 2
         
 
--------------------
+------------------- 
+
+Two other optional sections names are *+modules+*, which explicitly
+defines a list of modules to enable during the execution of the
+pattern, and *+include+*, which gives include the actions of another
+pattern in the current one. *More explanation later* *TODO*
+
+[[reserved-words]]
+Reserved Words
+~~~~~~~~~~~~~~
+
+- *+info+* 
+- *+modules+*
+- *+include+*
+
 
 How Patterns works
 ------------------

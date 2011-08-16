@@ -653,3 +653,19 @@ function _get_file_phpdoc_version($path) {
   }
   return $version;
 }
+
+/**
+ * Helper function to create the associative array of returned values from
+ * an invoked function.
+ * 
+ * @param mixed $status [PATTERNS_SUCCESS,PATTERNS_WARN,PATTERNS_ERR]
+ * @param array $msg the msg and its type 
+ * @param mixed $result Extra data to be returned
+ */
+function patterns_results ($status = PATTERNS_SUCCESS, $msg = 'Execution successful', $result = NULL) {
+  
+  return array( 'status' => $status,
+                'msg' => $msg,
+                'result' => $result,
+              );
+}

@@ -27,57 +27,146 @@ function patterns_execute_pattern($pattern, $params = array()) {
   }
 
   $pattern->subpatterns_run_mode = $params['run-subpatterns'];
-  $pattern_details = patterns_get_pattern_details($pattern, TRUE);
-
-  $modules = $pattern_details['modules'];
-  $actions = $pattern_details['actions'];
   
-  $actions_map = array('patterns' => $pattern_details['info'], 'map' => $pattern_details['actions_map']);
-  $info = reset($pattern_details['info']);
+  /////////////////////////////////////////
+  // Get Patterns details
+  $patterns_details = patterns_get_pattern_details($pattern);
 
+  // TODO: handle multiple patterns correctly
+  // Let us assume we have only one pattern in the returned array of details
+  $pid = key($patterns_details);
+  $pattern_details = current($patterns_details); 
+  $info = $pattern_details['info'];
+  
+  // Array of infos of multiple patterns (we have only one for now)
+  $infos = array($pid=>$info);
+  
+  $modules = $pattern_details['modules'];
+  $sections = $pattern_details['sections'];
+  
+  // Ste: Actions_map seems to be used with includes. Probably we do not need it now.
+  // $actions_map = array('patterns' => $pattern_details['info'], 'map' => $pattern_details['actions_map']);
+  $actions_map = array('patterns' => $infos, 'map' => NULL);
+  ////////////////////////////////////////
+  
+  
   // If there are no actions or modules, most likely the pattern
   // was not created correctly.
-  if (empty($actions) && empty($modules)) {
-    drupal_set_message(t('Could not recognize pattern %title, aborting.', array('%title' => $info['title'])), 'error');
+  if (empty($sections)) {
+    drupal_set_message(t('Could not recognize the format of pattern %title, aborting.', array('%title' => $info['title'])), 'error');
     return FALSE;
   }
   
-  // Install modules, if necessary
-  $result = patterns_install_modules($modules);
-  if (!$result['success']) {
-    drupal_set_message($result['error_message'], 'error');
-    return FALSE;
+  if (!empty($modules)) {
+    // Install modules, if necessary
+    $result = patterns_install_modules($modules);
+    if (!$result['success']) {
+      drupal_set_message($result['error_message'], 'error');
+      return FALSE;
+    }
   }
   
-  ////////////////////////////////
-  // 'prepare' and 'prevalidate'
   ///////////////////////////////
+  // Looping through the sections
+  ///////////////////////////////
+    
+  foreach ($sections as $section => $actions) {
+    // $actions passed as reference
+    $result = patterns_prepare_actions($actions, $actions_map);
+    
+    if (!$result['status'] == PATTERNS_ERR) {
+      drupal_set_message($result['msg'], 'error');
+      return FALSE;
+    }
+    else if (!$result['status'] == PATTERNS_WARN) {
+      drupal_set_message($result['msg'], 'warning');
+    }
+    
+    $batch = array(
+      'title' => t('Processing section %section of pattern %pattern', array('%section' => $section, '%pattern' => $info['title'])),
+      'progress_message' => t('Running action @current out of @total'),
+      'operations' => array(),
+      'file' => drupal_get_path('module', 'patterns') . '/includes/core.batch.inc',
+      'finished' => 'patterns_batch_finish'
+    );
   
-  // $actions passed as reference
-  $result = patterns_prepare_actions($actions, $actions_map);
+    $i = 0;
+    $total = count($actions);
+    foreach ($actions as $action) {
+      $batch['operations'][] = array('patterns_batch_actions', array($action, $i, $actions_map));
+      $i++;
+    }
+    
+    $_SESSION['patterns_batch_info'] = $infos;
   
-  if (!$result['success']) {
-    drupal_set_message($result['error_message'], 'error');
-    return FALSE;
+    batch_set($batch); 
   }
-
-  $batch = array(
-    'title' => t('Processing pattern %pattern', array('%pattern' => $info['title'])),
-//    'init_message' => t('Running action @current out of @total', array('@current' => 1, '@total' => count($actions))),
-    'progress_message' => t('Running action @current out of @total'),
-    'operations' => array(),
-    'file' => drupal_get_path('module', 'patterns') . '/includes/core.batch.inc',
-    'finished' => 'patterns_batch_finish'
-  );
-
-  for ($i = 0, $total = count($actions); $i < $total; $i++) {
-    $batch['operations'][] = array('patterns_batch_actions', array($actions[$i], $i, $actions_map));
-  }
-
-  $_SESSION['patterns_batch_info'] = $pattern_details['info'];
-
-  batch_set($batch);
+  
   return TRUE;
+}
+
+/**
+ * Preparing and prevalidating the action tags as they are written 
+ * in the pattern file. Concretely, it invokes operations 'prepare', 
+ * and 'prevalidate' on the pattern component. 
+ * 
+ * @param array $actions
+ * @param array $actions_map
+ * @return array $result array containing the description of eventual errors
+ */
+function patterns_prepare_actions(&$actions, $actions_map) {
+  
+  $status = PATTERNS_SUCCESS;
+  $message = '';
+  
+  if (empty($actions)) return patterns_results();
+  
+  patterns_load_components();
+
+  // Keep a list of which modules handle what tags
+  $tag_modules = patterns_get_tagmodules_index();
+
+  $errors = array();
+  
+  /////////////////////////////////////////////
+  // Prepare actions for validation/processing
+  /////////////////////////////////////////////
+  foreach ($actions as $key => &$data) {
+    patterns_invoke('prepare', $key, &$data);
+  }
+
+  // @TODO: do we need two foreach?
+  foreach ($actions as $key => &$data) {    
+/////////////////////////////////////////////////////////
+// This is in case of included patterns. Not for now    
+    
+//    $action_location = patterns_locate_action($key, $actions_map);
+//    $index = $action_location['key'];
+//    $pattern_title = $action_location['title'];
+//    $pattern_file = $action_location['file'];
+
+/////////////////////////////////////////////////////////
+    
+    if (!array_key_exists($data['tag'], $tag_modules)) {
+      $errors[] = t('Action #%num (%tag) in pattern %title: <%tag> is not a valid tag', array('%num' => $index+1, '%tag' => $data['tag'], '%title' => $pattern_title));
+    }
+    else {
+      //////////////////////////////////////////////////
+      // Validate tags with their appropriate components
+      //////////////////////////////////////////////////
+      $results = patterns_invoke('validate', $key, &$data);
+      if ($results['status'] == PATTERNS_ERR) {
+        $errors[] = t('Action #%num (%tag) in pattern %title: !msg', array('!msg' => $error, '%num' => $index+1, '%tag' => $data['tag'], '%title' => $pattern_title));
+      }
+    }
+  }
+
+  if (count($errors)) {
+    $message = t('Errors encountered during pre-processing:') . '<br/>' . implode('<br/>', $errors);
+    $status = PATTERNS_ERR;
+  }
+
+  return patterns_results($status,$message);
 }
 
 
@@ -134,6 +223,9 @@ function patterns_batch_actions($action, $place, $actions_map, &$context) {
  */
 function patterns_implement_action($action, &$identifiers, $place = 0, $actions_map = NULL) {
 
+  // PRE-LUNCH
+  // HERE MODIFY missing hooks and other stuff
+  
   patterns_set_error_handler();
 
   $result = array('success' => TRUE);
@@ -230,6 +322,7 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
     
     // Dont execute the action if a string was returned, indicating the pattern component
     // most likely handled the action on its own and this is the message to display.
+    $need_buildinfo = FALSE;
     if (is_string($form_obj)) {
     	drupal_set_message($form_obj);
     }
@@ -241,11 +334,10 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
     		$action_state = $form_obj;
     	}
     	else {
-    	  // @TODO Change the file passed to the form
-    	  $files = array('modules/user/user.admin.inc',
-    	                 'modules/field/field_ui.admin.inc',
-    	                 );
-    	  
+            // @TODO Change the file passed to the form
+            $files = array('modules/user/user.admin.inc',
+                           'modules/field/field_ui.admin.inc',
+            );
     		$action_state = array(
     		      // @TODO Ste: check if storage is needed here
               'storage' => NULL,
@@ -253,11 +345,29 @@ function patterns_implement_action($action, &$identifiers, $place = 0, $actions_
               'build_info' => array('args' => $params, 'files' => $files), 
               'values' => $form_obj
     		);
+    		$need_buildinfo = TRUE;
     	}
+    
+    ////////////////////////////////////////////////////
+    // Get any extra parameters required for the action
+    ////////////////////////////////////////////////////
+    $params = patterns_invoke($clone, 'params', $form_id, $action_state);
+    if ($message = patterns_error_get_last('params', $index, $action_description, $pattern_title, $pattern_file)) {
+      $result['error_message'] = $message;
+      $result['success'] = FALSE;
+      return $result;
+    }
 
-  
+    // A single, simple value can be returned as a parameter, which is then
+    // put into an array here.
+    if (isset($params) && !is_array($params)) {
+      $params = array($params);
+    }
 
-      ////////////////////
+    if ($need_buildinfo) {
+      $action_state['build_info'] = array('args' => $params, 'files' => $files);
+    }
+      ///////////////////
       // Execute action
       ///////////////////
       patterns_execute_action($form_id, $action_state, $params);
@@ -346,104 +456,14 @@ function patterns_execute_action($form_id, &$form_state, $params) {
 }
 
 /**
- * Execute an action.
- * 
- * @deprecated
- * 
- * @param mixed $form_id the name of function to call
- * @param array $form_state the form_state object
- * @param array $params extra parameters to be passed to the form function
- */
-function patterns_execute_action_old($form_id, &$form_state, $params) {
-  // Make sure we always have a clear cache for everything.
-  // Code taken from drupal_flush_all_caches().
-
-  // Don't clear cache_form - in-progress form submissions may break.
-  // Ordered so clearing the page cache will always be the last action.
-  $core = array('cache', 'cache_block', 'cache_filter', 'cache_page');
-  $cache_tables = array_merge(module_invoke_all('flush_caches'), $core);
-  foreach ($cache_tables as $table) {
-    cache_clear_all('*', $table, TRUE);
-  }
-
-  $args = array($form_id, &$form_state);
-
-  if (is_array($params)) {
-    $args = array_merge($args, $params);
-  }
-
-  patterns_executing(TRUE);
-
-  // If we are in batch mode, trick the form api to think
-  // otherwise to avoid potential problems
-  $batch =& batch_get();
-  $batch_clone = $batch;
-  $batch = NULL;
-
-  //$form = call_user_func_array('drupal_retrieve_form', $args);
-  //$form['#post'] = $values;
-  //$return = drupal_process_form($form_id, $form);
-  //dpm($args);
-
-  // drupal_execute fails to keep $form_state in-sync through the
-  // whole FAPI process. Issue http://drupal.org/node/346244
-  //$return = call_user_func_array('drupal_execute', $args);
-
-  // Fix some parts of the #post values based on the original form
-  patterns_sync_form_values($args);
-
-  // Copy of drupal_execute until above issue is fixed
-  // TODO: check if this is fixed for drupal_form_submit()
-  $form = call_user_func_array('drupal_retrieve_form', $args);
-  
-  // Copy the #post values from the form state
-  $form['#post'] = $form_state['values'];
-  // Some modules depend on existence of 'post' array
-  $form_state['post'] = $form_state['values'];
-  
-  // Ste: added
-  $form_state['process_input'] = TRUE;
-  
-   if (!isset($form_state['build_info']['args'])) {
-    $args = func_get_args();
-    array_shift($args);
-    array_shift($args);
-    $form_state['build_info']['args'] = $args;
-  }
-  // Merge in default values.
-  $form_state += form_state_defaults();
-
-  // Populate $form_state['input'] with the submitted values before retrieving
-  // the form, to be consistent with what drupal_build_form() does for
-  // non-programmatic submissions (form builder functions may expect it to be
-  // there).
-  $form_state['input'] = $form_state['values'];
-
-  $form_state['programmed'] = TRUE;
-  //$form = drupal_retrieve_form($form_id, $form_state);
-  // Programmed forms are always submitted.
-  $form_state['submitted'] = TRUE;
-
-  // Reset form validation.
-  $form_state['must_validate'] = TRUE;
-  form_clear_error();
-  // Call eventual hooks that alter the form
-  // Add validation token
-  // Ste
-  drupal_prepare_form($form_id, $form, $form_state);
-  drupal_process_form($form_id, $form, $form_state);
-  
-  patterns_executing(FALSE);
-  $batch = $batch_clone;
-
-}
-
-/**
  * Finish a batch operation
  */
 function patterns_batch_finish($success, $results, $operations) {
   $info = $_SESSION['patterns_batch_info'];
   if (empty($results['abort'])) {
+    
+    // TODO: info is different: was pid-> array of infos
+    
     foreach ($info as $key => $i) {
       drupal_set_message(t('Pattern "@pattern" ran successfully.', array('@pattern' => $i['title'])));
       // Ste: was

@@ -6,7 +6,25 @@
 // Return an error string only in case of error, otherwise modify $data
 
 function taxonomy_patterns () {
-  return array('vocabulary', 'term', 'terms');
+  // old way
+  //return array('vocabulary', 'term', 'terms');
+
+  $actions['vocabulary'] = array('descr' => t('Creates/Modify/Delete Taxonomy Vocabularies'), 
+                                 PATTERNS_CREATE => array('taxonomy_form_vocabulary'),
+                                 PATTERNS_MODIFY => array('taxonomy_form_vocabulary'),
+                                 PATTERNS_DELETE => array('taxonomy_vocabulary_confirm_delete'),
+                                 'files'  => array('modules/taxonomy/taxonomy.admin.inc'),
+                                );
+                     
+  $actions['term'] = array('descr'  => t('Creates/Modify/Delete Taxonomy Terms'), 
+                           PATTERNS_CREATE => array('taxonomy_form_term'),
+                           PATTERNS_MODIFY => array('taxonomy_form_term'),
+                           PATTERNS_DELETE => array('taxonomy_term_confirm_delete'),
+                           'files'  => array('modules/taxonomy/taxonomy.admin.inc'),
+                          );
+                          
+  return $actions;                
+  
 }
 
 // Return a list of forms/actions this component can handle
@@ -18,45 +36,27 @@ function taxonomy_patterns_actions() {
       );
 }  
 
-// Return a summary of an action
-function taxonomy_patterns_summary ($id = NULL, &$data = NULL) {
-  
-  switch ($id) {
-    case 'taxonomy_form_vocabulary':
-      if (!$data['name'] && $data['vid']) {
-        $data['name'] = db_query('SELECT name FROM {taxonomy_vocabulary} WHERE vid = :vid', array('vid' => $data['vid']))->fetchField();
-      }
-
-      if (!taxonomy_vocabulary_machine_name_load($data['name'])) {
-        return t('Create vocabulary %vocab', array('%vocab' => $data['name']));
-      }
-      else {
-        return t('Edit vocabulary %vocab', array('%vocab' => $data['name']));
-      }
-    break;
-  }
-}
-
 // Prepare data for processing
-function taxonomy_patterns_prepare ($id = NULL, &$data = NULL) {
+function taxonomy_patterns_prepare ($action, $tag, &$data = NULL) {
     
   // VOCABULARY
-  if ($id == 'vocabulary') {
-      if (isset($data['delete'])) {
+  if ($tag == 'vocabulary') {
+    
+      if ( $action == PATTERNS_DELETE ) {
         $data = _taxonomy_patterns_prepare_vocabulary_delete($data);
       } 
-      else {      
+      else { // Create or Modify      
         $data = _taxonomy_patterns_prepare_vocabulary($data);
       }
-  }
-  
+  } 
+      
   // TERM
-  else if ($id == 'term') {
+  else if ($tag == 'term') {
     $data = _taxonomy_patterns_prepare_term($data);
   }
   
   // TERMS
-  else if ($id == 'terms') {       
+  else if ($tag == 'terms') {       
     // Get the vid first, so that we do not re-request always  
     if (isset($data['vid'])) {
       $vid = $data['vid'];
@@ -73,53 +73,17 @@ function taxonomy_patterns_prepare ($id = NULL, &$data = NULL) {
     }
     
   } // End vocabulary,term,terms
+  
+  return patterns_results();
 }  
 
-
-// Pre validate actions
-// Need to check for required tags etc...
-function taxonomy_patterns_prevalidate($id = NULL, &$data = NULL) {
-      
-    if ($id = 'vocabulary') {
-      if (!empty($data['vid']) && !taxonomy_vocabulary_load($data['vid'])) {
-        return t("Invalid vid: %vid. This vocabulary doesn't exist", array('%vid' => $data['vid']));
-      }
-    }     
-}
-
-// Return the form_id('s) for each action
-function taxonomy_patterns_form_id ($id = NULL, &$data = NULL) {
-     
-  // VOCABULARY
-  if ($id =='vocabulary') {
-    if (isset($data['delete'])) {
-      return 'taxonomy_vocabulary_confirm_delete';
-    }
-    else {
-      return 'taxonomy_form_vocabulary';
-    }
-  }
-  // TERM
-  elseif ($id == 'term') {
-   if (isset($data['delete'])) {
-      return 'taxonomy_term_confirm_delete';
-    }
-    else {
-      return 'taxonomy_form_term';
-    }
-  }
-}
-
-// Prepare for valid processing of this type of component
-function taxonomy_patterns_build ($id = NULL, &$data = NULL) {
-  module_load_include('inc', 'taxonomy', 'taxonomy.admin');
-  // Do we need this?    
-  return $data;
-}
-
 // Validate the values for an action before running the pattern
-function taxonomy_patterns_validate($id = NULL, &$data = NULL) {
-    if ($id == 'taxonomy_form_term') {
+function taxonomy_patterns_validate ($action, $tag, &$data = NULL) {
+  
+    $status = PATTERNS_SUCCESS;
+    $msg = '';
+    
+    if ($tag == 'term') {
       if (!$data['vid'] && !empty($data['vocabulary'])) {
         $vocabs = taxonomy_get_vocabularies();
 
@@ -130,38 +94,103 @@ function taxonomy_patterns_validate($id = NULL, &$data = NULL) {
           }
         }
       }
+      
       // we can't procede without valid vocabulary ID
       if (empty($data['vid'])) {
-        return t("Vocabulary %vocab doesn't exist.", array('%vocab' => $data['vocabulary']));
+        $status = PATTERNS_ERR;
+        $msg = t("Vocabulary %vocab doesn't exist.", array('%vocab' => $data['vocabulary']));
       }
     }
+    
+    return patterns_results($status,$msg);
+}
+
+// Prepare for valid processing of this type of component
+function taxonomy_patterns_build ($action, $tag, &$data = NULL) {
+  module_load_include('inc', 'taxonomy', 'taxonomy.admin');
+  return patterns_results();
 }
 
 // Build a patterns actions and parameters
-function taxonomy_patterns_params($id = NULL, &$data = NULL) {
+function taxonomy_patterns_params($action, $tag, &$data = NULL) {
       
-      if ($id == 'taxonomy_form_vocabulary') {
-        if ($data['vid']) {
-          return array((array)taxonomy_vocabulary_load($data['vid']));
-        }
-        else {
-          return array(array());
-        }
-      }
-      else if ($id == 'taxonomy_form_term') {
-        $vocab = taxonomy_vocabulary_load($data['vid']);
-        return array($data, $vocab);
-      }
-      else if ($id == 'taxonomy_term_confirm_delete') {
-        return array($data['tid']);
-      }
+  if ($tag == 'vocabulary') {
+    if ($data['vid']) {
+      $result = array((array)taxonomy_vocabulary_load($data['vid']));
+    }
+    else {
+      $result = array(array());
+    }
+  }
+  else if ( $tag == 'term' && $action == PATTERNS_CREATE ) {
+    $vocab = taxonomy_vocabulary_load($data['vid']);
+    $result = array($data, $vocab);
+  }
+  else if ( $tag == 'term' && $action == PATTERNS_DELETE ) {
+    $result = array($data['tid']);
+  }
       
+  return patterns_results(TRUE,'Success',$result);
 }
 
 // Cleanup any global settings after the action runs
-function taxonomy_patterns_cleanup($id = NULL, &$data = NULL) {
+function taxonomy_patterns_cleanup($action, $tag, &$data = NULL) {
     unset($_POST['op']);
 }
+
+// Return a summary of an action
+//function taxonomy_patterns_summary ($id = NULL, &$data = NULL) {
+//  
+//  switch ($id) {
+//    case 'taxonomy_form_vocabulary':
+//      if (!$data['name'] && $data['vid']) {
+//        $data['name'] = db_query('SELECT name FROM {taxonomy_vocabulary} WHERE vid = :vid', array('vid' => $data['vid']))->fetchField();
+//      }
+//
+//      if (!taxonomy_vocabulary_machine_name_load($data['name'])) {
+//        return t('Create vocabulary %vocab', array('%vocab' => $data['name']));
+//      }
+//      else {
+//        return t('Edit vocabulary %vocab', array('%vocab' => $data['name']));
+//      }
+//    break;
+//  }
+//}
+
+
+// Pre validate actions
+// Need to check for required tags etc...
+//function taxonomy_patterns_validate($action, $tag, &$data = NULL) {
+//      
+//    if ($tag = 'vocabulary') {
+//      if (!empty($data['vid']) && !taxonomy_vocabulary_load($data['vid'])) {
+//        return t("Invalid vid: %vid. This vocabulary doesn't exist", array('%vid' => $data['vid']));
+//      }
+//    }     
+//}
+
+// Return the form_id('s) for each action
+//function taxonomy_patterns_form_id ($id = NULL, &$data = NULL) {
+//     
+//  // VOCABULARY
+//  if ($id =='vocabulary') {
+//    if (isset($data['delete'])) {
+//      return 'taxonomy_vocabulary_confirm_delete';
+//    }
+//    else {
+//      return 'taxonomy_form_vocabulary';
+//    }
+//  }
+//  // TERM
+//  elseif ($id == 'term') {
+//   if (isset($data['delete'])) {
+//      return 'taxonomy_term_confirm_delete';
+//    }
+//    else {
+//      return 'taxonomy_form_term';
+//    }
+//  }
+//}
 
 //    // Return term/vocab identifiers
 //    case 'identifier':
