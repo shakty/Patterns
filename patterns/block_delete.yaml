@@ -1,0 +1,19 @@
+# YAML Block custom delete Pattern
+# QScience
+
+info:
+  title: Blocks (custom) delete
+  description: Deletes a custom block.
+  author: QScience
+  category: QScience
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qscience.csko.hu
+
+actions:
+  - tag: block
+    module: block # Custom block
+#    delta: 2 # Only specify when editing a block
+    info: Test custom block # This is unique among blocks as well, so it identifies the block
+    delete: 1

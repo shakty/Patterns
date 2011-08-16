@@ -1,6 +1,9 @@
 <?php
 /*
- * TODO: the region value somehow turns (string:"0") between block_admin_display_form and block_admin_display_form_submit
+ * TODO: The logic from 6.x to 7.x has changed a bit. When a theme is missing from "regions",
+ *       it should be -1 and the corresponding block_admin_configure should not be called.
+ *       On the other hand, for every theme supplied, the weight needs to be set properly.
+ *       Also, try to avoid redundancy in the syntax of the pattern.
  * @file
  * Patterns component for blocks.
  */
@@ -18,32 +21,41 @@ function block_patterns($op, $id = NULL, &$data = NULL) {
   $data = array_merge($defaults, (array)$data);
 
   switch ($op) {
-    // Return the valid tags that this component can prepare and process
+    // Return the valid tags that this component can prepare and process.
     case 'tags':
       return array('block');
     break;
 
-    // Return a list of forms/actions this component can handle
+    // Return a list of forms/actions this component can handle.
     case 'actions':
       return array(
         'block_admin_display_form' => t('Block: Change the region or order of a block'),
         'block_admin_configure' => t('Block: Configure block'),
         'block_add_block_form' => t('Block: Add block'),
-        'block_box_delete' => t('Block: Delete block')
+        'block_custom_block_delete' => t('Block: Delete block')
       );
     break;
 
-    // Prepare data for processing
+    // Prepare data for processing.
     case 'prepare':
-      // Get the module and delta from the id, if provided
+    	
+    	// Alias.
+    	if ($data['description']) {
+    	  $data['info'] = $data['description'];
+    	  unset($data['description']);
+    	}
+
+      // Get the module and delta from the id, if provided.
       if ($data['id']) {
         $split = strpos($data['id'], '-');
         if($split === FALSE) {
-        	// TODO: check if "-" is present?
+        	// NOTE: No warning needed.
         }
-        $data['module'] = substr($data['id'], 0, $split);
-        $data['delta'] = substr($data['id'], $split + 1);
-
+        else {
+          $data['module'] = substr($data['id'], 0, $split);
+          $data['delta'] = substr($data['id'], $split + 1);
+        }
+        
         unset($data['id']);
       }
       // Block description for custom blocks is always unique so we can try to get delta by looking up info field
@@ -55,26 +67,25 @@ function block_patterns($op, $id = NULL, &$data = NULL) {
         }
       }
       else {
-      	// TODO: Error: you must provide either id or info.
+      	// TODO: Error: you must provide either id or info?
       }
 
-      if ($data['description']) { // TODO: Move this up before the previous block?
-        $data['info'] = $data['description'];
-        unset($data['description']);
-      }
-
-      if ($data['delete'] && !$data['info'] && $data['module'] == 'block') {
+      // The info field is needed for deletion.
+      if ($data['delete'] && !$data['info'] && $data['module'] == 'block' && $data['delta']) {
         $data['info'] = db_query('SELECT info FROM {block_custom} WHERE bid = :delta', array('delta' => $data['delta']))->fetchField();
       }
 
+      // Split the pages array into a multi-line string.
       if ($data['pages'] && is_array($data['pages'])) {
-        $pages = implode("\r\n", $data['pages']);
+        $pages = implode("\r\n", $data['pages']); // TODO: In some cases only \n?
         $data['pages'] = str_replace('[front]', '<front>', $pages);
       }
 
+      // This must be a custom block.
       if (!($data['module'] && isset($data['delta'])) && $data['info']) {
         $data['module'] = 'block';
       }
+
     break;
 
     // Pre validate actions
@@ -91,20 +102,21 @@ function block_patterns($op, $id = NULL, &$data = NULL) {
     case 'form_id':
       $diff = array_diff($data, _block_patterns_display_keys());
 
-      // TODO: document, make this clearer
+      // TODO: document, make this clearer.
+      // Adding a new block: unknown id (or, module-delta) and a known info field.
       if (!($data['module'] && $data['delta']) && $data['info']) {
         return array(
-          'block_add_block_form',
+          'block_add_block_form', // This will call block_admin_configure($form, $form_state, 'block', NULL);
           'block_admin_display_form'
         );
       }
-      elseif ($data['delete']) {
-        return 'block_box_delete';
+      elseif ($data['delete']) { // Deleting a custom block.
+        return 'block_custom_block_delete';
       }
-      elseif (empty($diff)) {
-        return 'block_admin_display_form';
+      elseif (empty($diff)) { // Only editing the position for one theme.
+        return 'block_admin_display_form'; // TODO: check _block_patterns_display_keys()
       }
-      else {
+      else { // Editing a block
         return array(
           'block_admin_configure',
           'block_admin_display_form'
@@ -112,14 +124,14 @@ function block_patterns($op, $id = NULL, &$data = NULL) {
       }
     break;
 
-    // Prepare for valid processing of this type of component
+    // Prepare for valid processing of this type of component.
     case 'build':
       module_load_include('inc', 'block', 'block.admin');
       // Fetch and sort blocks
       $blocks = _block_rehash();
       usort($blocks, '_block_compare');
 
-      if ($id == 'block_box_delete') { // TODO: no such form
+      if ($id == 'block_custom_block_delete') {
         $data['op'] = t('Delete');
         $data['confirm'] = 1;
       }
@@ -128,10 +140,10 @@ function block_patterns($op, $id = NULL, &$data = NULL) {
           $data['region'] = -1; // BLOCK_REGION_NONE, modules/block/block.module
         }
 
-        // make sure delta is defined even for blocks that have just been created within the same action
+        // Make sure delta is defined even for blocks that have just been created within the same action.
         if ($data['module'] == 'block' && empty($data['delta'])) {
-          // we can do this because block descriptions are always unique
-          $data['delta'] = db_query('SELECT bid FROM {block_custom} WHERE info = ":info"', array('info' => $data['info']))->fetchField();
+          // We can do this because block descriptions are always unique.
+          $data['delta'] = db_query('SELECT bid FROM {block_custom} WHERE info = :info', array('info' => $data['info']))->fetchField();
         }
 
         $data = array($data['module'] . '_' . $data['delta'] => $data);
@@ -151,19 +163,19 @@ function block_patterns($op, $id = NULL, &$data = NULL) {
       }
       elseif ($id == 'block_admin_display_form') {
         $blocks = _block_rehash();
-        $check = end($data); // this used to be current()
+        $check = end($data);
 
         // Only return the block we are dealing with now
         foreach ($blocks as $key => &$block) { // TODO: is there a function for this?
           if ($block['module'] == $check['module'] && $block['delta'] == $check['delta']) {
-            $blocks = array(&$check); // NOTE: this used to be array(&$block)
+            $blocks = array(&$check);
             break;
           }
         }
         return array($blocks, $check['theme']);
       }
-      elseif ($id == 'block_box_delete') {
-        return $data['delta'];
+      elseif ($id == 'block_custom_block_delete') {
+        return array('block', $data['delta']);
       }
     break;
   }

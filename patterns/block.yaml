@@ -2,8 +2,8 @@
 # QScience
 
 info:
-  title: Blocks
-  description: Based on http://drupal.org/node/408950
+  title: Blocks (create)
+  description: Inserts a module-provided and a custom block.
   author: QScience
   category: QScience
   version: 1.0
@@ -12,11 +12,46 @@ info:
   author_website: qscience.csko.hu
 
 actions:
+# Module-provided block
   - tag: block
+    #id: user-online # Same as the module and delta below.
     module: user
     delta: online
     status: 1
     weight: -6
+    title: Who's online (new title)
     theme: seven
-    region: dashboard_inactive # not working
+    region: content # Redundant, but needed, for now.
+    regions:
+        seven: content
+        bartik: -1
+    pages: # Contents of the "Pages" block; contains either a list of paths on which to include/exclude the block or PHP code, depending on "visibility" setting.
+        page1
+        page2
+        page3
+    #NOT WORKING: visibility: 2 # Flag to indicate how to show blocks on pages. (0 = Show on all pages except listed pages, 1 = Show only on listed pages, 2 = Use custom PHP code to determine visibility)
+    custom: 1 # Flag to indicate how users may control visibility of the block. (0 = Users cannot control, 1 = On by default, but can be hidden, 2 = Hidden by default, but can be shown)
 
+# Custom block
+  - tag: block
+    id: block # id is an alternative form of saying "module-delta"
+#    module: block # Custom block
+#    delta: 2 # Only specify when editing a block
+    status: 1
+    weight: 4
+    theme: seven
+    title: Test title
+    info: Test custom block
+    body:
+        value: Here comes the body text.
+        format: filtered_html
+    region: content # Redundant, but needed, for now.
+    regions:
+        seven: content
+        bartik: -1
+    pages: # Contents of the "Pages" block; contains either a list of paths on which to include/exclude the block or PHP code, depending on "visibility" setting.
+        page1
+        page2
+        page3
+    #NOT WORKING: visibility: 2 # Flag to indicate how to show blocks on pages. (0 = Show on all pages except listed pages, 1 = Show only on listed pages, 2 = Use custom PHP code to determine visibility)
+    custom: 1 # Flag to indicate how users may control visibility of the block. (0 = Users cannot control, 1 = On by default, but can be hidden, 2 = Hidden by default, but can be shown)
