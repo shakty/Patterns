@@ -106,7 +106,7 @@ function taxonomy_patterns_validate ($action, $tag, &$data = NULL) {
 }
 
 // Prepare for valid processing of this type of component
-function taxonomy_patterns_build ($action, $tag, &$data = NULL) {
+function taxonomy_patterns_build ($action, $tag, &$data = NULL, $form_id) {
   module_load_include('inc', 'taxonomy', 'taxonomy.admin');
   return patterns_results();
 }
@@ -130,7 +130,7 @@ function taxonomy_patterns_params($action, $tag, &$data = NULL) {
     $result = array($data['tid']);
   }
       
-  return patterns_results(TRUE,'Success',$result);
+  return patterns_results(PATTERNS_SUCCESS,'Success',$result);
 }
 
 // Cleanup any global settings after the action runs

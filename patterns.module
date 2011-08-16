@@ -555,6 +555,8 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
  * @param mixed $op operation to be performed by hook_patterns()
  * @param mixed $form_id name of the form to be passed to hook_patterns().
  * @param array $a extra parameters to pass to hook_patterns()
+ * 
+ * @return array $return an array packed by patterns_results
  */
 //function patterns_invoke($op, &$data, $form_id = NULL, &$a = NULL) {
 
@@ -582,16 +584,41 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
     }
   }
 
+  // Check if the output is correctly formatted, and eventually tries to correct it
+  if (!_patterns_is_patterns_results($return)) {
+    
+    if ($return === TRUE) {
+      $return = array('status' => PATTERNS_SUCCESS);  
+    }
+    else if ($return === FALSE) {
+      $msg = t('Unspecified error occurred in %func', array('%func'=>$func));
+      $return = patterns_results (PATTERNS_ERR, $msg);
+    }
+    else {
+      $msg = t('The return value of %func is not properly formatted', array('%func'=>$func));
+      $return = patterns_results (PATTERNS_ERR, $msg);
+    }
+  }
   $data['tag'] = $tag;
   return $return;
   
 }
 
-// @TODO: Attention: the return values has changed. Before was an array of tag=>module
-// now you get the info with tag['module']
-
-// Creates the list of modules implementing the pattern hook
-function patterns_get_tagmodules_index() {
+/**
+ * Creates the list of modules implementing the pattern hook. Additional 
+ * information is provided such as the files or the forms needed by the tag.
+ * 
+ *  @param mixed $tag if set, only information about this specific tag is returned.
+ *  @param mixed $id if set, only this particular bit of information is returned.
+ *  Allowed values for $id are: 'descr', PATTERNS_CREATE, PATTERNS_MODIFY,  
+ *  PATTERNS_DELETE, and 'files'
+ *  
+ *  @TODO: Attention: the return values has changed. Before was an array of tag=>module
+ *  now you get the info with tag['module']
+ *  
+ *  @return array $tag_modules The tag_modules index built according to the parameters
+ */
+function patterns_get_tagmodules_index($tag_name = NULL, $id = NULL) {
   static $tag_modules;
   
   // Index not yet built 
@@ -610,7 +637,20 @@ function patterns_get_tagmodules_index() {
     }
   } 
   
-  return $tag_modules;
+  return _patterns_scan_tagmodules_index ($tag_modules, $tag_name, $id);
+}
+
+function _patterns_scan_tagmodules_index ($tagmodules, $tag, $id) {
+  
+  if (empty($tag)) {
+    return $tagmodules;
+  }
+  else if (empty($action)) {
+    return $tagmodules[$tag];
+  }
+  else {
+    return $tagmodules[$tag][$id];
+  }
 }
 
 

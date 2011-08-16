@@ -148,9 +148,8 @@ function _patterns_parse_tag($data, &$index = 0) {
 
 
 /**
- * Create a concise description of the Action.
- * 
- * Returns an array containing the following info:
+ * Scan the actions_map array and return info about the file the action was coming
+ * from with the following info:
  * 
  * - index of the action within the batch_set
  * - title of the pattern
@@ -191,23 +190,23 @@ function _patterns_analyze_patternscan($patternscan) {
   
   $msgs = array();
     
-    if ($patternscan['info'] == 0){       
+    if ($patternscan['info'] == 0) {       
         $msgs[] = 'Info section is missing.';
     }
         
-    if ($patternscan['info'] > 1){
+    if ($patternscan['info'] > 1) {
         $msgs[] = 'Pattern can contain only one \'info\' section';
     }
         
-    if ($patternscan['modules'] > 1){
+    if ($patternscan['modules'] > 1) {
         $msgs[] = 'Pattern can contain only one \'modules\' section';
     }
         
-    if (count($patternscan['other_sections']) == 0){ 
+    if (count($patternscan['other_sections']) == 0) { 
         $msgs[] = 'Pattern does not contain any action';
     }
         
-    if (count($patternscan['empties']) > 0){
+    if (count($patternscan['empties']) > 0) {
         $msgs[] = 'Pattern contains empty actions: ' . implode(', ', $patternscan['empties']);
     }
   

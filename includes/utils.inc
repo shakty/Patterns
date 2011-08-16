@@ -669,3 +669,19 @@ function patterns_results ($status = PATTERNS_SUCCESS, $msg = 'Execution success
                 'result' => $result,
               );
 }
+/**
+ * Check if a (supposedly) array is actually correctly formatted as a patterns_results
+ * 
+ * @param mixed $results the array to check;
+ * 
+ * @return TRUE if correct, FALSE otherwise
+ */
+function _patterns_is_patterns_results ($results) {
+  
+  // It is the only mandatory field
+  if (!isset($return['status'])){  
+    return FALSE;
+  }
+ 
+  return TRUE;
+}
