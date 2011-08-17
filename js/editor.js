@@ -1,9 +1,11 @@
 window.onload = function() {
 	
 
-	var url = location.href.substring(0,location.href.lastIndexOf('edit/')) + 'validate';
+	
 		
 	(function () {
+		
+		var url = location.href.substring(0,location.href.lastIndexOf('edit/')) + 'validate';
 
 	    var editor = CodeMirror.fromTextArea(document.getElementById("edit-content"), {
 	        lineNumbers: true,
@@ -28,22 +30,7 @@ window.onload = function() {
 	    var noticeNode = document.createTextNode(fullScreenNotice);
 	    document.getElementById("edit-content").parentNode.appendChild(noticeNode);
 	    
-	    document.getElementById('validate_pattern').onclick = function() {
-	    	document.getElementById('validation_result').innerHTML = '...validating...';
-	    	editor.save();
-	    	jQuery.ajax({
-	    		type: 'POST',
-	    		url: url,
-	    		data: 'pattern='+document.getElementById('edit-content').value,
-	    		success: function ( data, status, xhr ) {
-	    					document.getElementById('validation_result').innerHTML = '<strong>'+data+'</strong>';
-    						//$('validation_result').replaceWith(data);
-    					}
-	    	});
-	    }
-	    
-	    function toggleFullscreenEditing()
-	    {
+	    function toggleFullscreenEditing () {
 	        var editorDiv = jQuery('.CodeMirror-scroll');
 	        if (!editorDiv.hasClass('fullscreen')) {
 	            toggleFullscreenEditing.beforeFullscreen = { height: editorDiv.height(), width: editorDiv.width() }
@@ -59,9 +46,9 @@ window.onload = function() {
 	            editor.refresh();
 	        }
 	    }
-
+	    
+	    window.CO2editor = editor;
+	    
 	})();
 	
 };
-
-//var myCodeMirror = CodeMirror(document.body);
