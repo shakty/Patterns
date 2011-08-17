@@ -43,16 +43,16 @@ function taxonomy_patterns_prepare ($action, $tag, &$data = NULL) {
   if ($tag == 'vocabulary') {
     
       if ( $action == PATTERNS_DELETE ) {
-        $data = _taxonomy_patterns_prepare_vocabulary_delete($data);
+        $data = _taxonomy_patterns_prepare_vocabulary_delete($action, $data);
       } 
       else { // Create or Modify      
-        $data = _taxonomy_patterns_prepare_vocabulary($data);
+        $data = _taxonomy_patterns_prepare_vocabulary($action, $data);
       }
   } 
       
   // TERM
   else if ($tag == 'term') {
-    $data = _taxonomy_patterns_prepare_term($data);
+    $data = _taxonomy_patterns_prepare_term($action, $data);
   }
   
   // TERMS
@@ -112,21 +112,30 @@ function taxonomy_patterns_build ($action, $tag, &$data = NULL, $form_id) {
 }
 
 // Build a patterns actions and parameters
-function taxonomy_patterns_params($action, $tag, &$data = NULL) {
+function taxonomy_patterns_params($action, $form_id, &$data = NULL) {
       
-  if ($tag == 'vocabulary') {
+  if ($form_id == 'taxonomy_form_vocabulary') {
     if ($data['vid']) {
-      $result = array((array)taxonomy_vocabulary_load($data['vid']));
-    }
-    else {
-      $result = array(array());
+      $result = (array)taxonomy_vocabulary_load($data['vid']);
     }
   }
-  else if ( $tag == 'term' && $action == PATTERNS_CREATE ) {
+  else if ( $form_id == 'taxonomy_vocabulary_confirm_delete') {
+    if ($data['vid']) {
+      $result = array($data['vid']);
+    }
+    else if (!isset($data['machine_name'])) {
+      $taxo = taxonomy_vocabulary_machine_name_load($data['machine_name']);
+      $vid = $taxo->vid;
+      if (!empty($vid)) {
+        (array)taxonomy_vocabulary_load($data['vid']);
+      }
+    }
+  }
+  else if ( $form_id == 'taxonomy_form_term') {
     $vocab = taxonomy_vocabulary_load($data['vid']);
     $result = array($data, $vocab);
   }
-  else if ( $tag == 'term' && $action == PATTERNS_DELETE ) {
+  else if ( $form_id == 'taxonomy_term_confirm_delete') {
     $result = array($data['tid']);
   }
       
@@ -136,6 +145,148 @@ function taxonomy_patterns_params($action, $tag, &$data = NULL) {
 // Cleanup any global settings after the action runs
 function taxonomy_patterns_cleanup($action, $tag, &$data = NULL) {
     unset($_POST['op']);
+}
+
+
+
+
+////////////////////////////////////////////////////////
+// Helping Functions
+////////////////////////////////////////////////////////
+
+/*
+ * Does the standard prepararion for a single term given the vocabulary id
+ */
+function _taxonomy_patterns_prepare_term ($action, $data, $vid = NULL) {
+  
+  // Get the vid first
+  
+  if (isset($data['vocabulary'])) {
+    $data['vocabulary_machine_name'] = $data['vocabulary'];
+    unset($data['vocabulary']);
+  }
+  
+  // Set the vocabulary-id if not alraeady present
+  if (!isset($data['vid'])) {
+    // use the parameter if not null
+    if (!empty($vid)) {
+       $data['vid'] = $vid;
+    }
+    // Search for it
+    else {
+      $taxo = taxonomy_vocabulary_machine_name_load($data['vocabulary_machine_name']);
+      $data['vid'] = $taxo->vid;
+    }
+   
+  }
+  
+  if (!isset($data['tid'])) {
+    if (isset($data['name'])) {
+      // TODO: Check this
+      $terms = taxonomy_get_term_by_name($data['name']);
+      
+      // We set it only if there is one and only term with the same name.
+      if(count($terms)==1){
+        $term = array_pop($terms);
+        $data['tid'] = $term->tid;
+      }
+    }
+  }
+  //return 'taxonomy_form_term';
+  
+  
+  if(isset($data['delete'])) {
+    $data['confirm_delete'] = TRUE;
+  }
+  else { // If it was not a delete request do a lot more
+    
+    $default_weight = 0;
+    $default_textformat = 'filtered_html';
+
+    if (!isset($data['format'])) {
+      $data['format'] = $default_textformat; // was ''
+    }
+    
+    if (!isset($data['weight'])) {
+      $data['weight'] = $default_weight;
+    }
+    
+    // @TODO: Check 'tid' => NULL,
+  
+    if (isset($data['descr'])) {
+      $data['description']['value'] = $data['descr'];
+      if (isset($data['descr-format'])) {
+        $data['description']['format'] = $data['descr-format'];
+        unset($data['descr-format']);
+      }
+      else {
+        $data['description']['format'] = $default_textformat;  
+      }
+      
+      unset($data['descr']);
+    }
+  }// End Not Delete
+  
+  return $data;
+}
+
+function _taxonomy_patterns_prepare_vocabulary ($action, $data) {
+  
+  if ($action == PATTERNS_MODIFY) {
+    if (!isset($data['vid'])){
+      
+      // We are modifying the machine_name as well
+      if (isset($data['old_machine_name'])){  
+        $taxo = taxonomy_vocabulary_machine_name_load($data['old_machine_name']);
+        $vid = $taxo->vid;
+      }
+      // We are changing other stuff
+      else if (isset($data['machine_name'])){  
+        $taxo = taxonomy_vocabulary_machine_name_load($data['machine_name']);
+        $vid = $taxo->vid;
+        // The old_machine_name must be set equal to machine_name
+        $data['old_machine_name'] = $data['machine_name'];
+      }
+     
+      if(!empty($vid)) {
+        $data['vid'] = $vid;
+      }
+      
+    } // End: vid missing
+  } // End: PATTERNS_MODIFY
+  
+  $default_weight = 0;
+  $default_hierarchy = 0;
+
+  if (!isset($data['weight'])) {
+    $data['weight'] = $default_weight;
+  }
+  
+  if (!isset($data['hierarchy'])) {
+    $data['hierarchy'] = $default_hierarchy;
+  }
+
+  
+  return $data;
+}
+
+function _taxonomy_patterns_prepare_vocabulary_delete ($action, $data) {
+  // Firt use the vid, if we have it
+  if (isset($data['vid'])) {
+    $taxo = taxonomy_vocabulary_load($data['vid']);
+  }
+  else if (isset($data['machine_name'])) {
+    $taxo = taxonomy_vocabulary_machine_name_load($data['machine_name']);
+  }
+  
+  $data['vid'] = $taxo->vid;
+  $data['name'] = $taxo->machine_name;
+
+  $data['type'] = 'vocabulary';
+  $data['confirm'] =  1;
+  $data['op'] = 'Delete';
+  
+  return $data;
 }
 
 // Return a summary of an action
@@ -214,122 +365,6 @@ function taxonomy_patterns_cleanup($action, $tag, &$data = NULL) {
 //      }
 //    break;
 
-
-
-////////////////////////////////////////////////////////
-// Helping Functions
-////////////////////////////////////////////////////////
-
-/*
- * Does the standard prepararion for a single term given the vocabulary id
- */
-function _taxonomy_patterns_prepare_term ($data, $vid = NULL) {
-  
-  // Get the vid first
-  
-  if (isset($data['vocabulary'])) {
-    $data['vocabulary_machine_name'] = $data['vocabulary'];
-    unset($data['vocabulary']);
-  }
-  
-  // Set the vocabulary-id if not alraeady present
-  if (!isset($data['vid'])) {
-    // use the parameter if not null
-    if (!empty($vid)) {
-       $data['vid'] = $vid;
-    }
-    // Search for it
-    else {
-      $taxo = taxonomy_vocabulary_machine_name_load($data['vocabulary_machine_name']);
-      $data['vid'] = $taxo->vid;
-    }
-   
-  }
-  
-  if (!isset($data['tid'])) {
-    if (isset($data['name'])) {
-      // TODO: Check this
-      $terms = taxonomy_get_term_by_name($data['name']);
-      
-      // We set it only if there is one and only term with the same name.
-      if(count($terms)==1){
-        $term = array_pop($terms);
-        $data['tid'] = $term->tid;
-      }
-    }
-  }
-  //return 'taxonomy_form_term';
-  
-  
-  if(isset($data['delete'])) {
-    $data['confirm_delete'] = TRUE;
-  }
-  else { // If it was not a delete request do a lot more
-    
-    $default_weight = 0;
-    $default_textformat = 'filtered_html';
-
-    if (!isset($data['format'])) {
-      $data['format'] = $default_textformat; // was ''
-    }
-    
-    if (!isset($data['weight'])) {
-      $data['weight'] = $default_weight;
-    }
-    
-    // @TODO: Check 'tid' => NULL,
-  
-    if (isset($data['descr'])) {
-      $data['description']['value'] = $data['descr'];
-      if (isset($data['descr-format'])) {
-        $data['description']['format'] = $data['descr-format'];
-        unset($data['descr-format']);
-      }
-      else {
-        $data['description']['format'] = $default_textformat;  
-      }
-      
-      unset($data['descr']);
-    }
-  }// End Not Delete
-  
-  return $data;
-}
-
-function _taxonomy_patterns_prepare_vocabulary ($data) {
-  
-  $default_weight = 0;
-  $default_hierarchy = 0;
-
-  if (!isset($data['weight'])) {
-    $data['weight'] = $default_weight;
-  }
-  
-  if (!isset($data['hierarchy'])) {
-    $data['hierarchy'] = $default_hierarchy;
-  }
-    
-    return $data;
-}
-
-function _taxonomy_patterns_prepare_vocabulary_delete ($data) {
-  // Firt use the vid, if we have it
-  if (isset($data['vid'])) {
-    $taxo = taxonomy_vocabulary_load($data['vid']);
-  }
-  else if (isset($data['machine_name'])) {
-    $taxo = taxonomy_vocabulary_machine_name_load($data['machine_name']);
-  }
-  
-  $data['vid'] = $taxo->vid;
-  $data['name'] = $taxo->machine_name;
-
-  $data['type'] = 'vocabulary';
-  $data['confirm'] =  1;
-  $data['op'] = 'Delete';
-  
-  return $data;
-}
 
 ///////////////////////////////////////////////////////////////////////////
 // @TODO: Check This

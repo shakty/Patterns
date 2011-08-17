@@ -679,7 +679,7 @@ function patterns_results ($status = PATTERNS_SUCCESS, $msg = 'Execution success
 function _patterns_is_patterns_results ($results) {
   
   // It is the only mandatory field
-  if (!isset($return['status'])){  
+  if (!isset($results['status'])){  
     return FALSE;
   }
  

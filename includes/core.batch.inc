@@ -46,7 +46,14 @@ function patterns_execute_pattern($pattern, $params = array()) {
   
   // Ste: Actions_map seems to be used with includes. Probably we do not need it now.
   // $actions_map = array('patterns' => $pattern_details['info'], 'map' => $pattern_details['actions_map']);
-  $actions_map = array('patterns' => $infos, 'map' => NULL);
+  
+// TODO: Patterns details was returning this in case of recursive includes  
+//  $result['actions_map'][] = array(
+//          'pid'   => $pattern->pid,
+//          'index' => $key,
+//        );
+  
+  $actions_map = array('patterns' => $infos, 'map' => NULL); // Fix this
   ////////////////////////////////////////
   
   
@@ -141,12 +148,15 @@ function patterns_prepare_actions(&$actions, $actions_map) {
 /////////////////////////////////////////////////////////
 // This is in case of included patterns. Not for now    
     
-    $action_location = patterns_locate_action ($data['tag'], $actions_map);
-    $index = $action_location['key'];
-    $pattern_title = $action_location['title'];
-    $pattern_file = $action_location['file'];
-
+//    $action_location = patterns_locate_action ($data['tag'], $actions_map);
+//    $index = $action_location['key'];
+//    $pattern_title = $action_location['title'];
+//    $pattern_file = $action_location['file'];
 /////////////////////////////////////////////////////////
+
+    // TODO: manage multiple pattern includes
+    $pattern_info = reset($actions_map['patterns']);
+    $pattern_title = $pattern_info['title'];
     
     if (!array_key_exists($data['tag'], $tag_modules)) {
       $errors[] = t('Action #%num (%tag) in pattern %title: <%tag> is not a valid tag', array('%num' => $index+1, '%tag' => $data['tag'], '%title' => $pattern_title));
@@ -156,6 +166,7 @@ function patterns_prepare_actions(&$actions, $actions_map) {
       // Validate tags with their appropriate components
       //////////////////////////////////////////////////
       $results = patterns_invoke('validate', $key, &$data);
+      
       if ($results['status'] == PATTERNS_ERR) {
         $errors[] = t('Action #%num (%tag) in pattern %title: !msg', array('!msg' => $error, '%num' => $index+1, '%tag' => $data['tag'], '%title' => $pattern_title));
       }
@@ -204,10 +215,10 @@ function patterns_batch_actions($action, $data, $place, $actions_map, &$context)
 
   $result = patterns_implement_action($action, $data, $context['results']['identifiers'], $place, $actions_map);
 
-  if (!$result['success']) {
+  if ($result['status'] == PATTERNS_ERROR) {
     // we use 'results' to keep track of errors and abort execution if required
     $context['results']['abort'] = TRUE;
-    $context['results']['error_message'] = $result['error_message'];
+    $context['results']['error_message'] = $result['msg'];
   }
 
   if (timer_read('patterns_action') < 1000) {
@@ -299,6 +310,7 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
     $result = patterns_invoke('params', $action, $clone, $form_id, $action_state);
     
     if ($result['status'] == PATTERNS_ERROR) {
+      drupal_set_message($result['msg'],'error');
       return $result;
     }
     
@@ -314,11 +326,6 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
     ///////////////////
     patterns_execute_action($form_id, $action_state, $params);
 
-    
-    if ($result['status'] == PATTERNS_ERROR) {
-      return $result;
-    }
-
     // @TODO: do we need this?
     if ($errors = form_get_errors()) {
       $result['error_message'] = t('Above error(s) occured while executing action #%num (%action) in %title pattern. Error location(s) are: %errors', array('%num' => $index, '%action' => $action_description, '%title' => $pattern_title, '%errors' => str_replace('][', '->', implode(', ', array_keys($errors)))));
@@ -330,6 +337,11 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
     // CLEAN UP: Let a component cleanup after each action
     ////////////////////
     $return = patterns_invoke('cleanup', $action, $clone, $form_id, $action_state);
+    
+      if ($result['status'] == PATTERNS_ERROR) {
+      drupal_set_message($result['msg'],'error');
+      // do not return here
+    }
    
    }
 
