@@ -404,6 +404,7 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
   $disclaimer = t('Please be sure to backup your site before running a pattern. Patterns are not guaranteed to be reversable in case they do not execute well or if unforseen side effects occur.');
 
   $pattern = patterns_get_pattern($pid);
+  // TODO: check if $patterns === FALSE
 
   return confirm_form($form, t('Proceed with running pattern %pattern?', array('%pattern' => $pattern->title)), 'admin/patterns', $disclaimer);
 }
