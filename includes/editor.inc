@@ -26,6 +26,32 @@ function patterns_editor ($pattern) {
   return $editor;
 }
 
+/**
+ * Display the page for create a new pattern.
+ * 
+ */
+function patterns_create_page($pid = NULL) {
+  
+  $info = array();
+  $pattern = array();
+  
+  if (is_numeric($pid)) {
+    $pattern = patterns_get_pattern($pid); 
+  
+    if ($pattern->content) {
+      $info['Title'][] = t('Title:');
+      $info['Title'][] = $pattern->title;
+      $info['Path'][] = t('Path:');
+      $info['Path'][] = $pattern->file;  
+    }
+  }
+  $out = '<h6>Info</h6>';
+  $out.= theme('table', array('rows' => $info, 'attributes' => array('class' => 'patterns-list')));  
+  $out.= patterns_editor($pattern);
+
+  return $out;
+}
+
 /*
  * Display the page for editing patterns.
  * 
@@ -180,9 +206,6 @@ function patterns_edit($form, &$form_state, $pattern) {
  * Validate pattern modifications (still to do...)
  */
 function patterns_edit_validate($form, &$form_state) {
-  // @TODO Do validations....
-  // Ste: was
-  //$path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
   
   // real_path(public) returns the path to the files dir
   $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
