@@ -1,0 +1,753 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="generator" content="AsciiDoc 8.4.4" />
+<title>Drupal 7 Patterns Documentation</title>
+<style type="text/css">
+/* Debug borders */
+p, li, dt, dd, div, pre, h1, h2, h3, h4, h5, h6 {
+/*
+  border: 1px solid red;
+*/
+}
+
+body {
+  margin: 1em 5% 1em 5%;
+}
+
+a {
+  color: blue;
+  text-decoration: underline;
+}
+a:visited {
+  color: fuchsia;
+}
+
+em {
+  font-style: italic;
+  color: navy;
+}
+
+strong {
+  font-weight: bold;
+  color: #083194;
+}
+
+tt {
+  color: navy;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #527bbd;
+  font-family: sans-serif;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+
+h1, h2, h3 {
+  border-bottom: 2px solid silver;
+}
+h2 {
+  padding-top: 0.5em;
+}
+h3 {
+  float: left;
+}
+h3 + * {
+  clear: left;
+}
+
+div.sectionbody {
+  font-family: serif;
+  margin-left: 0;
+}
+
+hr {
+  border: 1px solid silver;
+}
+
+p {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+ul, ol, li > p {
+  margin-top: 0;
+}
+
+pre {
+  padding: 0;
+  margin: 0;
+}
+
+span#author {
+  color: #527bbd;
+  font-family: sans-serif;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+span#email {
+}
+span#revision {
+  font-family: sans-serif;
+}
+
+div#footer {
+  font-family: sans-serif;
+  font-size: small;
+  border-top: 2px solid silver;
+  padding-top: 0.5em;
+  margin-top: 4.0em;
+}
+div#footer-text {
+  float: left;
+  padding-bottom: 0.5em;
+}
+div#footer-badges {
+  float: right;
+  padding-bottom: 0.5em;
+}
+
+div#preamble {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+div.tableblock, div.imageblock, div.exampleblock, div.verseblock,
+div.quoteblock, div.literalblock, div.listingblock, div.sidebarblock,
+div.admonitionblock {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+div.admonitionblock {
+  margin-top: 2.5em;
+  margin-bottom: 2.5em;
+}
+
+div.content { /* Block element content. */
+  padding: 0;
+}
+
+/* Block element titles. */
+div.title, caption.title {
+  color: #527bbd;
+  font-family: sans-serif;
+  font-weight: bold;
+  text-align: left;
+  margin-top: 1.0em;
+  margin-bottom: 0.5em;
+}
+div.title + * {
+  margin-top: 0;
+}
+
+td div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content + div.title {
+  margin-top: 0.0em;
+}
+
+div.sidebarblock > div.content {
+  background: #ffffee;
+  border: 1px solid silver;
+  padding: 0.5em;
+}
+
+div.listingblock > div.content {
+  border: 1px solid silver;
+  background: #f4f4f4;
+  padding: 0.5em;
+}
+
+div.quoteblock {
+  padding-left: 2.0em;
+  margin-right: 10%;
+}
+div.quoteblock > div.attribution {
+  padding-top: 0.5em;
+  text-align: right;
+}
+
+div.verseblock {
+  padding-left: 2.0em;
+  margin-right: 10%;
+}
+div.verseblock > div.content {
+  white-space: pre;
+}
+div.verseblock > div.attribution {
+  padding-top: 0.75em;
+  text-align: left;
+}
+/* DEPRECATED: Pre version 8.2.7 verse style literal block. */
+div.verseblock + div.attribution {
+  text-align: left;
+}
+
+div.admonitionblock .icon {
+  vertical-align: top;
+  font-size: 1.1em;
+  font-weight: bold;
+  text-decoration: underline;
+  color: #527bbd;
+  padding-right: 0.5em;
+}
+div.admonitionblock td.content {
+  padding-left: 0.5em;
+  border-left: 2px solid silver;
+}
+
+div.exampleblock > div.content {
+  border-left: 2px solid silver;
+  padding: 0.5em;
+}
+
+div.imageblock div.content { padding-left: 0; }
+div.imageblock img { border: 1px solid silver; }
+span.image img { border-style: none; }
+
+dl {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+dt {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+  font-style: normal;
+  color: navy;
+}
+dd > *:first-child {
+  margin-top: 0.1em;
+}
+
+ul, ol {
+    list-style-position: outside;
+}
+ol.arabic {
+  list-style-type: decimal;
+}
+ol.loweralpha {
+  list-style-type: lower-alpha;
+}
+ol.upperalpha {
+  list-style-type: upper-alpha;
+}
+ol.lowerroman {
+  list-style-type: lower-roman;
+}
+ol.upperroman {
+  list-style-type: upper-roman;
+}
+
+div.compact ul, div.compact ol,
+div.compact p, div.compact p,
+div.compact div, div.compact div {
+  margin-top: 0.1em;
+  margin-bottom: 0.1em;
+}
+
+div.tableblock > table {
+  border: 3px solid #527bbd;
+}
+thead {
+  font-family: sans-serif;
+  font-weight: bold;
+}
+tfoot {
+  font-weight: bold;
+}
+td > div.verse {
+  white-space: pre;
+}
+p.table {
+  margin-top: 0;
+}
+/* Because the table frame attribute is overriden by CSS in most browsers. */
+div.tableblock > table[frame="void"] {
+  border-style: none;
+}
+div.tableblock > table[frame="hsides"] {
+  border-left-style: none;
+  border-right-style: none;
+}
+div.tableblock > table[frame="vsides"] {
+  border-top-style: none;
+  border-bottom-style: none;
+}
+
+
+div.hdlist {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+div.hdlist tr {
+  padding-bottom: 15px;
+}
+dt.hdlist1.strong, td.hdlist1.strong {
+  font-weight: bold;
+}
+td.hdlist1 {
+  vertical-align: top;
+  font-style: normal;
+  padding-right: 0.8em;
+  color: navy;
+}
+td.hdlist2 {
+  vertical-align: top;
+}
+div.hdlist.compact tr {
+  margin: 0;
+  padding-bottom: 0;
+}
+
+.comment {
+  background: yellow;
+}
+
+@media print {
+  div#footer-badges { display: none; }
+}
+
+div#toctitle {
+  color: #527bbd;
+  font-family: sans-serif;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-top: 1.0em;
+  margin-bottom: 0.1em;
+}
+
+div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+div.toclevel2 {
+  margin-left: 2em;
+  font-size: 0.9em;
+}
+div.toclevel3 {
+  margin-left: 4em;
+  font-size: 0.9em;
+}
+div.toclevel4 {
+  margin-left: 6em;
+  font-size: 0.9em;
+}
+/* Workarounds for IE6's broken and incomplete CSS2. */
+
+div.sidebar-content {
+  background: #ffffee;
+  border: 1px solid silver;
+  padding: 0.5em;
+}
+div.sidebar-title, div.image-title {
+  color: #527bbd;
+  font-family: sans-serif;
+  font-weight: bold;
+  margin-top: 0.0em;
+  margin-bottom: 0.5em;
+}
+
+div.listingblock div.content {
+  border: 1px solid silver;
+  background: #f4f4f4;
+  padding: 0.5em;
+}
+
+div.quoteblock-attribution {
+  padding-top: 0.5em;
+  text-align: right;
+}
+
+div.verseblock-content {
+  white-space: pre;
+}
+div.verseblock-attribution {
+  padding-top: 0.75em;
+  text-align: left;
+}
+
+div.exampleblock-content {
+  border-left: 2px solid silver;
+  padding-left: 0.5em;
+}
+
+/* IE6 sets dynamically generated links as visited. */
+div#toc a:visited { color: blue; }
+</style>
+<script type="text/javascript">
+/*<![CDATA[*/
+window.onload = function(){generateToc(4)}
+/* Author: Mihai Bazon, September 2002
+ * http://students.infoiasi.ro/~mishoo
+ *
+ * Table Of Content generator
+ * Version: 0.4
+ *
+ * Feel free to use this script under the terms of the GNU General Public
+ * License, as long as you do not remove or alter this notice.
+ */
+
+ /* modified by Troy D. Hanson, September 2006. License: GPL */
+ /* modified by Stuart Rackham, October 2006. License: GPL */
+
+function getText(el) {
+  var text = "";
+  for (var i = el.firstChild; i != null; i = i.nextSibling) {
+    if (i.nodeType == 3 /* Node.TEXT_NODE */) // IE doesn't speak constants.
+      text += i.data;
+    else if (i.firstChild != null)
+      text += getText(i);
+  }
+  return text;
+}
+
+function TocEntry(el, text, toclevel) {
+  this.element = el;
+  this.text = text;
+  this.toclevel = toclevel;
+}
+
+function tocEntries(el, toclevels) {
+  var result = new Array;
+  var re = new RegExp('[hH]([2-'+(toclevels+1)+'])');
+  // Function that scans the DOM tree for header elements (the DOM2
+  // nodeIterator API would be a better technique but not supported by all
+  // browsers).
+  var iterate = function (el) {
+    for (var i = el.firstChild; i != null; i = i.nextSibling) {
+      if (i.nodeType == 1 /* Node.ELEMENT_NODE */) {
+        var mo = re.exec(i.tagName)
+        if (mo)
+          result[result.length] = new TocEntry(i, getText(i), mo[1]-1);
+        iterate(i);
+      }
+    }
+  }
+  iterate(el);
+  return result;
+}
+
+// This function does the work. toclevels = 1..4.
+function generateToc(toclevels) {
+  var toc = document.getElementById("toc");
+  var entries = tocEntries(document.getElementsByTagName("body")[0], toclevels);
+  for (var i = 0; i < entries.length; ++i) {
+    var entry = entries[i];
+    if (entry.element.id == "")
+      entry.element.id = "toc" + i;
+    var a = document.createElement("a");
+    a.href = "#" + entry.element.id;
+    a.appendChild(document.createTextNode(entry.text));
+    var div = document.createElement("div");
+    div.appendChild(a);
+    div.className = "toclevel" + entry.toclevel;
+    toc.appendChild(div);
+  }
+  if (entries.length == 0)
+    document.getElementById("header").removeChild(toc);
+}
+/*]]>*/
+</script>
+</head>
+<body>
+<div id="header">
+<h1>Drupal 7 Patterns Documentation</h1>
+<span id="author">Qscience Team</span><br />
+<span id="revision">version 0.1,</span>
+Aug 2011
+<div id="toc">
+  <div id="toctitle">Table of Contents</div>
+  <noscript><p><b>JavaScript must be enabled in your browser to display the table of contents.</b></p></noscript>
+</div>
+</div>
+<div id="preamble">
+<div class="sectionbody">
+</div>
+</div>
+<h2 id="_introduction">1. Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Complex websites and web applications can be created by combining
+configurations of Modules, Fields, Content Types, Menus, Blocks,
+Categories, Roles / Permissions, etc.. This site setup and
+configuration process is a very time consuming and repetitive
+bottleneck.</p></div>
+<div class="paragraph"><p>Patterns module is built to bypass this bottleneck by managing and
+automating site configuration. Site configuration is stored in YAML or
+XML files called Patterns which are easy to read, modify, manage, &amp;
+share and can be executed manually or as a part of an automated web
+site deployment.</p></div>
+</div>
+<h2 id="_installation">2. Installation</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Patterns is installed as any other Drupal module. However, it makes
+uses of external libraries which must be installed separately:
+<strong><tt>Spyc</tt></strong> and <strong><tt>Codemirror</tt></strong>.</p></div>
+<div class="ulist"><ul>
+<li>
+<p>
+<a href="http://code.google.com/p/spyc/"><strong><tt>Spyc</tt></strong></a> is a native PHP library used to parse YAML files. It is
+   necessary for the correct functioning of Patterns.
+</p>
+</li>
+<li>
+<p>
+<a href="http://codemirror.net/"><strong><tt>Codemirror</tt></strong></a> is a Javascript library which
+   considerably enhances the interface of the Patterns editor page. It
+   is <em>not</em> necessary, for the correct functioning of Patterns, but
+   recommended.
+</p>
+</li>
+</ul></div>
+<div class="paragraph"><p>Both libraries should be installed under <strong><tt>sites/all/libraries/</tt></strong>.</p></div>
+</div>
+<h2 id="pattern-example">3. What is a Pattern?</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>A pattern is a file is composed by a <strong><tt>info</tt></strong> section and a sequence of
+<em>actions</em> of the type <strong><tt>create</tt></strong>, <strong><tt>modify</tt></strong>, <strong><tt>delete</tt></strong> grouped in
+categories (sections).</p></div>
+<div class="paragraph"><p>Categories can be arbitrarily defined (excluding the
+<a href="#reserved-words">reserved words</a>) and are executed sequentially.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt># This is a comment
+# Example Pattern
+
+info: # mandatory name
+  title: New Vocabulary
+  description: Adds a new vocabulary to the website
+  author: QScience
+  category: Examples
+
+actions: # any name is good for this category
+
+  create:
+        tag: vocabulary
+        name: Another Vocabulary
+        machine_name: anothervoc
+        description: Another interesting vocabulary
+        hierarchy: 0
+
+  modify:
+        tag: vocabulary
+        machine_name: anothervoc
+        description: It was not that interesting after all
+        # vid: 2
+
+  delete:
+        tag: vocabulary
+        machine_name: anothervoc
+        # vid: 2</tt></pre>
+</div></div>
+<div class="paragraph"><p>Two other optional sections names are <strong><tt>modules</tt></strong>, which explicitly
+defines a list of modules to enable during the execution of the
+pattern, and <strong><tt>include</tt></strong>, which gives include the actions of another
+pattern in the current one. <strong>More explanation later</strong> <strong>TODO</strong></p></div>
+<h3 id="reserved-words">3.1. Reserved Words</h3><div style="clear:left"></div>
+<div class="ulist"><ul>
+<li>
+<p>
+<strong><tt>info</tt></strong>
+</p>
+</li>
+<li>
+<p>
+<strong><tt>modules</tt></strong>
+</p>
+</li>
+<li>
+<p>
+<strong><tt>include</tt></strong>
+</p>
+</li>
+</ul></div>
+</div>
+<h2 id="_how_patterns_works">4. How Patterns works</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Pattern works by parsing the pattern file and then constructing a form
+which contains already the values for specific elements. The form is
+then validated and submitted, as the <em>submit</em> button was pressed from
+a browser window. The only difference is that the process is sent to
+the Drupal <em>batch</em> system, which makes sure that the php script will not
+timeout.</p></div>
+</div>
+<h2 id="_how_to_implement_patterns_in_your_custom_module">5. How to implement Patterns in your custom module</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>You need to implement 5 patterns hooks, here explained in the same
+order as they are called by Patterns module.</p></div>
+<div class="sidebarblock">
+<div class="sidebar-content">
+<div class="ulist"><ul>
+<li>
+<p>
+<strong><tt>hook_patterns()</tt></strong>: tells Drupal that the module is able to handle
+  pattern configurations, and specifies which tags and forms are
+  supported.
+</p>
+</li>
+<li>
+<p>
+<strong><tt>hook_patterns_prepare($action, $tag, &amp;$data)</tt></strong>: checks the input and adds default
+ values. Eventually, it can raise errors which halts further execution
+ of the pattern.
+</p>
+</li>
+<li>
+<p>
+<strong><tt>hook_patterns_build($action, $tag, &amp;$data)</tt></strong>: gets the form data for the
+ action. This can either be just the form values, or it can be the
+ full <em>form_state</em> object.
+</p>
+</li>
+<li>
+<p>
+<strong><tt>hook_patterns_params($action, $tag, &amp;$data)</tt></strong>: returns extra parameters that the form may require.
+</p>
+</li>
+<li>
+<p>
+<strong><tt>hook_patterns_cleanup($action, $tag, &amp;$data)</tt></strong>: performs optional additional operations,
+   after the execution of the action is finished.
+</p>
+</li>
+</ul></div>
+</div></div>
+<div class="paragraph"><p>where <strong><tt>$action</tt></strong> is one of the actions <strong><tt>create</tt></strong>, <strong><tt>modify</tt></strong>,
+<strong><tt>delete</tt></strong>, and <strong><tt>$tag</tt></strong> is the specific command to execute
+(e.g. <strong><tt>vocabulary</tt></strong>, <strong><tt>field</tt></strong>, etc.).</p></div>
+<div class="paragraph"><p><strong><tt>hook_patterns</tt></strong> is called independently from the others hooks, which
+ are invoked sequentially to perform an action. In particular, if
+ calling <strong><tt>hook_patterns_prepare</tt></strong> does not raise error, a batch set
+ will be created which will:</p></div>
+<div class="olist arabic"><ol class="arabic">
+<li>
+<p>
+execute <strong><tt>hook_patterns_build</tt></strong>, and <strong><tt>hook_patterns_params</tt></strong>;
+</p>
+</li>
+<li>
+<p>
+submit the form;
+</p>
+</li>
+<li>
+<p>
+execute <strong><tt>hook_patterns_cleanup</tt></strong>.
+</p>
+</li>
+</ol></div>
+<h3 id="_return_values">5.1. Return values</h3><div style="clear:left"></div>
+<h4 id="_strong_tt_hook_patterns_tt_strong">5.1.1. <strong><tt>hook_patterns()</tt></strong></h4>
+<div class="paragraph"><p>Returns the following array of actions:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>$action[] = array('action' =&gt; $action, 'tag' =&gt; $tag, 'descr' =&gt; 'Description', form_ids =&gt; array('form1_id','form2_id',...));
+$action[] = ...</tt></pre>
+</div></div>
+<div class="paragraph"><p>where <strong><tt>$action</tt></strong> is one of the actions <strong><tt>create</tt></strong>, <strong><tt>modify</tt></strong>,
+<strong><tt>delete</tt></strong>, and <strong><tt>$tag</tt></strong> is the specific command to execute
+(e.g. <strong><tt>vocabulary</tt></strong>, <strong><tt>field</tt></strong>, etc.), and <strong><tt>form_ids</tt></strong> is an array
+which contains the id of the forms which will be called when running
+that specific action.</p></div>
+<h4 id="_strong_tt_hook_patterns_build_tt_strong_strong_tt_hook_patterns_params_tt_strong_strong_tt_hook_patterns_cleanup_tt_strong">5.1.2. <strong><tt>hook_patterns_build</tt></strong>, <strong><tt>hook_patterns_params</tt></strong>, <strong><tt>hook_patterns_cleanup</tt></strong></h4>
+<div class="paragraph"><p>All the other hooks returns the following special associative array:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>$result['success'] = TRUE/FALSE;
+$result['msg']     = array (msg  =&gt; 'some text', type =&gt; 'ERR'/'WARN'/'NOTICE');
+$result['return']  = 'whatever_return_value';
+
+return $result;</tt></pre>
+</div></div>
+</div>
+<h2 id="_pattern_execution_modes">6. Pattern execution modes</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Patterns execution can follow two distinct behaviors:</p></div>
+<div class="olist arabic"><ol class="arabic">
+<li>
+<p>
+<strong>Extend</strong>: adds the settings defined in the pattern file into the
+    current instance, and leave untouched what not explicitly
+    specified.
+</p>
+</li>
+<li>
+<p>
+<strong>Run-Over</strong>: re-configures the whole web site in order to create an
+    instance with <em>exactly</em> the settings defined by the pattern, and
+    removes everything not explicitly specified.
+</p>
+</li>
+</ol></div>
+<h3 id="_differences_between_extend_and_run_over">6.1. Differences between Extend and Run-Over</h3><div style="clear:left"></div>
+<div class="paragraph"><p>The action <tt>create</tt> changes according to the behavior selected for the
+execution.</p></div>
+<div class="ulist"><ul>
+<li>
+<p>
+<strong>create</strong>:
+</p>
+<div class="olist arabic"><ol class="arabic">
+<li>
+<p>
+<em>extends</em> : always create a new entity;
+</p>
+</li>
+<li>
+<p>
+<em>run-over</em>:  always check if the target entity is existing, if not creates it.;
+</p>
+</li>
+</ol></div>
+</li>
+<li>
+<p>
+<strong>modify</strong>: checks if the target entity is existing and then modify
+   it. Does nothing if the entity is not found;
+</p>
+</li>
+<li>
+<p>
+<strong>delete</strong>: checks if the target entity is existing and then delete
+   it. Does nothing if the entity is not found.
+</p>
+</li>
+</ul></div>
+<h4 id="_entity_matching">6.1.1. Entity Matching</h4>
+<div class="paragraph"><p>Entities are matched on the base of their <tt>id</tt>, if provided, or more
+commonly on their <tt>machine name</tt>.</p></div>
+</div>
+<h2 id="_list_of_all_currently_supported_tags">7. List of all currently supported tags</h2>
+<div class="sectionbody">
+<div class="ulist"><ul>
+<li>
+<p>
+field
+</p>
+</li>
+<li>
+<p>
+vocabulary
+</p>
+</li>
+<li>
+<p>
+term
+</p>
+</li>
+</ul></div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Version 0.1<br />
+Last updated 2011-08-16 10:11:40 CEST
+</div>
+</div>
+</body>
+</html>

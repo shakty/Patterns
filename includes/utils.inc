@@ -115,7 +115,10 @@ function patterns_edit_page($pid = NULL) {
   $form = drupal_get_form('patterns_edit', $pattern);
   $out .=drupal_render($form);
   
-  patterns_load_co2 ();
+  if(!patterns_load_co2()) {
+    $co2 = l('Codemirror','http://codemirror.net/');
+    $out.= t('Install the !co2 library in sites/all/libraries for advanced editing functionalities',array('!co2'=>$co2));
+  }
   
   return $out;
 }
@@ -606,7 +609,12 @@ function patterns_load_co2 () {
     // Adding Pattern Customization for Co2
     drupal_add_css(drupal_get_path('module', 'patterns').'/css/editor.css');
     drupal_add_js(drupal_get_path('module', 'patterns').'/js/editor.js');
+    
+    return TRUE;
   }
+  
+  return FALSE;
+  
 }
 
 /**
@@ -644,4 +652,36 @@ function _get_file_phpdoc_version($path) {
     }
   }
   return $version;
+}
+
+/**
+ * Helper function to create the associative array of returned values from
+ * an invoked function.
+ * 
+ * @param mixed $status [PATTERNS_SUCCESS,PATTERNS_WARN,PATTERNS_ERR]
+ * @param array $msg the msg and its type 
+ * @param mixed $result Extra data to be returned
+ */
+function patterns_results ($status = PATTERNS_SUCCESS, $msg = 'Execution successful', $result = NULL) {
+  
+  return array( 'status' => $status,
+                'msg' => $msg,
+                'result' => $result,
+              );
+}
+/**
+ * Check if a (supposedly) array is actually correctly formatted as a patterns_results
+ * 
+ * @param mixed $results the array to check;
+ * 
+ * @return TRUE if correct, FALSE otherwise
+ */
+function _patterns_is_patterns_results ($results) {
+  
+  // It is the only mandatory field
+  if (!isset($results['status'])){  
+    return FALSE;
+  }
+ 
+  return TRUE;
 }
