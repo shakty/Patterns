@@ -663,7 +663,7 @@ function _get_file_phpdoc_version($path) {
  * @param mixed $result Extra data to be returned
  */
 function patterns_results ($status = PATTERNS_SUCCESS, $msg = 'Execution successful', $result = NULL) {
-  
+  // TODO: t($msg)
   return array( 'status' => $status,
                 'msg' => $msg,
                 'result' => $result,

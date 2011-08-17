@@ -5,7 +5,114 @@
  * @file
  * Patterns component for system related operations.
  */
-function system_patterns($op, $id = NULL, &$data = NULL) {
+function system_patterns () {
+
+  $files = array('modules/system/system.admin.inc');
+  // TODO: Not every action might need this file.
+
+  $actions['modules'] = array('descr' => t('Enable/Disable Modules'), 
+                                 PATTERNS_CREATE => array('system_modules'),
+                                 PATTERNS_DELETE => array('system_modules'),
+                                 'files'  => $files,
+                                );
+
+  $actions['themes'] = array('descr' => t('Enable (and set default)/Disable Themes'), 
+                                 PATTERNS_CREATE => array('set_active_theme'),
+                                 PATTERNS_DELETE => array('set_active_theme'),
+                                 'files'  => $files,
+                                );
+
+  $actions['form'] = array('descr' => t('Submit Custom Forms'),
+                           PATTERNS_CREATE => array('TODO'), // TODO: Cannot specify forms at this time.
+                           'files'  => $files,
+                          );
+
+  $actions['call_php_func'] = array('descr' => t('Call PHP Functions'),
+                           PATTERNS_CREATE => array('call_php_func_form'),
+                           'files'  => $files,
+                          );
+  $actions['variables'] = array('descr'  => t('Set/Modify/Delete System Variables'), 
+                           PATTERNS_CREATE => array('variables'),
+                           PATTERNS_MODIFY => array('variables'),
+                           PATTERNS_DELETE => array('variables'),
+                           'files'  => $files,
+                          );
+
+  $actions['variable'] = $actions['variables']; // Alias
+                          
+  return $actions;                
+  
+}
+
+function system_patterns_actions() {
+  return array(
+        'system_modules' => t('System: Enable or disable module'),
+        'set_active_theme' => t('System: Set active theme'), // Drupal7.x changed the theme setting form, so we use a custom one
+        'form' => t('System: Execute form'),
+        'call_php_func_form' => t('Call PHP function: Call function'),
+        'variables' => t('System: Set or delete variables'),
+        'variable' => t('System: Set or delete variable'),
+  );
+}
+
+// Prepare data for processing
+function system_patterns_prepare($action, $tag, &$data = NULL) {
+  if ($tag == 'theme') {
+    if ($data['value']) {
+      $data['theme_default'] = $data['value'];
+    }
+  }
+  // TODO: other tags
+  
+  return patterns_results();
+}
+
+// Validate the values for an action before running the pattern
+function system_patterns_validate ($action, $tag, &$data = NULL) {
+  $status = PATTERNS_SUCCESS;
+  $msg = '';
+
+  if ($tag == 'theme') {
+    // TODO: do this the Drupal7.x way
+    $themes = system_rebuild_theme_data();
+    if (!array_key_exists($data['theme_default'], $themes)) {
+      $status = PATTERNS_ERR;
+      $msg = t('%theme is not a valid theme.', array('%theme' => $data['theme_default']));
+    }
+  }
+  // TODO: other tags
+
+  return patterns_results($status, $msg);
+}
+
+// Prepare for valid processing of this type of component
+function system_patterns_build ($action, $tag, &$data = NULL, $form_id) {
+	if ($form_id == 'set_active_theme') {
+    $data['op'] = t('Save configuration');
+    //module_load_include('inc', 'system', 'system.admin');
+    // return $data;
+	}
+	// TODO: other forms
+  return patterns_results();
+}
+
+// Build a patterns actions and parameters
+function system_patterns_params($action, $form_id, &$data = NULL) {
+  if ($form_id == 'set_active_theme') {
+    $result = array($data['theme_default']);
+  }
+  // TODO: other forms
+  return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
+}
+
+// Cleanup any global settings after the action runs
+function system_patterns_cleanup($action, $tag, &$data = NULL) {
+  if ($tag == 'modules') {
+    menu_rebuild();
+  }
+}
+
+function system_patterns_old($op, $id = NULL, &$data = NULL) {
   static $modules_info;
 
   switch ($op) {

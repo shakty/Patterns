@@ -9,20 +9,20 @@ function taxonomy_patterns () {
   // old way
   //return array('vocabulary', 'term', 'terms');
 
-  $actions['vocabulary'] = array('descr' => t('Creates/Modify/Delete Taxonomy Vocabularies'), 
+  $actions['vocabulary'] = array('descr' => t('Create/Modify/Delete Taxonomy Vocabularies'), 
                                  PATTERNS_CREATE => array('taxonomy_form_vocabulary'),
                                  PATTERNS_MODIFY => array('taxonomy_form_vocabulary'),
                                  PATTERNS_DELETE => array('taxonomy_vocabulary_confirm_delete'),
                                  'files'  => array('modules/taxonomy/taxonomy.admin.inc'),
                                 );
-                     
-  $actions['term'] = array('descr'  => t('Creates/Modify/Delete Taxonomy Terms'), 
+
+  $actions['term'] = array('descr'  => t('Create/Modify/Delete Taxonomy Terms'), 
                            PATTERNS_CREATE => array('taxonomy_form_term'),
                            PATTERNS_MODIFY => array('taxonomy_form_term'),
                            PATTERNS_DELETE => array('taxonomy_term_confirm_delete'),
                            'files'  => array('modules/taxonomy/taxonomy.admin.inc'),
                           );
-                          
+
   return $actions;                
   
 }
@@ -32,17 +32,17 @@ function taxonomy_patterns_actions() {
       return array(
         'taxonomy_form_vocabulary' => t('Taxonomy: Add or edit vocabulary'),
         'taxonomy_form_term' => t('Taxonomy: Add or edit a term to a vocabulary'),
-        'taxonomy_vocabulary_confirm_delete' => t('Taxonomy: delete a vocabulary'),
+        'taxonomy_vocabulary_confirm_delete' => t('Taxonomy: Delete a vocabulary'),
       );
 }  
 
 // Prepare data for processing
-function taxonomy_patterns_prepare ($action, $tag, &$data = NULL) {
+function taxonomy_patterns_prepare($action, $tag, &$data = NULL) {
     
   // VOCABULARY
   if ($tag == 'vocabulary') {
     
-      if ( $action == PATTERNS_DELETE ) {
+      if ($action == PATTERNS_DELETE ) {
         $data = _taxonomy_patterns_prepare_vocabulary_delete($action, $data);
       } 
       else { // Create or Modify      
@@ -95,19 +95,19 @@ function taxonomy_patterns_validate ($action, $tag, &$data = NULL) {
         }
       }
       
-      // we can't procede without valid vocabulary ID
+      // we can't proceed without valid vocabulary ID
       if (empty($data['vid'])) {
         $status = PATTERNS_ERR;
         $msg = t("Vocabulary %vocab doesn't exist.", array('%vocab' => $data['vocabulary']));
       }
     }
     
-    return patterns_results($status,$msg);
+    return patterns_results($status, $msg);
 }
 
 // Prepare for valid processing of this type of component
 function taxonomy_patterns_build ($action, $tag, &$data = NULL, $form_id) {
-  module_load_include('inc', 'taxonomy', 'taxonomy.admin');
+  module_load_include('inc', 'taxonomy', 'taxonomy.admin'); // TODO: Isn't this already loaded?
   return patterns_results();
 }
 
@@ -139,7 +139,7 @@ function taxonomy_patterns_params($action, $form_id, &$data = NULL) {
     $result = array($data['tid']);
   }
       
-  return patterns_results(PATTERNS_SUCCESS,'Success',$result);
+  return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
 
 // Cleanup any global settings after the action runs
