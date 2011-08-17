@@ -10,11 +10,10 @@
 function system_patterns () {
 
   $files = array('modules/system/system.admin.inc');
-  // TODO: Not every action might need this file.
 
   $actions['modules'] = array('descr' => t('Enable/Disable Modules'), 
-                                 PATTERNS_CREATE => array('system_modules'),
-                                 PATTERNS_DELETE => array('system_modules'),
+                                 PATTERNS_CREATE => array(),
+                                 PATTERNS_DELETE => array(),
                                  'files'  => $files,
                                 );
 
@@ -25,19 +24,17 @@ function system_patterns () {
                                 );
 
   $actions['form'] = array('descr' => t('Submit Custom Forms'),
-                           PATTERNS_CREATE => array('TODO'), // TODO: Cannot specify forms at this time.
-                           'files'  => $files,
+                           PATTERNS_CREATE => array(), // TODO: Cannot specify forms at this time.
                           );
 
   $actions['call_php_func'] = array('descr' => t('Call PHP Functions'),
                            PATTERNS_CREATE => array('call_php_func_form'),
-                           'files'  => $files,
                           );
+
   $actions['variables'] = array('descr'  => t('Set/Modify/Delete System Variables'), 
                            PATTERNS_CREATE => array('variables'),
                            PATTERNS_MODIFY => array('variables'),
                            PATTERNS_DELETE => array('variables'),
-                           'files'  => $files,
                           );
 
   $actions['variable'] = $actions['variables']; // Alias
@@ -64,6 +61,33 @@ function system_patterns_prepare($action, $tag, &$data = NULL) {
       $data['theme_default'] = $data['value'];
     }
   }
+  elseif ($tag == 'modules') {
+          // Make a <modules>modulename</modules> style tag work
+          if (is_string($data) || (isset($data['value']) && !isset($data[0]))) {
+            $data = array($data);
+          }
+
+          // Ensure proper data format for cases when <modules> tag contains 
+          // only single <module> tag.
+          if (!empty($data['module']) && is_string($data['module'])) {
+            $data[0]['value'] = $data['module'];
+            unset($data['module']);
+          }
+
+          foreach ($data as &$item) {
+            // Ensure that modules with tags like <module>modulename</module>
+            // are represented as an array instead of a string
+            if (is_string($item)) {
+              $item = array('value' => $item);
+            }
+          }
+          
+          // proccess alias for delete
+          if (isset($data['disable']) && !isset($data['delete'])) {
+            $data['delete'] = $data['disable'];
+          }
+          unset($data['disable']);
+  }
   // TODO: other tags
   
   return patterns_results();
@@ -82,20 +106,131 @@ function system_patterns_validate ($action, $tag, &$data = NULL) {
       $msg = t('%theme is not a valid theme.', array('%theme' => $data['theme_default']));
     }
   }
+  elseif ($tag == 'modules') {
+        if (!isset($modules_info) || !is_array($modules_info)) {
+          $modules_info = system_rebuild_module_data(); // list of available modules
+        }
+
+        $modules = module_list(); // list of enabled modules
+        $delete = $action === PATTERNS_DELETE;
+        for ($i = 0; isset($data[$i]) && ($item = $data[$i]); $i++) {
+          $module = $item['value'];
+
+          // Ensure a module can be disabled safely
+          if ($delete) { // TODO: Move this out of the loop?
+            if (array_key_exists($module, $modules_info)) { // Module is available
+              if (array_key_exists($module, $modules)) { // Module is enabled
+              /*
+          	   * TODO: no more dependents field in Drupal7.x
+                foreach ((array)$modules_info[$module]->info['dependents'] as $dependent) { // Dependency check
+                  if (array_key_exists($dependent, $modules)) {
+                    $remove[] = $i;
+                    drupal_set_message(t('Warning: Could not disable %module because other modules depend on it.', array('%module' => $module)), "warning");
+                    break;
+                  }
+                }
+                */
+              }
+              else {
+                $remove[] = $i;
+                $status = PATTERNS_WARN;
+                $msg .= t('Warning: Did not disable %module because it is already disabled.', array('%module' => $module)) . '<br/>';
+              }
+            }
+            else {
+              $remove[] = $i;
+              $status = PATTERNS_WARN;
+              $msg .= t('Warning: Could not disable %module because it is missing.', array('%module' => $module)) . '<br/>';
+            }
+          }
+          // Ensure a module and all of its dependencies exist
+          else {
+            if (!array_key_exists($module, $modules)) { // Module not yet enabled
+              if (!array_key_exists($module, $modules_info)) { // Module does not exist
+                $required[] = $module;
+              }
+              else {
+                foreach ((array)$modules_info[$module]->info['dependencies'] as $dependency) {
+                  if (!array_key_exists($dependency, $modules) && !array_key_exists($dependency, $modules_info)) {
+                    $required[] = $dependency;
+                  }
+                }
+              }
+
+              if (!empty($required)) {
+              	$status = PATTERNS_ERR;
+                $msg .= t('%module can not be installed because the module or its dependencies are missing. Please download them and try again.', array('%module' => $module)) .
+                       t('!title%dependencies', array('!title' => '<br/><b>' . t('Missing module(s): ') . '</b>', '%dependencies' => implode(', ', $required)));
+              }
+            }
+            else {
+            	$status = PATTERNS_WARN;
+              $msg .= t('Warning: Did not enable %module because it is already enabled.', array('%module' => $module)) . '<br/>';
+            }
+            
+          }
+        }
+        if (!empty($remove)) {
+          $result = array();
+          foreach ($data as $key => $item) {
+            if (!in_array($key, $remove)) $result[$key] = $item;
+          }
+          $data = $result;
+        }
+  }
   // TODO: other tags
 
   return patterns_results($status, $msg);
 }
 
+// Return which callback functions to actually use.
+function system_patterns_callbacks ($action, $tag, &$data = NULL) {
+	if ($tag == 'modules') { // Custom functions will do the work
+		$result = array('modules_execute');
+	}
+	else { // Just regular forms
+		$desc = system_patterns();
+		$result = $desc[$tag][$action];
+	}
+	return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
+}
+
 // Prepare for valid processing of this type of component
 function system_patterns_build ($action, $tag, &$data = NULL, $form_id) {
+	$status = PATTERNS_SUCCESS;
+	$msg = '';
+	$result = NULL;
+
 	if ($form_id == 'set_active_theme') {
     $data['op'] = t('Save configuration');
     //module_load_include('inc', 'system', 'system.admin');
     // return $data;
 	}
+	elseif ($form_id == 'system_modules') {
+
+        $enabled = $disabled = array();
+        $delete = $action === PATTERNS_DELETE;
+        for ($i = 0; $module = $data[$i]; $i++) {
+          if ($delete) { // TODO: Move this out of loop?
+            module_disable(array($module['value']), TRUE);
+            $disabled[] = $module['value'];
+          }
+          else {
+            if (!module_enable(array($module['value']), TRUE)) {
+            	// TODO: use proper logging?
+              drupal_set_message(t('Warning: Could not enable %module because a dependency is missing.', array('%module' => $module)), "warning");
+            }
+            else {
+              $enabled[] = $module['value'];
+            }
+          }
+        }
+ 
+        $msg = ((count($enabled) > 0) ? t('Module(s) %vars enabled.', array('%vars' => implode(', ', $enabled))) : t('No modules have been enabled.')) . ' ' .
+               ((count($disabled) > 0) ? t('Module(s) %vars disabled.', array('%vars' => implode(', ', $disabled))) : t('No modules have been disabled.')) ;
+	}
 	// TODO: other forms
-  return patterns_results();
+  return patterns_results($status, $msg, $result);
 }
 
 // Build a patterns actions and parameters
@@ -110,9 +245,15 @@ function system_patterns_params($action, $form_id, &$data = NULL) {
 // Cleanup any global settings after the action runs
 function system_patterns_cleanup($action, $tag, &$data = NULL) {
   if ($tag == 'modules') {
-    menu_rebuild();
+    menu_rebuild(); // TODO: only do this if there has been a module enabled/disabled
   }
 }
+
+function modules_execute($action, &$data) {
+	dvm($data);
+}
+
+// ------------------------------- old
 
 function system_patterns_old($op, $id = NULL, &$data = NULL) {
   static $modules_info;

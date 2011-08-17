@@ -103,6 +103,15 @@ function taxonomy_patterns_validate ($action, $tag, &$data = NULL) {
     return patterns_results($status, $msg);
 }
 
+// Return which callback functions to actually use.
+function taxonomy_patterns_callbacks ($action, $tag, &$data = NULL) {
+	// Just return the form ids specified above. No custom functions used here.
+	$desc = system_patterns();
+	$result = $desc[$tag][$action];
+
+	return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
+}
+
 // Prepare for valid processing of this type of component
 function taxonomy_patterns_build ($action, $tag, &$data = NULL, $form_id) {
   module_load_include('inc', 'taxonomy', 'taxonomy.admin'); // TODO: Isn't this already loaded?

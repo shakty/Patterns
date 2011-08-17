@@ -516,8 +516,12 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
       $return = $func($action, $tag, $data, $a);
     }
   }
+  else {
+  	$msg = t('Required patterns callback function %func does not exist.', array('%func'=>$func));
+  	$return = patterns_results (PATTERNS_ERR, $msg);
+  }
 
-  // Check if the output is correctly formatted, and eventually tries to correct it
+  // Check if the output is correctly formatted, and eventually try to correct it
   if (!_patterns_is_patterns_results($return)) {
     
     if ($return === TRUE) {
@@ -544,12 +548,12 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
  *  @param mixed $tag if set, only information about this specific tag is returned.
  *  @param mixed $id if set, only this particular bit of information is returned.
  *  Allowed values for $id are: 'descr', PATTERNS_CREATE, PATTERNS_MODIFY,  
- *  PATTERNS_DELETE, and 'files'
+ *  PATTERNS_DELETE, and 'files'.
  *  
- *  @TODO: Attention: the return values has changed. Before was an array of tag=>module
- *  now you get the info with tag['module']
+ *  @TODO: Attention: the return type has changed. It used to be an array of tag=>module
+ *  now you get the info with tag['module'].
  *  
- *  @return array $tag_modules The tag_modules index built according to the parameters
+ *  @return array $tag_modules The tag_modules index built according to the parameters.
  */
 function patterns_get_tagmodules_index($tag_name = NULL, $id = NULL) {
   static $tag_modules;
@@ -558,7 +562,7 @@ function patterns_get_tagmodules_index($tag_name = NULL, $id = NULL) {
   if (!is_array($tag_modules)) { 
     // Get a list of tags and their modules
     foreach (module_implements('patterns') as $module) {
-      $tags = module_invoke($module, 'patterns','tags'); // TODO: the third parameter 'tags' has to go away once migration is completed
+      $tags = module_invoke($module, 'patterns', 'tags'); // TODO: the third parameter 'tags' has to go away once migration is completed
       if (!empty($tags)) {
         foreach ($tags as $tag => $value) {
           // Add the reference to the module within the information which each
