@@ -34,20 +34,17 @@ define('PATTERNS_DELETE', 'delete');
  *                      easier and more synthetic).
  *                    - No errors are raised here.
  *
- *
- * - 'prevalidate':  - Performs standard validation on the 'prepared' tags, and raise errors if any.
- *
+ *  - 'validate':      - Validate the data for the form_id and raise errors, if any.
  *
  *
  * * Batch Phase
  * -----------------
  *
+ * 
+ *  // NOT USED NOW: Check if we need it later
+ *  
  * - 'form_id':       - Returns the form_id to call for the specific operation. If an array is returned
  *                      the form_id(s) are called sequentially.
- *                      
- * - 'actions':       - Returns the description of the action performed by the //form_id//. (@TODO: ?? Maybe to integrate in form_id ??)
- * 
- * - 'validate':      - Validate the data for the form_id and raise errors, if any.
  * 
  * - 'build':         - Get the form data for the action. This can either just be the form values, or 
  *                      it can be the full //form_state object//. If a string is returned, the batch phase terminates
@@ -66,7 +63,8 @@ define('PATTERNS_DELETE', 'delete');
  *    
  * * Post Batch
  * ---------------   
- *    
+ *  
+ * // NOT USED NOW: Check if we need it later   
  * - 'identifiers':    - ????? Get any primary identifiers from the action for further actions to take advantage of
  *  
  *  
@@ -92,10 +90,8 @@ define('PATTERNS_DELETE', 'delete');
  * @ Implement an export feature for all available form_ids
  * @ Allow resuming failed patterns
  * @ In the pattern details, list any sub-patterns directly on the patterns listing page
- * @ Split this file in includes. **DONE**
  * @ Create a Pattern class (?) check performance
  * @ Increase performaces, it seems still slow.
- * @ Move 'prevalidate' before prepare??
  * @ Check core.php.inc 
  */
 

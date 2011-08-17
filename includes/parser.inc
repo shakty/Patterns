@@ -205,6 +205,12 @@ function _patterns_analyze_patternscan($patternscan) {
     if (count($patternscan['other_sections']) == 0) { 
         $msgs[] = 'Pattern does not contain any action';
     }
+    
+    if (count($patternscan['invalid_actions']) != 0) { 
+        $out = 'Only ' . implode(', ',patterns_actions()) . ' are valid actions. Found: ';
+        $out.= implode(', ', $patternscan['invalid_actions']);
+        $msgs[] = $out;
+    }
         
     if (count($patternscan['empties']) > 0) {
         $msgs[] = 'Pattern contains empty actions: ' . implode(', ', $patternscan['empties']);
@@ -245,10 +251,10 @@ function _patterns_scan_pattern ($pattern) {
                   'modules' => 0,
                   'empties' => array(),
                   'include' => array(),
+                  'invalid_actions' => array(),
                   'other_sections'=> array(),
   );          
   
-
   if (!is_array($pattern)) {
     include_once libraries_get_path('spyc') . '/spyc.php';
     $pattern = Spyc::YAMLLoad($pattern);
@@ -273,7 +279,15 @@ function _patterns_scan_pattern ($pattern) {
       }
       else {
         $result['other_sections'][$key] = $key; // TODO: add info about the section as value
+        
+        foreach ($value as $action => $data) {
+          
+          if (!array_key_exists($action,patterns_actions())) {
+            $result['invalid_actions'][$action] = $action; 
+          }
+        }
       }
+      
       if (empty($value)) {
         $result['empties'][] = $key;
       }

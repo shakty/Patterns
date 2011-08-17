@@ -685,3 +685,15 @@ function _patterns_is_patterns_results ($results) {
  
   return TRUE;
 }
+
+/**
+ * Returns an array of allowed actions, as defined in patterns.module
+ * 
+ * @return array Allowed actions
+ */
+function patterns_actions() {
+  return array( PATTERNS_CREATE => PATTERNS_CREATE, 
+                PATTERNS_MODIFY => PATTERNS_MODIFY, 
+                PATTERNS_DELETE => PATTERNS_DELETE,
+               );
+}
