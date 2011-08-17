@@ -12,17 +12,20 @@
  * @param array $params Parameters for executing the pattern. Array format as follows:
  * pid => Pid of the pattern as it is in the database  
  * run-subpatterns => ['first-update', always','update','first','never']
+ * @param boolean $quickrun flag to check if the patterns exists in the database
  * 
  */
 function patterns_execute_pattern($pattern, $params = array()) {
 
   drupal_set_time_limit(0);
 
-  if (!is_object($pattern)) {
-    $pattern = patterns_get_pattern($pattern);
-
-    if (!$pattern) {
-      return FALSE;
+  if (!$params['quickrun']) {
+    if (!is_object($pattern)) {
+      $pattern = patterns_get_pattern($pattern);
+  
+      if (!$pattern) {
+        return FALSE;
+      }
     }
   }
 
@@ -246,6 +249,7 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
   
   $tag_info = patterns_get_tagmodules_index($data['tag']);
   $form_ids = $tag_info[$action];
+  
   /*
    * form_ids is used differently now.
   // If prepare removed the data, dont continue with this action

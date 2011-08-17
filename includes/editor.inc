@@ -8,11 +8,11 @@
  * @param mixed $pattern
  * 
  */
-function patterns_editor ($pattern) {
+function patterns_editor ($form_id, $pattern = array()) {
 
   $pattern = patterns_get_pattern_obj($pattern);
  
-  $form = drupal_get_form('patterns_edit', $pattern);
+  $form = drupal_get_form($form_id, $pattern);
   $editor  = drupal_render($form);
   
   if(!patterns_load_co2()) {
@@ -26,6 +26,70 @@ function patterns_editor ($pattern) {
   return $editor;
 }
 
+function patterns_quickrun () {
+  
+  // Default
+  $content = '# Pattern';
+  $extension = 'yaml';
+  
+  $form['important'] = array (
+    '#markup' => '<strong>Important!</strong> The quick run mode should be used only in development environment, for testing, or if you really know what you are doing.',
+    '#prefix' => '<div id="important">',
+    '#suffix' => '<hr><br/></div>',
+  );
+  
+  $form['validation_result'] = array(
+    '#markup' => 'This pattern has not been validated yet.',
+    '#prefix' => '<div id="validation_result">',
+    '#suffix' => '</div>',
+  );
+  
+  $form['format'] = array(
+    '#type' => 'select',
+    '#title' => t('Pattern syntax'),
+    '#options' => array_combine(patterns_file_types(), patterns_file_types()),
+    '#default_value' => $extension,
+  );
+  
+  $form['content'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Pattern\'s code'),
+    '#rows' => 25,
+    '#default_value' => $content,
+  );
+  
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Run'),
+  );
+    
+  $form['validate'] = array(
+    '#prefix' => '<span style=\'margin-right:10px\'>',  
+    '#markup' => "<a href='#' id='validate_pattern'>" .t('Validate'). "</a>",
+    '#suffix' => '</span> ',
+  );
+  
+  $form['cancel'] = array(
+    '#markup' => l(t('Cancel'), 'admin/patterns'),
+  );  
+  
+  return $form;
+}
+
+function patterns_quickrun_submit($form, $form_state) {
+  
+  $pattern['pattern'] = $form_state['values']['content'];
+  $pattern = patterns_get_pattern_obj($pattern);
+  
+  $mode = 'batch';
+  module_load_include('inc', 'patterns', 'includes/core.' . $mode);
+  
+  
+  $params['run-subpatterns'] = 'always';
+  $params['quickrun'] = TRUE;
+  
+  return patterns_execute_pattern($pattern, $params);
+}
 /**
  * Display the page for create a new pattern.
  * 
@@ -47,7 +111,7 @@ function patterns_create_page($pid = NULL) {
   }
   $out = '<h6>Info</h6>';
   $out.= theme('table', array('rows' => $info, 'attributes' => array('class' => 'patterns-list')));  
-  $out.= patterns_editor($pattern);
+  $out.= patterns_editor('patterns_edit', $pattern);
 
   return $out;
 }
@@ -56,7 +120,7 @@ function patterns_create_page($pid = NULL) {
  * Display the page for editing patterns.
  * 
  */
-function patterns_edit_page($pid = NULL) {
+function patterns_edit_page ($pid = NULL) {
   if (!is_numeric($pid)) {
     drupal_set_message(t('You must specify a pattern to edit.'));
     return FALSE;
@@ -86,7 +150,7 @@ function patterns_edit_page($pid = NULL) {
 
   $out = '<h6>Info</h6>';
   $out.= theme('table', array('rows' => $info, 'attributes' => array('class' => 'patterns-list')));  
-  $out.= patterns_editor($pattern);
+  $out.= patterns_editor('patterns_edit', $pattern);
   
   return $out;
 }
@@ -95,9 +159,20 @@ function patterns_edit_page($pid = NULL) {
 /**
  * Create the form to edit patterns
  */
-function patterns_edit($form, &$form_state, $pattern) {
+function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
 
+  // Default
+  $content = '# Pattern';
+  $extension = 'yaml';
   
+  if (!empty($pattern->file)) {
+    $content = file_get_contents($pattern->file);
+  }
+
+  if (!empty($pattern->file)) { 
+    $extension = pathinfo($pattern->file, PATHINFO_EXTENSION);
+  }
+
   $form['name'] = array(
     '#type' => 'value',
     '#value' => $pattern->name,
@@ -107,17 +182,7 @@ function patterns_edit($form, &$form_state, $pattern) {
     '#type' => 'value',
     '#value' => $pattern->pid
   );
-    
-    $content = file_get_contents($pattern->file);
-   //$content = variable_get(PATTERNS_FAILED_EDIT,file_get_contents($pattern->file));
 
-//   if ($pattern->enabled) {
-//    $form['enable'] = array(
-//      '#type' => 'markup',
-//      '#value' => l(t('Undo update changes to the state when you enabled the pattern.'), 'admin/patterns/revert/'. $pid, array(), drupal_get_destination())
-//    );
-//  }
-  
   $form['validation_result'] = array(
     '#markup' => 'This pattern has not been validated yet.',
     '#prefix' => '<div id="validation_result">',
@@ -128,7 +193,7 @@ function patterns_edit($form, &$form_state, $pattern) {
     '#type' => 'select',
     '#title' => t('Pattern syntax'),
     '#options' => array_combine(patterns_file_types(), patterns_file_types()),
-    '#default_value' => pathinfo($pattern->file, PATHINFO_EXTENSION),
+    '#default_value' => $extension,
   );
   
   $form['content'] = array(
@@ -148,16 +213,33 @@ function patterns_edit($form, &$form_state, $pattern) {
     '#markup' => "<a href='#' id='validate_pattern'>" .t('Validate'). "</a>",
     '#suffix' => '</span> ',
   );
+
+  $form['run'] = array(
+    '#prefix' => '<span style=\'margin-right:10px\'>',  
+    '#markup' => l(t('Run current pattern'), 'admin/patterns/enable/' . $pattern->pid),
+    '#suffix' => '</span> ',
+  );
   
-   
-//    '#ajax' => array(
+  $form['cancel'] = array(
+    '#markup' => l(t('Cancel'), 'admin/patterns'),
+  );  
+
+   //$content = variable_get(PATTERNS_FAILED_EDIT,file_get_contents($pattern->file));
+
+//   if ($pattern->enabled) {
+//    $form['enable'] = array(
+//      '#type' => 'markup',
+//      '#value' => l(t('Undo update changes to the state when you enabled the pattern.'), 'admin/patterns/revert/'. $pid, array(), drupal_get_destination())
+//    );
+//  }
+    
+  
+  //    '#ajax' => array(
 //      'callback' => 'patterns_validate_service',
 //      'wrapper' => 'replace_textfield_div',
 //      'effect' => 'fade',
 //     ),
 //  );
-  
- 
   
 //  $form['submit'] = array(
 //    '#type' => 'button',
@@ -166,22 +248,12 @@ function patterns_edit($form, &$form_state, $pattern) {
 //    '#value' => t('Drop Modifications'),
 //  );
   
-  $form['run'] = array(
-    '#prefix' => '<span style=\'margin-right:10px\'>',  
-    '#markup' => l(t('Run current pattern'), 'admin/patterns/enable/' . $pattern->pid),
-    '#suffix' => '</span> ',
-  );
-  
 // CHECK THIS  
 //  $form['submit'] = array(
 //    '#type' => 'submit',
 //    '#submit' => array('patterns_edit_submit_save');
 //    '#value' => t('Save Modifications'),
 //  );
-  
-  $form['cancel'] = array(
-    '#markup' => l(t('Cancel'), 'admin/patterns'),
-  );  
   
 //  $form['run'] = array(
 //    '#prefix' => '<a href='.url('admin/patterns/enable/'.$pattern->pid).'>',
