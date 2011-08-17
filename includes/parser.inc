@@ -148,9 +148,8 @@ function _patterns_parse_tag($data, &$index = 0) {
 
 
 /**
- * Create a concise description of the Action.
- * 
- * Returns an array containing the following info:
+ * Scan the actions_map array and return info about the file the action was coming
+ * from with the following info:
  * 
  * - index of the action within the batch_set
  * - title of the pattern
@@ -170,56 +169,129 @@ function patterns_locate_action($key, $actions_map) {
 
 
 /**
- * Check if pattern array contains only allowed keys
+ * Check if pattern array or content from a file is valid 
  *
- * @param $pattern
- *   pattern array obtained by parsing pattern file
- * @return
- *   TRUE when only allowed array keys are found, FALSE otherwise
- *
- * @todo expand this function to include much more detailed validation
+ * @param mixed $pattern pattern array or content of a pattern file
+ * @return TRUE if valid, FALSE otherwise
  */
 function patterns_validate_pattern($pattern) {
-  if (empty($pattern)) {
-    return FALSE;
-  }
-
-  $allowed_keys = array('info', 'modules', 'actions');
-  $diff = array_diff(array_keys($pattern), $allowed_keys);
-  return empty($diff) ? TRUE : FALSE;
+  $scan = _patterns_scan_pattern ($pattern);
+  return _patterns_validate_patternscan($scan);
 }
 
 /**
- * Check if pattern array contains only allowed keys
+ * Analyze the result of a call to _patterns_scan_pattern, and check whether 
+ * the pattern was valid.
+ *
+ * @param array $analysis obtained from  _patterns_scan_pattern
+ * @return TRUE if valid, FALSE otherwise
+ */
+function _patterns_analyze_patternscan($patternscan) {
+  
+  $msgs = array();
+    
+    if ($patternscan['info'] == 0) {       
+        $msgs[] = 'Info section is missing.';
+    }
+        
+    if ($patternscan['info'] > 1) {
+        $msgs[] = 'Pattern can contain only one \'info\' section';
+    }
+        
+    if ($patternscan['modules'] > 1) {
+        $msgs[] = 'Pattern can contain only one \'modules\' section';
+    }
+        
+    if (count($patternscan['other_sections']) == 0) { 
+        $msgs[] = 'Pattern does not contain any action';
+    }
+    
+    if (count($patternscan['invalid_actions']) != 0) { 
+        $out = 'Only ' . implode(', ',patterns_actions()) . ' are valid actions. Found: ';
+        $out.= implode(', ', $patternscan['invalid_actions']);
+        $msgs[] = $out;
+    }
+        
+    if (count($patternscan['empties']) > 0) {
+        $msgs[] = 'Pattern contains empty actions: ' . implode(', ', $patternscan['empties']);
+    }
+  
+  return $msgs;
+}
+
+/**
+ * Analyze the result of a call to _patterns_scan_pattern, and check whether 
+ * the pattern was valid.
+ *
+ * @param array $analysis obtained from  _patterns_scan_pattern
+ * @return TRUE if valid, FALSE otherwise
+ */
+function _patterns_validate_patternscan($patternscan) {
+  $analysis = _patterns_analyze_patternscan($patternscan);
+  return (empty($analysis)) ? TRUE : FALSE;
+}
+
+
+
+
+/**
+ * Scan a pattern and returns a brief summary of its properties
  *
  * @param $pattern
  *   pattern array obtained by parsing pattern file
  * @return
- *   TRUE when only allowed array keys are found, FALSE otherwise
+ *   array $result summary of the pattern
  *
  * @todo expand this function to include much more detailed validation
  */
-function _patterns_scan_pattern ($pattern_text) {
+function _patterns_scan_pattern ($pattern) {
   
-  $result = array();
+  $result = array(
+                  'info' => 0,
+                  'modules' => 0,
+                  'empties' => array(),
+                  'include' => array(),
+                  'invalid_actions' => array(),
+                  'other_sections'=> array(),
+  );          
   
-  if (empty($pattern_text)) {
-    return $result;
+  if (!is_array($pattern)) {
+    include_once libraries_get_path('spyc') . '/spyc.php';
+    $pattern = Spyc::YAMLLoad($pattern);
   }
-
-  include_once libraries_get_path('spyc') . '/spyc.php';
-  $pattern = Spyc::YAMLLoad($pattern_text);
-  $allowed_keys = array('info'=>'info', 'modules'=>'modules', 'actions'=>'actions');
   
-  $result['actions'] = count($pattern['actions']);
-  $diff = array_diff(array_keys($pattern), $allowed_keys);
-  
-  if (empty($diff)) {
-    $result['valid'] = TRUE;
-  }
-  else {
-    $result['valid'] = FALSE;
-    $result['invalid_keys'] = $diff;
+  if (!empty($pattern)) {
+    
+    // Patterns must contain:
+    // 1 and only section info
+    // 0 or 1 section modules
+    // 1 or more other sections
+    // All the sections must be a non-empty array
+    foreach ($pattern as $key => $value) {
+      if ($key == 'info') {
+        $result['info']++;
+      }
+      else if ($key == 'modules') {
+        $result['modules']++;
+      }
+      else if ($key == 'include') {
+        $result['include']++;
+      }
+      else {
+        $result['other_sections'][$key] = $key; // TODO: add info about the section as value
+        
+        foreach ($value as $action => $data) {
+          
+          if (!array_key_exists($action,patterns_actions())) {
+            $result['invalid_actions'][$action] = $action; 
+          }
+        }
+      }
+      
+      if (empty($value)) {
+        $result['empties'][] = $key;
+      }
+    }
   }
   
   return $result;
@@ -234,14 +306,17 @@ function _patterns_scan_pattern ($pattern_text) {
  */
 function patterns_validate_service () {
     
-    $analysis = _patterns_scan_pattern($_POST['pattern']);
+    $scan = _patterns_scan_pattern($_POST['pattern']);
     
-    if ($analysis['valid']) {
-      $out = 'This pattern is valid. ' . $analysis['actions'] . ' action(s) found.';
+    if (_patterns_validate_patternscan($scan)) {
+      $count = count($scan['other_sections']) + $scan['info'] + $scan['modules']; 
+      $out = t('This pattern is valid. !count sections found.',array('!count'=>$count));
+      //$out.= print_r($scan,true);
     }
     else {
-      $keys = implode(',',$analysis['invalid_keys']);
-      $out = 'This pattern is NOT valid. Invalid key(s) found: ' . $keys;   
+      $errors = implode('<br/> ', _patterns_analyze_patternscan($scan));
+      $out = 'This pattern is NOT valid.<br/>' . $errors;
+      //$out.= print_r($scan,true); 
     }
  
     print $out;

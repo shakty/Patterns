@@ -1,0 +1,25 @@
+# This is a comment
+# Example Pattern
+
+info: # mandatory name
+  title: Refactored YAML
+  description: Adds a new vocabulary to the website
+  author: QScience
+  category: Examples
+	
+
+actions: # any name is good for this category
+
+  - create: 
+				tag: term
+        name: Another Term
+        descr: Another interesting term
+
+  - modify: 
+				tag: term
+        descr: It was not that interesting after all
+        tid: 2
+
+  - delete: 
+				tag: term
+				tid:

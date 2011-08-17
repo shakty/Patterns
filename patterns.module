@@ -7,6 +7,15 @@ require_once 'includes/parser.inc';
 require_once 'includes/utils.inc';
 require_once 'includes/servers.inc';
 
+
+define('PATTERNS_SUCCESS', 1);
+define('PATTERNS_WARN', 0);
+define('PATTERNS_ERR', -1);
+
+define('PATTERNS_CREATE', 'create');
+define('PATTERNS_MODIFY', 'modify');
+define('PATTERNS_DELETE', 'delete');
+
 /**
  * @file
  * Enables extremely simple adding/removing features to your site with minimal to no configuration.
@@ -25,20 +34,17 @@ require_once 'includes/servers.inc';
  *                      easier and more synthetic).
  *                    - No errors are raised here.
  *
- *
- * - 'pre-validate':  - Performs standard validation on the 'prepared' tags, and raise errors if any.
- *
+ *  - 'validate':      - Validate the data for the form_id and raise errors, if any.
  *
  *
  * * Batch Phase
  * -----------------
  *
+ * 
+ *  // NOT USED NOW: Check if we need it later
+ *  
  * - 'form_id':       - Returns the form_id to call for the specific operation. If an array is returned
  *                      the form_id(s) are called sequentially.
- *                      
- * - 'actions':       - Returns the description of the action performed by the //form_id//. (@TODO: ?? Maybe to integrate in form_id ??)
- * 
- * - 'validate':      - Validate the data for the form_id and raise errors, if any.
  * 
  * - 'build':         - Get the form data for the action. This can either just be the form values, or 
  *                      it can be the full //form_state object//. If a string is returned, the batch phase terminates
@@ -57,7 +63,8 @@ require_once 'includes/servers.inc';
  *    
  * * Post Batch
  * ---------------   
- *    
+ *  
+ * // NOT USED NOW: Check if we need it later   
  * - 'identifiers':    - ????? Get any primary identifiers from the action for further actions to take advantage of
  *  
  *  
@@ -83,10 +90,8 @@ require_once 'includes/servers.inc';
  * @ Implement an export feature for all available form_ids
  * @ Allow resuming failed patterns
  * @ In the pattern details, list any sub-patterns directly on the patterns listing page
- * @ Split this file in includes. **DONE**
  * @ Create a Pattern class (?) check performance
  * @ Increase performaces, it seems still slow.
- * @ Move 'pre-validate' before prepare??
  * @ Check core.php.inc 
  */
 
@@ -357,8 +362,28 @@ function patterns_list() {
 function patterns_enable_pattern($form, &$form_state, $pid) {
   $form['pid'] = array(
     '#type' => 'value',
-    '#value' => $pid
+    '#value' => $pid,
   );
+  
+  $options_mode = array(
+    'extend' => 'Extend',
+    'runover' => 'Run-Over',
+  );
+  
+  $form['execution'] = array(
+    '#type' => 'radios',
+    '#title' => t('Execution mode:'),
+    '#description' => t('Extend mode can only add new feature to your web-site, Run-over can also delete. At the moment \'Extend\' is the only mode permitted.'),
+    '#options' => $options_mode,
+    '#default_value' => 'extend',
+    '#disabled' => 'true',
+  );
+  
+//  $form['mode'] = array(
+//    '#suffix' => '<div>',
+//    '#markup' => 'Execution mode is <strong>Extend</strong>.',
+//    '#prefix' => '</div>',
+//  );
   
   $options = array(
     'first-update' => t('only if disabled or if updated since last run (recommended)'),  
@@ -436,243 +461,84 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
 }
 
 
-function patterns_rearrange_data($pattern) {
-  foreach ($pattern as $key => $value) {
-    if (is_string($key)) {
-      unset($pattern[$key]);
-    }
-    else {
-      if ($value['tag'] == 'actions') {
-        $pattern[$key] = patterns_rearrange_data($value);
-        $pattern[$key]['tag'] = 'actions';
-      }
-      else {
-        $pattern[$key] = _patterns_rearrange_data($value);
-      }
-    }
-  }
 
-  return $pattern;
-}
+///**
+// * Preparing and prevalidating the action tags as they are written 
+// * in the pattern file. Concretely, it invokes operations 'prepare', 
+// * and 'prevalidate' on the pattern component. 
+// * 
+// * @param array $actions
+// * @param array $actions_map
+// * @return array $result array containing the description of eventual errors
+// */
+//function patterns_prepare_actions(&$actions, $actions_map) {
+//
+//  $result = array('success' => TRUE);
+//
+//  if (empty($actions)) return $result;
+//
+//  patterns_load_components();
+//
+//  // Keep a list of which modules handle what tags
+//  $tag_modules = patterns_invoke($empty, 'tag modules');
+//
+//  
+//  // Ste: No module implements CONFIG now. None will in the future
+//  
+//  // TODO Finish basic setup and execution of the 'config' operation
+//  // TODO Make a better streamlined config framework process. For instance collect form_ids
+//  // from here and give the form_id and matching data to the 'build' process
+//  //foreach ($actions as $key => &$data) {
+//  // if (($config = patterns_invoke($actions[$key], 'config')) && !empty($config)) {
+//  //    patterns_config_data($data, $config);
+//  //  }
+//  //}
+//
+//  $errors = array();
+//  
+//  /////////////////////////////////////////////
+//  // Prepare actions for validation/processing
+//  /////////////////////////////////////////////
+//  foreach ($actions as $key => &$data) {
+//    patterns_invoke($actions[$key], 'prepare');
+//  }
+//
+//
+//  //////////////////////////////////////////////////////
+//  // Pre validate tags with their appropriate components
+//  //////////////////////////////////////////////////////
+//  foreach ($actions as $key => &$data) {
+//
+//    $action_location = patterns_locate_action($key, $actions_map);
+//    $index = $action_location['key'];
+//    $pattern_title = $action_location['title'];
+////    $pattern_file = $action_location['file'];
+//
+//    if (!array_key_exists($data['tag'], $tag_modules)) {
+//      $errors[] = t('Action #%num (%tag) in pattern %title: <%tag> is not a valid tag', array('%num' => $index+1, '%tag' => $data['tag'], '%title' => $pattern_title));
+//    }
+//    else {
+//      $error = patterns_invoke($actions[$key], 'prevalidate');
+//      if ($error) {
+//        $errors[] = t('Action #%num (%tag) in pattern %title: !msg', array('!msg' => $error, '%num' => $index+1, '%tag' => $data['tag'], '%title' => $pattern_title));
+//      }
+//    }
+//  }
+//
+//  if (count($errors)) {
+//    $message = t('Errors encountered during pre-processing:') . '<br/>' . implode('<br/>', $errors);
+//    $result['success'] = FALSE;
+//    $result['error_message'] = $message;
+//  }
+//
+//  return $result;
+//}
 
-/**
- * For use with token replacement
- */
-function patterns_array_map($function, $array, $params) {
-  $new_array = array();
-  foreach ($array as $key => $value) {
-    if (is_array($value)) {
-      $new_array[$key] = patterns_array_map($function, $value, $params);
-    }
-    else {
-      $params[] = $key;
-      $key = call_user_func_array($function, $params);
-      array_pop($params);
-      $params[] = $value;
-      $new_array[$key] = call_user_func_array($function, $params);
-      array_pop($params);
-    }
-  }
-  return $new_array;
-}
+// @TODO: Take care of updating all the methods: the order of the parameters 
+// $op and &$data have been switched
 
-
-/**
- * Return an array with detailed information about the pattern.
- * @TODO improve the doc of patterns_get_pattern_details
- * 
- * @param @param stdClass $pattern Pattern object as loaded by patterns_get_pattern()
- * @param $recursive ??
- * @param $pids ??
- */
-function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = array()) {
-
-  // prevent infinite recursion
-  // Disabled! Infinite recursion is possible!
-  // This allows the same pattern to be re-executed with different parameters
-  // TODO: detect recursion, and protect users from it
-  // if (in_array($pattern->pid, $pids)) return array();
-  $pids[$pattern->pid] = $pattern->pid;
-
-  $actions = !empty($pattern->pattern['actions']) ? $pattern->pattern['actions'] : array();
-  $modules = !empty($pattern->pattern['modules']) ? $pattern->pattern['modules'] : array();
-
-  $patterns[$pattern->pid] = (array)$pattern;
-  $patterns[$pattern->pid] = array_merge($patterns[$pattern->pid], $patterns[$pattern->pid]['pattern']['info']);
-  unset($patterns[$pattern->pid]['pattern']);
-
-  if ($recursive) {
-    $result = array('modules' => $modules, 'info' => $patterns);
-
-    foreach ($actions as $key => $action) {
-      if ($action['tag'] == 'pattern') {
-        // determine pattern name
-        if (!empty($action['value'])) {
-          $name = $action['value'];
-        }
-        elseif (!empty($action['name'])) {
-          $name = $action['name'];
-        }
-        if (!$p = patterns_get_pattern($name)) {
-          // just give a warning and try to continue
-          drupal_set_message(t('Action #%key in %file: Pattern %pattern not found.<br/>Pattern execution will try to continue without it.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'warning');
-          continue;
-        }
-        
-        // Decide if sub-pattern needs to be run based on the mode defined within the pattern or selected in UI at the time of form submission
-        // @TODO: UI setting should be able to override a setting defined within the pattern 
-        $modes = array('first-update', 'always', 'update', 'first', 'never');
-        if (!empty($action['run']) && in_array($action['run'], $modes)) {
-          $mode = $action['run'];
-        }
-        else {
-          $mode = $pattern->subpatterns_run_mode;
-        }
-
-        switch ($mode) {
-          case 'never':
-            // don't run sub-pattern 
-            drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to be skipped.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status'); 
-            continue 2;
-            break;
-          case 'first':
-            // Only run on first run
-            if ($p->status) {
-              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on the first run.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
-              continue 2;
-            }
-            break;
-          case 'update':
-            // Only run on pattern update
-            if ($p->enabled >= $p->updated) {
-              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on pattern update.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
-              continue 2;
-            }
-            break;
-          case 'first-update':
-            // Only run on first run or pattern update
-            if ($p->status && $p->enabled >= $p->updated) {
-              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on first run or update.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
-              continue 2;
-            }
-            break;
-          case 'always':
-          default:
-            // Run always
-            break;
-        }
-
-        $a = patterns_get_pattern_details($p, TRUE, $pids);
-        if (is_array($a) && empty($a)) {
-          // An empty array is returned on infinite recursion detection
-          drupal_set_message(t('Action #%key in %file: Infinite recursion detected while attempting to run pattern %pattern.<br/>Pattern execution will try to continue without it.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'warning');
-          continue;
-        }
-        // we replace for tokens in the generated pattern
-        // this is just a proof of concept, so far
-        if (!empty($action['parameters'])) {
-          $tokens = array_keys($action['parameters']);
-          $values = array_values($action['parameters']);
-          // give tokens their delimiters
-          foreach ($tokens as &$token) {
-            $token = "__" . $token . "__";
-          }
-          $a = patterns_array_map('str_replace', $a, array($tokens, $values));
-        }
-        // array_merge doesn't preserve numeric array keys
-        // so we handle 'info' separately
-        $info = $result['info'];
-        $result = array_merge_recursive($result, $a);
-        $result['info'] = $info + $a['info'];
-      }
-      else {
-        $result['actions'][] = $action;
-        $result['actions_map'][] = array(
-          'pid'   => $pattern->pid,
-          'index' => $key,
-        );
-      }
-    }
-    $result['modules'] = array_merge(array_unique($result['modules']));
-    // Remove pid from recursion stack
-    //unset($pids[$pattern->pid]);
-    return $result;
-  }
-  // Remove pid from recursion stack
-  //unset($pids[$pattern->pid]);
-  return array('actions' => $actions, 'modules' => $modules, 'info' => $patterns);
-}
-
-
-/**
- * Preparing and prevalidating the action tags as they are written 
- * in the pattern file. Concretely, it invokes operations 'prepare', 
- * and 'pre-validate' on the pattern component. 
- * 
- * @param array $actions
- * @param array $actions_map
- * @return array $result array containing the description of eventual errors
- */
-function patterns_prepare_actions(&$actions, $actions_map) {
-
-  $result = array('success' => TRUE);
-
-  if (empty($actions)) return $result;
-
-  patterns_load_components();
-
-  // Keep a list of which modules handle what tags
-  $tag_modules = patterns_invoke($empty, 'tag modules');
-
-  // TODO Finish basic setup and execution of the 'config' operation
-  // TODO Make a better streamlined config framework process. For instance collect form_ids
-  // from here and give the form_id and matching data to the 'build' process
-  foreach ($actions as $key => &$data) {
-    if (($config = patterns_invoke($actions[$key], 'config')) && !empty($config)) {
-      patterns_config_data($data, $config);
-    }
-  }
-
-  $errors = array();
-  
-  /////////////////////////////////////////////
-  // Prepare actions for validation/processing
-  /////////////////////////////////////////////
-  foreach ($actions as $key => &$data) {
-    patterns_invoke($actions[$key], 'prepare');
-  }
-
-
-  //////////////////////////////////////////////////////
-  // Pre validate tags with their appropriate components
-  //////////////////////////////////////////////////////
-  foreach ($actions as $key => &$data) {
-
-    $action_location = patterns_locate_action($key, $actions_map);
-    $index = $action_location['key'];
-    $pattern_title = $action_location['title'];
-//    $pattern_file = $action_location['file'];
-
-    if (!array_key_exists($data['tag'], $tag_modules)) {
-      $errors[] = t('Action #%num (%tag) in pattern %title: <%tag> is not a valid tag', array('%num' => $index+1, '%tag' => $data['tag'], '%title' => $pattern_title));
-    }
-    else {
-      $error = patterns_invoke($actions[$key], 'pre-validate');
-      if ($error) {
-        $errors[] = t('Action #%num (%tag) in pattern %title: !msg', array('!msg' => $error, '%num' => $index+1, '%tag' => $data['tag'], '%title' => $pattern_title));
-      }
-    }
-  }
-
-  if (count($errors)) {
-    $message = t('Errors encountered during pre-processing:') . '<br/>' . implode('<br/>', $errors);
-    $result['success'] = FALSE;
-    $result['error_message'] = $message;
-  }
-
-  return $result;
-}
-
+// @TODO: Take care patterns_invoke does not return any more the tagmodules index
+// use patterns_get_tagmodules_index() instead.
 
 /**
  * Execute hook_patterns with the given operation and return the 
@@ -685,49 +551,107 @@ function patterns_prepare_actions(&$actions, $actions_map) {
  * @param mixed $op operation to be performed by hook_patterns()
  * @param mixed $form_id name of the form to be passed to hook_patterns().
  * @param array $a extra parameters to pass to hook_patterns()
+ * 
+ * @return array $return an array packed by patterns_results
  */
-function patterns_invoke(&$data, $op, $form_id = NULL, &$a = NULL) {
-  static $tag_modules;
+//function patterns_invoke($op, &$data, $form_id = NULL, &$a = NULL) {
+// TODO: update documdntation
+function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = NULL) {
+  
+  $tag_modules = patterns_get_tagmodules_index();
 
-  if (!is_array($tag_modules) || $op == 'tag modules') {
+  // Unsetting it while the module performs operations
+  $tag = $data['tag'];
+  unset($data['tag']);
+  
+  if (!isset($tag_modules[$tag])){
+    // TODO: Handle invalid tag.
+  }
+  $module = $tag_modules[$tag]['module'];
+  $func = $module . '_patterns_' . $hook;
+
+  // @TODO: Check returning false if the func does not exist.
+  // Returns FALSE if the function is not existing.
+  $return = FALSE;
+  
+  if (function_exists($func)) {
+    if ($form_id) {
+      $return = $func($action, $form_id, $data, $a);
+    }
+    else {
+      $return = $func($action, $tag, $data, $a);
+    }
+  }
+
+  // Check if the output is correctly formatted, and eventually tries to correct it
+  if (!_patterns_is_patterns_results($return)) {
+    
+    if ($return === TRUE) {
+      $return = array('status' => PATTERNS_SUCCESS);  
+    }
+    else if ($return === FALSE) {
+      $msg = t('Unspecified error occurred in %func', array('%func'=>$func));
+      $return = patterns_results (PATTERNS_ERR, $msg);
+    }
+    else {
+      $msg = t('The return value of %func is not properly formatted', array('%func'=>$func));
+      $return = patterns_results (PATTERNS_ERR, $msg);
+    }
+  }
+  $data['tag'] = $tag;
+  return $return;
+  
+}
+
+/**
+ * Creates the list of modules implementing the pattern hook. Additional 
+ * information is provided such as the files or the forms needed by the tag.
+ * 
+ *  @param mixed $tag if set, only information about this specific tag is returned.
+ *  @param mixed $id if set, only this particular bit of information is returned.
+ *  Allowed values for $id are: 'descr', PATTERNS_CREATE, PATTERNS_MODIFY,  
+ *  PATTERNS_DELETE, and 'files'
+ *  
+ *  @TODO: Attention: the return values has changed. Before was an array of tag=>module
+ *  now you get the info with tag['module']
+ *  
+ *  @return array $tag_modules The tag_modules index built according to the parameters
+ */
+function patterns_get_tagmodules_index($tag_name = NULL, $id = NULL) {
+  static $tag_modules;
+  
+  // Index not yet built 
+  if (!is_array($tag_modules)) { 
     // Get a list of tags and their modules
     foreach (module_implements('patterns') as $module) {
-      $tags = module_invoke($module, 'patterns', 'tags');
-
-      foreach ($tags as $tag => $value) {
-        if (is_array($value)) {
-          $tag_modules[$tag] = $module;
-        }
-        else {
-          $tag_modules[$value] = $module;
+      $tags = module_invoke($module, 'patterns','tags'); // TODO: the third parameter 'tags' has to go away once migration is completed
+      if (!empty($tags)) {
+        foreach ($tags as $tag => $value) {
+          // Add the reference to the module within the information which each
+          // module is already returning
+          $value['module'] = $module;
+          $tag_modules[$tag] = $value;
         }
       }
     }
-  }
-
-  // If you just want the modules list
-  if ($op == 'tag modules') {
-    return $tag_modules;
-  }
-
-  $tag = $data['tag'];
-  unset($data['tag']);
-
-  $module = $tag_modules[$tag];
-  $func = $module . '_patterns';
-
-  if (function_exists($func)) {
-    if ($form_id) {
-      $return = $func($op, $form_id, $data, $a);
-    }
-    else {
-      $return = $func($op, $tag, $data, $a);
-    }
-  }
-
-  $data['tag'] = $tag;
-  return $return;
+  } 
+  
+  return _patterns_scan_tagmodules_index ($tag_modules, $tag_name, $id);
 }
+
+function _patterns_scan_tagmodules_index ($tagmodules, $tag, $id) {
+  
+  if (empty($tag)) {
+    return $tagmodules;
+  }
+  else if (empty($action)) {
+    return $tagmodules[$tag];
+  }
+  else {
+    return $tagmodules[$tag][$id];
+  }
+}
+
 
 function _patterns_rearrange_data($data, $parent = '') {
   $numeric = array();
@@ -1465,280 +1389,339 @@ function _patterns_validate_form($form_id, $form, &$form_state) {
   _form_validate($form, $form_state, $form_id);
 }
 
-/**
- * Custom implementation of Drupal's _taxonomy_term_select()
- *
- * Used to override static caching in taxonmy_get_tree()
- * which is preventing terms added during patterns execution
- * to be included in parents and relations dropdowns and
- * causes validation errors.
- * Hopefully, we can find better solution for this.
- */
-function _patterns_taxonomy_term_select($title, $name, $value, $vocabulary_id, $description, $multiple, $blank, $exclude = array()) {
-  $tree = _patterns_taxonomy_get_tree($vocabulary_id);
 
-  $options = array();
-
-  if ($blank) {
-    $options[''] = $blank;
-  }
-  if ($tree) {
-    foreach ($tree as $term) {
-      if (!in_array($term->tid, $exclude)) {
-        $choice = new stdClass();
-        $choice->option = array($term->tid => str_repeat('-', $term->depth) . $term->name);
-        $options[] = $choice;
-      }
-    }
-  }
-
-  return array('#type' => 'select',
-    '#title' => $title,
-    '#default_value' => $value,
-    '#options' => $options,
-    '#description' => $description,
-    '#multiple' => $multiple,
-    '#size' => $multiple ? min(9, count($options)) : 0,
-    '#weight' => -15,
-    '#theme' => 'taxonomy_term_select',
-  );
-}
-
-/**
- * Custom implementation of Drupal's taxonomy_get_tree()
- *
- * Removed static caching.
- * New terms may be created during patterns execution and
- * static caching prevents them from being returned in
- * all subsequent calls to taxonomy_get_tree() during
- * the current pattern execution (within current page request)
- */
-function _patterns_taxonomy_get_tree($vid, $parent = 0, $depth = -1, $max_depth = NULL) {
-
-  $depth++;
-
-  $children[$vid] = array();
-
-  // Ste: was
-  //$result = db_query(db_rewrite_sql('SELECT t.tid, t.*, parent FROM {term_data} t INNER JOIN {term_hierarchy} h ON t.tid = h.tid WHERE t.vid = %d ORDER BY weight, name', 't', 'tid'), $vid);
-  $result = db_query(db_rewrite_sql('SELECT t.tid, t.*, parent FROM {taxonomy_term_data} t INNER JOIN {taxonomy_term_hierarchy} h ON t.tid = h.tid WHERE t.vid = :vid ORDER BY weight, name', 't', 'tid'), array('vid' => $vid));
-
-  //Ste: was
-  //while ($term = db_fetch_object($result)) {
-  foreach ($result as $term) {
-    $children[$vid][$term->parent][] = $term->tid;
-    $parents[$vid][$term->tid][] = $term->parent;
-    $terms[$vid][$term->tid] = $term;
-  }
-
-  $max_depth = (is_null($max_depth)) ? count($children[$vid]) : $max_depth;
-  $tree = array();
-  if (!empty($children[$vid][$parent])) {
-    foreach ($children[$vid][$parent] as $child) {
-      if ($max_depth > $depth) {
-        $term = clone $terms[$vid][$child];
-        $term->depth = $depth;
-        // The "parent" attribute is not useful, as it would show one parent only.
-        unset($term->parent);
-        $term->parents = $parents[$vid][$child];
-        $tree[] = $term;
-
-        if (!empty($children[$vid][$child])) {
-          $tree = array_merge($tree, _patterns_taxonomy_get_tree($vid, $child, $depth, $max_depth));
-        }
-      }
-    }
-  }
-
-  return $tree;
-}
-
-/**
- * Custom implementation of Drupal's taxonomy_form()
- *
- * Used to override static caching for taxonomy terms on node edit form.
- */
-function _patterns_taxonomy_form($vid, $value = 0, $help = NULL, $name = 'taxonomy') {
-  $vocabulary = taxonomy_vocabulary_load($vid);
-  $help = ($help) ? $help : $vocabulary->help;
-
-  if (!$vocabulary->multiple) {
-    $blank = ($vocabulary->required) ? t('- Please choose -') : t('- None selected -');
-  }
-  else {
-    $blank = ($vocabulary->required) ? 0 : t('- None -');
-  }
-
-  return _patterns_taxonomy_term_select(check_plain($vocabulary->name), $name, $value, $vid, $help, intval($vocabulary->multiple), $blank);
-}
-
-/**
- * Custom implementation of Drupal's menu_parent_options()
- *
- * Used to override static caching in menu_tree_all_data()
- * which is preventing menu items created during patterns execution
- * to be included in 'parent item' dropdown and causes validation errors.
- * Hopefully, we can find better solution for this.
- */
-function _patterns_menu_parent_options($menus, $item) {
-  // The menu_links table can be practically any size and we need a way to
-  // allow contrib modules to provide more scalable pattern choosers.
-  // hook_form_alter is too late in itself because all the possible parents are
-  // retrieved here, unless menu_override_parent_selector is set to TRUE.
-  if (variable_get('menu_override_parent_selector', FALSE)) {
-    return array();
-  }
-  // If the item has children, there is an added limit to the depth of valid parents.
-  if (isset($item['parent_depth_limit'])) {
-    $limit = $item['parent_depth_limit'];
-  }
-  else {
-    $limit = _menu_parent_depth_limit($item);
-  }
-
-  foreach ($menus as $menu_name => $title) {
-    $tree = _patterns_menu_tree_all_data($menu_name, NULL);
-    $options[$menu_name . ':0'] = '<' . $title . '>';
-    _menu_parents_recurse($tree, $menu_name, '--', $options, $item['mlid'], $limit);
-  }
-  return $options;
-}
-
-/**
- * Custom implementation of Drupal's menu_tree_all_data()
- *
- * Removed static caching.
- * New menu items may be created during pattern execution and
- * static caching prevents them from being returned in
- * all subsequent calls to menu_tree_all_data() during
- * the current pattern execution (within current page request)
- */
-function _patterns_menu_tree_all_data($menu_name, $link = NULL, $max_depth = NULL) {
-  $tree = &drupal_static(__FUNCTION__, array());
-
-  // Use $mlid as a flag for whether the data being loaded is for the whole tree.
-  $mlid = isset($link['mlid']) ? $link['mlid'] : 0;
-  // Generate a cache ID (cid) specific for this $menu_name, $link, $language, and depth.
-  $cid = 'links:' . $menu_name . ':all:' . $mlid . ':' . $GLOBALS['language']->language . ':' . (int) $max_depth;
-
-  //if (!isset($tree[$cid])) {
-    // If the static variable doesn't have the data, check {cache_menu}.
-    $cache = cache_get($cid, 'cache_menu');
-    if ($cache && isset($cache->data)) {
-      // If the cache entry exists, it contains the parameters for
-      // menu_build_tree().
-      $tree_parameters = $cache->data;
-    }
-    // If the tree data was not in the cache, build $tree_parameters.
-    if (!isset($tree_parameters)) {
-      $tree_parameters = array(
-        'min_depth' => 1, 
-        'max_depth' => $max_depth,
-      );
-      if ($mlid) {
-        // The tree is for a single item, so we need to match the values in its
-        // p columns and 0 (the top level) with the plid values of other links.
-        $parents = array(0);
-        for ($i = 1; $i < MENU_MAX_DEPTH; $i++) {
-          if (!empty($link["p$i"])) {
-            $parents[] = $link["p$i"];
-          }
-        }
-        $tree_parameters['expanded'] = $parents;
-        $tree_parameters['active_trail'] = $parents;
-        $tree_parameters['active_trail'][] = $mlid;
-      }
-
-      // Cache the tree building parameters using the page-specific cid.
-      cache_set($cid, $tree_parameters, 'cache_menu');
-    }
-
-    // Build the tree using the parameters; the resulting tree will be cached
-    // by _menu_build_tree()).
-    $tree[$cid] = menu_build_tree($menu_name, $tree_parameters);
-  //}
-
-  return $tree[$cid];
-}
-
-/*old drupal6
- * function _patterns_menu_tree_all_data($menu_name = 'navigation', $item = NULL) {
-  $tree = array();
-
-  // Use $mlid as a flag for whether the data being loaded is for the whole tree.
-  $mlid = isset($item['mlid']) ? $item['mlid'] : 0;
-  // Generate a cache ID (cid) specific for this $menu_name and $item.
-  $cid = 'links:' . $menu_name . ':all-cid:' . $mlid;
-
-  // If the static variable doesn't have the data, check {cache_menu}.
-  $cache = cache_get($cid, 'cache_menu');
-  if ($cache && isset($cache->data)) {
-    // If the cache entry exists, it will just be the cid for the actual data.
-    // This avoids duplication of large amounts of data.
-    $cache = cache_get($cache->data, 'cache_menu');
-    if ($cache && isset($cache->data)) {
-      $data = $cache->data;
-    }
-  }
-  // If the tree data was not in the cache, $data will be NULL.
-  if (!isset($data)) {
-    // Build and run the query, and build the tree.
-    if ($mlid) {
-      // The tree is for a single item, so we need to match the values in its
-      // p columns and 0 (the top level) with the plid values of other links.
-      $args = array(0);
-      for ($i = 1; $i < MENU_MAX_DEPTH; $i++) {
-        $args[] = $item["p$i"];
-      }
-      $args = array_unique($args);
-      $placeholders = implode(', ', array_fill(0, count($args), '%d'));
-      $where = ' AND ml.plid IN (' . $placeholders . ')';
-      $parents = $args;
-      $parents[] = $item['mlid'];
+function patterns_rearrange_data($pattern) {
+  foreach ($pattern as $key => $value) {
+    if (is_string($key)) {
+      unset($pattern[$key]);
     }
     else {
-      // Get all links in this menu.
-      $where = '';
-      $args = array();
-      $parents = array();
+      if ($value['tag'] == 'actions') {
+        $pattern[$key] = patterns_rearrange_data($value);
+        $pattern[$key]['tag'] = 'actions';
+      }
+      else {
+        $pattern[$key] = _patterns_rearrange_data($value);
+      }
     }
-    array_unshift($args, $menu_name);
-    // Select the links from the table, and recursively build the tree.  We
-    // LEFT JOIN since there is no match in {menu_router} for an external
-    // link.
-    
-    // Ste: was    
-//    $data['tree'] = menu_tree_data(db_query("
-//      SELECT m.load_functions, m.to_arg_functions, m.access_callback, m.access_arguments, m.page_callback, m.page_arguments, m.title, m.title_callback, m.title_arguments, m.type, m.description, ml.*
-//      FROM {menu_links} ml LEFT JOIN {menu_router} m ON m.path = ml.router_path
-//      WHERE ml.menu_name = '%s'". $where ."
-//      ORDER BY p1 ASC, p2 ASC, p3 ASC, p4 ASC, p5 ASC, p6 ASC, p7 ASC, p8 ASC, p9 ASC", $args), $parents);
-    
-      $data['tree'] = menu_tree_data(db_query("
-      SELECT m.load_functions, m.to_arg_functions, m.access_callback, m.access_arguments, m.page_callback, m.page_arguments, m.title, m.title_callback, m.title_arguments, m.type, m.description, ml.*
-      FROM {menu_links} ml LEFT JOIN {menu_router} m ON m.path = ml.router_path
-      WHERE ml.menu_name = :args" . $where . "
-      ORDER BY p1 ASC, p2 ASC, p3 ASC, p4 ASC, p5 ASC, p6 ASC, p7 ASC, p8 ASC, p9 ASC", array('args' => $args)), $parents);
-       
-    
-    $data['node_links'] = array();
-    menu_tree_collect_node_links($data['tree'], $data['node_links']);
-    // Cache the data, if it is not already in the cache.
-    $tree_cid = _menu_tree_cid($menu_name, $data);
-    if (!cache_get($tree_cid, 'cache_menu')) {
-      cache_set($tree_cid, $data, 'cache_menu');
-    }
-    // Cache the cid of the (shared) data using the menu and item-specific cid.
-    cache_set($cid, $tree_cid, 'cache_menu');
   }
-  // Check access for the current user to each item in the tree.
-  menu_tree_check_access($data['tree'], $data['node_links']);
-  $tree[$cid] = $data['tree'];
 
-  return $tree[$cid];
-}*/
+  return $pattern;
+}
+
+/**
+ * For use with token replacement
+ */
+function patterns_array_map($function, $array, $params) {
+  $new_array = array();
+  foreach ($array as $key => $value) {
+    if (is_array($value)) {
+      $new_array[$key] = patterns_array_map($function, $value, $params);
+    }
+    else {
+      $params[] = $key;
+      $key = call_user_func_array($function, $params);
+      array_pop($params);
+      $params[] = $value;
+      $new_array[$key] = call_user_func_array($function, $params);
+      array_pop($params);
+    }
+  }
+  return $new_array;
+}
+
+///**
+// * Return an array with detailed information about the pattern.
+// * @TODO improve the doc of patterns_get_pattern_details
+// * 
+// * @param stdClass $pattern Pattern object as loaded by patterns_get_pattern()
+// * @param $recursive ??
+// * @param $pids ??
+// */
+//function patterns_get_pattern_details_new ($pattern, $recursive = FALSE, &$pids = array()) {
+//
+//  // prevent infinite recursion
+//  // Disabled! Infinite recursion is possible!
+//  // This allows the same pattern to be re-executed with different parameters
+//  // TODO: detect recursion, and protect users from it
+//  // if (in_array($pattern->pid, $pids)) return array();
+//  
+//  
+//  // Get the list of sections
+//  $standard_sections = array('info','modules');
+//  $pattern_array = $pattern->pattern;
+//  $custom_sections = array_diff_key($pattern_array,$standard_sections);
+//  
+//  
+//  //$pids[$pattern->pid] = $pattern->pid;
+//  //$actions = !empty($pattern->pattern['actions']) ? $pattern->pattern['actions'] : array();
+//  
+// 
+//
+////  $patterns[$pattern->pid] = (array) $pattern;
+////  $patterns[$pattern->pid] = array_merge($patterns[$pattern->pid], $patterns[$pattern->pid]['pattern']['info']);
+////  unset($patterns[$pattern->pid]['pattern']);
+//
+//  
+//   // @TODO: check this
+//   $modules = !empty($pattern->pattern['modules']) ? $pattern->pattern['modules'] : array();
+//  
+//  //if ($recursive) {
+//    $result = array('modules' => $modules, 'info' => $patterns);
+//
+//    
+//    foreach ($custom_sections as $section) {
+//      
+//      
+//      if ($action['tag'] == 'pattern') {
+//        // determine pattern name
+//        if (!empty($action['value'])) {
+//          $name = $action['value'];
+//        }
+//        elseif (!empty($action['name'])) {
+//          $name = $action['name'];
+//        }
+//        if (!$p = patterns_get_pattern($name)) {
+//          // just give a warning and try to continue
+//          drupal_set_message(t('Action #%key in %file: Pattern %pattern not found.<br/>Pattern execution will try to continue without it.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'warning');
+//          continue;
+//        }
+//        
+//        
+//        
+//        // Decide if sub-pattern needs to be run based on the mode defined within the pattern or selected in UI at the time of form submission
+//        // @TODO: UI setting should be able to override a setting defined within the pattern 
+////        $modes = array('first-update', 'always', 'update', 'first', 'never');
+////        if (!empty($action['run']) && in_array($action['run'], $modes)) {
+////          $mode = $action['run'];
+////        }
+////        else {
+////          $mode = $pattern->subpatterns_run_mode;
+////        }
+////
+////        switch ($mode) {
+////          case 'never':
+////            // don't run sub-pattern 
+////            drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to be skipped.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status'); 
+////            continue 2;
+////            break;
+////          case 'first':
+////            // Only run on first run
+////            if ($p->status) {
+////              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on the first run.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
+////              continue 2;
+////            }
+////            break;
+////          case 'update':
+////            // Only run on pattern update
+////            if ($p->enabled >= $p->updated) {
+////              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on pattern update.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
+////              continue 2;
+////            }
+////            break;
+////          case 'first-update':
+////            // Only run on first run or pattern update
+////            if ($p->status && $p->enabled >= $p->updated) {
+////              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on first run or update.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
+////              continue 2;
+////            }
+////            break;
+////          case 'always':
+////          default:
+////            // Run always
+////            break;
+////        }
+////
+////        $a = patterns_get_pattern_details($p, TRUE, $pids);
+////        if (is_array($a) && empty($a)) {
+////          // An empty array is returned on infinite recursion detection
+////          drupal_set_message(t('Action #%key in %file: Infinite recursion detected while attempting to run pattern %pattern.<br/>Pattern execution will try to continue without it.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'warning');
+////          continue;
+////        }
+////        // we replace for tokens in the generated pattern
+////        // this is just a proof of concept, so far
+////        if (!empty($action['parameters'])) {
+////          $tokens = array_keys($action['parameters']);
+////          $values = array_values($action['parameters']);
+////          // give tokens their delimiters
+////          foreach ($tokens as &$token) {
+////            $token = "__" . $token . "__";
+////          }
+////          $a = patterns_array_map('str_replace', $a, array($tokens, $values));
+////        }
+////        // array_merge doesn't preserve numeric array keys
+////        // so we handle 'info' separately
+////        $info = $result['info'];
+////        $result = array_merge_recursive($result, $a);
+////        $result['info'] = $info + $a['info'];
+////      }
+////      else {
+////        $result['actions'][] = $action;
+////        $result['actions_map'][] = array(
+////          'pid'   => $pattern->pid,
+////          'index' => $key,
+////        );
+////      }
+////    }
+//    $result['modules'] = array_merge(array_unique($result['modules']));
+//    // Remove pid from recursion stack
+//    //unset($pids[$pattern->pid]);
+//    return $result;
+//  }
+//  // Remove pid from recursion stack
+//  //unset($pids[$pattern->pid]);
+//  
+//  
+//  
+//  return array('actions' => $actions, 'modules' => $modules, 'info' => $patterns);
+//}
 
 
+/**
+ * Return an array with detailed information about the pattern(s) referenced in
+ * the pattern files (included).
+ * 
+ * @param stdClass $pattern Pattern object as loaded by patterns_get_pattern()
+ * @param $recursive if the directive include is valid
+ * @param $pids ??
+ * 
+ * @return array $details array('pid1'=>$details, 'pid2'=>$details...)
+ */
+function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = array()) {
+
+  $scan = _patterns_scan_pattern($pattern->pattern);
+  
+  $details = array();
+  
+  if (_patterns_validate_patternscan($scan)) {
+    $details['info'] = $pattern->pattern['info'];
+    $details['sections'] = array_intersect_key($pattern->pattern,$scan['other_sections']);
+    $details['modules'] = ($scan['modules'] > 0 ) ? $pattern->pattern['modules'] : array();
+  }
+  
+  return array($pattern->pid => $details);
+  
+  ////////////////////////////////////////////////////////////////
+  // IMPORTANT
+  // The part below is for handling the include tag. Not used now;
+  ////////////////////////////////////////////////////////////////
+  
+  
+  // prevent infinite recursion
+  // Disabled! Infinite recursion is possible!
+  // This allows the same pattern to be re-executed with different parameters
+  // TODO: detect recursion, and protect users from it
+  // if (in_array($pattern->pid, $pids)) return array();
+  $pids[$pattern->pid] = $pattern->pid;
+
+
+  $patterns[$pattern->pid] = (array)$pattern;
+  $patterns[$pattern->pid] = array_merge($patterns[$pattern->pid], $patterns[$pattern->pid]['pattern']['info']);
+  unset($patterns[$pattern->pid]['pattern']);
+
+  
+  
+  if ($recursive) {
+    $result = array('modules' => $modules, 'info' => $patterns);
+
+    foreach ($actions as $key => $action) {
+      if ($action['tag'] == 'pattern') {
+        // determine pattern name
+        if (!empty($action['value'])) {
+          $name = $action['value'];
+        }
+        elseif (!empty($action['name'])) {
+          $name = $action['name'];
+        }
+        if (!$p = patterns_get_pattern($name)) {
+          // just give a warning and try to continue
+          drupal_set_message(t('Action #%key in %file: Pattern %pattern not found.<br/>Pattern execution will try to continue without it.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'warning');
+          continue;
+        }
+        
+        // Decide if sub-pattern needs to be run based on the mode defined within the pattern or selected in UI at the time of form submission
+        // @TODO: UI setting should be able to override a setting defined within the pattern 
+        $modes = array('first-update', 'always', 'update', 'first', 'never');
+        if (!empty($action['run']) && in_array($action['run'], $modes)) {
+          $mode = $action['run'];
+        }
+        else {
+          $mode = $pattern->subpatterns_run_mode;
+        }
+
+        switch ($mode) {
+          case 'never':
+            // don't run sub-pattern 
+            drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to be skipped.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status'); 
+            continue 2;
+            break;
+          case 'first':
+            // Only run on first run
+            if ($p->status) {
+              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on the first run.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
+              continue 2;
+            }
+            break;
+          case 'update':
+            // Only run on pattern update
+            if ($p->enabled >= $p->updated) {
+              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on pattern update.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
+              continue 2;
+            }
+            break;
+          case 'first-update':
+            // Only run on first run or pattern update
+            if ($p->status && $p->enabled >= $p->updated) {
+              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on first run or update.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
+              continue 2;
+            }
+            break;
+          case 'always':
+          default:
+            // Run always
+            break;
+        }
+
+        $a = patterns_get_pattern_details($p, TRUE, $pids);
+        if (is_array($a) && empty($a)) {
+          // An empty array is returned on infinite recursion detection
+          drupal_set_message(t('Action #%key in %file: Infinite recursion detected while attempting to run pattern %pattern.<br/>Pattern execution will try to continue without it.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'warning');
+          continue;
+        }
+        // we replace for tokens in the generated pattern
+        // this is just a proof of concept, so far
+        if (!empty($action['parameters'])) {
+          $tokens = array_keys($action['parameters']);
+          $values = array_values($action['parameters']);
+          // give tokens their delimiters
+          foreach ($tokens as &$token) {
+            $token = "__" . $token . "__";
+          }
+          $a = patterns_array_map('str_replace', $a, array($tokens, $values));
+        }
+        // array_merge doesn't preserve numeric array keys
+        // so we handle 'info' separately
+        $info = $result['info'];
+        $result = array_merge_recursive($result, $a);
+        $result['info'] = $info + $a['info'];
+      }
+      else {
+        $result['actions'][] = $action;
+        $result['actions_map'][] = array(
+          'pid'   => $pattern->pid,
+          'index' => $key,
+        );
+      }
+    }
+    $result['modules'] = array_merge(array_unique($result['modules']));
+    // Remove pid from recursion stack
+    //unset($pids[$pattern->pid]);
+    return $result;
+  }
+  // Remove pid from recursion stack
+  //unset($pids[$pattern->pid]);
+  return array('actions' => $actions, 'modules' => $modules, 'info' => $patterns);
+}
 
 
 function patterns_debug_batch($var = NULL) {
@@ -1810,7 +1793,7 @@ function patterns_debug_batch($var = NULL) {
 //  }
 //
 //  patterns_invoke($empty, 'tag modules');
-//  $error = patterns_invoke($modules, 'pre-validate');
+//  $error = patterns_invoke($modules, 'prevalidate');
 //
 //  // Error validating modules
 //  if ($error) {
