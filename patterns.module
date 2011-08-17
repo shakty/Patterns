@@ -2,6 +2,7 @@
 
 
 require_once 'includes/config.inc';
+require_once 'includes/error.inc';
 require_once 'includes/io.inc';
 require_once 'includes/parser.inc';
 require_once 'includes/utils.inc';
