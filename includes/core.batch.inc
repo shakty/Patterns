@@ -159,6 +159,7 @@ function patterns_prepare_actions(&$actions, $actions_map) {
     $pattern_title = $pattern_info['title'];
     
     if (!array_key_exists($data['tag'], $tag_modules)) {
+    	// TODO: $index is undefined.
       $errors[] = t('Action #%num (%tag) in pattern %title: <%tag> is not a valid tag', array('%num' => $index+1, '%tag' => $data['tag'], '%title' => $pattern_title));
     }
     else {
@@ -168,6 +169,7 @@ function patterns_prepare_actions(&$actions, $actions_map) {
       $results = patterns_invoke('validate', $key, &$data);
       
       if ($results['status'] == PATTERNS_ERR) {
+      	// TODO: $index is undefined.
         $errors[] = t('Action #%num (%tag) in pattern %title: !msg', array('!msg' => $error, '%num' => $index+1, '%tag' => $data['tag'], '%title' => $pattern_title));
       }
     }

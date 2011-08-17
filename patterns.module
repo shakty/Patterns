@@ -555,7 +555,7 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
  * @return array $return an array packed by patterns_results
  */
 //function patterns_invoke($op, &$data, $form_id = NULL, &$a = NULL) {
-
+// TODO: update documdntation
 function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = NULL) {
   
   $tag_modules = patterns_get_tagmodules_index();
@@ -563,7 +563,10 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
   // Unsetting it while the module performs operations
   $tag = $data['tag'];
   unset($data['tag']);
-
+  
+  if (!isset($tag_modules[$tag])){
+    // TODO: Handle invalid tag.
+  }
   $module = $tag_modules[$tag]['module'];
   $func = $module . '_patterns_' . $hook;
 
