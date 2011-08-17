@@ -15,5 +15,6 @@ files[] = includes/parser.inc
 files[] = includes/utils.inc
 files[] = includes/servers.inc
 
+files[] = patterns.test
 
 
