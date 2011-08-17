@@ -117,8 +117,11 @@ function patterns_edit_page($pid = NULL) {
   
   if(!patterns_load_co2()) {
     $co2 = l('Codemirror','http://codemirror.net/');
-    $out.= t('Install the !co2 library in sites/all/libraries for advanced editing functionalities',array('!co2'=>$co2));
+    $out.= t('Install !co2 in sites/all/libraries/codemirror2 for advanced editing functionalities',array('!co2'=>$co2));
   }
+  
+  // Load the JS of for the ajax validation
+  drupal_add_js(drupal_get_path('module', 'patterns').'/js/ajax_validation.js');
   
   return $out;
 }
