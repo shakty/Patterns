@@ -1,7 +1,9 @@
 <?php
 /*
- * TODO: module enabling/disabling is done using a workaround because
+ * TODO: Module enabling/disabling is done using a workaround because
  *       the form submitting way does not work for some reason
+ * TODO: Only set a theme default if 'default' is 1.
+ * TODO: Handle administration themes separately.
  * @file
  * Patterns component for system related operations.
  */
@@ -16,7 +18,7 @@ function system_patterns () {
                                  'files'  => $files,
                                 );
 
-  $actions['themes'] = array('descr' => t('Enable (and set default)/Disable Themes'), 
+  $actions['theme'] = array('descr' => t('Enable (and set default)/Disable Themes'), 
                                  PATTERNS_CREATE => array('set_active_theme'),
                                  PATTERNS_DELETE => array('set_active_theme'),
                                  'files'  => $files,

@@ -139,7 +139,7 @@ function patterns_prepare_actions(&$actions, $actions_map) {
   // Prepare actions for validation/processing
   /////////////////////////////////////////////
   foreach ($actions as $key => &$data) {
-    patterns_invoke('prepare', $key, &$data);
+    patterns_invoke('prepare', $key, $data);
   }
 
   // @TODO: do we need two foreach?
@@ -166,7 +166,7 @@ function patterns_prepare_actions(&$actions, $actions_map) {
       //////////////////////////////////////////////////
       // Validate tags with their appropriate components
       //////////////////////////////////////////////////
-      $results = patterns_invoke('validate', $key, &$data);
+      $results = patterns_invoke('validate', $key, $data);
       
       if ($results['status'] == PATTERNS_ERR) {
       	// TODO: $index is undefined.
@@ -315,9 +315,15 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
       drupal_set_message($result['msg'],'error');
       return $result;
     }
-    
-    // Params is set to results or to an empty array
-    $params = (isset($result['result'])) ? array($result['result']) : array();	
+
+    // A single, simple value can be returned as a parameter, which is then
+    // put into an array here.
+    if (!is_array($result['result'])) {
+      $params = array($result['result']);
+    }
+    else {
+      $params = $result['result'];
+    }
 
     if ($need_buildinfo) {
       $action_state['build_info']['args'] = $params;
