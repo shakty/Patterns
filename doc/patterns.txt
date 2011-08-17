@@ -42,7 +42,8 @@ uses of external libraries which must be installed separately:
    is _not_ necessary, for the correct functioning of Patterns, but
    recommended.
 
-Both libraries should be installed under *+sites/all/libraries/+*. 
+Both libraries should be installed under *+sites/all/libraries/+*
+under the names of *+spyc+* and *+codemirror2+*. 
 
 
 
