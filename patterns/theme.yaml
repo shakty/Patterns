@@ -13,6 +13,7 @@ info:
 
 actions: 
 
-  - tag: theme
-      value: garland
+    create: 
+        tag: theme
+        value: garland
 

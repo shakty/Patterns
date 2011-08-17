@@ -2,25 +2,27 @@
 # Example Pattern
 
 info: # mandatory name
-  title: Refactored YAML
-  description: Adds a new vocabulary to the website
+  title: New Vocabulary
+  description: Adds a new vocabulary to the website 
   author: QScience
   category: Examples
-	
-
+  
 actions: # any name is good for this category
 
-  - create: vocabulary
+  create: 
+        tag: vocabulary
         name: Another Vocabulary
         machine_name: anothervoc
         description: Another interesting vocabulary
         hierarchy: 0
 
-  - modify: vocabulary
+  modify: 
+        tag: vocabulary
         machine_name: anothervoc
         description: It was not that interesting after all
         # vid: 2
 
-  - delete: vocabulary
+  delete: 
+        tag: vocabulary
         machine_name: anothervoc
         # vid: 2
