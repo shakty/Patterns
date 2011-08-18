@@ -99,21 +99,20 @@ function patterns_error_get_last($op, $key, $description, $pattern_title, $patte
   $error = patterns_error_set_last();
 
   if (!empty($error) && $error['message'] != 'patterns_error') {
-   // $types = array(1 => 'error', 2 => 'warning', 4 => 'parse error', 8 => 'notice', 16 => 'core error', 32 => 'core warning', 64 => 'compile error', 128 => 'compile warning', 256 => 'user error', 512 => 'user warning', 1024 => 'user notice', 2048 => 'strict warning', 4096 => 'recoverable fatal error');
-       $types = array(
-      1 =>array('Error', WATCHDOG_ERROR),
-      2 => array('Warning', WATCHDOG_WARNING),
-      4 => array('Parse error', WATCHDOG_ERROR), 
-      8 => array('Notice', WATCHDOG_NOTICE),
-      16 => array('Core error', WATCHDOG_ERROR),
-      32 => array('Core warning', WATCHDOG_WARNING),
-      64 => array('Compile error', WATCHDOG_ERROR),
-      128 =>  array('Compile warning', WATCHDOG_WARNING),
-      256 => array('User error', WATCHDOG_ERROR),
-      512 => array('User warning', WATCHDOG_WARNING),
-      1024 => array('User notice', WATCHDOG_NOTICE),
-      2048 => array('Strict warning', WATCHDOG_DEBUG),
-      4096 => array('Recoverable fatal error', WATCHDOG_ERROR),
+    $types = array(
+        1 => array('Error', WATCHDOG_ERROR),
+        2 => array('Warning', WATCHDOG_WARNING),
+        4 => array('Parse error', WATCHDOG_ERROR), 
+        8 => array('Notice', WATCHDOG_NOTICE),
+        16 => array('Core error', WATCHDOG_ERROR),
+        32 => array('Core warning', WATCHDOG_WARNING),
+        64 => array('Compile error', WATCHDOG_ERROR),
+        128 =>  array('Compile warning', WATCHDOG_WARNING),
+        256 => array('User error', WATCHDOG_ERROR),
+        512 => array('User warning', WATCHDOG_WARNING),
+        1024 => array('User notice', WATCHDOG_NOTICE),
+        2048 => array('Strict warning', WATCHDOG_DEBUG),
+        4096 => array('Recoverable fatal error', WATCHDOG_ERROR),
      );
     
     $php_error_message = $types[$error['type']][0] . ': ' . $error['message'] . ' in ' . $error['file'] . ' on line ' . $error['line'] . '.';
@@ -121,4 +120,47 @@ function patterns_error_get_last($op, $key, $description, $pattern_title, $patte
     return $message;
   }
   return FALSE;
+}
+
+function patterns_error_last($error = NULL) {
+  static $last_error = array();
+
+  if (isset($error)) {
+    $last_error = $error;
+  }
+  return $last_error;
+}
+
+function patterns_error_check_results (&$result) {
+  
+  if ($result['status'] == PATTERNS_ERR) {
+    $return = FALSE;
+    $wd_type = WATCHDOG_ERROR;
+    $msg_type = 'error';
+  }
+  else if ($result['status'] == PATTERNS_WARN) {
+    $return = TRUE;
+    $wd_type = WATCHDOG_WARNING;
+    $msg_type = 'warning';
+  }
+  else { // Success 
+    return TRUE;
+  }
+  
+  $msg = 'Error occurred in ';
+  
+  if (isset($result['details'])){
+    $msg = 'Hook: ' . $result['details']['hook'];
+    $msg.= ', Action: ' . $result['details']['action'];
+    $msg.= ', Function: ' . $result['details']['function'] . '. ';
+  }
+  else {
+    $msg.= 'unspecified action. ';
+  }
+  
+  $msg = (empty($result['msg'])) ? $msg : $msg.$result['msg']; 
+  watchdog('patterns', $msg, array(), $wd_type);
+  drupal_set_message($result['msg'],$msg_type);
+  return $return;
+    
 }

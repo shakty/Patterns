@@ -41,6 +41,7 @@ function patterns_execute_pattern($pattern, $params = array()) {
   }
 
   $result = patterns_prepare_actions($actions, $actions_map);
+  
   if (!$result['success']) {
     drupal_set_message($result['error_message'], 'error');
     return FALSE;
