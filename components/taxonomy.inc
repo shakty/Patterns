@@ -106,7 +106,7 @@ function taxonomy_patterns_validate ($action, $tag, &$data = NULL) {
 // Return which callback functions to actually use.
 function taxonomy_patterns_callbacks ($action, $tag, &$data = NULL) {
 	// Just return the form ids specified above. No custom functions used here.
-	$desc = system_patterns();
+	$desc = taxonomy_patterns();
 	$result = $desc[$tag][$action];
 
 	return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
@@ -152,6 +152,7 @@ function taxonomy_patterns_params($action, $form_id, &$data = NULL) {
 // Cleanup any global settings after the action runs
 function taxonomy_patterns_cleanup($action, $tag, &$data = NULL) {
     unset($_POST['op']);
+    return patterns_results();
 }
 
 

@@ -208,26 +208,7 @@ function system_patterns_build ($action, $tag, &$data = NULL, $form_id) {
 	}
 	elseif ($form_id == 'system_modules') {
 
-        $enabled = $disabled = array();
-        $delete = $action === PATTERNS_DELETE;
-        for ($i = 0; $module = $data[$i]; $i++) {
-          if ($delete) { // TODO: Move this out of loop?
-            module_disable(array($module['value']), TRUE);
-            $disabled[] = $module['value'];
-          }
-          else {
-            if (!module_enable(array($module['value']), TRUE)) {
-            	// TODO: use proper logging?
-              drupal_set_message(t('Warning: Could not enable %module because a dependency is missing.', array('%module' => $module)), "warning");
-            }
-            else {
-              $enabled[] = $module['value'];
-            }
-          }
-        }
- 
-        $msg = ((count($enabled) > 0) ? t('Module(s) %vars enabled.', array('%vars' => implode(', ', $enabled))) : t('No modules have been enabled.')) . ' ' .
-               ((count($disabled) > 0) ? t('Module(s) %vars disabled.', array('%vars' => implode(', ', $disabled))) : t('No modules have been disabled.')) ;
+
 	}
 	// TODO: other forms
   return patterns_results($status, $msg, $result);
@@ -250,7 +231,27 @@ function system_patterns_cleanup($action, $tag, &$data = NULL) {
 }
 
 function modules_execute($action, &$data) {
-	dvm($data);
+        $enabled = $disabled = array();
+        $delete = $action === PATTERNS_DELETE;
+        for ($i = 0; $module = $data[$i]; $i++) {
+          if ($delete) { // TODO: Move this out of loop?
+            module_disable(array($module['value']), TRUE);
+            $disabled[] = $module['value'];
+          }
+          else {
+            if (!module_enable(array($module['value']), TRUE)) {
+            	// TODO: use proper logging?
+              drupal_set_message(t('Warning: Could not enable %module because a dependency is missing.', array('%module' => $module)), "warning");
+            }
+            else {
+              $enabled[] = $module['value'];
+            }
+          }
+        }
+ 
+        $msg = ((count($enabled) > 0) ? t('Module(s) %vars enabled.', array('%vars' => implode(', ', $enabled))) : t('No modules have been enabled.')) . ' ' .
+               ((count($disabled) > 0) ? t('Module(s) %vars disabled.', array('%vars' => implode(', ', $disabled))) : t('No modules have been disabled.')) ;
+        return patterns_results(PATTERN_SUCCESS, $msg);
 }
 
 // ------------------------------- old
