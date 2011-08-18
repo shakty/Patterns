@@ -162,17 +162,6 @@ function patterns_get_patterns($reset = TRUE) {
     // Get a listing of enabled patterns
     $enabled = array();
     
-    // Below SQL query commented out for the time being because it's preventing 
-    // pattern code stored in the patterns table to be updated/refreshed after 
-    // pattern file has been modified.
-    // @todo: After it's confirmed that this is not causing any side effects this 
-    // function has to be cleaned from all the references to $enabled array. 
-//    $result = db_query('SELECT file FROM {patterns} WHERE status = 1');
-//
-//    while ($pattern = db_fetch_object($result)) {
-//      $enabled[] = $pattern->file;
-//    }
-
     $priority = array();
     $errors = array();
     
@@ -240,6 +229,10 @@ function patterns_get_patterns($reset = TRUE) {
 
   // Ste: $patterns may have not been initialized
   return $patterns;
+}
+
+function patterns_io_get_patterns_service() {
+  return 'Ciao';
 }
 
 /**
