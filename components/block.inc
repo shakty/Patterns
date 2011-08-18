@@ -181,7 +181,7 @@ function block_patterns_build ($action, $form_id, &$data = NULL, &$a) {
         $data = array($data['module'] . '_' . $data['delta'] => $data);
       }
 
-      // $result = $data;
+      $result = $data;
 
   return patterns_results($status, $msg, $result);
 }

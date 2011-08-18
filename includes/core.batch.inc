@@ -282,7 +282,7 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
   	else {
   
     	$form_id = $func;
-      $clone = $data;
+      $clone = $data; // TODO: does this prevent subsequent form_ids' communication?
       
       $results['action_descriptions'][$place][] = $tag_info['descr'];
   
@@ -297,7 +297,7 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
       // BUILD: Get the form data for the action. This can return either 
       // just the form values, or the full form_state object.
       /////////////////////////////////////////////////////
-      $results = patterns_invoke('build', $action, $data, $form_id);
+      $results = patterns_invoke('build', $action, $clone, $form_id);
    
   	  if (!patterns_error_check_results($results)){
         return $results;
@@ -320,22 +320,22 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
     		else {
     		  $files = $tag_info['files'];	
     		}
-             
+
     		$action_state = array(
     		      // @TODO Ste: check if storage is needed here
               'storage' => NULL,
               'submitted' => FALSE,
               'build_info' => array('files' => $files), 
-              'values' => $data
+              'values' => $form_obj,
     		);
     		$need_buildinfo = TRUE;
     	}
-      
+
       ////////////////////////////////////////////////////
       // Get any extra parameters required for the action
       ////////////////////////////////////////////////////
       $results = patterns_invoke('params', $action, $clone, $form_id, $action_state);
-      
+
   	  if (!patterns_error_check_results($results)){
         return $results;
       }
@@ -360,7 +360,7 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
       // Execute action: pass action_state and params to a form
       ///////////////////
       patterns_execute_action($form_id, $action_state, $params);
-  
+
       // @TODO: do we need this?
       if ($errors = form_get_errors()) {
         $results['error_message'] = t('Above error(s) occured while executing action #%num (%action) in %title pattern. Error location(s) are: %errors', array('%num' => $index, '%action' => $action_description, '%title' => $pattern_title, '%errors' => str_replace('][', '->', implode(', ', array_keys($errors)))));
