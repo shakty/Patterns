@@ -538,6 +538,11 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
       $return = patterns_results (PATTERNS_ERR, $msg);
     }
   }
+  
+  $return['details']['action'] = $action;
+  $return['details']['hook'] = $hook;
+  $return['details']['function'] = $form_id;
+  
   $data['tag'] = $tag;
   return $return;
   
