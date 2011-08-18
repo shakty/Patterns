@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * Builds up a pattern editing environment. Loads additional javascript libraries,
  * and supplies ajax validation on the fly.
@@ -8,20 +7,20 @@
  * @param mixed $pattern
  * 
  */
-function patterns_editor ($form_id, $pattern = array()) {
+function patterns_editor($form_id, $pattern = array()) {
 
   $pattern = patterns_get_pattern_obj($pattern);
  
   $form = drupal_get_form($form_id, $pattern);
   $editor  = drupal_render($form);
   
-  if(!patterns_load_co2()) {
-    $co2 = l('Codemirror','http://codemirror.net/');
-    $out.= t('Install !co2 in sites/all/libraries/codemirror2 for advanced editing functionalities',array('!co2'=>$co2));
+  if (!patterns_load_co2()) {
+    $co2 = l('Codemirror', 'http://codemirror.net/');
+    $editor .= t('Install !co2 in sites/all/libraries/codemirror2 for advanced editing functionalities.', array('!co2'=>$co2));
   }
   
   // Load the JS of for the ajax validation
-  drupal_add_js(drupal_get_path('module', 'patterns').'/js/ajax_validation.js');
+  drupal_add_js(drupal_get_path('module', 'patterns') . '/js/ajax_validation.js');
   
   return $editor;
 }
