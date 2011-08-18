@@ -61,7 +61,7 @@ function patterns_error_handler($errno, $message, $filename, $line, $context) {
     // 'patterns_error' is not a real error and should be skipped
     if ($message != 'patterns_error') {
       watchdog('php', '%message in %file on line %line.', array('%error' => $types[$errno][0], '%message' => $message, '%file' => $filename, '%line' => $line), $types[$errno][1]);
-      if($types[$errno][1]==WATCHDOG_ERROR)
+      if($types[$errno][1] == WATCHDOG_ERROR)
         patterns_error_set_last(array('message' => $message, 'type' => $errno, 'file' => $filename, 'line' => $line));
     }
   }
@@ -160,7 +160,7 @@ function patterns_error_check_results (&$result) {
   
   $msg = (empty($result['msg'])) ? $msg : $msg.$result['msg']; 
   watchdog('patterns', $msg, array(), $wd_type);
-  drupal_set_message($result['msg'],$msg_type);
+  drupal_set_message($result['msg'], $msg_type);
   return $return;
     
 }

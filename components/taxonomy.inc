@@ -113,13 +113,13 @@ function taxonomy_patterns_callbacks ($action, $tag, &$data = NULL) {
 }
 
 // Prepare for valid processing of this type of component
-function taxonomy_patterns_build ($action, $tag, &$data = NULL, $form_id) {
+function taxonomy_patterns_build ($action, $form_id, &$data = NULL, &$a) {
   module_load_include('inc', 'taxonomy', 'taxonomy.admin'); // TODO: Isn't this already loaded?
   return patterns_results();
 }
 
 // Build a patterns actions and parameters
-function taxonomy_patterns_params($action, $form_id, &$data = NULL) {
+function taxonomy_patterns_params($action, $form_id, &$data = NULL, &$a) {
       
   if ($form_id == 'taxonomy_form_vocabulary') {
     if ($data['vid']) {
@@ -203,7 +203,7 @@ function _taxonomy_patterns_prepare_term ($action, $data, $vid = NULL) {
   //return 'taxonomy_form_term';
   
   
-  if(isset($data['delete'])) {
+  if(isset($data['delete'])) { // TODO: action === 'delete'
     $data['confirm_delete'] = TRUE;
   }
   else { // If it was not a delete request do a lot more
