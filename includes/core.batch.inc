@@ -19,7 +19,7 @@ function patterns_execute_pattern($pattern, $params = array()) {
 
   drupal_set_time_limit(0);
 
-  if (!$params['quickrun']) {
+  if (!isset($params['quickrun']) || !$params['quickrun']) {
     if (!is_object($pattern)) {
       $pattern = patterns_get_pattern($pattern);
   

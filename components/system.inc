@@ -21,7 +21,7 @@ function system_patterns () {
                                  PATTERNS_CREATE => array('set_active_theme'),
                                  PATTERNS_DELETE => array('set_active_theme'),
                                  'files'  => $files,
-                                );
+                                ); // TODO: Don't run through form.
 
   $actions['form'] = array('descr' => t('Submit Custom Forms'),
                            PATTERNS_CREATE => array(), // TODO: Cannot specify forms at this time.
@@ -29,12 +29,12 @@ function system_patterns () {
 
   $actions['call_php_func'] = array('descr' => t('Call PHP Functions'),
                            PATTERNS_CREATE => array('call_php_func_form'),
-                          );
+                          ); // TODO: Don't run through form.
 
   $actions['variables'] = array('descr'  => t('Set/Modify/Delete System Variables'), 
-                           PATTERNS_CREATE => array('variables'),
-                           PATTERNS_MODIFY => array('variables'),
-                           PATTERNS_DELETE => array('variables'),
+                           PATTERNS_CREATE => array(''),
+                           PATTERNS_MODIFY => array(''),
+                           PATTERNS_DELETE => array(''),
                           );
 
   $actions['variable'] = $actions['variables']; // Alias
@@ -87,6 +87,45 @@ function system_patterns_prepare($action, $tag, &$data = NULL) {
             $data['delete'] = $data['disable'];
           }
           unset($data['disable']);
+  }
+  else {
+  	      switch ($tag) {
+        case 'variable':
+          // Turn <variable>value</variable> style tag function the same as <variables>
+          $tag = 'variables';
+          $data = array($data);
+        case 'variables':
+          // Make a <variables>modulename</variables> style tag work
+
+          if (!$data[0]) {
+            if ($data['variable'] && isset($data['variable'][0])) {
+              $data = $data['variable'];
+              unset($data['variable']);
+            }
+            elseif ($data['variable'] && isset($data['variable']['value'])) {
+              $data[0] = $data['variable'];
+              unset($data['variable']);
+            }
+            else {
+              $temp = $data;
+              $data[0] = $temp;
+              unset($data['id'], $data['value'], $data['delete']);
+            }
+          }
+
+          for ($i=0, $total = count($data); $i < $total; $i++) {
+            $item = &$data[$i];
+
+            if (!isset($item['value']) && (!isset($item['delete']) || !$item['delete'])) {
+              $value = $item;
+              unset($value['name']);
+              $item = array('name' => $item['name'], 'value' => $value);
+            }
+
+          }
+
+        break;
+  	      }
   }
   // TODO: other tags
   
@@ -188,6 +227,9 @@ function system_patterns_callbacks ($action, $tag, &$data = NULL) {
 	if ($tag == 'modules') { // Custom functions will do the work
 		$result = array('modules_execute');
 	}
+	else if ($tag == 'variables') { // Custom functions will do the work
+		$result = array('variables_execute');
+	}
 	else { // Just regular forms
 		$desc = system_patterns();
 		$result = $desc[$tag][$action];
@@ -205,10 +247,6 @@ function system_patterns_build ($action, $tag, &$data = NULL, $form_id) {
     $data['op'] = t('Save configuration');
     //module_load_include('inc', 'system', 'system.admin');
     // return $data;
-	}
-	elseif ($form_id == 'system_modules') {
-
-
 	}
 	// TODO: other forms
   return patterns_results($status, $msg, $result);
@@ -228,6 +266,7 @@ function system_patterns_cleanup($action, $tag, &$data = NULL) {
   if ($tag == 'modules') {
     menu_rebuild(); // TODO: only do this if there has been a module enabled/disabled
   }
+  return patterns_results();
 }
 
 function modules_execute($action, &$data) {
@@ -252,6 +291,31 @@ function modules_execute($action, &$data) {
         $msg = ((count($enabled) > 0) ? t('Module(s) %vars enabled.', array('%vars' => implode(', ', $enabled))) : t('No modules have been enabled.')) . ' ' .
                ((count($disabled) > 0) ? t('Module(s) %vars disabled.', array('%vars' => implode(', ', $disabled))) : t('No modules have been disabled.')) ;
         return patterns_results(PATTERN_SUCCESS, $msg);
+}
+
+function variables_execute($action, &$data) {
+	        $names = array();
+        for ($i = 0; $variable = $data[$i]; $i++) {
+          if ($action === PATTERNS_DELETE) {
+            variable_del($variable['name']);
+          }
+          else {
+            $var = variable_get($variable['name'], NULL);
+            if (is_array($var)) {
+              // make sure we don't lose parts of the array that were not defined by pattern's action
+              // TODO: is this a good practice?
+              $var = array_merge($var, $variable['value']);
+              variable_set($variable['name'], $var);
+            }
+            else {
+              variable_set($variable['name'], $variable['value']);
+            }
+          }
+          $names[] = $variable['name'];
+        }
+
+        $msg = t('Variable(s) %vars updated.', array('%vars' => implode(', ', $names)));
+	return patterns_results(PATTERNS_SUCCESS, $msg);
 }
 
 // ------------------------------- old
