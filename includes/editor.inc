@@ -294,78 +294,95 @@ function patterns_edit_validate($form, &$form_state) {
  * Submit edits to the pattern
  */
 function patterns_edit_submit($form, &$form_state) {
-  // If this is an enabled pattern, make sure the enabled pattern is saved in its current state
   
-  $tmp = $form_state['values']['name'];
+  $name = $form_state['values']['name']; 
+  $content = $form_state['values']['content'];
+  $format = $form_state['values']['format'];
   
-  // Ste: Removed STATUS = 1: Why should it matter?
-  if ($results = db_query("SELECT file,status FROM {patterns} WHERE name = :name", array('name' => $form_state['values']['name']))->fetchAssoc()) {
-  
-    $file    = $results['file'];
-    $enabled = $results['status'];
-    
-    $dir = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
-
-    if ($enabled) {
-      $dir.= '/enabled';
-    }
-    
-    // Ste: was
-    //file_check_directory($dir, TRUE);
-    
-    if (file_prepare_directory($dir, TRUE)) {
-      $path =  $dir . '/' . $form_state['values']['name'] . '.' . $form_state['values']['format'];
-
-//      if (!file_exists($path)) {
-//        // Ste: was
-//        //file_copy($file, $path, FILE_EXISTS_ERROR);
-//        file_unmanaged_copy($file, 'public://' . $path, FILE_EXISTS_ERROR);
-//      }
-      
-        // Save the new pattern into the pattern files dir.
-      $path = drupal_realpath('public://') . '/' . variable_get('patterns_save_file', 'patterns') . '/' . $form_state['values']['name'] . '.' . $form_state['values']['format'];
-    
-      if (file_unmanaged_save_data($form_state['values']['content'], $path, FILE_EXISTS_REPLACE)) {
-    
-        // Ste: was
-        //$old = db_result(db_query("SELECT file FROM {patterns} WHERE name = '%s'", $form_state['values']['name']));
-        $old = db_query("SELECT file FROM {patterns} WHERE name = :name", array('name' => $form_state['values']['name']))->fetchField();
-        
-        // Load and save pattern
-        $load_func = 'patterns_load_' . $form_state['values']['format']; 
-        
-        if ($pattern = $load_func($path)) {
-          if ($old) {
-            // Ste: was
-            //db_query("UPDATE {patterns} SET file = '%s', updated = '%s' WHERE pid = '%d'", $path, time(), $form_state['values']['pid']);
-            $query_params = array('file' => $path, 'updated' => time(), 'pid' => $form_state['values']['pid']);
-            db_query("UPDATE {patterns} SET file = :file, updated = :updated WHERE pid = :pid", $query_params);
-          }
-          patterns_save_pattern($pattern, $path, $form_state['values']['name']);
-          drupal_set_message(t('%name was saved.', array('%name' => $form_state['values']['name'])));
-          $form_state['redirect'] = 'admin/patterns';
-          // Not for now
-          //_patterns_clear_failed_edit();
-        }
-        else {
-          drupal_set_message(t("Pattern '%name' couldn't be saved. Make sure edited code is well-formed.", array('%name' => $form_state['values']['name'])), 'error');
-        }
-      }
-      else{
-        drupal_set_message(t('Error: file could not be saved.'), 'error');
-      }
-    }
-    else {
-      drupal_set_message(t('Error: the pattern is not writable. Please check the file system permissions.'), 'error');
-    }
-  }
-  else {
-    drupal_set_message(t('Error: file not found ?!.'), 'error');
-  }
-
-  variable_set(PATTERNS_FAILED_EDIT,$form_state['values']['content']);
+  patterns_io_save_pattern ($content, $name, $format);
+ 
+  //variable_set(PATTERNS_FAILED_EDIT,$form_state['values']['content']);
   
 }
+
+///**
+// * Submit edits to the pattern
+// */
+//function patterns_edit_submit($form, &$form_state) {
+//  // If this is an enabled pattern, make sure the enabled pattern is saved in its current state
+//  
+//  $tmp = $form_state['values']['name'];
+//  
+//  // Ste: Removed STATUS = 1: Why should it matter?
+//  if ($results = db_query("SELECT file,status FROM {patterns} WHERE name = :name", array('name' => $form_state['values']['name']))->fetchAssoc()) {
+//  
+//    $file    = $results['file'];
+//    $enabled = $results['status'];
+//    
+//    
+//    $path_parts = pathinfo($file);
+//
+//      
+////    echo $path_parts['basename'], "\n";
+////    echo $path_parts['extension'], "\n";
+////    echo $path_parts['filename'], "\n";
+//    
+//    // was
+//    $dir = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
+//
+//    //$dir = drupal_realpath('public://') . $path_parts['dirname'];
+//    
+//    if ($enabled) {
+//      $dir.= '/enabled';
+//    }
+//    
+//    //@TODO: if enabled take care of that
+//    
+//    
+//    if (file_prepare_directory($dir, TRUE)) {
+//      $path =  $dir . '/' . $form_state['values']['name'] . '.' . $form_state['values']['format'];
+//
+//
+//        // Save the new pattern into the pattern files dir.
+//      // $path = drupal_realpath('public://') . '/' . variable_get('patterns_save_file', 'patterns') . '/' . $form_state['values']['name'] . '.' . $form_state['values']['format'];
+//    
+//      if (file_unmanaged_save_data($form_state['values']['content'], $path, FILE_EXISTS_REPLACE)) {
+//    
+//        $old = db_query("SELECT file FROM {patterns} WHERE name = :name", array('name' => $form_state['values']['name']))->fetchField();
+//        
+//        // Load and save pattern
+//        $load_func = 'patterns_load_' . $form_state['values']['format']; 
+//        
+//        if ($pattern = $load_func($path)) {
+//          if ($old) {
+//            $query_params = array('file' => $path, 'updated' => time(), 'pid' => $form_state['values']['pid']);
+//            db_query("UPDATE {patterns} SET file = :file, updated = :updated WHERE pid = :pid", $query_params);
+//          }
+//          patterns_save_pattern($pattern, $path, $form_state['values']['name']);
+//          drupal_set_message(t('%name was saved.', array('%name' => $form_state['values']['name'])));
+//          $form_state['redirect'] = 'admin/patterns';
+//          // Not for now
+//          //_patterns_clear_failed_edit();
+//        }
+//        else {
+//          drupal_set_message(t("Pattern '%name' couldn't be saved. Make sure edited code is well-formed.", array('%name' => $form_state['values']['name'])), 'error');
+//        }
+//      }
+//      else{
+//        drupal_set_message(t('Error: file could not be saved.'), 'error');
+//      }
+//    }
+//    else {
+//      drupal_set_message(t('Error: the pattern is not writable. Please check the file system permissions.'), 'error');
+//    }
+//  }
+//  else {
+//    drupal_set_message(t('Error: file not found ?!.'), 'error');
+//  }
+//
+//  //variable_set(PATTERNS_FAILED_EDIT,$form_state['values']['content']);
+//  
+//}
 
 
 /**

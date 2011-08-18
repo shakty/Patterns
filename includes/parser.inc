@@ -476,4 +476,3 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
   //unset($pids[$pattern->pid]);
   return array('actions' => $actions, 'modules' => $modules, 'info' => $patterns);
 }
-

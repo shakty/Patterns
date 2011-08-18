@@ -15,16 +15,16 @@ function patterns_load_yaml($path, $local = TRUE) {
   return $pattern;
 }
 
-function patterns_load_string_yaml($source) {
-  // loading yaml from source doesn't preserve line breaks
-  // so we need to save it as a file first
-  $path = file_directory_temp() . '/import.yaml';
-  file_save_data($source, $path, FILE_EXISTS_REPLACE);
-  $pattern = patterns_load_yaml($path);
-  unlink($path);
-
-  return $pattern;
-}
+//function patterns_load_string_yaml($source) {
+//  // loading yaml from source doesn't preserve line breaks
+//  // so we need to save it as a file first
+//  $path = file_directory_temp() . '/import.yaml';
+//  file_save_data($source, $path, FILE_EXISTS_REPLACE);
+//  $pattern = patterns_load_yaml($path);
+//  unlink($path);
+//
+//  return $pattern;
+//}
 
 function patterns_load_xml($path, $local = TRUE) {
   if ($local && !file_exists($path)) {
@@ -99,40 +99,6 @@ function patterns_from_source($xml) {
 }
 
 
-function patterns_save_pattern($pattern, $path = '', $name = '') {
-
-  $title = $pattern['info']['title'];
-  $description = $pattern['info']['description'];
-  $author = $pattern['info']['author'];
-
-  // Ste: was
-  //if ($pid = db_result(db_query("SELECT pid FROM {patterns} WHERE name = '%s'", $name))) {s
-  if ($pid = db_query("SELECT pid FROM {patterns} WHERE name = :s", array('s' => $name))->fetchField()) {
-    // Ste: was
-    //$updated = db_result(db_query("SELECT updated FROM {patterns} WHERE pid = '%d'", $pid));
-    $updated = (db_query("SELECT updated FROM {patterns} WHERE pid = :d", array('d' => $pid))->fetchField());
-    if (($new_updated = filemtime($path)) > $updated) {
-      // Ste: was
-      //db_query("UPDATE {patterns} SET pattern = '%s', title = '%s', file = '%s', updated = '%s', description = '%s' WHERE pid = %d", serialize($pattern), $title, $path, $new_updated, $description, $pid);
-      $query_params = array('pattern' => serialize($pattern), 'title' => $title, 'file' => $path, 'updated' => $new_updated, 'descr' => $description, 'pid' => $pid);
-      db_query("UPDATE {patterns} SET pattern = :pattern, title = :title, file = :file, updated = :updated, description = :descr WHERE pid = :pid", $query_params); 
-    }
-    else {
-      // Ste: was
-      //db_query("UPDATE {patterns} SET pattern = '%s', title = '%s', file = '%s', description = '%s' WHERE pid = %d", serialize($pattern), $title, $path, $description, $pid);
-      $query_params = array('pattern' => serialize($pattern), 'title' => $title, 'file' => $path, 'descr' => $description, 'pid' => $pid);
-      db_query("UPDATE {patterns} SET pattern = :pattern, title = :title, file = :file, description = :descr WHERE pid = :pid", $query_params); 
-    }
-  }
-  else {
-    // Ste: was
-    //db_query("INSERT INTO {patterns} (name, status, file, updated, enabled, title, description, pattern) VALUES ( '%s', 0, '%s', '%s', 0, '%s', '%s', '%s')", $name, $path, time(), $title, $description, serialize($pattern));
-    // TODO: time() ?= REQUEST_TIME
-    $query_params = array('name' => $name, 'pattern' => serialize($pattern), 'title' => $title, 'file' => $path, 'descr' => $description, 'time' => time());
-    db_query("INSERT INTO {patterns} (name, status, file, updated, enabled, title, description, pattern) VALUES ( :name, 0, :file, :time, 0, :title, :descr, :pattern)", $query_params);
-  }
-}
-
 /**
  * Menu callback - returns source code of the requested pattern
  * if the pattern is public
@@ -176,18 +142,11 @@ function patterns_load_components() {
     return;
   }
 
-  //Not nedeed now.
-  //require_once drupal_get_path('module', 'patterns') .'/patterns.inc';
-
   // Get a list of directories to search
   $paths = module_invoke_all('patterns_directory');
 
   foreach ($paths as $path) {
-    // Ste: was
-    //foreach (file_scan_directory($path . '/\/components/', '.\.inc$') as $file) {
     foreach (file_scan_directory($path . '/components/', '/\.inc$/') as $file) {
-      // Ste: was
-      //include_once $file->filename;
       include_once $file->uri;
     }
   }
@@ -241,7 +200,7 @@ function patterns_get_patterns($reset = TRUE) {
              
         // Load and save pattern
         if ($pattern = $func($file->uri)) {
-          patterns_save_pattern($pattern, $file->uri, $file->name);
+          patterns_db_save_pattern($pattern, $file->uri, $file->name);
         }
         else {
           $errors[] = $file->filename;
@@ -330,3 +289,56 @@ function _patterns_check_file_dir() {
     file_save_data($content, $path . '/.htaccess');
   }
 }
+
+
+/**
+ * 
+ * @param unknown_type $pattern
+ * @param unknown_type $format
+ * 
+ * @TODO: move $format as an element of pattern, a column in the db
+ * 
+ */
+function patterns_io_save_pattern ($content, $name, $format = 'yaml') {
+  
+  // System Patterns Directory
+  $dir = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
+  
+  if (file_prepare_directory($dir, TRUE)) {
+    $path =  $dir . '/' . $name . '.' . $format;
+
+    if (file_unmanaged_save_data($content, $path, FILE_EXISTS_REPLACE)) {
+  
+      // Load and save pattern
+      $load_func = 'patterns_load_' . $format; 
+      
+      if ($pattern = $load_func($path)) {      
+        patterns_db_save_pattern($pattern, $path, $name);
+        drupal_set_message(t('%name was saved.', array('%name' => $name)));
+        // Not for now
+        //_patterns_clear_failed_edit();
+      }
+      else {
+        drupal_set_message(t("Pattern '%name' could not be saved into the database. Make sure edited code is well-formed.", array('%name' => $form_state['values']['name'])), 'error');
+        return FALSE;
+      }
+    }
+    else{
+      drupal_set_message(t('Error: file could not be saved.'), 'error');
+      return FALSE;
+    }
+  }
+  else {
+    drupal_set_message(t('Error: the pattern is not writable. Please check the file system permissions.'), 'error');
+    return FALSE;
+  }
+  
+  
+  return TRUE;
+}
+
+function patterns_io_remove_pattern($path){
+  
+}
+
+

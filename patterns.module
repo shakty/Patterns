@@ -285,8 +285,8 @@ function patterns_menu() {
  */
 function patterns_list() {
   
-  drupal_add_css(drupal_get_path('module', 'patterns') . '/patterns.css');
-  drupal_add_js(drupal_get_path('module', 'patterns') . '/patterns.js');
+  drupal_add_css(drupal_get_path('module', 'patterns') . '/css/patterns.css');
+  drupal_add_js(drupal_get_path('module', 'patterns') . '/js/patterns.js');
 
   // Load the the pattern handlers from compontents directory
   // or from modules which implement hook_patterns
@@ -296,8 +296,7 @@ function patterns_list() {
   $patterns = patterns_get_patterns();
   
   if (empty($patterns)) {
-    return t('No patterns available.');
-    
+    return t('No patterns available.');  
   } 
   
   $header = array(t('Title'), t('Status'), t('Version'), t('Actions'));
@@ -491,6 +490,8 @@ function patterns_remove_pattern_submit($form, &$form_state) {
 
   $result = patterns_db_remove_pattern($pid);
 
+  //@TODO: remove the file as well
+  
   if (!$result) {
     drupal_set_message('Pattern could not be removed','error');
   }
