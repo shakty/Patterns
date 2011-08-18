@@ -12,8 +12,8 @@ info:
   author_website: xxx
 
 actions:
-  
-  - tag: user 
+  create:
+    tag: user 
       name: lul
       mail: luli@mailinator.org     
       password: lul
@@ -21,15 +21,16 @@ actions:
       roles: 2
       status: 1
       create:1
-      
-  - tag: role 
+  create:
+    tag: role 
      #rid:5
       name: manager
      # delete:1
      create:1
      #edit:1
-      
-  - tag: permissions
+
+  create:
+    tag: permissions
       rid:5
       value: administer menu, bypass node access
       #delete:1

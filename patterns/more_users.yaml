@@ -12,7 +12,8 @@ info:
   author_website: qscience.csko.hu
 
 actions:
-  - tag: user 
+  create:
+    tag: user 
       uid: 3
       name: fujicoAsdasda
       mail: fujico@mailinator.org     
@@ -24,7 +25,8 @@ actions:
       #create:1
       edit:1
 
-  - tag: user 
+  create:
+    tag: user 
       name: lupin
       mail: lupin@mailinator.org     
       password: lupin
