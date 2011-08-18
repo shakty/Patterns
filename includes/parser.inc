@@ -233,6 +233,9 @@ function _patterns_validate_patternscan($patternscan) {
 
 /**
  * Pattern
+ * 
+ * // @TODO: Check if we can use patterns_load_yaml instead
+ * 
  */
 function patterns_parse_yaml($pattern) {
   

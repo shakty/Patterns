@@ -2,6 +2,7 @@
 
 
 require_once 'includes/config.inc';
+require_once 'includes/db.inc';
 require_once 'includes/error.inc';
 require_once 'includes/io.inc';
 require_once 'includes/parser.inc';
@@ -124,8 +125,8 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
-
-   $items['admin/patterns/quickrun'] = array(
+  
+  $items['admin/patterns/quickrun'] = array(
     'title' => 'Quick Run',
      'page callback' => 'patterns_editor',
     'page arguments' => array('patterns_quickrun'),
@@ -148,6 +149,15 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
+  
+  $items['admin/patterns/remove'] = array(
+    'title' => 'Remove Pattern',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('patterns_remove_pattern'),
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK
+  );
+  
   $items['admin/patterns/publish'] = array(
     'title' => 'Publish Pattern',
     'page callback' => 'patterns_publish_pattern',
@@ -311,6 +321,9 @@ function patterns_list() {
     // Edit Link
     $actions[] = l(t('Edit'), 'admin/patterns/edit/' . $pid);
     
+    // Remove Link
+    $actions[] = l(t('Remove'), 'admin/patterns/remove/' . $pid);
+    
     //Publish/Unpublish link
     if (variable_get('patterns_allow_publish', FALSE)) {
       $actions[] = $pattern->public ? l(t('Unpublish'), 'admin/patterns/unpublish/' . $pid) : l(t('Publish'), 'admin/patterns/publish/' . $pid);
@@ -392,12 +405,6 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
     '#disabled' => 'true',
   );
   
-//  $form['mode'] = array(
-//    '#suffix' => '<div>',
-//    '#markup' => 'Execution mode is <strong>Extend</strong>.',
-//    '#prefix' => '</div>',
-//  );
-  
   $options = array(
     'first-update' => t('only if disabled or if updated since last run (recommended)'),  
     'always' => t('always'),
@@ -418,7 +425,7 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
 
   $pattern = patterns_get_pattern($pid);
   // TODO: check if $patterns === FALSE
-
+  
   return confirm_form($form, t('Proceed with running pattern %pattern?', array('%pattern' => $pattern->title)), 'admin/patterns', $disclaimer);
 }
 
@@ -441,6 +448,57 @@ function patterns_enable_pattern_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/patterns';
 }
 
+
+/**
+ * 
+ * Callback function of the path /remove/%
+ * Creates a confirm_form to make sure the removing operation was intentional.
+ *
+ * @param mixed $pid
+ */
+function patterns_remove_pattern ($form, &$form_state, $pid = NULL) {
+  
+  $pattern = patterns_get_pattern($pid);
+  
+  if (empty($pattern)){
+    $form['not_existing'] = array(
+      '#markup' => t('A non valid pattern to remove was provided. ') . l(t('Cancel'), 'admin/patterns'),
+      '#prefix' => '<div id="important">',
+      '#suffix' => '<br/></div>',
+    );
+    return $form;
+  }
+
+  $form['pid'] = array(
+    '#type' => 'value',
+    '#value' => $pid,
+  );
+  
+  $disclaimer = t('This operation cannot be undone. Are you sure?');
+
+  return confirm_form($form, t('Proceed with removing pattern %pattern?', array('%pattern' => $pattern->title)), 'admin/patterns', $disclaimer);
+}
+
+/**
+ * Takes the values from the form enable_pattern and starts the
+ * whole process by calling execute_pattern
+ * 
+ * @param $form form
+ * @param $form_state form_state
+ */
+function patterns_remove_pattern_submit($form, &$form_state) {
+  $pid = $form_state['values']['pid'];
+
+  $result = patterns_db_remove_pattern($pid);
+
+  if (!$result) {
+    drupal_set_message('Pattern could not be removed','error');
+  }
+  else {
+    drupal_set_message('Pattern was removed succesfully','status');
+  } 
+  $form_state['redirect'] = 'admin/patterns';
+}
 
 /**
  * 
@@ -626,6 +684,12 @@ function patterns_get_pattern_obj ($pattern = array()) {
   }
   
   return $pattern;
+}
+
+//@TODO patterns_refresh 
+function patterns_refresh (){
+
+  
 }
 
 
