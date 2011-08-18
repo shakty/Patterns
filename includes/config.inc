@@ -1,8 +1,11 @@
 <?php
-
+/*
+ * @file
+ * Configuration file.
+ */
 
 /**
- * Implementation of hook_permission().
+ * Implements hook_permission().
  */
 function patterns_permission() {
   return array(
@@ -15,7 +18,7 @@ function patterns_permission() {
 
 
 /**
- * Implementation of hook_help().
+ * Implements hook_help().
  */
 function patterns_help($section, $arg = NULL) {
   $output = '';
@@ -29,7 +32,7 @@ function patterns_help($section, $arg = NULL) {
 
 
 /**
- * Display the pattern settings form
+ * Display the pattern settings form.
  */
 function patterns_settings($form, &$form_state) {
   $form['patterns_form_helper'] = array(
@@ -52,9 +55,9 @@ function patterns_settings($form, &$form_state) {
 
 
 /**
- * Implementation of hook_patterns_directory()
+ * Implements hook_patterns_directory().
  * 
- * Let us know about where the pattern files are at
+ * Let us know about where the pattern files are at.
  */
 function patterns_patterns_directory() {
   return drupal_get_path('module', 'patterns');
@@ -62,9 +65,9 @@ function patterns_patterns_directory() {
 
 
 /**
- * Implementation of hook_requirements().
+ * Implements hook_requirements().
  *
- * @param string $phase The phase in which hook_requirements is run (install|runtime)
+ * @param string $phase The phase in which hook_requirements is run (install|runtime).
  */
 function patterns_requirements($phase) {
   $requirements = array();
@@ -97,7 +100,7 @@ function patterns_requirements($phase) {
 
 
 /**
- * return a list of paths that will be scanned for patterns
+ * Return a list of paths that will be scanned for patterns/
  */
 function patterns_paths() {
   global $profile;
@@ -138,7 +141,7 @@ function patterns_paths() {
 
 
 /**
- * Return file extensions supported by patterns module
+ * Return file extensions supported by patterns module.
  *
  * @return array of supported file types
  *
