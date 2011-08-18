@@ -6,8 +6,6 @@
 // Return an error string only in case of error, otherwise modify $data
 
 function taxonomy_patterns () {
-  // old way
-  //return array('vocabulary', 'term', 'terms');
 
   $actions['vocabulary'] = array('descr' => t('Create/Modify/Delete Taxonomy Vocabularies'), 
                                  PATTERNS_CREATE => array('taxonomy_form_vocabulary'),
@@ -105,6 +103,15 @@ function taxonomy_patterns_validate ($action, $tag, &$data = NULL) {
     return patterns_results($status, $msg);
 }
 
+// Return which callback functions to actually use.
+function taxonomy_patterns_callbacks ($action, $tag, &$data = NULL) {
+	// Just return the form ids specified above. No custom functions used here.
+	$desc = system_patterns();
+	$result = $desc[$tag][$action];
+
+	return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
+}
+
 // Prepare for valid processing of this type of component
 function taxonomy_patterns_build ($action, $tag, &$data = NULL, $form_id) {
   module_load_include('inc', 'taxonomy', 'taxonomy.admin'); // TODO: Isn't this already loaded?
@@ -116,18 +123,18 @@ function taxonomy_patterns_params($action, $form_id, &$data = NULL) {
       
   if ($form_id == 'taxonomy_form_vocabulary') {
     if ($data['vid']) {
-      $result = (array)taxonomy_vocabulary_load($data['vid']);
+      $result = taxonomy_vocabulary_load($data['vid']);
     }
   }
   else if ( $form_id == 'taxonomy_vocabulary_confirm_delete') {
     if ($data['vid']) {
-      $result = array($data['vid']);
+      $result = $data['vid'];
     }
     else if (!isset($data['machine_name'])) {
       $taxo = taxonomy_vocabulary_machine_name_load($data['machine_name']);
       $vid = $taxo->vid;
       if (!empty($vid)) {
-        (array)taxonomy_vocabulary_load($data['vid']);
+        taxonomy_vocabulary_load($data['vid']);
       }
     }
   }
@@ -136,7 +143,7 @@ function taxonomy_patterns_params($action, $form_id, &$data = NULL) {
     $result = array($data, $vocab);
   }
   else if ( $form_id == 'taxonomy_term_confirm_delete') {
-    $result = array($data['tid']);
+    $result = $data['tid'];
   }
       
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
@@ -243,9 +250,11 @@ function _taxonomy_patterns_prepare_vocabulary ($action, $data) {
       // We are changing other stuff
       else if (isset($data['machine_name'])){  
         $taxo = taxonomy_vocabulary_machine_name_load($data['machine_name']);
-        $vid = $taxo->vid;
-        // The old_machine_name must be set equal to machine_name
-        $data['old_machine_name'] = $data['machine_name'];
+        if (!empty($taxo)) {
+          $vid = $taxo->vid;
+          // The old_machine_name must be set equal to machine_name
+          $data['old_machine_name'] = $data['machine_name'];
+        }
       }
      
       if(!empty($vid)) {
@@ -279,12 +288,14 @@ function _taxonomy_patterns_prepare_vocabulary_delete ($action, $data) {
     $taxo = taxonomy_vocabulary_machine_name_load($data['machine_name']);
   }
   
-  $data['vid'] = $taxo->vid;
-  $data['name'] = $taxo->machine_name;
+  if (!empty($taxo)){
+    $data['vid'] = $taxo->vid;
+    $data['name'] = $taxo->machine_name;
 
-  $data['type'] = 'vocabulary';
-  $data['confirm'] =  1;
-  $data['op'] = 'Delete';
+    $data['type'] = 'vocabulary';
+    $data['confirm'] =  1;
+    $data['op'] = 'Delete';
+  }
   
   return $data;
 }

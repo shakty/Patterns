@@ -7,6 +7,13 @@ function patterns_install() {
 }
 
 /**
+ * Implementation of hook_uninstall().
+ */
+function patterns_uninstall() {
+  // TODO: delete variables
+}
+
+/**
 * Implementation of hook_schema().
 */
 function patterns_schema() {
@@ -86,10 +93,4 @@ function patterns_schema() {
   );
 
   return $schema;
-}
-
-/**
- * Implementation of hook_uninstall().
- */
-function patterns_uninstall() {
 }
