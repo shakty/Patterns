@@ -4,10 +4,11 @@
  *       the form submitting way does not work for some reason
  * TODO: Only set a theme default if 'default' is 1.
  * TODO: Handle administration themes separately.
+ * TODO: Do the refactoring necessary for forms.
  * @file
  * Patterns component for system related operations.
  */
-function system_patterns () {
+function system_patterns() {
 
   $files = array('modules/system/system.admin.inc');
 
@@ -256,7 +257,7 @@ function system_patterns_callbacks ($action, $tag, &$data = NULL) {
 }
 
 // Prepare for valid processing of this type of component
-function system_patterns_build ($action, $tag, &$data = NULL, $form_id) {
+function system_patterns_build ($action, $form_id, &$data = NULL, &$a) {
 	$status = PATTERNS_SUCCESS;
 	$msg = '';
 	$result = NULL;
@@ -290,7 +291,7 @@ function system_patterns_build ($action, $tag, &$data = NULL, $form_id) {
 }
 
 // Build a patterns actions and parameters
-function system_patterns_params($action, $form_id, &$data = NULL) {
+function system_patterns_params($action, $form_id, &$data = NULL, &$a) {
   if ($form_id == 'set_active_theme') {
     $result = array($data['theme_default']);
   }
