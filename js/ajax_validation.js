@@ -11,7 +11,6 @@ jQuery('document').ready( function() {
 				CO2editor.save();
 			}
 			
-			alert(url)
 			jQuery.ajax({
 				type: 'POST',
 				url: url,
