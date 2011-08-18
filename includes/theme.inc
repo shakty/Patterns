@@ -29,7 +29,7 @@ function theme_patterns_form_helper($form_id, $values) {
 }
 
 /**
- * Implementation of hook_theme().
+ * Implements hook_theme().
  */
 function patterns_theme() {
   

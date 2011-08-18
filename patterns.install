@@ -1,21 +1,25 @@
 <?php
-
+/*
+ * @file
+ * Installation file for Patterns.
+ */
+ 
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  */
 function patterns_install() {
 }
 
 /**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  */
 function patterns_uninstall() {
   // TODO: delete variables
 }
 
 /**
-* Implementation of hook_schema().
-*/
+ * Implements hook_schema().
+ */
 function patterns_schema() {
   $schema['patterns'] = array(
     'description' => 'Stores patterns information.',

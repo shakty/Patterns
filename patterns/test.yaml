@@ -2,7 +2,7 @@
 # QScience
 
 info:
-  title: TEST PATTERN!!
+  title: User creation pattern.
   description: test descr
   author: QScience
   category: QScience
@@ -13,7 +13,8 @@ info:
 
 actions:
   
-  - tag: user 
+  create:
+    tag: user 
       name: lul
       mail: lul@mailinator.org     
       password: lul
