@@ -15,7 +15,8 @@ info:
 
 actions:
 
-  - tag: field
+  create:
+      tag: field
       entity: node
       bundle: custom_content
       name: sponsor
