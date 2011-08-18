@@ -430,10 +430,10 @@ function _get_file_phpdoc_version($path) {
  * an invoked function.
  * 
  * @param mixed $status [PATTERNS_SUCCESS,PATTERNS_WARN,PATTERNS_ERR]
- * @param array $msg the msg and its type 
- * @param mixed $result Extra data to be returned
+ * @param array $msg A message.
+ * @param mixed $result Extra data.
  */
-function patterns_results ($status = PATTERNS_SUCCESS, $msg = 'Execution successful', $result = NULL) {
+function patterns_results($status = PATTERNS_SUCCESS, $msg = 'Execution successful', $result = NULL) {
   // TODO: t($msg)
   return array( 'status' => $status,
                 'msg' => $msg,

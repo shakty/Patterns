@@ -272,7 +272,10 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
   // Build the action
   foreach ($funcs as $func) {
   	if(!in_array($func, $form_ids)) { // Run it as a custom callback function.
-  		$func($action, $data); // TODO: error checking
+  		$result = $func($action, $data); // TODO: error checking
+  		if (isset($result['msg'])) {
+  		  drupal_set_message($result['msg']);
+  		}
       continue; // Don't execute as a form.
   	}
     $clone = $data;
