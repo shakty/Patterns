@@ -1,7 +1,7 @@
 jQuery('document').ready( function() {
 
 	(function(){
-		var url = location.href.substring(0,location.href.lastIndexOf('edit/')) + 'validate';
+		var url = location.href.substring(0,location.href.lastIndexOf('admin/patterns/') + 'admin/patterns/'.length) + 'validate';
 		
 		document.getElementById('validate_pattern').onclick = function() {
 			document.getElementById('validation_result').innerHTML = '...validating...';
@@ -11,6 +11,7 @@ jQuery('document').ready( function() {
 				CO2editor.save();
 			}
 			
+			alert(url)
 			jQuery.ajax({
 				type: 'POST',
 				url: url,
