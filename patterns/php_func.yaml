@@ -13,13 +13,15 @@ info:
 
 actions: 
 
-  - tag: call_php_func
-    function: var_dump
+  create:
+    tag: call_php_func
+    function: dvm
     arguments:
-        - abcString
-        - defArray:
-            - item1
-            - item2
+        - array:
+            - abcString
+            - defArray:
+                - item1
+                - item2
 
 # TODO: create an example
 #  - tag: call_php_func

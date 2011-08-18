@@ -297,7 +297,7 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
   
       /////////////////////////////////////////////////////
       // BUILD: Get the form data for the action. This can return either 
-      // just be the form values, or it can be the full form_state object
+      // just the form values, or the full form_state object.
       /////////////////////////////////////////////////////
       $result = patterns_invoke('build', $action, $data, $form_id);
    

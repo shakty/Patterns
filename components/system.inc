@@ -33,7 +33,7 @@ function system_patterns () {
 
   $actions['variables'] = array('descr'  => t('Set/Modify/Delete System Variables'), 
                            PATTERNS_CREATE => array(''),
-                           PATTERNS_MODIFY => array(''),
+                           PATTERNS_MODIFY => array(''), // TODO: ??
                            PATTERNS_DELETE => array(''),
                           );
 
@@ -217,6 +217,24 @@ function system_patterns_validate ($action, $tag, &$data = NULL) {
           $data = $result;
         }
   }
+  elseif ($tag == 'call_php_func') {
+        if (empty($data['function'])) {
+          $status = PATTERNS_ERR;
+          $msg = t("A function is required for this tag");
+        }
+        elseif (!empty($data['type']) && empty($data['module'])) {
+        	$status = PATTERNS_ERR;
+          $msg = t("If you specify a type you must specify a module. See the documentation for module_load_include.");
+        }
+        elseif (empty($data['type']) && !empty($data['module'])) {
+          $status = PATTERNS_ERR;
+          $msg = t("If you specify a module you must specify a type. See the documentation for module_load_include.");
+        }
+        elseif (!empty($data['filepath']) && !file_exists($data['filepath'])) {
+          $status = PATTERNS_ERR;
+        	$msg = t('The file that you specified does not exist: %file', array('%file' => $data['filepath']));
+        }
+  }
   // TODO: other tags
 
   return patterns_results($status, $msg);
@@ -244,10 +262,29 @@ function system_patterns_build ($action, $tag, &$data = NULL, $form_id) {
 	$result = NULL;
 
 	if ($form_id == 'set_active_theme') {
-    $data['op'] = t('Save configuration');
+    $data['op'] = t('Save configuration'); // TODO: ??
     //module_load_include('inc', 'system', 'system.admin');
-    // return $data;
+    // $result = $data;
 	}
+	elseif ($form_id == 'call_php_func_form') {
+        $data['type'] = empty($data['type']) ? '' : $data['type'];
+        $data['module'] = empty($data['module']) ? '' : $data['module'];
+        $data['name'] = empty($data['name']) ? '' : $data['name'];
+        $data['filepath'] = empty($data['filepath']) ? '' : $data['filepath'];
+
+        if (empty($data['arguments'])) {
+          $data['arguments'] = array();
+        }
+        elseif (!is_array($data['arguments'])) {
+          $data['arguments'] = array($data['arguments']);
+        }
+        _call_php_func_include_files($data); // TODO: this works here?
+        if (!is_callable($data['function'])) {
+        	$status = PATTERNS_ERR;
+          $msg = t('The given function %func is not callable', array('%func' => $data['function']));
+        }
+      // $result = $data;
+  }
 	// TODO: other forms
   return patterns_results($status, $msg, $result);
 }
@@ -256,6 +293,9 @@ function system_patterns_build ($action, $tag, &$data = NULL, $form_id) {
 function system_patterns_params($action, $form_id, &$data = NULL) {
   if ($form_id == 'set_active_theme') {
     $result = array($data['theme_default']);
+  }
+  elseif ($form_id == 'call_php_func_form') {
+    $result = array($data['function'], $data['type'], $data['module'], $data['name'], $data['filepath'], $data['arguments']);
   }
   // TODO: other forms
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
