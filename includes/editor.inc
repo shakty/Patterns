@@ -78,7 +78,10 @@ function patterns_quickrun () {
 
 function patterns_quickrun_submit($form, $form_state) {
   
-  $pattern['pattern'] = $form_state['values']['content'];
+  // Parse the content of the textarea
+  $pattern['pattern'] = patterns_parse_yaml($form_state['values']['content']);
+  
+  
   $pattern = patterns_get_pattern_obj($pattern);
   
   $mode = 'batch';

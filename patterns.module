@@ -127,7 +127,7 @@ function patterns_menu() {
     'type' => MENU_CALLBACK
   );
 
-   $items['admin/patterns/run'] = array(
+   $items['admin/patterns/quickrun'] = array(
     'title' => 'Quick Run',
      'page callback' => 'patterns_editor',
     'page arguments' => array('patterns_quickrun'),
@@ -511,10 +511,6 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
   }
   $module = $tag_modules[$tag]['module'];
   $func = $module . '_patterns_' . $hook;
-
-  // @TODO: Check returning false if the func does not exist.
-  // Returns FALSE if the function is not existing.
-  $return = FALSE;
   
   if (function_exists($func)) {
     if ($form_id) {

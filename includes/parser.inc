@@ -231,8 +231,17 @@ function _patterns_validate_patternscan($patternscan) {
   return (empty($analysis)) ? TRUE : FALSE;
 }
 
-
-
+/**
+ * Pattern
+ */
+function patterns_parse_yaml($pattern) {
+  
+ if (!is_array($pattern)) {
+    include_once libraries_get_path('spyc') . '/spyc.php';
+    $pattern = Spyc::YAMLLoad($pattern);
+  }
+  return $pattern;
+}
 
 /**
  * Scan a pattern and returns a brief summary of its properties
@@ -255,10 +264,7 @@ function _patterns_scan_pattern ($pattern) {
                   'other_sections'=> array(),
   );          
   
-  if (!is_array($pattern)) {
-    include_once libraries_get_path('spyc') . '/spyc.php';
-    $pattern = Spyc::YAMLLoad($pattern);
-  }
+  $pattern = patterns_parse_yaml($pattern);
   
   if (!empty($pattern)) {
     
