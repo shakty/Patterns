@@ -40,7 +40,6 @@ function block_patterns_prepare($action, $tag, &$data = NULL) {
     'description' => NULL,
     'info'        => NULL,
     'pages'       => NULL,
-    'delete'      => NULL,
   );
   // Initialize the expected attributes to avoid PHP warnings. Makes later logic easier.
   $data = array_merge($defaults, (array)$data);
@@ -79,8 +78,9 @@ function block_patterns_prepare($action, $tag, &$data = NULL) {
       }
 
       // The info field is needed for deletion.
-      if ($data['delete'] && !$data['info'] && $data['module'] == 'block' && $data['delta']) {
+      if ($action === PATTERNS_DELETE && !$data['info'] && $data['module'] == 'block' && $data['delta']) {
         $data['info'] = db_query('SELECT info FROM {block_custom} WHERE bid = :delta', array('delta' => $data['delta']))->fetchField();
+        // TODO: check if it exists?
       }
 
       // Split the pages array into a multi-line string.
@@ -109,7 +109,7 @@ function block_patterns_validate ($action, $tag, &$data = NULL) {
       	$status = PATTERNS_ERR;
         $msg = t('Missing required &lt;module&gt;, &lt;delta&gt; tags. Possibly malformed &lt;id&gt; tag could be the problem too. If creating a new block, tag &lt;info&gt; is required.');
       }
-      elseif ($data['delete'] && $data['module'] != 'block') {
+      elseif ($action === PATTERNS_DELETE && $data['module'] != 'block') {
       	$status = PATTERNS_ERR;
       	$msg = t('Unable to delete non-block module blocks.');
       }
@@ -125,20 +125,20 @@ function block_patterns_callbacks ($action, $tag, &$data = NULL) {
 
       // TODO: document, make this clearer.
       // Adding a new block: unknown id (or, module-delta) and a known info field.
-      if (!($data['module'] && $data['delta']) && $data['info']) {
+      if ($action === PATTERNS_CREATE && !($data['module'] && $data['delta']) && $data['info']) {
       	// $tag should be create
         $result = array(
           'block_add_block_form', // This will call block_admin_configure($form, $form_state, 'block', NULL);
           'block_admin_display_form'
         );
       }
-      elseif ($tag == 'delete') { // Deleting a custom block.
-        $result = 'block_custom_block_delete';
+      elseif ($action === PATTERNS_DELETE) { // Deleting a custom block.
+        $result = array('block_custom_block_delete');
       }
       elseif (empty($diff)) { // Only editing the position for one theme.
-        $result = 'block_admin_display_form'; // TODO: check _block_patterns_display_keys()
+        $result = array('block_admin_display_form'); // TODO: check _block_patterns_display_keys()
       }
-      elseif ($tag == 'modify') { // Editing a block
+      elseif ($action === PATTERNS_MODIFY) { // Editing a block
         $result = array(
           'block_admin_configure',
           'block_admin_display_form'
@@ -150,7 +150,6 @@ function block_patterns_callbacks ($action, $tag, &$data = NULL) {
 
 	return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
-
 
 // Prepare for valid processing of this type of component
 function block_patterns_build ($action, $form_id, &$data = NULL, &$a) {

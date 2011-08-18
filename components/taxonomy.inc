@@ -203,7 +203,7 @@ function _taxonomy_patterns_prepare_term ($action, $data, $vid = NULL) {
   //return 'taxonomy_form_term';
   
   
-  if(isset($data['delete'])) {
+  if(isset($data['delete'])) { // TODO: action === 'delete'
     $data['confirm_delete'] = TRUE;
   }
   else { // If it was not a delete request do a lot more
