@@ -43,23 +43,21 @@ define('PATTERNS_DELETE', 'delete');
  *
  * * Batch Phase
  * -----------------
- *
  * 
- *  // NOT USED NOW: Check if we need it later
+ * - 'callbacks'      - Return the array of functions that need to be called sequentially in later stages.
+ *                      Those functions which are among the form_ids returned by hook_patterns() will be
+ *                      treated as form functions, while others will be treated as regular callback functions.
  *  
- * - 'form_id':       - Returns the form_id to call for the specific operation. If an array is returned
- *                      the form_id(s) are called sequentially.
- * 
  * - 'build':         - Get the form data for the action. This can either just be the form values, or 
- *                      it can be the full //form_state object//. If a string is returned, the batch phase terminates
- *                      and the string will be displayed. This way there is no Form API involved.
+ *                      it can be the full //form_state object//. 
  *                      
  * - 'params':        - Get any extra parameters required by the form function.
  * 
  *
  * * Execution Phase      
  * -----------------
- *  drupal_form_submit() is called
+ *  drupal_form_submit() is called. The arguments are supplied to the form (is it is expects extra arguments)
+ *  and the data is passed to the form callback.
  *  
  *  
  * - 'cleanup':       - cleanup operations are performed, if any.

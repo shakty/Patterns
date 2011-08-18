@@ -19,7 +19,8 @@ function patterns_execute_pattern($pattern, $params = array()) {
 
   drupal_set_time_limit(0);
 
-  if (!isset($params['quickrun']) || $params['quickrun'] == FALSE) {
+
+  if (!isset($params['quickrun']) || !$params['quickrun']) {
     if (!is_object($pattern)) {
       $pattern = patterns_get_pattern($pattern);
   
@@ -273,7 +274,10 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
   // Build the action
   foreach ($funcs as $func) {
     if (!in_array($func, $form_ids)) { // Run it as a custom callback function.
-  	  $func($action, $data); // TODO: error checking   
+      $result = $func($action, $data); // TODO: error checking
+  		if (isset($result['msg'])) {
+        drupal_set_message($result['msg']);
+  		}
   	}
   	else {
   
@@ -370,14 +374,12 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
       $results = patterns_invoke('cleanup', $action, $clone, $form_id, $action_state);
       
       // Do not return here, just print on screen
-      patterns_error_check_results($results);
-      
-     
+      patterns_error_check_results($results);     
      }
     } // End: Form_id execution
     
     // Clear the cache in case it causes problems
-    cache_clear_all();
+  cache_clear_all();
   
   // STE: This should be done in the cleanup, if the module has changed the menus
   // Rebuild the menu
