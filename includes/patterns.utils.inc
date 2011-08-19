@@ -429,9 +429,9 @@ function _get_file_phpdoc_version($path) {
  * Helper function to create the associative array of returned values from
  * an invoked function.
  * 
- * @param mixed $status [PATTERNS_SUCCESS,PATTERNS_WARN,PATTERNS_ERR]
+ * @param mixed $status One of [PATTERNS_SUCCESS, PATTERNS_WARN, PATTERNS_ERR]. Required.
  * @param array $msg A message.
- * @param mixed $result Extra data.
+ * @param mixed $result Any kind of additional data.
  */
 function patterns_results($status = PATTERNS_SUCCESS, $msg = 'Execution successful', $result = NULL) {
   // TODO: t($msg)
