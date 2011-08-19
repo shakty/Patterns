@@ -86,10 +86,10 @@ function theme_patterns_list ($args) {
     
      $category = $pattern->info['category'] ? $pattern->info['category'] : t('Other');
      
-     $form['patterns'][$category][$pattern->title] = _patterns_pattern_build_row($pid, $pattern);
+     $form['patterns'][$category][] = _patterns_pattern_build_row($pid, $pattern);
      $form['patterns'][$category] += array(
       '#type' => 'fieldset',
-      '#title' => t($pattern->title),
+      '#title' => t($category),
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
       '#theme' => 'patterns_patterns_fieldset',

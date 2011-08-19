@@ -83,3 +83,47 @@ function patterns_db_save_pattern($pattern, $path = '', $name = '') {
   return TRUE;
 }
 
+/**
+ * Load the pattern from the db and return a stdClass obj, containing 
+ * the pattern code as array (unserialized)
+ * 
+ * @param mixed $id Numeric id or alphanumeric name of the pattern
+ * @return stdClass $pattern the Pattern obj containing the unsereliazed pattern 
+ */
+function patterns_get_pattern($id) {
+  
+  $pattern = FALSE;
+  if (is_numeric($id)) {
+    $pattern = db_query("SELECT * FROM {patterns} WHERE pid = :pid", array('pid' => $id))->FetchAll();
+  }
+  elseif (is_string($id)) {
+    $pattern = db_query("SELECT * FROM {patterns} WHERE name = :name", array('name' => $id))->FetchAll();
+  }
+
+  if (!$pattern) return FALSE;
+
+  //Pattern data is stored in serialized form in the db.
+  $pattern[0]->pattern = unserialize($pattern[0]->pattern); 
+  return $pattern[0];
+}
+
+/**
+ * Loads a pattern object from the database based on the given name
+ * 
+ * @param $name
+ */
+function patterns_db_load_pattern_from_name ($name = NULL) {
+  
+  $query = db_select('patterns','p');
+  $result = $query->condition('name',$name)
+                  ->fields('p')
+                  ->execute()
+                  ->fetchObject();
+                
+ if (!empty($result)) {
+   return $result;
+ }
+ else {
+   return FALSE;
+ } 
+}

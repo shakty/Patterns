@@ -5,12 +5,9 @@
  */
 function patterns_import_server($form, &$form_state) {
   if (empty($form_state['storage'])) {
-
-    // Ste: was
-    //$path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
     
     // real_path(public) returns the path to the files dir
-    $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_xml', 'patterns');
+    $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
   
     // Ste: was
     //if (!file_check_directory($path, true)) {
@@ -120,13 +117,9 @@ function patterns_import_server_submit($form, &$form_state) {
       $errors['get file'][] = $pattern_info;
       continue;
     }
-
-    // save file
-    // Ste: was
-    //$path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
     
     // real_path(public) returns the path to the files dir
-    $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_xml', 'patterns');
+    $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
     $path .= '/' . $pattern_info['name'] . '.' . $pattern_info['file_type'];
     if (!$saved = file_save_data($source, $path, FILE_EXISTS_ERROR)) {
       $errors['save file'][] = $pattern_info;
@@ -196,8 +189,6 @@ function patterns_feed_rearrange_data($feed) {
 }
 
 
-
-
 /**
  * Not really doing anything for now
  * @param mixed $pid
@@ -218,177 +209,3 @@ function patterns_unpublish_pattern($pid) {
   drupal_goto('admin/patterns');
 }
 
-/**
- * Display the import pattern file form
- */
-function patterns_import_file(&$form_state) {
-  if (empty($form_state['post'])) {
-    drupal_set_message(t('Import feature currently supports only XML file format.'), 'warning');
-  }
-  $form['#attributes']['enctype'] = 'multipart/form-data';
-  $form['xmlfile'] = array(
-    '#type' => 'file',
-    '#title' => t('Upload Pattern File'),
-    '#description' => t('Imported patterns are not executed until you run them manually.'),
-    '#size' => 48
-  );
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Import')
-  );
-
-  $form['#validate'][] = 'patterns_import_validate';
-  $form['#submit'][] = 'patterns_import_submit';
-
-  return $form;
-}
-
-/**
- * Display the import pattern url form
- */
-function patterns_import_url(&$form_state) {
-  if (empty($form_state['post'])) {
-    drupal_set_message(t('Import feature currently supports only XML file format.'), 'warning');
-  }
-  $form['xmlurl'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Specify an URL'),
-    '#description' => t('Import a pattern from a remote URL. Imported patterns are not executed until you run them manually.'),
-    '#size' => 48
-  );
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Import')
-  );
-
-  $form['#validate'][] = 'patterns_import_validate';
-  $form['#submit'][] = 'patterns_import_submit';
-
-  return $form;
-}
-
-
-function patterns_import ($form, $form_state) {
-  
-  return patterns_editor('patterns_import_source' );
-}
-
-/**
- * Display the import pattern form
- */
-function patterns_import_source($form, &$form_state) {
-  if (empty($form_state['post'])) {
-    drupal_set_message(t('Import feature currently supports only XML file format.'), 'warning');
-  }
-  
-  $form['xmlname'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Pattern Identifier'),
-    '#description' => t('Machine readable name for the pattern. The actual title should be included in the pattern itself.'),
-    '#required' => TRUE
-  );
-  $form['xmlsource'] = array(
-    '#type' => 'textarea',
-    '#rows' => 15,
-    '#title' => t('Enter Pattern Source Code'),
-    '#description' => t('Imported patterns are not executed until you run them manually.')
-  );
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Import')
-  );
-  
-  
-  // No Validation for now
-  // $form['#validate'][] = 'patterns_import_validate';
-  $form['#submit'][] = 'patterns_import_submit';
-
-  return $form;
-}
-
-function patterns_import_validate($form, &$form_state) {
-
-  // Ste: was
-    //$path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
-    
-    // real_path(public) returns the path to the files dir
-    $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_xml', 'patterns');
-    
-  if (!file_prepare_directory($path)) {
-    $message = t("Destination folder doesn't exist: !path<br />", array('!path' => $path));
-    $link = l(t('status report'), 'admin/reports/status');
-    $message .= t('You might want to check the !link to ensure your files directory exists and is writable.', array('!link' => $link));
-    form_set_error('xmlfile', $message);
-    return;
-  }
-  $validators = array('file_validate_extensions' => array('xml'));
-  if (isset($form_state['values']['xmlfile']) && ($file = file_save_upload('xmlfile', $validators))) {
-    $form_state['values']['xmlsource'] = file_get_contents($file->filepath);
-    $form_state['pattern_file'] = $file;
-    $form_state['pattern_file']->destination = $path;
-  }
-  elseif (isset($form_state['values']['xmlfile'])) {
-    form_set_error('files[xmlfile]', t('Error uploading XML file.'));
-    return;
-  }
-  elseif ($form_state['values']['xmlurl']) {
-    if (!ini_get('allow_url_fopen')) {
-      form_set_error('xmlsource', t('allow_url_fopen must be enabled in your php configuration in order to use this feature.'));
-      return;
-    }
-
-    if (strtolower(substr($form_state['values']['xmlurl'], -4)) != '.xml') {
-      form_set_error('xmlsource', t('Invalid file extension. Only "XML" file extension is allowed.'));
-      return;
-    }
-
-    if (!($form_state['values']['xmlsource'] = file_get_contents($form_state['values']['xmlurl']))) {
-      form_set_error('xmlurl', t('Failed to retreive the pattern specified: %xmlurl. Check your URL and try again.', array('%xmlurl' => $form_state['values']['xmlurl'])));
-      return;
-    }
-
-    $pattern = array('/\.[^\.]*$/', '/[^a-zA-Z0-9_]/');
-    $replacement = array('', '_');
-    $form_state['values']['xmlname'] = preg_replace($pattern, $replacement, basename($form_state['values']['xmlurl']));
-  }
-
-  if (strpos($form_state['values']['xmlsource'], '<?xml') !== 0) {
-    $form_state['values']['xmlsource'] = '<?xml version="1.0" encoding="ISO-8859-1"?>' . $form_state['values']['xmlsource'];
-  }
-
-  if ($form_state['values']['xmlname'] && preg_match('/[^a-zA-Z0-9_]/', $form_state['values']['xmlname'])) {
-    form_set_error('xmlname', t('You can only include letters, numbers, and underscores in the pattern identifier.'));
-  }
-  elseif ($form_state['values']['xmlname'] && preg_match('/^_/', $form_state['values']['xmlname'])) {
-    form_set_error('xmlname', t('You cannot start the pattern identifier with an underscore.'));
-  }
-
-  // @TODO validate XML and don't allow import if validation fails
-  $parse = drupal_xml_parser_create($form_state['values']['xmlsource']);
-  $success = xml_parse_into_struct($parse, $form_state['values']['xmlsource'], $vals, $index);
-
-  // Check that the xml was properly parsed and also that the
-  // root <pattern> tag and also an <info> tag were used.
-  if (!$success || !$vals || $vals[0]['tag'] != 'PATTERN' || $vals[1]['tag'] != 'INFO') {
-    form_set_error('xmlsource', t('Error parsing the XML, please check your syntax and try again.'));
-  }
-}
-
-function patterns_import_submit($form, &$form_state) {
-  if (isset($form_state['pattern_file'])) {
-    $saved = file_copy($form_state['pattern_file']->filepath, $form_state['pattern_file']->destination);
-  }
-  elseif ($form_state['values']['xmlsource']) {
-    $saved = file_save_data($form_state['values']['xmlsource'], variable_get('patterns_save_xml', 'patterns') . '/' . $form_state['values']['xmlname'] . '.xml', FILE_EXISTS_REPLACE);
-  }
-
-  if ($saved) {
-    // Reload patterns
-    patterns_get_patterns(true);
-    drupal_set_message(t('Pattern successfully imported.'));
-  }
-  else {
-    drupal_set_message(t('File couldn\'t be saved on the server. Import failed.'), 'error');
-  }
-  $form_state['redirect'] = 'admin/patterns';
-}

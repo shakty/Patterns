@@ -8,7 +8,10 @@ require_once 'includes/patterns.io.inc';
 require_once 'includes/patterns.parser.inc';
 require_once 'includes/patterns.utils.inc';
 require_once 'includes/patterns.editor.inc';
-require_once 'includes/patterns.servers.inc';
+require_once 'includes/patterns.imports.inc';
+
+// Not used for now
+//require_once 'includes/patterns.servers.inc';
 
 require_once 'includes/patterns.theme.inc';
 
@@ -19,6 +22,8 @@ define('PATTERNS_ERR', -1);
 define('PATTERNS_CREATE', 'create');
 define('PATTERNS_MODIFY', 'modify');
 define('PATTERNS_DELETE', 'delete');
+
+define('PATTERNS_FILES_DIR', drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns'));
 
 /**
  * @file
