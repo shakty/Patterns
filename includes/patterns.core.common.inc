@@ -244,7 +244,7 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
 
   patterns_restore_error_handler();
 
-  return $results;
+  return $results; // TODO: this is only the last action's cleanup?
 }
 
 /**
