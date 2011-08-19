@@ -370,6 +370,19 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
     '#default_value' => 'extend',
     '#disabled' => 'true',
   );
+
+  $options_run_mode = array(
+    'batch' => 'Batch',
+    'php' => 'PHP',
+  );
+
+  $form['mode'] = array(
+    '#type' => 'radios',
+    '#title' => t('Running mode:'),
+    '#description' => t('Batch mode uses the Batch API provided by Drupal thus providing intermediate feedback about the progress. PHP will only return when every action has been processed (or there has been an error), which is easier to debug.'),
+    '#options' => $options_run_mode,
+    '#default_value' => 'batch',
+  );
   
   $options = array(
     'first-update' => t('only if disabled or if updated since last run (recommended)'),  
@@ -386,7 +399,7 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
     '#options' => $options,
     '#default_value' => 'first-update',
   );
-  
+
   $disclaimer = t('Please be sure to backup your site before running a pattern. Patterns are not guaranteed to be reversable in case they do not execute well or if unforseen side effects occur.');
 
   $pattern = patterns_get_pattern($pid);
@@ -394,7 +407,6 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
   
   return confirm_form($form, t('Proceed with running pattern %pattern?', array('%pattern' => $pattern->title)), 'admin/patterns', $disclaimer);
 }
-
 
 /**
  * Takes the values from the form enable_pattern and starts the
@@ -409,7 +421,15 @@ function patterns_enable_pattern_submit($form, &$form_state) {
   patterns_load_components();
   $pattern = patterns_get_pattern($pid);
 
-  patterns_start_engine($pattern, $form_state['values']);
+  // TODO: is this checking needed?
+  if(!in_array($form_state['values']['mode'], array('batch', 'php'))) {
+  	$mode = 'batch';
+  }
+  else {
+  	$mode = $form_state['values']['mode'];
+  }
+
+  patterns_start_engine($pattern, $form_state['values'], $mode);
 
   $form_state['redirect'] = 'admin/patterns';
 }
@@ -491,7 +511,7 @@ function patterns_remove_pattern_submit($form, &$form_state) {
  * @param mixed $mode ['batch','php'] 
  */
 function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
-  
+
   //require_once 'includes/patterns.core.'.$mode.'.inc';
   module_load_include('inc', 'patterns', 'includes/patterns.core.' . $mode);
   

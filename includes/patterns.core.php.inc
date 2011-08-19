@@ -1,5 +1,11 @@
 <?php
-
+/*
+ * @file
+ * A simple, sequential version of running patterns.
+ * 
+ * @TODO: Organize, reuse functions better.
+ */
+// TODO: move most of this to common
 /**
  * 
  * Performs all the pre-operations, before doing anything serious
@@ -8,7 +14,7 @@
  * @param $params
  */
 function patterns_execute_pattern($pattern, $params = array()) {
-  
+  module_load_include('inc', 'patterns', 'includes/patterns.core.common');
    drupal_set_time_limit(0);
 
   if (!isset($params['quickrun']) || !$params['quickrun']) {
@@ -63,34 +69,24 @@ function patterns_execute_pattern($pattern, $params = array()) {
     drupal_set_message($results['error_message'], 'error');
     return FALSE;
   }
-  
-  module_load_include('inc', 'patterns', 'includes/core.batch'); // TODO: Organize functiona better.
-  $result = patterns_prepare_actions($actions, $actions_map);
-  
-  if (!$result['success']) { // TODO: handle properly
-    drupal_set_message($result['error_message'], 'error');
-    return FALSE;
-  }
 
-  ///////////////////////////////
-  // The fake batch
-  //////////////////////////////
-  for ($i = 0, $total = count($actions); $i < $total; $i++) {
-    patterns_php_actions($actions[$i], $i, $actions_map);
-  }
-/*
   ///////////////////////////////
   // Looping through the sections
   ///////////////////////////////
 
-  foreach ($sections as $section => $actions) {
+  foreach ($sections as $section => $actions) { // TODO: is this loop necessary?
     // $actions passed as reference
     $results = patterns_prepare_actions($actions, $actions_map);
     
     if (!patterns_error_check_results($results)){
       return $results;
     }
-    
+    $i = 0;
+    foreach ($actions as $action => $data) {
+      patterns_php_actions($action, $data, $i, $actions_map);
+      $i++;
+    }
+/*
     $batch = array(
       'title' => t('Processing section %section of pattern %pattern', array('%section' => $section, '%pattern' => $info['title'])),
       'progress_message' => t('Running action @current out of @total'),
@@ -109,36 +105,52 @@ function patterns_execute_pattern($pattern, $params = array()) {
     $_SESSION['patterns_batch_info'] = $infos;
   
     batch_set($batch); 
+    */
   }
  
-*/
   // @TODO: return false in case of errors
   return TRUE;
-}
-  
-function patterns_php_actions($action, $place, $actions_map) {
-  
-  patterns_load_components();
-
-  // Nothing to do if there is no action
-  if (empty($action)) {
-    return;
-  }
-  $result = patterns_implement_action_php($action, $place, $actions_map);
 }
 
 
 
 /**
  * 
+ * Execute a single pattern action.
+ * 
+ * @TODO improve documentation
+ * 
+ * 
+ * @param array $action
+ * @param mixed $place index of the current operation within the batch_set
+ * @param array $actions_map [$pid pattern id, $index ??]
+ */
+function patterns_php_actions($action, $data, $place, $actions_map) {
+
+  patterns_load_components(); // TODO: move this out of here?
+
+  // Nothing to do if there is no action
+  if (empty($data) || empty($action)) {
+    drupal_set_message(t('Cannot execute empty action.'), 'error');
+    return FALSE;
+  }
+  $result = patterns_implement_action($action, $data, $place, NULL, $actions_map);
+
+  return patterns_results($status, $message);
+}
+
+
+// TODO: remove this function
+/**
+ * 
  * Performs all the operation necessary to build a correct form_state (op: 'validate', 'build', 'params')
- * Calls patterns_execute_action() which actually build and process the form.
+ * Calls patterns_execute_action() which actually builds and processes the form.
  * 
  * @param unknown_type $action
  * @param unknown_type $place
  * @param unknown_type $actions_map
  */
-function patterns_implement_action_php($action, $place = 0, $actions_map = NULL) {
+function patterns_implement_action_php($action, $data, $place = 0, $actions_map = NULL) {
 
   patterns_set_error_handler();
 
@@ -287,7 +299,7 @@ function patterns_implement_action_php($action, $place = 0, $actions_map = NULL)
 }
 
 
-
+// TODO: remove this function
 /**
  * Retrieves the form_id structure.
  * Build up the form_state
