@@ -251,7 +251,7 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
   }
 
   $form['links'] = $actions;
-  
+
 
   return $form;
 }

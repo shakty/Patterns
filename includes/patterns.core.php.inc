@@ -11,38 +11,63 @@ function patterns_execute_pattern($pattern, $params = array()) {
   
    drupal_set_time_limit(0);
 
-  if (!is_object($pattern)) {
-    $pattern = patterns_get_pattern($pattern);
+  if (!isset($params['quickrun']) || !$params['quickrun']) {
+    if (!is_object($pattern)) {
+      $pattern = patterns_get_pattern($pattern);
 
-    if (!$pattern) {
-      return FALSE;
+      if (!$pattern) {
+        return FALSE;
+      }
     }
   }
 
   $pattern->subpatterns_run_mode = $params['run-subpatterns'];
-  $pattern_details = patterns_get_pattern_details($pattern, TRUE);
 
+  /////////////////////////////////////////
+  // Get Patterns details
+  $patterns_details = patterns_get_pattern_details($pattern);
+
+  // TODO: handle multiple patterns correctly
+  // Let us assume we have only one pattern in the returned array of details
+  $pid = key($patterns_details);
+  $pattern_details = current($patterns_details); 
+  $info = $pattern_details['info'];
+  
+  // Array of infos of multiple patterns (we have only one for now)
+  $infos = array($pid => $info);
+  
   $modules = $pattern_details['modules'];
-  $actions = $pattern_details['actions'];
-  $actions_map = array('patterns' => $pattern_details['info'], 'map' => $pattern_details['actions_map']);
-  $info = reset($pattern_details['info']);
+  $sections = $pattern_details['sections'];
+  
+  // Ste: Actions_map seems to be used with includes. Probably we do not need it now.
+  // $actions_map = array('patterns' => $pattern_details['info'], 'map' => $pattern_details['actions_map']);
+  
+// TODO: Patterns details was returning this in case of recursive includes  
+//  $result['actions_map'][] = array(
+//          'pid'   => $pattern->pid,
+//          'index' => $key,
+//        );
+  
+  $actions_map = array('patterns' => $infos, 'map' => NULL); // Fix this
+  ////////////////////////////////////////
 
-  // If there are no actions or modules, most likely the pattern
-  // was not created correctly.
-  if (empty($actions) && empty($modules)) {
-    drupal_set_message(t('Could not recognize pattern %title, aborting.', array('%title' => $info['title'])), 'error');
+  // If there are no sections, most likely the pattern was not created correctly.
+  if (empty($sections)) {
+    drupal_set_message(t('Could not recognize the format of pattern %title, aborting.', array('%title' => $info['title'])), 'error');
     return FALSE;
   }
 
-  $result = patterns_install_modules($modules);
-  if (!$result['success']) {
-    drupal_set_message($result['error_message'], 'error');
+  // Install modules, if necessary
+  $results = patterns_install_modules($modules);
+  if (!$results['success']) {
+    drupal_set_message($results['error_message'], 'error');
     return FALSE;
   }
-
+  
+  module_load_include('inc', 'patterns', 'includes/core.batch'); // TODO: Organize functiona better.
   $result = patterns_prepare_actions($actions, $actions_map);
   
-  if (!$result['success']) {
+  if (!$result['success']) { // TODO: handle properly
     drupal_set_message($result['error_message'], 'error');
     return FALSE;
   }
@@ -53,7 +78,40 @@ function patterns_execute_pattern($pattern, $params = array()) {
   for ($i = 0, $total = count($actions); $i < $total; $i++) {
     patterns_php_actions($actions[$i], $i, $actions_map);
   }
+/*
+  ///////////////////////////////
+  // Looping through the sections
+  ///////////////////////////////
 
+  foreach ($sections as $section => $actions) {
+    // $actions passed as reference
+    $results = patterns_prepare_actions($actions, $actions_map);
+    
+    if (!patterns_error_check_results($results)){
+      return $results;
+    }
+    
+    $batch = array(
+      'title' => t('Processing section %section of pattern %pattern', array('%section' => $section, '%pattern' => $info['title'])),
+      'progress_message' => t('Running action @current out of @total'),
+      'operations' => array(),
+      'file' => drupal_get_path('module', 'patterns') . '/includes/patterns.core.batch.inc',
+      'finished' => 'patterns_batch_finish'
+    );
+  
+    $i = 0;
+    $total = count($actions);
+    foreach ($actions as $action => $data) {
+      $batch['operations'][] = array('patterns_batch_actions', array($action, $data, $i, $actions_map));
+      $i++;
+    }
+    
+    $_SESSION['patterns_batch_info'] = $infos;
+  
+    batch_set($batch); 
+  }
+ 
+*/
   // @TODO: return false in case of errors
   return TRUE;
 }
