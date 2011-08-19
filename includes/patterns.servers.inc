@@ -7,10 +7,10 @@ function patterns_import_server($form, &$form_state) {
   if (empty($form_state['storage'])) {
 
     // Ste: was
-    //$path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
+    //$path = file_create_path(variable_get('patterns_save_file', 'patterns'));
     
     // real_path(public) returns the path to the files dir
-    $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_xml', 'patterns');
+    $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
   
     // Ste: was
     //if (!file_check_directory($path, true)) {
@@ -120,13 +120,9 @@ function patterns_import_server_submit($form, &$form_state) {
       $errors['get file'][] = $pattern_info;
       continue;
     }
-
-    // save file
-    // Ste: was
-    //$path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
     
     // real_path(public) returns the path to the files dir
-    $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_xml', 'patterns');
+    $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
     $path .= '/' . $pattern_info['name'] . '.' . $pattern_info['file_type'];
     if (!$saved = file_save_data($source, $path, FILE_EXISTS_ERROR)) {
       $errors['save file'][] = $pattern_info;
@@ -222,11 +218,9 @@ function patterns_unpublish_pattern($pid) {
  * Display the import pattern file form
  */
 function patterns_import_file(&$form_state) {
-  if (empty($form_state['post'])) {
-    drupal_set_message(t('Import feature currently supports only XML file format.'), 'warning');
-  }
+ 
   $form['#attributes']['enctype'] = 'multipart/form-data';
-  $form['xmlfile'] = array(
+  $form['pattern_file'] = array(
     '#type' => 'file',
     '#title' => t('Upload Pattern File'),
     '#description' => t('Imported patterns are not executed until you run them manually.'),
@@ -237,7 +231,8 @@ function patterns_import_file(&$form_state) {
     '#value' => t('Import')
   );
 
-  $form['#validate'][] = 'patterns_import_validate';
+  // Not for now
+  //$form['#validate'][] = 'patterns_import_validate';
   $form['#submit'][] = 'patterns_import_submit';
 
   return $form;
@@ -297,78 +292,92 @@ function patterns_import_source($form, &$form_state) {
   
   
   // No Validation for now
-  // $form['#validate'][] = 'patterns_import_validate';
+  $form['#validate'][] = 'patterns_import_validate';
   $form['#submit'][] = 'patterns_import_submit';
 
   return $form;
 }
 
 function patterns_import_validate($form, &$form_state) {
-
-  // Ste: was
-    //$path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
-    
-    // real_path(public) returns the path to the files dir
-    $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_xml', 'patterns');
-    
+  
+  $format = 'yaml';
+  $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
+  // Check Patterns Directory
   if (!file_prepare_directory($path)) {
     $message = t("Destination folder doesn't exist: !path<br />", array('!path' => $path));
     $link = l(t('status report'), 'admin/reports/status');
     $message .= t('You might want to check the !link to ensure your files directory exists and is writable.', array('!link' => $link));
-    form_set_error('xmlfile', $message);
-    return;
+    form_set_error('pattern_file', $message);
+    return FALSE;
   }
-  $validators = array('file_validate_extensions' => array('xml'));
-  if (isset($form_state['values']['xmlfile']) && ($file = file_save_upload('xmlfile', $validators))) {
-    $form_state['values']['xmlsource'] = file_get_contents($file->filepath);
-    $form_state['pattern_file'] = $file;
-    $form_state['pattern_file']->destination = $path;
-  }
-  elseif (isset($form_state['values']['xmlfile'])) {
-    form_set_error('files[xmlfile]', t('Error uploading XML file.'));
-    return;
-  }
-  elseif ($form_state['values']['xmlurl']) {
-    if (!ini_get('allow_url_fopen')) {
-      form_set_error('xmlsource', t('allow_url_fopen must be enabled in your php configuration in order to use this feature.'));
-      return;
+  
+  if (!$form_state['values']['content']) { // It is not an import_source
+  
+    $uri = $form_state['values']['pattern_uri'];
+    
+    if(empty($uri)){
+      form_set_error('pattern_uri', t('Invalid file or url provided.'));
+      return FALSE;
     }
-
-    if (strtolower(substr($form_state['values']['xmlurl'], -4)) != '.xml') {
-      form_set_error('xmlsource', t('Invalid file extension. Only "XML" file extension is allowed.'));
-      return;
+    
+    $format = pathinfo($uri, PATHINFO_EXTENSION);
+    $validators = array(); // filter out the extension
+    
+    // Remote File
+    if (stripos($url, 'http://') == 1) {
+      if (!ini_get('allow_url_fopen')) {
+        form_set_error('url', t('allow_url_fopen must be enabled in your php configuration in order to use this feature.'));
+        return FALSE;
+      }
+      // Only YAML and XML extension accepted for remote files
+      $validators = array('file_validate_extensions' => array('xml','yaml'));
     }
-
-    if (!($form_state['values']['xmlsource'] = file_get_contents($form_state['values']['xmlurl']))) {
-      form_set_error('xmlurl', t('Failed to retreive the pattern specified: %xmlurl. Check your URL and try again.', array('%xmlurl' => $form_state['values']['xmlurl'])));
-      return;
+  
+    // TODO: move it into the hook_submit ?
+    if ($file = file_save_upload($uri, $validators)) {
+      $form_state['values']['content'] = file_get_contents($file->uri); // was $file->filepath
+      $form_state['pattern_uri'] = $file;
+      $form_state['pattern_uri']->destination = $path;
     }
-
-    $pattern = array('/\.[^\.]*$/', '/[^a-zA-Z0-9_]/');
-    $replacement = array('', '_');
-    $form_state['values']['xmlname'] = preg_replace($pattern, $replacement, basename($form_state['values']['xmlurl']));
+    else {
+      form_set_error('pattern_uri', t('Failed to retreive the pattern specified: %uri. Check your file and try again. Notice: only yaml and xml files are accepted', array('%uri' => $uri)));
+      return FALSE;
+    }
   }
-
-  if (strpos($form_state['values']['xmlsource'], '<?xml') !== 0) {
-    $form_state['values']['xmlsource'] = '<?xml version="1.0" encoding="ISO-8859-1"?>' . $form_state['values']['xmlsource'];
+  
+  // Name Validation
+  $name = $form_state['values']['name'];
+  $errors_on_name = _patterns_parser_analyze_pattern_name($name);
+  if (!empty($errors_on_name)){
+    form_set_error('name', t('Errors on the name of the pattern: ' . implode(', ', $errors_on_name)));
+    return FALSE;  
   }
-
-  if ($form_state['values']['xmlname'] && preg_match('/[^a-zA-Z0-9_]/', $form_state['values']['xmlname'])) {
-    form_set_error('xmlname', t('You can only include letters, numbers, and underscores in the pattern identifier.'));
+  
+  if ($obj = patterns_db_load_pattern_from_name($name)) {
+    form_set_error('name', t('A pattern file with the same name alrady exists: !name', array('!name' => $name)));
+    return FALSE;  
   }
-  elseif ($form_state['values']['xmlname'] && preg_match('/^_/', $form_state['values']['xmlname'])) {
-    form_set_error('xmlname', t('You cannot start the pattern identifier with an underscore.'));
+  
+  // FORMAT Validation
+  if ($format == 'yaml') {
+    // YAML
+    $patternscan = _patterns_scan_pattern($form_state['values']['content']); 
+    if (!_patterns_validate_patternscan($patternscan)) {
+      $errors_on_scan = _patterns_analyze_patternscan($patternscan);
+      form_set_error('name', t('Error parsing the YAML file: ' . implode(', ', $errors_on_scan)));
+    }
   }
-
-  // @TODO validate XML and don't allow import if validation fails
-  $parse = drupal_xml_parser_create($form_state['values']['xmlsource']);
-  $success = xml_parse_into_struct($parse, $form_state['values']['xmlsource'], $vals, $index);
-
-  // Check that the xml was properly parsed and also that the
-  // root <pattern> tag and also an <info> tag were used.
-  if (!$success || !$vals || $vals[0]['tag'] != 'PATTERN' || $vals[1]['tag'] != 'INFO') {
-    form_set_error('xmlsource', t('Error parsing the XML, please check your syntax and try again.'));
+  else { // XML or other
+    if (!patterns_parser_validate_xml_pattern ($form_state['values']['content'])){
+      form_set_error('xmlsource', t('Error parsing the XML, please check your syntax and try again.'));
+    }
   }
+  
+  // TODO: Check what happens with different formats
+  $form_state['values']['format'] = $format;
+  
+  return TRUE;
+  
 }
 
 function patterns_import_submit($form, &$form_state) {
@@ -405,7 +414,7 @@ function patterns_import_submit($form, &$form_state) {
 //    $saved = file_copy($form_state['pattern_file']->filepath, $form_state['pattern_file']->destination);
 //  }
 //  elseif ($form_state['values']['xmlsource']) {
-//    $saved = file_save_data($form_state['values']['xmlsource'], variable_get('patterns_save_xml', 'patterns') . '/' . $form_state['values']['xmlname'] . '.xml', FILE_EXISTS_REPLACE);
+//    $saved = file_save_data($form_state['values']['xmlsource'], variable_get('patterns_save_file', 'patterns') . '/' . $form_state['values']['xmlname'] . '.xml', FILE_EXISTS_REPLACE);
 //  }
 //
 //  if ($saved) {

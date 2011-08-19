@@ -236,33 +236,6 @@ function patterns_io_get_patterns_service() {
 }
 
 /**
- * Load the pattern from the db and return a stdClass obj, containing 
- * the pattern code as array (unserialized)
- * 
- * @param mixed $id Numeric id or alphanumeric name of the pattern
- * @return stdClass $pattern the Pattern obj containing the unsereliazed pattern 
- */
-function patterns_get_pattern($id) {
-  
-  $pattern = FALSE;
-  if (is_numeric($id)) {
-    $pattern = db_query("SELECT * FROM {patterns} WHERE pid = :pid", array('pid' => $id))->FetchAll();
-  }
-  elseif (is_string($id)) {
-    $pattern = db_query("SELECT * FROM {patterns} WHERE name = :name", array('name' => $id))->FetchAll();
-  }
-
-  if (!$pattern) return FALSE;
-
-  //Pattern data is stored in serialized form in the db.
-  $pattern[0]->pattern = unserialize($pattern[0]->pattern); 
-  return $pattern[0];
-}
-
-
-
-
-/**
  * Check if a .htaccess file exists to prevent downloads of pattern files
  */
 function _patterns_check_file_dir() {

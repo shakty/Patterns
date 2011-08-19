@@ -477,11 +477,30 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
   return array('actions' => $actions, 'modules' => $modules, 'info' => $patterns);
 }
 
+/**
+ * Validates a pattern name
+ * 
+ * @param mixed $name
+ */
 function patterns_parser_validate_pattern_name ($name = NULL) {
+  
+  if (empty($name)) {
+    return FALSE;
+  } 
+  
+  $pattern = array('/\.[^\.]*$/', '/[^a-zA-Z0-9_]/');
+  $replacement = array('', '_');
+  $name = preg_replace($pattern, $replacement, basename($name));
+  
   $analysis = _patterns_parser_analyze_pattern_name($name);
   return (empty($analysis)) ? TRUE : FALSE;
 }
 
+/**
+ * Analyze a pattern name and return an array of errors msgs
+ * 
+ * @param mixed $name
+ */
 function _patterns_parser_analyze_pattern_name ($name = NULL) {
   $msgs = array();
   
@@ -500,3 +519,34 @@ function _patterns_parser_analyze_pattern_name ($name = NULL) {
   
   return $msgs;
 }
+
+
+
+/**
+ * Validate an XML file
+ * 
+ * TODO: test it
+ * TODO: improve XML validator
+ * Check that the xml was properly parsed and also that the
+ */ 
+function patterns_parser_validate_xml_pattern ($content) {
+    
+  if (empty($content)) {
+    return FALSE; 
+  }
+  
+  // Add XML tag if missing
+  if (strpos($content, '<?xml') !== 0) {
+    $content = '<?xml version="1.0" encoding="ISO-8859-1"?>' .$content;
+  }
+
+  $parse = drupal_xml_parser_create($content);
+  $success = xml_parse_into_struct($parse, $content, $vals, $index);
+  
+  if (!$success || !$vals || $vals[0]['tag'] != 'PATTERN' || $vals[1]['tag'] != 'INFO') {
+      return FALSE;
+  }
+  
+  return TRUE;
+}
+
