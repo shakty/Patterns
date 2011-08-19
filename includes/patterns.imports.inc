@@ -1,5 +1,64 @@
 <?php
 
+/**
+ * Display the import pattern form
+ */
+function patterns_import_source($form, &$form_state) {
+  
+  $form['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Pattern Identifier'),
+    '#description' => t('Machine readable name for the pattern. The actual title should be included in the pattern itself.'),
+    '#required' => TRUE
+  );
+  $form['content'] = array(
+    '#type' => 'textarea',
+    '#rows' => 25,
+    '#title' => t('Enter Pattern Source Code'),
+    '#description' => t('Imported patterns are not executed until you run them manually.')
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Import')
+  );
+  
+  $form['#validate'][] = 'patterns_import_validate';
+  $form['#submit'][] = 'patterns_import_submit';
+
+  return $form;
+}
+
+/**
+ * Display the import pattern file form
+ */
+function patterns_import_file(&$form_state) {
+ 
+  $form['#attributes']['enctype'] = 'multipart/form-data';
+  
+  $form['pattern_uri'] = array(
+    '#type' => 'file',
+    '#title' => t('Upload Pattern File'),
+    '#description' => t('Imported patterns are not executed until you run them manually.'),
+    '#size' => 48
+  );
+  
+  $form['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Pattern Identifier'),
+    '#description' => t('Machine readable name for the pattern. The actual title should be included in the pattern itself.'),
+    '#required' => TRUE
+  );
+  
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Import')
+  );
+
+  //$form['#validate'][] = 'patterns_import_validate';
+  $form['#submit'][] = 'patterns_import_submit';
+
+  return $form;
+}
 
 /**
  * Display the import pattern url form
@@ -32,33 +91,6 @@ function patterns_import_url(&$form_state) {
   return $form;
 }
 
-/**
- * Display the import pattern form
- */
-function patterns_import_source($form, &$form_state) {
-  
-  $form['name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Pattern Identifier'),
-    '#description' => t('Machine readable name for the pattern. The actual title should be included in the pattern itself.'),
-    '#required' => TRUE
-  );
-  $form['content'] = array(
-    '#type' => 'textarea',
-    '#rows' => 25,
-    '#title' => t('Enter Pattern Source Code'),
-    '#description' => t('Imported patterns are not executed until you run them manually.')
-  );
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Import')
-  );
-  
-  $form['#validate'][] = 'patterns_import_validate';
-  $form['#submit'][] = 'patterns_import_submit';
-
-  return $form;
-}
 
 /**
  * Validate handler for file importing
@@ -69,18 +101,11 @@ function patterns_import_file_validate ($form, &$form_state) {
   _patterns_imports_check_dirs();
   _patterns_imports_check_name($form_state['values']['name']);
   
+
+  // arg must be a string with a space separated list of allowed extensions.
+  $validators = array('file_validate_extensions' => array('xml yaml'));
   
-  $uri = $form_state['values']['files']['pattern_uri'];
-    
-  if(empty($uri)){
-    form_set_error('pattern_uri', t('Invalid file or url provided.'));
-    return FALSE;
-  }
-  
-  $format = pathinfo($uri, PATHINFO_EXTENSION);
-  
-  // TODO: move it into the hook_submit ?
-  if ($file = file_save_upload($uri, $validators)) {
+  if ($file = file_save_upload('pattern_uri', $validators)) {
     $form_state['values']['content'] = file_get_contents($file->uri); // was $file->filepath
     $form_state['pattern_uri'] = $file;
     $form_state['pattern_uri']->destination = PATTERNS_FILES_DIR;
@@ -89,11 +114,9 @@ function patterns_import_file_validate ($form, &$form_state) {
     form_set_error('pattern_uri', t('Failed to retreive the pattern specified: %uri. Check your file and try again. Notice: only yaml and xml files are accepted', array('%uri' => $uri)));
     return FALSE;
   }
+ 
+  $format = pathinfo($form_state['pattern_uri']->uri, PATHINFO_EXTENSION);
   
-  
-  
-  
-  // FORMAT Validation
   if ($format == 'yaml') {
     // YAML
     $patternscan = _patterns_scan_pattern($form_state['values']['content']); 

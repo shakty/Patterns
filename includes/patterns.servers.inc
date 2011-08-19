@@ -189,8 +189,6 @@ function patterns_feed_rearrange_data($feed) {
 }
 
 
-
-
 /**
  * Not really doing anything for now
  * @param mixed $pid
@@ -211,34 +209,3 @@ function patterns_unpublish_pattern($pid) {
   drupal_goto('admin/patterns');
 }
 
-/**
- * Display the import pattern file form
- */
-function patterns_import_file(&$form_state) {
- 
-  $form['#attributes']['enctype'] = 'multipart/form-data';
-  
-  $form['pattern_uri'] = array(
-    '#type' => 'file',
-    '#title' => t('Upload Pattern File'),
-    '#description' => t('Imported patterns are not executed until you run them manually.'),
-    '#size' => 48
-  );
-  
-  $form['name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Pattern Identifier'),
-    '#description' => t('Machine readable name for the pattern. The actual title should be included in the pattern itself.'),
-    '#required' => TRUE
-  );
-  
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Import')
-  );
-
-  $form['#validate'][] = 'patterns_import_validate';
-  $form['#submit'][] = 'patterns_import_submit';
-
-  return $form;
-}
