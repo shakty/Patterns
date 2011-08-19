@@ -39,7 +39,6 @@ function taxonomy_patterns_prepare($action, $tag, &$data = NULL) {
     
   // VOCABULARY
   if ($tag == 'vocabulary') {
-    
       if ($action == PATTERNS_DELETE ) {
         $data = _taxonomy_patterns_prepare_vocabulary_delete($action, $data);
       } 
@@ -107,8 +106,7 @@ function taxonomy_patterns_validate ($action, $tag, &$data = NULL) {
 function taxonomy_patterns_callbacks ($action, $tag, &$data = NULL) {
 	// Just return the form ids specified above. No custom functions used here.
 	$desc = taxonomy_patterns();
-	$result = $desc[$tag][$action];
-
+  throw new Exception($result);
 	return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
 

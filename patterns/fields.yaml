@@ -16,12 +16,39 @@ info:
 actions:
 
   create:
-      tag: field
-      entity: node
-      bundle: custom_content
-      name: sponsor
+      tag: instance
+      entity: user
+      bundle: user
+      name: sponsor 
       label: Sponsor Name
       weight: 1
+
+  modify:
+      tag: instance
+      entity: user
+      bundle: user
+      name: sponsor 
+      label:edit
+      cardinality:3
+      required:1
+      field_name:ddddd
+      description:test
+      size:10
+      text_processing:1
+
+  delete:
+      tag: instance
+      entity: node
+      bundle: node
+      name: third 
+
+  modify:
+      tag: field
+      entity: user
+      bundle: user
+      name: sponsor
+      settings:      
+        max_length:100
 
 
 #  - tag: field
