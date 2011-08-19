@@ -4,9 +4,8 @@ jQuery('document').ready( function() {
 		var url = location.href.substring(0,location.href.lastIndexOf('admin/patterns/') + 'admin/patterns/'.length) + 'validate';
 		
 		var textarea = document.getElementById("edit-content");
-		alert(typeof(textarea));
-		if (textarea) {
-			alert('3');
+		
+		if (textarea) {	
 			document.getElementById('validate_pattern').onclick = function() {
 				document.getElementById('validation_result').innerHTML = '...validating...';
 				
@@ -18,7 +17,7 @@ jQuery('document').ready( function() {
 				jQuery.ajax({
 					type: 'POST',
 					url: url,
-					data: 'pattern='+document.getElementById('edit-content').value,
+					data: 'pattern='+textarea.value,
 					success: function ( data, status, xhr ) {
 								document.getElementById('validation_result').innerHTML = '<strong>'+data+'</strong>';
 								//$('validation_result').replaceWith(data);
