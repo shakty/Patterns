@@ -268,6 +268,11 @@ function patterns_import_url(&$form_state) {
 }
 
 
+function patterns_import ($form, $form_state) {
+  
+  return patterns_editor('patterns_import_source' );
+}
+
 /**
  * Display the import pattern form
  */
@@ -275,6 +280,7 @@ function patterns_import_source($form, &$form_state) {
   if (empty($form_state['post'])) {
     drupal_set_message(t('Import feature currently supports only XML file format.'), 'warning');
   }
+  
   $form['xmlname'] = array(
     '#type' => 'textfield',
     '#title' => t('Pattern Identifier'),
@@ -291,8 +297,10 @@ function patterns_import_source($form, &$form_state) {
     '#type' => 'submit',
     '#value' => t('Import')
   );
-
-  $form['#validate'][] = 'patterns_import_validate';
+  
+  
+  // No Validation for now
+  // $form['#validate'][] = 'patterns_import_validate';
   $form['#submit'][] = 'patterns_import_submit';
 
   return $form;
