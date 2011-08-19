@@ -13,6 +13,10 @@ function field_patterns () {
                                  PATTERNS_DELETE => array('field_ui_field_delete_form'),
                                  'files'  => $files,
                                 );
+  $actions['field_weight'] = array('descr' => t('Order the fields'), 
+                                 PATTERNS_MODIFY => array('field_ui_field_overview_form'),
+                                 'files'  => $files,
+                                );
                           
   return $actions;                
   
@@ -50,6 +54,12 @@ function field_patterns_prepare($action, $tag, &$data = NULL) {
       }// End: $id = field
       elseif($tag == 'field'){
         $data = _field_patterns_prepare_field($action, $data);
+      }else{
+      	foreach($data['weight'] as $key=>$lev){
+      		$name='field_'.$key;
+      		$data['fields'][$name]['weight']=$lev;
+      	}
+      	unset($data['weight']);
       }
       
   return patterns_results();
@@ -59,13 +69,29 @@ function field_patterns_prepare($action, $tag, &$data = NULL) {
 function field_patterns_validate ($action, $tag, &$data = NULL) {
 	$status = PATTERNS_SUCCESS;
   $msg = '';
-  if(!isset($data['field_name'])){
-  	$status = PATTERNS_ERR;
-    $msg = t('FieldException: Field name is required.');
-  }
-  elseif($tag=='instance'){
-  	$exist=db_query("SELECT COUNT(*) FROM {field_config_instance} WHERE field_name = :name and entity_type = :type and bundle = :bundle", array('bundle'=>$data['bundle'],'type'=>$data['entity_type'],'name'=>$data['field_name']))->fetchField();
-  	if(!isset($data['entity_type'])){
+	if($tag=='field_weight'){
+		if(!isset($data['entity_type'])){
+      $status = PATTERNS_ERR;
+      $msg = t('FieldException: Field entity type is required.');
+    }
+    elseif(!isset($data['bundle'])){
+      $status = PATTERNS_ERR;
+      $msg = t('FieldException: Field bundle is required.');
+    }
+	}
+	if($tag=='field'){
+		if(!isset($data['field_name'])){
+    	$status = PATTERNS_ERR;
+    	$msg = t('FieldException: Field name is required.');
+  	}
+	}	
+  if($tag=='instance'){
+		$exist=db_query("SELECT COUNT(*) FROM {field_config_instance} WHERE field_name = :name and entity_type = :type and bundle = :bundle", array('bundle'=>$data['bundle'],'type'=>$data['entity_type'],'name'=>$data['field_name']))->fetchField();
+		if(!isset($data['field_name'])){
+    	$status = PATTERNS_ERR;
+    	$msg = t('FieldException: Field name is required.');
+  	}
+  	elseif(!isset($data['entity_type'])){
       $status = PATTERNS_ERR;
       $msg = t('FieldException: Field entity type is required.');
     }
@@ -270,8 +296,12 @@ function _field_patterns_prepare_instance($action, $data){
        $date['instance']['widget']['active']=1;
        unset($data['size']);
     }
-    
-    
+    //default_value
+     if (isset($data['default_value'])) {
+       $data[$fname]['und'][0]['value'] = $data['default_value'];
+       unset($data['default_value']);
+    }
+   
     //other special field type settings form
     if(isset($data['instance_settings'])){
     	foreach($data['special_settings'] as $key=>$setting){

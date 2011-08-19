@@ -21,6 +21,8 @@ actions:
       bundle: user
       name: sponsor 
       label: Sponsor Name
+      type:text
+      widget:text_textfield
       weight: 1
 
   modify:
@@ -31,6 +33,7 @@ actions:
       label:edit
       cardinality:3
       required:1
+      default_value:bobo
       field_name:ddddd
       description:test
       size:10
@@ -49,6 +52,15 @@ actions:
       name: sponsor
       settings:      
         max_length:100
+        
+  modify:
+      tag: field_weight
+      entity: user
+      bundle: user
+      weight:
+        sponsor:2
+        first:1
+        third:3
 
 
 #  - tag: field
