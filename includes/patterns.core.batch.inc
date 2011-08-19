@@ -16,64 +16,15 @@
  * and the pattern is already loaded into $pattern
  * 
  */
-function patterns_execute_pattern($pattern, $params = array()) {
-  module_load_include('inc', 'patterns', 'includes/patterns.core.common');
-  drupal_set_time_limit(0);
-
-
-  if (!isset($params['quickrun']) || !$params['quickrun']) {
-    if (!is_object($pattern)) {
-      $pattern = patterns_get_pattern($pattern);
-  
-      if (!$pattern) {
-        return FALSE;
-      }
-    }
-  }
-
-  $pattern->subpatterns_run_mode = $params['run-subpatterns'];
-  
-  /////////////////////////////////////////
-  // Get Patterns details
-  $patterns_details = patterns_get_pattern_details($pattern);
-
-  // TODO: handle multiple patterns correctly
-  // Let us assume we have only one pattern in the returned array of details
+function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $actions_map) {
+	$pattern_details = current($patterns_details);
   $pid = key($patterns_details);
-  $pattern_details = current($patterns_details); 
-  $info = $pattern_details['info'];
-  
-  // Array of infos of multiple patterns (we have only one for now)
+
+	$info = $pattern_details['info'];
   $infos = array($pid => $info);
   
   $modules = $pattern_details['modules'];
   $sections = $pattern_details['sections'];
-  
-  // Ste: Actions_map seems to be used with includes. Probably we do not need it now.
-  // $actions_map = array('patterns' => $pattern_details['info'], 'map' => $pattern_details['actions_map']);
-  
-// TODO: Patterns details was returning this in case of recursive includes  
-//  $result['actions_map'][] = array(
-//          'pid'   => $pattern->pid,
-//          'index' => $key,
-//        );
-  
-  $actions_map = array('patterns' => $infos, 'map' => NULL); // Fix this
-  ////////////////////////////////////////
-  
-  
-  // If there are no sections, most likely the pattern was not created correctly.
-  if (empty($sections)) {
-    drupal_set_message(t('Could not recognize the format of pattern %title, aborting.', array('%title' => $info['title'])), 'error');
-    return FALSE;
-  }
-  
-  // Install modules, if necessary
-  $results = patterns_install_modules($modules);
-  if (!$results['success']) { // TODO: handle properly
-    drupal_set_message($results['error_message'], 'error');
-    return FALSE;
-  }
 
   ///////////////////////////////
   // Looping through the sections
