@@ -7,12 +7,13 @@
  * 
  * If there are no errors, it creates the batch array of operations. Each of them
  * is a call to patterns_batch_actions with different parameters.
- * 
+ *
  * @param stdClass $pattern Pattern object as loaded by patterns_get_pattern()
  * @param array $params Parameters for executing the pattern. Array format as follows:
  * pid => Pid of the pattern as it is in the database  
- * run-subpatterns => ['first-update', always','update','first','never']
- * @param boolean $quickrun flag to check if the patterns exists in the database
+ * run-subpatterns => ['first-update', always', 'update', 'first', 'never']
+ * quickrun => boolean flag to indicate that the execution was initiated from a quickrun
+ * and the pattern is already loaded into $pattern
  * 
  */
 function patterns_execute_pattern($pattern, $params = array()) {
@@ -43,7 +44,7 @@ function patterns_execute_pattern($pattern, $params = array()) {
   $info = $pattern_details['info'];
   
   // Array of infos of multiple patterns (we have only one for now)
-  $infos = array($pid=>$info);
+  $infos = array($pid => $info);
   
   $modules = $pattern_details['modules'];
   $sections = $pattern_details['sections'];
@@ -61,22 +62,19 @@ function patterns_execute_pattern($pattern, $params = array()) {
   ////////////////////////////////////////
   
   
-  // If there are no actions or modules, most likely the pattern
-  // was not created correctly.
+  // If there are no sections, most likely the pattern was not created correctly.
   if (empty($sections)) {
     drupal_set_message(t('Could not recognize the format of pattern %title, aborting.', array('%title' => $info['title'])), 'error');
     return FALSE;
   }
-  
-  if (!empty($modules)) {
-    // Install modules, if necessary
-    $results = patterns_install_modules($modules);
-    if (!$results['success']) {
-      drupal_set_message($results['error_message'], 'error');
-      return FALSE;
-    }
+
+  // Install modules, if necessary
+  $results = patterns_install_modules($modules);
+  if (!$results['success']) { // TODO: handle properly
+    drupal_set_message($results['error_message'], 'error');
+    return FALSE;
   }
-  
+
   ///////////////////////////////
   // Looping through the sections
   ///////////////////////////////
@@ -113,9 +111,9 @@ function patterns_execute_pattern($pattern, $params = array()) {
 }
 
 /**
- * Preparing and prevalidating the action tags as they are written 
+ * Preparing and validating the action tags as they are written 
  * in the pattern file. Concretely, it invokes operations 'prepare', 
- * and 'prevalidate' on the pattern component. 
+ * and 'validate' on the pattern component. 
  * 
  * @param array $actions
  * @param array $actions_map
@@ -134,7 +132,7 @@ function patterns_prepare_actions(&$actions, $actions_map) {
   $tag_modules = patterns_get_tagmodules_index();
 
   $errors = array();
-  
+
   /////////////////////////////////////////////
   // Prepare actions for validation/processing
   /////////////////////////////////////////////
