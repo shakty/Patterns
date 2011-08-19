@@ -127,7 +127,7 @@ function patterns_menu() {
   
   $items['admin/patterns/quickrun'] = array(
     'title' => 'Quick Run',
-     'page callback' => 'patterns_editor',
+    'page callback' => 'patterns_editor',
     'page arguments' => array('patterns_quickrun'),
     'access arguments' => array('administer patterns'),
     'type' => MENU_LOCAL_TASK
@@ -182,7 +182,7 @@ function patterns_menu() {
     'type' => MENU_CALLBACK
   );
   
-  // TODO: patterns.xml
+  // TODO: Check patterns.xml
   
   $items['patterns.xml'] = array(
     'title' => 'Published Patterns',
@@ -193,13 +193,23 @@ function patterns_menu() {
   
     // TODO: Check import
 
-  $items['admin/patterns/import'] = array(
+   $items['admin/patterns/import'] = array(
     'title' => 'Import',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'patterns_editor',
     'page arguments' => array('patterns_import_source'),
     'access arguments' => array('administer patterns'),
     'type' => MENU_LOCAL_TASK
   );
+  
+// old  
+//  $items['admin/patterns/import'] = array(
+//    'title' => 'Import',
+//    'page callback' => 'drupal_get_form',
+//    'page arguments' => array('patterns_import_source'),
+//    'access arguments' => array('administer patterns'),
+//    'type' => MENU_LOCAL_TASK
+//  );
+  
   $items['admin/patterns/import/source'] = array(
     'title' => 'Import Source Code',
     'type' => MENU_DEFAULT_LOCAL_TASK,
