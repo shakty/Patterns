@@ -1,8 +1,5 @@
 window.onload = function() {
 	
-
-	
-		
 	(function () {
 		
 		var url = location.href.substring(0,location.href.lastIndexOf('edit/')) + 'validate';

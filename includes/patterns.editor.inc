@@ -84,7 +84,7 @@ function patterns_quickrun_submit($form, $form_state) {
   $pattern = patterns_get_pattern_obj($pattern);
   
   $mode = 'batch';
-  module_load_include('inc', 'patterns', 'includes/core.' . $mode);
+  module_load_include('inc', 'patterns', 'includes/patterns.core.' . $mode);
   
   
   $params['run-subpatterns'] = 'always';

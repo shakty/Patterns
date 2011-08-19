@@ -1,17 +1,16 @@
 <?php
 
 
-require_once 'includes/config.inc';
-require_once 'includes/db.inc';
-require_once 'includes/error.inc';
-require_once 'includes/io.inc';
-require_once 'includes/parser.inc';
-require_once 'includes/utils.inc';
-require_once 'includes/editor.inc';
-require_once 'includes/servers.inc';
+require_once 'includes/patterns.config.inc';
+require_once 'includes/patterns.db.inc';
+require_once 'includes/patterns.error.inc';
+require_once 'includes/patterns.io.inc';
+require_once 'includes/patterns.parser.inc';
+require_once 'includes/patterns.utils.inc';
+require_once 'includes/patterns.editor.inc';
+require_once 'includes/patterns.servers.inc';
 
-require_once 'includes/theme.inc';
-
+require_once 'includes/patterns.theme.inc';
 
 define('PATTERNS_SUCCESS', 1);
 define('PATTERNS_WARN', 0);
@@ -157,25 +156,6 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
-  
-  $items['admin/patterns/publish'] = array(
-    'title' => 'Publish Pattern',
-    'page callback' => 'patterns_publish_pattern',
-    'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
-  );
-  $items['admin/patterns/unpublish'] = array(
-    'title' => 'Unpublish Pattern',
-    'page callback' => 'patterns_unpublish_pattern',
-    'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
-  );
-  $items['patterns.xml'] = array(
-    'title' => 'Published Patterns',
-    'page callback' => 'patterns_feed',
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK
-  );
 
   $items['admin/patterns/settings'] = array(
     'title' => 'Settings',
@@ -185,13 +165,6 @@ function patterns_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
   );
-
-  $items['admin/patterns/get'] = array(
-    'title' => 'Download Pattern Source',
-    'page callback' => 'patterns_get_source',
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK
-  );
   
   $items['admin/patterns/validate'] = array(
     'title' => 'Validate Pattern YAML Source',
@@ -200,43 +173,25 @@ function patterns_menu() {
     'type' => MENU_CALLBACK
   );
   
+  // TODO: Check admin/patterns/get
   
-
-  //     $items[] = array('path' => 'admin/patterns/configure',
-  //       'title' => t('Configure Pattern'),
-  //       'callback' => 'drupal_get_form',
-  //       'callback arguments' => array('patterns_configure_pattern'),
-  //       'type' => MENU_CALLBACK
-  //     );
-
-  //     $items[] = array('path' => 'admin/patterns/info',
-  //       'title' => t('Pattern Details'),
-  //       'callback' => 'patterns_info',
-  //       'type' => MENU_CALLBACK
-  //     );
-
-  //     $items[] = array('path' => 'admin/patterns/disable',
-  //       'access' => user_access('administer patterns'),
-  //       'title' => t('Disable Pattern'),
-  //       'callback' => 'drupal_get_form',
-  //       'callback arguments' => array('patterns_disable_pattern'),
-  //       'type' => MENU_CALLBACK
-  //     );
-
-  $items['admin/patterns/modules'] = array(
-    'title' => 'Pattern Modules',
-    'page callback' => 'patterns_modules_page',
-    'access arguments' => array('administer patterns'),
+  $items['admin/patterns/get'] = array(
+    'title' => 'Download Pattern Source',
+    'page callback' => 'patterns_get_source',
+    'access callback' => TRUE,
     'type' => MENU_CALLBACK
   );
-
-  //     $items[] = array('path' => 'admin/patterns/revert',
-  //       'access' => user_access('administer patterns'),
-  //       'title' => t('Revert Pattern'),
-  //       'callback' => 'patterns_revert',
-  //       'type' => MENU_CALLBACK
-  //     );
-
+  
+  // TODO: patterns.xml
+  
+  $items['patterns.xml'] = array(
+    'title' => 'Published Patterns',
+    'page callback' => 'patterns_feed',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK
+  );
+  
+    // TODO: Check import
 
   $items['admin/patterns/import'] = array(
     'title' => 'Import',
@@ -264,15 +219,72 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_LOCAL_TASK
   );
-  $items['admin/patterns/server'] = array(
-    'title' => 'Patterns Server',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('patterns_import_server'),
-    'access arguments' => array('administer patterns'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => -5
-  );
+  
+  // Disable for Now. 
+  // TODO Check publish/unpublish
+  
+//  $items['admin/patterns/publish'] = array(
+//    'title' => 'Publish Pattern',
+//    'page callback' => 'patterns_publish_pattern',
+//    'access arguments' => array('administer patterns'),
+//    'type' => MENU_CALLBACK
+//  );
+//  $items['admin/patterns/unpublish'] = array(
+//    'title' => 'Unpublish Pattern',
+//    'page callback' => 'patterns_unpublish_pattern',
+//    'access arguments' => array('administer patterns'),
+//    'type' => MENU_CALLBACK
+//  );
 
+//  $items['admin/patterns/server'] = array(
+//    'title' => 'Patterns Server',
+//    'page callback' => 'drupal_get_form',
+//    'page arguments' => array('patterns_import_server'),
+//    'access arguments' => array('administer patterns'),
+//    'type' => MENU_LOCAL_TASK,
+//    'weight' => -5
+//  );
+
+  // This items were already commented
+  /////////////////////////////////////////////////////
+  
+  //     $items[] = array('path' => 'admin/patterns/configure',
+  //       'title' => t('Configure Pattern'),
+  //       'callback' => 'drupal_get_form',
+  //       'callback arguments' => array('patterns_configure_pattern'),
+  //       'type' => MENU_CALLBACK
+  //     );
+
+  //     $items[] = array('path' => 'admin/patterns/info',
+  //       'title' => t('Pattern Details'),
+  //       'callback' => 'patterns_info',
+  //       'type' => MENU_CALLBACK
+  //     );
+
+  //     $items[] = array('path' => 'admin/patterns/disable',
+  //       'access' => user_access('administer patterns'),
+  //       'title' => t('Disable Pattern'),
+  //       'callback' => 'drupal_get_form',
+  //       'callback arguments' => array('patterns_disable_pattern'),
+  //       'type' => MENU_CALLBACK
+  //     );
+
+//  $items['admin/patterns/modules'] = array(
+//    'title' => 'Pattern Modules',
+//    'page callback' => 'patterns_modules_page',
+//    'access arguments' => array('administer patterns'),
+//    'type' => MENU_CALLBACK
+//  );
+
+  //     $items[] = array('path' => 'admin/patterns/revert',
+  //       'access' => user_access('administer patterns'),
+  //       'title' => t('Revert Pattern'),
+  //       'callback' => 'patterns_revert',
+  //       'type' => MENU_CALLBACK
+  //     );
+
+
+  
   return $items;
 }
 
@@ -285,91 +297,45 @@ function patterns_menu() {
  */
 function patterns_list() {
   
-  drupal_add_css(drupal_get_path('module', 'patterns') . '/patterns.css');
-  drupal_add_js(drupal_get_path('module', 'patterns') . '/patterns.js');
+  drupal_add_css(drupal_get_path('module', 'patterns') . '/css/patterns.css');
+  drupal_add_js(drupal_get_path('module', 'patterns') . '/js/patterns.js');
 
+  $form['commands'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Commands'
+  );
+  
+  $form['commands']['refresh'] = array(
+    '#type' => 'button',
+    '#value' => 'Refresh',
+    '#attributes' => array('style' => 'float:right'),
+    '#ajax' => array(
+      'callback' => 'patterns_io_get_patterns_service',
+      'wrapper' => 'replace_textfield_div',
+     ), 
+  );
+  
+   $form['commands']['create'] = array(
+    '#type' => 'button',
+    '#value' => 'Create New',
+    '#attributes' => array('style' => 'float:right'),
+    '#ajax' => array(
+      'callback' => 'patterns_io_get_patterns_service',
+      'wrapper' => 'replace_textfield_div',
+     ), 
+  );
+  
+  $output = drupal_render($form);
+  
   // Load the the pattern handlers from compontents directory
   // or from modules which implement hook_patterns
   patterns_load_components();
   
-  // Load the patterns from files or from database
+  // Load the patterns from database
   $patterns = patterns_get_patterns();
-  
-  if (empty($patterns)) {
-    return t('No patterns available.');
-    
-  } 
-  
-  $header = array(t('Title'), t('Status'), t('Version'), t('Actions'));
-
-  // List all patterns
-  $rows = array();
-  
-  foreach ($patterns as $pid => $pattern) {
-    $actions = array();
-    
-    // Build Run/Re-Run/Update pattern links
-    if (!$pattern->status) {
-      $actions[] =  l(t('Run'), 'admin/patterns/enable/' . $pid);
-    }
-    elseif ($pattern->enabled >= $pattern->updated) {
-      $actions[] =  l(t('Re-Run'), 'admin/patterns/enable/' . $pid);
-    }
-    else {
-      $actions[] = l(t('Run Update'), 'admin/patterns/enable/' . $pid);
-    }
-    // Edit Link
-    $actions[] = l(t('Edit'), 'admin/patterns/edit/' . $pid);
-    
-    // Remove Link
-    $actions[] = l(t('Remove'), 'admin/patterns/remove/' . $pid);
-    
-    //Publish/Unpublish link
-    if (variable_get('patterns_allow_publish', FALSE)) {
-      $actions[] = $pattern->public ? l(t('Unpublish'), 'admin/patterns/unpublish/' . $pid) : l(t('Publish'), 'admin/patterns/publish/' . $pid);
-    }
-    
-    $actions = implode('&nbsp;&nbsp;', $actions);
-
-    
-    //      $title = l($pattern->title, 'admin/patterns/info/'. $pid, array('attributes' => array('class' => 'pattern-title', 'id' => 'pid-'. $pid)));
-    $title = '<span id="pid-' . $pid . '" class="pattern-title">' . $pattern->title . '</span>';
-    //     $view_more = '<div>'. t('Clik on pattern title to see more details.') .'</div>';
-    $info = array();
-    $info[] = t('Author:') . ' ' . @$pattern->info['author'];
-    $info[] = t('Email:') . ' ' . @$pattern->info['author_email'];
-    $info[] = t('Web:') . ' ' . @$pattern->info['author_website'];
-    $author = theme('item_list', array('items' => $info));
-    //    $title .= '<div id="pid-'. $pid .'-info" class="pattern-info">'. $author . $pattern->description . $view_more .'</div>';
-    $title .= '<div id="pid-' . $pid . '-info" class="pattern-info">' . $author . $pattern->description . '</div>';
-    
-    $cells = array();
-    $cells[] = array('data' => $title, 'class' => 'title');
-    $cells[] = array('data' => $pattern->status ? t('Enabled') : t('Disabled'), 'class' => 'status');
-    $cells[] = array('data' => @$pattern->info['version'], 'class' => 'version');
-    $cells[] = array('data' => $actions, 'class' => 'actions');
-    
-    // Group patterns by category
-    $category = $pattern->info['category'] ? $pattern->info['category'] : t('Other');
-    
-    $rows[$category][] = $cells;
-  }
-
-  // Builds as many fieldsets as pattern categories
-  // and plot tables with the rows we created before
-  ksort($rows);
-  $output = '';
-  foreach ($rows as $title => $category) {
-    $fieldset = array('element' => array(
-      '#title' => t($title),
-      '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
-      '#children' => t($title), 
-      '#value' => theme('table', array('rows' => $category, 'attributes' => array('class' => 'patterns-list'))),
-    ));
-    $output .= theme('fieldset', $fieldset);
-  }
-
+ 
+  $output.= theme('patterns_list', array('patterns' => $patterns, 'invalid' => array()));
+ 
   return $output;
 }
 
@@ -491,6 +457,8 @@ function patterns_remove_pattern_submit($form, &$form_state) {
 
   $result = patterns_db_remove_pattern($pid);
 
+  //@TODO: remove the file as well
+  
   if (!$result) {
     drupal_set_message('Pattern could not be removed','error');
   }
@@ -524,8 +492,8 @@ function patterns_remove_pattern_submit($form, &$form_state) {
  */
 function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
   
-  //require_once 'includes/core.'.$mode.'.inc';
-  module_load_include('inc', 'patterns', 'includes/core.' . $mode);
+  //require_once 'includes/patterns.core.'.$mode.'.inc';
+  module_load_include('inc', 'patterns', 'includes/patterns.core.' . $mode);
   
   if (!function_exists('patterns_execute_pattern') || !is_object($pattern)) return FALSE;
 
