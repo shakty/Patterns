@@ -17,7 +17,7 @@ function patterns_db_remove_pattern($pid) {
 }
 
 /**
- * Writes the pattern metadata (and the actual pattern) to the db
+ * Writes the pattern metadata (and the actual pattern) to the database.
  * 
  * @param array $pattern
  * @param mixed $path the new path where the file has just been saved or read from
@@ -25,7 +25,7 @@ function patterns_db_remove_pattern($pid) {
  */
 function patterns_db_save_pattern($pattern, $path = '', $name = '') {
 
-  // Try to parse the array in two different format
+  // Try to parse the array in two different formats.
   if (isset($pattern['info'])) {
     $title = $pattern['info']['title'];
     $description = $pattern['info']['description'];
@@ -47,7 +47,7 @@ function patterns_db_save_pattern($pattern, $path = '', $name = '') {
     
   }
   
-  $pattern_data = db_query("SELECT pid,file,updated FROM {patterns} WHERE name = :name", array('name' => $name))->fetchAssoc();
+  $pattern_data = db_query("SELECT pid, file, updated FROM {patterns} WHERE name = :name", array('name' => $name))->fetchAssoc();
   
   // Pattern already in the db, data needs to be updated
   if (!empty($pattern_data)) {
