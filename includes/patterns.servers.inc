@@ -277,19 +277,16 @@ function patterns_import ($form, $form_state) {
  * Display the import pattern form
  */
 function patterns_import_source($form, &$form_state) {
-  if (empty($form_state['post'])) {
-    drupal_set_message(t('Import feature currently supports only XML file format.'), 'warning');
-  }
   
-  $form['xmlname'] = array(
+  $form['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Pattern Identifier'),
     '#description' => t('Machine readable name for the pattern. The actual title should be included in the pattern itself.'),
     '#required' => TRUE
   );
-  $form['xmlsource'] = array(
+  $form['content'] = array(
     '#type' => 'textarea',
-    '#rows' => 15,
+    '#rows' => 25,
     '#title' => t('Enter Pattern Source Code'),
     '#description' => t('Imported patterns are not executed until you run them manually.')
   );
@@ -375,20 +372,49 @@ function patterns_import_validate($form, &$form_state) {
 }
 
 function patterns_import_submit($form, &$form_state) {
-  if (isset($form_state['pattern_file'])) {
-    $saved = file_copy($form_state['pattern_file']->filepath, $form_state['pattern_file']->destination);
+  
+  $success = FALSE;
+  $name = $form_state['values']['name'];
+  
+  if (!empty($name)) {
+    $content = $form_state['values']['content'];
+    $format = (isset($form_state['values']['format'])) ? $form_state['values']['format'] : 'yaml';
+    
+    
+    // What is this?
+    if (isset($form_state['pattern_file'])) {
+      $success = file_copy($form_state['pattern_file']->filepath, $form_state['pattern_file']->destination);
+    }
+    
+    elseif (!empty($content)) {
+      $success = patterns_io_save_pattern ($content, $name, $format );
+    }
   }
-  elseif ($form_state['values']['xmlsource']) {
-    $saved = file_save_data($form_state['values']['xmlsource'], variable_get('patterns_save_xml', 'patterns') . '/' . $form_state['values']['xmlname'] . '.xml', FILE_EXISTS_REPLACE);
-  }
-
-  if ($saved) {
-    // Reload patterns
-    patterns_get_patterns(true);
-    drupal_set_message(t('Pattern successfully imported.'));
+  
+  if ($success) {
+      drupal_set_message(t('Pattern successfully imported.'));
   }
   else {
     drupal_set_message(t('File couldn\'t be saved on the server. Import failed.'), 'error');
   }
   $form_state['redirect'] = 'admin/patterns';
 }
+
+//function patterns_import_submit_old($form, &$form_state) {
+//  if (isset($form_state['pattern_file'])) {
+//    $saved = file_copy($form_state['pattern_file']->filepath, $form_state['pattern_file']->destination);
+//  }
+//  elseif ($form_state['values']['xmlsource']) {
+//    $saved = file_save_data($form_state['values']['xmlsource'], variable_get('patterns_save_xml', 'patterns') . '/' . $form_state['values']['xmlname'] . '.xml', FILE_EXISTS_REPLACE);
+//  }
+//
+//  if ($saved) {
+//    // Reload patterns
+//    patterns_get_patterns(true);
+//    drupal_set_message(t('Pattern successfully imported.'));
+//  }
+//  else {
+//    drupal_set_message(t('File couldn\'t be saved on the server. Import failed.'), 'error');
+//  }
+//  $form_state['redirect'] = 'admin/patterns';
+//}

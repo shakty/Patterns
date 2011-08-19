@@ -312,7 +312,7 @@ function patterns_io_save_pattern ($content, $name, $format = 'yaml') {
         //_patterns_clear_failed_edit();
       }
       else {
-        drupal_set_message(t("Pattern '%name' could not be saved into the database. Make sure edited code is well-formed.", array('%name' => $form_state['values']['name'])), 'error');
+        drupal_set_message(t("Pattern '%name' could not be saved into the database. Make sure edited code is well-formed.", array('%name' => $name)), 'error');
         return FALSE;
       }
     }

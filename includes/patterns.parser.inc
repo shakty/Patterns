@@ -476,3 +476,27 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
   //unset($pids[$pattern->pid]);
   return array('actions' => $actions, 'modules' => $modules, 'info' => $patterns);
 }
+
+function patterns_parser_validate_pattern_name ($name = NULL) {
+  $analysis = _patterns_parser_analyze_pattern_name($name);
+  return (empty($analysis)) ? TRUE : FALSE;
+}
+
+function _patterns_parser_analyze_pattern_name ($name = NULL) {
+  $msgs = array();
+  
+  if (empty($name)) {
+   $msgs[] = t('No pattern name provided.');
+   return $msgs;
+  }
+  
+  if (preg_match('/[^a-zA-Z0-9_]/', $name)) {
+    $msgs[] = t('You can only include letters, numbers, and underscores in the pattern identifier.');
+  }
+  
+  if(preg_match('/^_/', $name)) {
+    $msgs[] = t('You cannot start the pattern identifier with an underscore.');
+  }
+  
+  return $msgs;
+}
