@@ -256,6 +256,14 @@ function _patterns_check_file_dir() {
   }
 }
 
+/**
+ * Check if the patterns directory is existing and writable
+ * 
+ */
+function _patterns_is_patterns_dir_ready() {
+  $dir = PATTERNS_FILES_DIR;
+  return (file_prepare_directory($dir)) ? TRUE : FALSE;
+}
 
 /**
  * 

@@ -53,17 +53,6 @@ function patterns_settings($form, &$form_state) {
   return system_settings_form($form);
 }
 
-
-/**
- * Implements hook_patterns_directory().
- * 
- * Let us know about where the pattern files are at.
- */
-function patterns_patterns_directory() {
-  return drupal_get_path('module', 'patterns');
-}
-
-
 /**
  * Implements hook_requirements().
  *
