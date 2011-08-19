@@ -89,7 +89,7 @@ function theme_patterns_list ($args) {
      $form['patterns'][$category][$pattern->title] = _patterns_pattern_build_row($pid, $pattern);
      $form['patterns'][$category] += array(
       '#type' => 'fieldset',
-      '#title' => t($pattern->title),
+      '#title' => t($category),
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
       '#theme' => 'patterns_patterns_fieldset',
