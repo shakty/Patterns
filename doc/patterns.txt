@@ -137,7 +137,6 @@ order as they are being called by Patterns module.
  values. Eventually, it can raise errors which halt further execution
  of the pattern.
 
-[[callbacks]]
 * *+function block_patterns_callbacks($action, $tag, &$data)+*: returns the array of form ID's which will be run
  sequentially.
  If a value in this array is not present in the form id list returned by *+hook_patterns()+*, the
@@ -236,11 +235,23 @@ Entity Matching
 Entities are matched on the base of their +id+, if provided, or more
 commonly on their +machine name+.
 
+Current status of component implementations
+-------------------------------------------
 
-List of all currently supported tags
-------------------------------------
+TODO
 
-- field
-- vocabulary
-- term
+.Table of components, tags, actions, and their statuses
+|====
+^.^|Component ^.^|Tag ^.^|Action ^.^|Status 
 
+.5+^.^| System | call_php_func  | create ^.^| Works.
+.2+^.^| theme  | create .2+^.^|
+Mostly works.
+
+TODO: Only set a theme default if 'default' is 1.
+TODO: Handle administration themes separately.
+ | delete
+.2+^.^| module | create .2+^.^| TODO
+ | delete
+
+|====
