@@ -1,0 +1,32 @@
+.patterns-form-key, .patterns-form-value {
+  display: inline;
+}
+.patterns-form {
+  margin: 20px;
+}
+.patterns-form-title {
+  font-weight: bold;
+  margin: 0 0 10px;
+}
+.alert {
+  color: red;
+}
+
+.pattern-info {
+  background-color: #fff1a8;
+  border: 1px solid #ccc;
+  padding: 8px;
+  z-index: 10;
+}
+
+.patterns-list .status {
+  width: 15%;
+}
+
+.patterns-list .version {
+  width: 15%;
+}
+
+.patterns-list .actions {
+  width: 30%;
+}

@@ -1,0 +1,31 @@
+# YAML Modules Pattern
+# QScience
+
+info:
+  title: Enable/disable modules
+  description: Based on http://drupal.org/node/408960
+  author: QScience
+  category: QScience
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qscience.csko.hu
+
+actions: 
+
+  create:
+      tag: modules
+      - value: blog
+
+# TODO: this is not working as expected
+#  - tag: modules
+#     value: blog
+#     delete: 1
+
+  delete:
+      tag: modules
+      - value: admin_menu
+      - value: blog
+      - value: forum
+
+ 

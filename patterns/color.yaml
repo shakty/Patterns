@@ -1,0 +1,27 @@
+# YAML Theme Pattern
+# QScience
+
+info:
+  title: Set theme color
+  description: as title
+  author: QScience
+  category: QScience
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qscience.csko.hu
+
+actions: 
+
+  - tag: form
+      form_id: system_theme_settings
+      #scheme:greenbeam
+      palette:
+            base:#494949
+            link:#494949
+            top:#494949
+      toggle_name:NULL
+      op: Save configuration
+      args:
+        - garland
+

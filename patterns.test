@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * @file
+ * SimpleTests for Patterns.
+ */
+
+class PatternsTestCase extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Run and edit patterns.',
+      'description' => 'A test that does nothing',
+      'group' => 'Patterns',
+    );
+  }
+
+  public function setUp() {
+    parent::setUp('patterns');  // Enable any modules required for the test
+    // TODO: login
+  }
+
+  // TODO: Create test cases
+}

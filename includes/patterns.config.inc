@@ -1,8 +1,11 @@
 <?php
-
+/*
+ * @file
+ * Configuration file.
+ */
 
 /**
- * Implementation of hook_permission().
+ * Implements hook_permission().
  */
 function patterns_permission() {
   return array(
@@ -15,12 +18,12 @@ function patterns_permission() {
 
 
 /**
- * Implementation of hook_help().
+ * Implements hook_help().
  */
 function patterns_help($section, $arg = NULL) {
   $output = '';
   switch ($section) {
-    case 'admin/build/patterns':
+    case 'admin/patterns':
       $output = t('Patterns will be looked for in files under the following locations:') . ' ' . theme('item_list', array('items' => patterns_paths()));
       break;
   }
@@ -29,7 +32,7 @@ function patterns_help($section, $arg = NULL) {
 
 
 /**
- * Display the pattern settings form
+ * Display the pattern settings form.
  */
 function patterns_settings($form, &$form_state) {
   $form['patterns_form_helper'] = array(
@@ -50,33 +53,22 @@ function patterns_settings($form, &$form_state) {
   return system_settings_form($form);
 }
 
-
 /**
- * Implementation of hook_patterns_directory()
- * 
- * Let us know about where the pattern files are at
- */
-function patterns_patterns_directory() {
-  return drupal_get_path('module', 'patterns');
-}
-
-
-/**
- * Implementation of hook_requirements().
+ * Implements hook_requirements().
  *
- * @param string $phase The phase in which hook_requirements is run (install|runtime)
+ * @param string $phase The phase in which hook_requirements is run (install|runtime).
  */
 function patterns_requirements($phase) {
   $requirements = array();
 
   switch ($phase) {
     case 'runtime':
-      $path = drupal_get_path('module', 'patterns') . '/spyc/spyc.php';
+      $path = libraries_get_path('spyc') . '/spyc.php';
       
       if (!file_exists($path)) {
         $requirements['spyc'] = array(
           'title'       => t('Spyc library (YAML parser)'),
-          'description' => t('Patterns module requires Spyc library for working with YAML patterns. To enable YAML support, download the !spyc package and copy spyc.php to the spyc directory inside patterns module directory.',
+          'description' => t('Patterns module requires Spyc library for working with YAML patterns. To enable YAML support, download the !spyc package to obtain spyc.php. Create a directory for the library (e.g. sites/all/libraries/spyc/) and place spyc.php there.',
                               array('!spyc' => l(t('spyc'), 'http://code.google.com/p/spyc/', array('absolute' => TRUE)))),
           'severity'    => REQUIREMENT_WARNING,
           'value'       => t('Missing'),
@@ -97,7 +89,7 @@ function patterns_requirements($phase) {
 
 
 /**
- * return a list of paths that will be scanned for patterns
+ * Return a list of paths that will be scanned for patterns/
  */
 function patterns_paths() {
   global $profile;
@@ -138,7 +130,7 @@ function patterns_paths() {
 
 
 /**
- * Return file extensions supported by patterns module
+ * Return file extensions supported by patterns module.
  *
  * @return array of supported file types
  *
@@ -146,7 +138,7 @@ function patterns_paths() {
  */
 function patterns_file_types() {
   $result = array('xml', 'php');
-  if (file_exists(drupal_get_path('module', 'patterns') . '/spyc/spyc.php')) {
+  if (file_exists(libraries_get_path('spyc') . '/spyc.php')) {
     $result[] = 'yaml';
   }
   return $result;

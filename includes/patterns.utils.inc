@@ -1,6 +1,13 @@
 <?php
 
 
+define('PATTERNS_FAILED_EDIT', 'patterns_failed_edit');
+
+function _patterns_clear_failed_edit(){
+	variable_del(PATTERNS_FAILED_EDIT);
+	return true;
+}
+
 /**
  * Helper function to create a context array based on the supplied object
  * Supplying a parent object will set the parent for this context
@@ -70,147 +77,6 @@ function _patterns_array_trace($obj) {
   return $trace;
 }
 
-/**
- * Menu callback to edit a patterns data
- */
-function patterns_edit($form, &$form_state, $pid = NULL) {
-  if (!is_numeric($pid)) {
-    drupal_set_message(t('You must specify a pattern to edit.'));
-    return;
-  }
-
-  $pattern = patterns_get_pattern($pid);
-
-  // TODO: Turn php into xml here.
-
-  // For now just allow modifying the original xml, which
-  // means the modification cannot be further modified
-
-  // Ste: think if this is reasonable
-  
-  
-  if (!$pattern->file) {
-    drupal_set_message(t('This pattern does not seem to have an XML source file to base the modifications off of.'), 'error');
-    return;
-  }
-
-  $xml = file_get_contents($pattern->file);
-
-  $form['name'] = array(
-    '#type' => 'value',
-    '#value' => $pattern->name
-  );
-  $form['pid'] = array(
-    '#type' => 'value',
-    '#value' => $pattern->pid
-  );
-  //   if ($pattern->enabled <= $pattern->updated) {
-  //     $form['revert'] = array(
-  //       '#type' => 'markup',
-  //       '#value' => l(t('Undo update changes to the state when you enabled the pattern.'), 'admin/build/patterns/revert/'. $pid, array(), drupal_get_destination())
-  //     );
-  //   }
-  $form['format'] = array(
-    '#type' => 'select',
-    '#title' => t('Pattern syntax'),
-    '#options' => array_combine(patterns_file_types(), patterns_file_types()),
-    '#default_value' => pathinfo($pattern->file, PATHINFO_EXTENSION),
-  );
-  $form['xml'] = array(
-    '#type' => 'textarea',
-    '#title' => t('Pattern\'s code'),
-    '#rows' => 25,
-    '#default_value' => $xml
-  );
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Submit')
-  );
-
-  return $form;
-}
-
-/**
- * Validate pattern modifications (make sure proper XML)
- */
-function patterns_edit_validate($form, &$form_state) {
-  // @TODO Do validations....
-  // Ste: was
-  //$path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
-  
-  // real_path(public) returns the path to the files dir
-  $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_xml', 'patterns');
-
-  if (!file_prepare_directory($path, TRUE)) {
-    form_set_error('form_token', t('Unable to create @path to save the new pattern to.', array('@path' => $path)));
-  }
-}
-
-/**
- * Submit edits to the pattern
- * @TODO Currently, there are some problems with saving/overwriting the patterns. When u
- * @TODO modify a pattern it is saved into another location and the db is not updated.
- */
-function patterns_edit_submit($form, &$form_state) {
-  // If this is an enabled pattern, make sure the enabled pattern is saved in its current state
-  
-  // Ste: was
-  //if ($file = db_result(db_query("SELECT file FROM {patterns} WHERE status = 1 AND name = '%s'", $form_state['values']['name']))) {
-  if ($file = db_query("SELECT file FROM {patterns} WHERE status = 1 AND name = :name", array('name' => $form_state['values']['name']))->fetchField()) {
-  
-    // Ste: was
-    //$dir = file_directory_path() .'/'. variable_get('patterns_save_xml', 'patterns') .'/enabled';
-    $dir = drupal_realpath('public://') . "/" . variable_get('patterns_save_xml', 'patterns') . '/enabled';
-
-    // Ste: was
-    //file_check_directory($dir, TRUE);
-    
-    if (file_prepare_directory($dir, TRUE)) {
-      $path =  $dir . '/' . $form_state['values']['name'] . '.' . $form_state['values']['format'];
-
-      if (!file_exists($path)) {
-        // Ste: was
-        //file_copy($file, $path, FILE_EXISTS_ERROR);
-        file_unmanaged_copy($file, 'public://' . $path, FILE_EXISTS_ERROR);
-      }
-      
-        // Save the new pattern into the pattern files dir.
-      $path = drupal_realpath('public://') . '/' . variable_get('patterns_save_xml', 'patterns') . '/' . $form_state['values']['name'] . '.' . $form_state['values']['format'];
-    
-      if (file_unmanaged_save_data($form_state['values']['xml'], $path, FILE_EXISTS_REPLACE)) {
-    
-        // Ste: was
-        //$old = db_result(db_query("SELECT file FROM {patterns} WHERE name = '%s'", $form_state['values']['name']));
-        $old = db_query("SELECT file FROM {patterns} WHERE name = :name", array('name' => $form_state['values']['name']))->fetchField();
-        
-        // Load and save pattern
-        $load_func = 'patterns_load_' . $form_state['values']['format']; 
-        if ($pattern = $load_func($path)) {
-          if ($old) {
-            // Ste: was
-            //db_query("UPDATE {patterns} SET file = '%s', updated = '%s' WHERE pid = '%d'", $path, time(), $form_state['values']['pid']);
-            $query_params = array('file' => $path, 'updated' => time(), 'pid' => $form_state['values']['pid']);
-            db_query("UPDATE {patterns} SET file = :file, updated = :updated WHERE pid = :pid", $query_params);
-          }
-          patterns_save_pattern($pattern, $path, $form_state['values']['name']);
-          drupal_set_message(t('%name was saved.', array('%name' => $form_state['values']['name'])));
-          $form_state['redirect'] = 'admin/build/patterns';
-        }
-        else {
-          drupal_set_message(t("Pattern '%name' couldn't be saved. Make sure edited code is well-formed.", array('%name' => $form_state['values']['name'])), 'error');
-        }
-      }
-      else{
-        drupal_set_message(t('Error: file could not be saved.'), 'error');
-      }
-    }
-    else {
-      drupal_set_message(t('Error: the pattern is not writable. Please check the file system permissions.'), 'error');
-    }
-  }
-
-  
-}
 
 /**
  * Helper function to flatter options, but keep the title/names in
@@ -276,7 +142,7 @@ function patterns_modules_page($pid) {
     drupal_set_message(t('Some modules are not availalble, please download them before running this pattern.'), 'error');
   }
   else {
-    drupal_set_message(t('All modules required by this module are available. Click !here to run this pattern.', array('!here' => l(t('here'), 'admin/build/patterns/enable/' . $pid))));
+    drupal_set_message(t('All modules required by this module are available. Click !here to run this pattern.', array('!here' => l(t('here'), 'admin/patterns/enable/' . $pid))));
   }
 
   //Ste: was
@@ -383,8 +249,6 @@ function patterns_feed() {
 
 
 /**
- * NOT UPDATED: probably in DR7 we need to use module_enable()
- * 
  * Install required modules for executing the pattern.
  * 
  * @param array $modules
@@ -459,6 +323,8 @@ function patterns_check_module_dependencies(&$modules, $update_list = FALSE) {
   return $result;
 }
 
+// Tokens
+
 /**
  * Implementation of hook_token_values()
  *
@@ -471,6 +337,56 @@ function patterns_token_values($type, $object = NULL, $options = array()) {
     return $tokens;
   }
 }
+
+/**
+ * Array walk callback to replace tokens inside form values
+ */
+function _patterns_replace_tokens(&$a, &$b, $identifiers = array()) {
+  static $count = 0;
+
+  // Replace IDs with identifiers from the current executing pattern
+  if (preg_match('/@([a-zA-Z0-9_]+)@/', $a, $match)) {
+    $a = str_replace($match[0], $identifiers[$match[1]], $a);
+  }
+  if (preg_match('/__([a-zA-Z0-9_]+)__/', $b, $match)) {
+    $b = str_replace($match[0], $identifiers[$match[1]], $a);
+  }
+
+  // Replace tokens
+  // Ste: was
+  //$a = token_replace($a, 'global', NULL, '@', '@');
+  //$b = token_replace($b, 'global', NULL, '__', '__');\
+  
+  //$a = token_replace($a, 'global', NULL, '@', '@');
+  //$b = token_replace($b, 'global', NULL, '__', '__');
+  
+  
+}
+
+/**
+ * Recurse an array and replace with tokens
+ * @ This is used instead of array_walk_recursive because
+ *   of some strange issues with token_get_values failing.
+ */
+function _patterns_recurse_tokens(&$object, $identifiers) {
+  foreach ($object as $key => $value) {
+    if (is_array($value)) {
+      _patterns_recurse_tokens($object[$key], $identifiers);
+    }
+    elseif (is_scalar($value)) {
+      $old_key = $key;
+      _patterns_replace_tokens($object[$key], $key, $identifiers);
+
+      // The key was changed, change it
+      if ($old_key != $key) {
+        $keys = array_keys($object);
+        $keys[array_search($old_key, $keys)] = $key;
+        $object = array_combine($keys, array_values($object));
+      }
+    }
+  }
+}
+
 
 /**
  * 
@@ -487,7 +403,6 @@ function patterns_executing($b = NULL) {
 
   return $executing;
 }
-
 
 /**
  * Helper function to get PHPDoc @version tag from a file
@@ -508,4 +423,48 @@ function _get_file_phpdoc_version($path) {
     }
   }
   return $version;
+}
+
+/**
+ * Helper function to create the associative array of returned values from
+ * an invoked function.
+ * 
+ * @param mixed $status One of [PATTERNS_SUCCESS, PATTERNS_WARN, PATTERNS_ERR]. Required.
+ * @param array $msg A message.
+ * @param mixed $result Any kind of additional data.
+ */
+function patterns_results($status = PATTERNS_SUCCESS, $msg = 'Execution successful', $result = NULL) {
+  // TODO: t($msg)
+  return array( 'status' => $status,
+                'msg' => $msg,
+                'result' => $result,
+              );
+}
+/**
+ * Check if a (supposedly) array is actually correctly formatted as a patterns_results
+ * 
+ * @param mixed $results the array to check;
+ * 
+ * @return TRUE if correct, FALSE otherwise
+ */
+function _patterns_is_patterns_results ($results) {
+  
+  // It is the only mandatory field
+  if (!isset($results['status'])){  
+    return FALSE;
+  }
+ 
+  return TRUE;
+}
+
+/**
+ * Returns an array of allowed actions, as defined in patterns.module
+ * 
+ * @return array Allowed actions
+ */
+function patterns_actions() {
+  return array( PATTERNS_CREATE => PATTERNS_CREATE, 
+                PATTERNS_MODIFY => PATTERNS_MODIFY, 
+                PATTERNS_DELETE => PATTERNS_DELETE,
+               );
 }

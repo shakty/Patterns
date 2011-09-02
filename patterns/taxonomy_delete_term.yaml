@@ -1,0 +1,22 @@
+ # YAML Taxonomies Pattern
+# QScience
+
+info:
+  title: Taxonomy DELETE Terms
+  description: as title
+  author: QScience
+  category: Taxonomy
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qlectives.eu
+  
+  
+
+actions:
+        
+    - tag: term
+        vocabulary: anothervoc # machine_name
+        name: Term2
+        delete: 1
+        #vid: 2

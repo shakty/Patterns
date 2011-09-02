@@ -1,0 +1,38 @@
+ # YAML Taxonomies Pattern
+# QScience
+
+info:
+  title: Add custom fields to USER
+  description: Add custom fields to USER
+  author: QScience
+  category: QScience
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: http://www.qlectives.eu
+  
+  
+
+actions:
+
+  - tag: field
+      entity: node
+      bundle: custom_content
+      name: sponsor
+      label: Sponsor Name
+      weight: 1
+
+
+#  - tag: field
+#      name: skills
+#      label: Personal Skills
+#      type: taxonomy_term_reference
+#      widget: autocomplete 
+#      vocabulary: tags
+#      required: 1
+#      registration: 1
+#      cardinality: 5
+#      weight: -10
+#      description: A list of your personal skills
+#      default: PHP
+      

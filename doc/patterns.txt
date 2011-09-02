@@ -1,0 +1,257 @@
+Drupal 7 Patterns Documentation
+===============================
+Qscience Team
+v0.1, Aug 2011
+
+// QScience Team <www.qlectives.eu>
+
+
+// meta-data
+:keywords: patterns, drupal, configuration, import, export
+:description: Patterns allows easy configuration
+
+Introduction
+------------
+
+Complex websites and web applications can be created by combining
+configurations of Modules, Fields, Content Types, Menus, Blocks,
+Categories, Roles / Permissions, etc... This site setup and
+configuration process is a very time consuming and repetitive
+bottleneck.
+
+The Patterns module is built to bypass this bottleneck by managing and
+automating site configuration. Site configuration is stored in YAML, XML, or
+PHP files called Patterns. These files have a structure which is
+easy to read, modify, manage, & share and can be executed manually or as
+a part of an automated web site deployment.
+
+Installation
+------------
+
+Patterns is installed as a Drupal module. However, it makes
+uses of external libraries which must be installed separately:
+*+Spyc+* and *+Codemirror+*.
+
+
+* http://code.google.com/p/spyc/[*+Spyc+*] is a native PHP library used to parse YAML files. It is
+   necessary for the correct functioning of Patterns.
+
+* http://codemirror.net/[*+Codemirror+*] is a Javascript library which
+   considerably enhances the interface of the Patterns editor page. It
+   is _not_ necessary for the correct functioning of Patterns, but
+   recommended.
+
+Both libraries should be installed under *+sites/all/libraries/+*
+under directory names of *+spyc+* and *+codemirror2+*. 
+
+
+[[pattern-example]]
+What is a Pattern?
+------------------
+
+A Pattern is a file composed by an *+info+* section and a sequence of
+_action_s of the type *+create+*, *+modify+*, or *+delete+* grouped in
+categories (sections). 
+
+Categories can be arbitrarily defined (excluding the
+<<reserved-words,reserved words>>) and are executed sequentially.
+
+
+----------------------
+# This is a comment
+# Example Pattern
+
+info: # mandatory name
+  title: New Vocabulary
+  description: Adds a new vocabulary to the website 
+  author: QScience
+  category: Examples
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: http://qlectives.eu
+  
+actions: # any name is good for this category
+
+  create: 
+        tag: vocabulary
+        name: Another Vocabulary
+        machine_name: anothervoc
+        description: Another interesting vocabulary
+        hierarchy: 0
+
+  modify: 
+        tag: vocabulary
+        machine_name: anothervoc
+        description: It was not that interesting after all
+        # vid: 2
+
+  delete: 
+        tag: vocabulary
+        machine_name: anothervoc
+        # vid: 2
+        
+
+------------------- 
+
+Two other optional sections names are *+modules+* and *+include+*.
+*+modules+* explicitly defines a list of modules to enable during the execution of the
+pattern, while *+include+* loads the actions of another
+pattern into the current one. *More explanation later* *TODO*
+
+[[reserved-words]]
+Reserved Words
+~~~~~~~~~~~~~
+
+- *+info+* 
+- *+modules+*
+- *+include+*
+
+
+How Patterns works
+------------------
+
+Pattern works by parsing the pattern file and then constructing a form
+which contains the values for specific elements. The form is
+then validated and submitted, just as if the 'submit' button had been pressed from
+a browser window.
+
+The processing can be done in two ways. The *+Batch+* mode uses Drupal's Batch API
+to run the patterns in the background. This helps overcome the time limitations
+and the user gets feedback of the progress. The other method, which is called *+PHP+*,
+executes the tasks in a single PHP run. In this case, debugging can be easier.
+
+[[callbacks]]
+How to implement Patterns for your own module
+-----------------------------------------------
+
+You need to implement at most 6 pattern hooks, as here explained in the same
+order as they are being called by Patterns module.
+
+*******************************************************************
+* *+hook_patterns()+*: declares that the module is able to handle
+  pattern configurations, and specifies which tags and forms are
+  supported.
+
+* *+hook_patterns_prepare($action, $tag, &$data)+*: checks the input and adds default
+ values. Eventually, it can raise errors which halt further execution
+ of the pattern.
+
+* *+function block_patterns_callbacks($action, $tag, &$data)+*: returns the array of form ID's which will be run
+ sequentially.
+ If a value in this array is not present in the form id list returned by *+hook_patterns()+*, the
+ value will be treated as a regular callback function and will be called with the *+($action, $data)+* parameters.
+ In this case, the next 3 functions are not called and the Pattern action result is provided by the callback function(s).
+
+* *+hook_patterns_build($action, $form_id, &$data, &$action_state)+*: gets the form data for the
+ action. This can either be just the form values, or it can be the
+ full _form_state_ object.
+
+* *+hook_patterns_params($action, $form_id, &$data &$action_state)+*: returns extra parametersthat the form may require.
+
+* *+hook_patterns_cleanup($action, $tag, &$data)+*: performs optional additional operations,
+   after the execution of the action has finished.
+******************************************************************
+
+where *+$action+* is one of the actions *+create+*, *+modify+*,
+*+delete+* and *+$tag+* is the specific command to execute
+(e.g. *+vocabulary+*, *+field+*, etc.).
+
+*+hook_patterns+* is called independently from the others hooks, which
+ are invoked sequentially to perform an action. In particular, if
+ calling *+hook_patterns_prepare+*  and *+hook_patterns_validate+* does not raise error,
+ moreover *+hook_patterns_prepare+* returns some form ID's, the engine do the following
+ for each form ID:
+
+ . execute *+hook_patterns_build+*, and *+hook_patterns_params+* while checking for errors; 
+ . submit the form (call the Drupal function *+drupal_form_submit+*);
+ . execute *+hook_patterns_cleanup+* while checking for errors.
+
+
+Return values
+~~~~~~~~~~~~
+
+*+hook_patterns()+* 
+^^^^^^^^^^^^^^^^^^^
+
+Returns the following array of actions:
+------------------
+  $actions['tag1'] = array('descr' => t('Description of this tag'), 
+    PATTERNS_CREATE => array('form_to_create_tag1', 'form_to_create_tag2'),
+    PATTERNS_MODIFY => array('form_to_modify_tag1', 'form_to_modify_tag2'),
+    PATTERNS_DELETE => array('form_to_delete_tag1', 'form_to_delete_tag2'),
+    'files'  => $files = array('some file that needs to be included');,
+  );
+  $actions['tag2'] = ... ;
+-----------------
+
+where *+$tag1+*, *+$tag2+* etc. are specific commands to execute
+(e.g. *+vocabulary+*, *+field+*, etc.). The list of possible form ID's is also provided 
+for each of the three actions (*+create+*, *+modify+*, *+delete+*). Note that this array
+can be empty as well, see <<callbacks,function block_patterns_callbacks>>.
+
+
+*+hook_patterns_build+*, *+hook_patterns_params+*, *+hook_patterns_cleanup+*
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+All the other hooks return the following special associative array:
+
+* *+status+*: One of *+[PATTERNS_SUCCESS, PATTERNS_WARN, PATTERNS_ERR]+*. Required.
+* *+msg+*: A message.
+* *+result+*: Any kind of additional data.
+
+Pattern execution modes
+----------------------
+
+Patterns execution can follow two distinct behaviors:
+
+. *Extend*: adds the settings defined in the pattern file into the
+    current instance, and leave untouched what not explicitly
+    specified.
+
+. *Run-Over*: re-configures the whole web site in order to create an
+    instance with _exactly_ the settings defined by the pattern, and
+    removes everything not explicitly specified.
+
+Differences between Extend and Run-Over
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The action +create+ changes according to the behavior selected for the
+execution.
+
+- *create*:  
+       . _extends_ : always create a new entity;
+       . _run-over_:  always check if the target entity is existing, if not, create it.;
+
+- *modify*: check if the target entity exists and then modify
+   it. Does nothing if the entity is not found;
+
+- *delete*: check if the target entity exists and then delete
+   it. Does nothing if the entity is not found.
+
+Entity Matching
+^^^^^^^^^^^^^^^
+
+Entities are matched on the base of their +id+, if provided, or more
+commonly on their +machine name+.
+
+Current status of component implementations
+-------------------------------------------
+
+TODO
+
+.Table of components, tags, actions, and their statuses
+|====
+^.^|Component ^.^|Tag ^.^|Action ^.^|Status 
+
+.5+^.^| System | call_php_func  | create ^.^| Works.
+.2+^.^| theme  | create .2+^.^|
+Mostly works.
+
+TODO: Only set a theme default if 'default' is 1.
+TODO: Handle administration themes separately.
+ | delete
+.2+^.^| module | create .2+^.^| TODO
+ | delete
+
+|====

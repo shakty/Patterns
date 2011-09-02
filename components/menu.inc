@@ -75,7 +75,7 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
     case 'pre-validate':
       switch ($id) {
         case 'menu':
-          if ($data['delete'] && empty($data['menu_name'])) {
+          if (isset($data['delete']) && empty($data['menu_name'])) {
             return t('"menu_name" is required.');
           }
           if (!empty($data['menu_name']) && preg_match('/[^a-z0-9\-]/', $data['menu_name'])) {
@@ -136,11 +136,11 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
         }
         elseif ($data['enable']) {
           $data['enabled'] = 1;
-          unset($data['enable']);
+          unset($data['disable']);
         }
-        $d = array();
-        $d['menu'] = $data;
-        $data = $d;
+      //  $d = array();
+      //  $d['menu'] = $data;
+      //  $data = $d;
       }
       return $data;
     break;
@@ -151,13 +151,13 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
         case 'menu_edit_item':
 
           if (empty($data['menu_name']) && !empty($data['menu'])) {
-            if ($count = db_result(db_query("SELECT COUNT(*) FROM {menu_custom} WHERE title = '%s'", $data['menu']))) {
+            if ($count = db_query("SELECT COUNT(*) FROM {menu_custom} WHERE title = :menu", array('menu' => $data['menu']))->fetchField()) {
               if ($count == 1) {
-                $data['menu_name'] = db_result(db_query("SELECT menu_name FROM {menu_custom} WHERE title = '%s'", $data['menu']));
+                $data['menu_name'] = db_query("SELECT menu_name FROM {menu_custom} WHERE title = :menu", array('menu' => $data['menu']))->fetchField();
                 unset($data['menu']);
               }
               else {
-                return t("Menu name couldn't be determined accurately because more then one menu has exactly the same title. You need to provide menu_name instead of the title: '%title'", array('%title' => $data['menu']));
+                return t("Menu name couldn't be determined accurately because more than one menu has exactly the same title. You need to provide menu_name instead of the title: '%title'", array('%title' => $data['menu']));
               }
             }
           }
@@ -169,11 +169,11 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
           if ($data['parent'] == '0') {
             $data['parent'] = $data['menu_name'] . ':0';
           }
-          elseif (is_numeric($data['parent']) && !empty($data['menu_name']) && db_result(db_query("SELECT mlid FROM {menu_links} WHERE menu_name = '%s' AND mlid = %d", $data['menu_name'], $data['parent']))) {
+          elseif (is_numeric($data['parent']) && !empty($data['menu_name']) && db_query("SELECT mlid FROM {menu_links} WHERE menu_name = :menu AND mlid = :mlid", array('menu' => $data['menu_name'],'mlid'=>$data['parent']))->fetchField()) {
             $data['parent'] = $data['menu_name'] . ':' . $data['parent'];
           }
           // @TODO this may not work if there is more then one menu item with the same title within the same menu
-          elseif (is_string($data['parent']) && !empty($data['menu_name']) && $plid = db_result(db_query("SELECT mlid FROM {menu_links} WHERE menu_name = '%s' AND link_title = '%s'", $data['menu_name'], $data['parent']))) {
+          elseif (is_string($data['parent']) && !empty($data['menu_name']) && $plid = db_query("SELECT mlid FROM {menu_links} WHERE menu_name = :menu AND link_title = :title", array('menu' => $data['menu_name'],'title'=>$data['parent']))->fetchField()) {
             $data['parent'] = $data['menu_name'] . ':' . $plid;
           }
           elseif (empty($data['mlid']) && empty($data['parent']) && !empty($data['link_title']) && !empty($data['link_path'])) {
@@ -182,7 +182,7 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
 
           if (!empty($data['parent'])) {
             list($menu_name, $mlid) = explode(':', $data['parent']);
-            if ($mlid != 0 && !db_result(db_query("SELECT count(*) FROM {menu_links} WHERE menu_name = '%s' AND mlid = %d", $menu_name, $mlid))) {
+            if ($mlid != 0 && !db_query("SELECT count(*) FROM {menu_links} WHERE menu_name = :menu AND mlid = :mlid",array('menu' => $menu_name,'mlid'=>$mlid))->fetchField()) {
               return t('"parent" is not valid.');
             }
           }
@@ -197,11 +197,12 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
     case 'params':
       switch ($id) {
         case 'menu_edit_menu':
+          
           $menu = menu_load($data['menu_name']);
-          if (empty($menu)) {
+          if (!$menu) {
             if (strpos($data['menu_name'], 'menu-') === 0) {
               // this ensures that same pattern can be re-run without getting "menu exists" error
-              // $a is $form_state array that will be passed to drupal_execute()
+              // $a is $form_state array that will be passed to drupal_form_submit()
               $a['values']['menu_name'] = str_replace('menu-', '', $data['menu_name']);
             }
             return 'add';
@@ -214,11 +215,11 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
           return array(menu_load($data['menu_name']));
         break;
         case 'menu_edit_item':
-          if (!$data['menu']['mlid']) {
-            return array('add', NULL, menu_load($data['menu']['menu_name']));
+          if (!$data['mlid']) {
+            return array('add', NULL, menu_load($data['menu_name']));
           }
           else {
-            return array('edit', menu_link_load($data['menu']['mlid']), NULL);
+            return array('edit', menu_link_load($data['mlid']), NULL);
           }
         break;
         case 'menu_item_delete_form':
@@ -245,7 +246,7 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
         if ($data['mlid']) {
           return $data['mlid'];
         }
-        elseif ($mlid = db_result(db_query("SELECT mlid FROM {menu_links} WHERE menu_name = '%s' AND link_path = '%s' AND link_title = '%s' ORDER BY mlid DESC", $data['menu_name'], $data['link_path'], $data['link_title']))) {
+        elseif ($mlid = db_query("SELECT mlid FROM {menu_links} WHERE menu_name = :menu AND link_path = :path AND link_title = :title ORDER BY mlid DESC", array('nemu'=>$data['menu_name'],'path'=> $data['link_path'], 'title'=>$data['link_title']))->fetchField()) {
           return $mlid;
         }
       }

@@ -1,0 +1,38 @@
+# YAML Variables Pattern
+# QScience
+
+info:
+  title: Set variables
+  description: Based on http://drupal.org/node/409180
+  author: QScience
+  category: QScience
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qscience.csko.hu
+
+actions: 
+  create:
+     tag: variables
+       - variable
+         name: votingapi_anonymous_window
+         value: 3600
+       - variable
+         name: fivestar_widget
+         value: sites/all/modules/fivestar/widgets/craft/craft.css
+
+  delete:
+     tag: variables
+       - variable
+         name: votingapi_anonymous_window
+
+
+
+#    <variables>
+#        <variable name="votingapi_anonymous_window">3600</variable>
+#        <variable name="fivestar_widget">
+#              sites/all/modules/fivestar/widgets/craft/craft.css
+#        </variable>
+#        <variable name="cache_lifetime">21600</variable>
+#    </variables>      
+#  </actions>
