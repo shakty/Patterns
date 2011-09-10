@@ -98,7 +98,81 @@ function patterns_from_source($xml) {
   return $pattern;
 }
 
+function patterns_rearrange_data($pattern) {
+  foreach($pattern as $key => $value) {
+    if (is_string($key)) {
+      unset($pattern[$key]);
+    }
+    else {
+      if ($value['tag'] == 'actions') {
+        $pattern[$key] = patterns_rearrange_data($value);
+        $pattern[$key]['tag'] = 'actions';
+      }
+      else {
+        $pattern[$key] = _patterns_rearrange_data($value);
+      }
+    }
+  }
 
+  return $pattern;
+}
+
+function _patterns_rearrange_data($data, $parent = '') {
+  $numeric = array();
+  $count=0;
+
+  foreach($data as $key => $value) {
+    if (isset($value['value'])) {
+      if ($value['value'] == 'false') {
+        $value['value'] = false;
+      }
+      else if ($value['value'] == 'true') {
+        $value['value'] = true;
+      }
+    }
+
+    if (is_numeric($key) && is_array($value) && count($value) == 2 && isset($value['tag']) && isset($value['value'])) {
+      unset($data[$key]);
+      if (isset($data[$value['tag']])) {
+        $numeric[] = $value['tag'];
+        $data[$count++] = $data[$value['tag']];
+        $data[$count++] = $value['value'];
+        unset($data[$value['tag']]);
+      }
+      else if (in_array($value['tag'], $numeric)) {
+        $data[$count++] = $value['value'];
+      }
+      else {
+        $data[$value['tag']] = $value['value'];
+      }
+    }
+    else if (is_numeric($key)) {
+      $tag = $value['tag'];
+      unset($value['tag']);
+      $data[$tag][] = _patterns_rearrange_data($value, $tag);
+      unset($data[$key]);
+    }
+  }
+
+  foreach($data as $key => $value) {
+    if (is_array($value) && count($value) == 1 && $value[0]) {
+      $data[$key] = $data[$key][0];
+    }
+  }
+
+  // This workaround enables us to define numeric keys in XML by
+  // prefixing the number with single character. E.g <n0>value</n0>
+  // will result in 0 => 'value' (first character of the key will be removed).
+  if (isset($data['_numeric_keys'])) {
+    unset($data['_numeric_keys']);
+    foreach ($data as $key => $value) {
+      $data[substr($key, 1)] = $value;
+      unset($data[$key]);
+    }
+  }
+
+  return $data;
+}
 /**
  * Menu callback - returns source code of the requested pattern
  * if the pattern is public
