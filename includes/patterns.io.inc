@@ -205,7 +205,8 @@ function patterns_get_patterns($reset = TRUE) {
   
 
   $messages = array();
-  
+  $patterns = array();
+
   foreach ($result as $pattern) {
   
     // skip pattern if its file is missing
@@ -232,7 +233,7 @@ function patterns_get_patterns($reset = TRUE) {
 }
 
 function patterns_io_get_patterns_service() {
-  return 'Ciao';
+  return 'Ciao'; // TODO
 }
 
 /**
