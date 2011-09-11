@@ -282,9 +282,10 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
 function patterns_edit_validate($form, &$form_state) {
   
   // real_path(public) returns the path to the files dir
+  // TODO: patterns_save_file is never set.
   $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
 
-  if (!file_prepare_directory($path, TRUE)) {
+  if (!file_prepare_directory($path, FILE_CREATE_DIRECTORY)) { // TODO: is FILE_CREATE_DIRECTORY good here?
     form_set_error('form_token', t('Unable to create @path to save the new pattern to.', array('@path' => $path)));
   }
 }
@@ -338,7 +339,7 @@ function patterns_edit_submit($form, &$form_state) {
 //    //@TODO: if enabled take care of that
 //    
 //    
-//    if (file_prepare_directory($dir, TRUE)) {
+//    if (file_prepare_directory($dir, FILE_CREATE_DIRECTORY)) {
 //      $path =  $dir . '/' . $form_state['values']['name'] . '.' . $form_state['values']['format'];
 //
 //

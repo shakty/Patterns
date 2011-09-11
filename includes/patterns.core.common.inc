@@ -38,7 +38,6 @@ function patterns_prepare_actions(&$actions, $actions_map) {
     
 /////////////////////////////////////////////////////////
 // This is in case of included patterns. Not for now    
-    
 //    $action_location = patterns_locate_action ($data['tag'], $actions_map);
 //    $index = $action_location['key'];
 //    $pattern_title = $action_location['title'];

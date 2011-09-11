@@ -54,6 +54,15 @@ function patterns_settings($form, &$form_state) {
 }
 
 /**
+ * Implements hook_patterns_directory().
+ * 
+ * Let us know about where the pattern files are at.
+ */
+function patterns_patterns_directory() {
+  return drupal_get_path('module', 'patterns');
+}
+
+/**
  * Implements hook_requirements().
  *
  * @param string $phase The phase in which hook_requirements is run (install|runtime).

@@ -23,8 +23,6 @@ define('PATTERNS_CREATE', 'create');
 define('PATTERNS_MODIFY', 'modify');
 define('PATTERNS_DELETE', 'delete');
 
-define('PATTERNS_FILES_DIR', drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns'));
-
 /**
  * @file
  * Enables extremely simple adding/removing features to your site with minimal to no configuration.
@@ -683,7 +681,8 @@ function patterns_get_tagmodules_index($tag_name = NULL, $id = NULL) {
   static $tag_modules;
   
   // Index not yet built 
-  if (!is_array($tag_modules)) { 
+  if (!is_array($tag_modules)) {
+    $tag_modules = array();
     // Get a list of tags and their modules
     foreach (module_implements('patterns') as $module) {
       $tags = module_invoke($module, 'patterns', 'tags'); // TODO: the third parameter 'tags' has to go away once migration is completed

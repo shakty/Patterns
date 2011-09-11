@@ -10,7 +10,7 @@ function patterns_load_yaml($path, $local = TRUE) {
 
   if (!patterns_validate_pattern($pattern)) {
     return FALSE;
-  }
+}
 
   return $pattern;
 }
@@ -216,8 +216,8 @@ function patterns_load_components() {
     return;
   }
 
-  // Get a list of directories to search
-  $paths = module_invoke_all('patterns_directory');
+  // Get list of directories to scan for patterns
+  $paths = patterns_paths();
 
   foreach ($paths as $path) {
     foreach (file_scan_directory($path . '/components/', '/\.inc$/') as $file) {
@@ -332,12 +332,11 @@ function _patterns_check_file_dir() {
 }
 
 /**
- * Check if the patterns directory is existing and writable
- * 
+ * Check if the patterns directory exist and is writable.
  */
 function _patterns_is_patterns_dir_ready() {
-  $dir = PATTERNS_FILES_DIR;
-  return (file_prepare_directory($dir)) ? TRUE : FALSE;
+  $patterns_files_dir = '/srv/http/dr7/sites/default/files' . "/" . variable_get('patterns_save_file', 'patterns');  // TODO: move this out for performance
+  return (file_prepare_directory($patterns_files_dir)) ? TRUE : FALSE;
 }
 
 /**
@@ -381,13 +380,12 @@ function patterns_io_save_pattern ($content, $name, $format = 'yaml') {
     drupal_set_message(t('Error: the pattern is not writable. Please check the file system permissions.'), 'error');
     return FALSE;
   }
-  
-  
+
+
   return TRUE;
 }
 
 function patterns_io_remove_pattern($path){
-  
+  // TODO
 }
-
 

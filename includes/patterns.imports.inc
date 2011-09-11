@@ -108,7 +108,7 @@ function patterns_import_file_validate ($form, &$form_state) {
   if ($file = file_save_upload('pattern_uri', $validators)) {
     $form_state['values']['content'] = file_get_contents($file->uri); // was $file->filepath
     $form_state['pattern_uri'] = $file;
-    $form_state['pattern_uri']->destination = PATTERNS_FILES_DIR;
+    $form_state['pattern_uri']->destination = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns'); // TODO: move this out for performance
   }
   else {
     form_set_error('pattern_uri', t('Failed to retreive the pattern specified: %uri. Check your file and try again. Notice: only yaml and xml files are accepted', array('%uri' => $uri)));
