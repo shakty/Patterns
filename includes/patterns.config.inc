@@ -9,11 +9,11 @@
  */
 function patterns_permission() {
   return array(
-    'administer my module' => array(
+    'administer patterns' => array(
       'title' => t('administer patterns'),
-      //'description' => t('Administer patterns'),
-    ), // TODO: more detailed set of permissions
-    );
+    ),
+    // TODO: more detailed set of permissions
+  );
 }
 
 

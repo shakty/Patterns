@@ -9,14 +9,47 @@ class PatternsTestCase extends DrupalWebTestCase {
   public static function getInfo() {
     return array(
       'name' => 'Run and edit patterns.',
-      'description' => 'A test that does nothing',
+      'description' => 'Tests if the permissions are OK.',
       'group' => 'Patterns',
     );
   }
 
   public function setUp() {
-    parent::setUp('patterns');  // Enable any modules required for the test
-    // TODO: login
+    // Enable any modules required for the tests.
+    parent::setUp('libraries', 'token', 'patterns');
+
+    // Create users.
+    $this->pat_user = $this->drupalCreateUser(array('administer patterns'));
+    $this->std_user = $this->drupalCreateUser(array());
+  }
+
+  /**
+   * Login users, load the Patterns list page.
+   */
+  function testPatterns() {
+    // Login the patterns administrator.
+    $this->drupalLogin($this->pat_user);
+    $this->verifyAccess(200);
+    
+    // Login a regular user.
+    $this->drupalLogin($this->std_user);
+    $this->verifyAccess(403);
+  }
+
+  /**
+   * Verify the logged in user has the desired access to the various menu nodes.
+   *
+   * @param integer $response HTTP response code.
+   */
+  private function verifyAccess($response = 200) {
+    // View patterns list.
+    $this->drupalGet('admin/patterns');
+    $this->assertResponse($response);
+    if ($response == 200) {
+      $this->assertText(t('Patterns will be looked for in files under the following locations:'), t('Patterns list was displayed'));
+    }
+    // TODO: verify other pages
+
   }
 
   // TODO: Create test cases
