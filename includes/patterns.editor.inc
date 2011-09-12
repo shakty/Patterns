@@ -26,7 +26,7 @@ function patterns_editor($form_id, $pattern = array()) {
 }
 
 function patterns_quickrun () {
-  
+  // TODO: this form could be reused, see function patterns_enable_pattern().
   // Default
   $content = "# Pattern\n";
   $extension = 'yaml';
@@ -41,6 +41,32 @@ function patterns_quickrun () {
     '#markup' => 'This pattern has not been validated yet.',
     '#prefix' => '<div id="validation_result">',
     '#suffix' => '</div>',
+  );
+  $options_mode = array(
+    'extend' => 'Extend',
+    'runover' => 'Run-Over',
+  );
+  
+  $form['execution'] = array(
+    '#type' => 'radios',
+    '#title' => t('Execution mode:'),
+    '#description' => t('Extend mode can only add new feature to your web-site, Run-over can also delete. At the moment \'Extend\' is the only mode permitted.'),
+    '#options' => $options_mode,
+    '#default_value' => 'extend',
+    '#disabled' => 'true',
+  );
+
+  $options_run_mode = array(
+    'batch' => 'Batch',
+    'php' => 'PHP',
+  );
+
+  $form['mode'] = array(
+    '#type' => 'radios',
+    '#title' => t('Running mode:'),
+    '#description' => t('Batch mode uses the Batch API provided by Drupal thus providing intermediate feedback about the progress. PHP will only return when every action has been processed (or there has been an error), which is easier to debug.'),
+    '#options' => $options_run_mode,
+    '#default_value' => 'batch',
   );
   
   $form['format'] = array(
@@ -82,7 +108,13 @@ function patterns_quickrun_submit($form, $form_state) {
   
   $pattern = patterns_get_pattern_obj($pattern);
   
-  $mode = 'batch'; // TODO
+  // TODO: is this checking needed?
+  if(!in_array($form_state['values']['mode'], array('batch', 'php'))) {
+  	$mode = 'batch';
+  }
+  else {
+  	$mode = $form_state['values']['mode'];
+  }
 
   $params['run-subpatterns'] = 'always'; // TODO
   $params['quickrun'] = TRUE;
@@ -159,7 +191,7 @@ function patterns_edit_page ($pid = NULL) {
  * Create the form to edit patterns
  */
 function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
-
+// TODO: this form could be reused, see function patterns_enable_pattern().
   // Default
   $content = '# Pattern';
   $extension = 'yaml';
@@ -187,7 +219,7 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
     '#prefix' => '<div id="validation_result">',
     '#suffix' => '</div>',
   );
-  
+
   $form['format'] = array(
     '#type' => 'select',
     '#title' => t('Pattern syntax'),
