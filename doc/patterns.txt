@@ -131,8 +131,8 @@ How to implement Patterns for your own module
 
 In order to have your custom module be able to benefit from patterns,
 you must create a 'component', much like a driver software. The main components
-reside in *+patterns/components/+*, although there is support for a module to define hooks
-to expand over these components.
+reside in *+patterns/components/+*, although modules can use the *+hook_patterns_components+* hook
+to expand the set of supported components.
 
 You need to implement at most 6 pattern hooks, as here explained in the same
 order as they are being called by Patterns module. For examples, see the *+block.inc+*, *+system.inc+*, *+taxonomy.inc+*.

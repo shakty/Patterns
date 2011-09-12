@@ -546,17 +546,18 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
 
   /////////////////////////////////////////
   // Get Patterns details
-  $patterns_details = patterns_get_pattern_details($pattern);
+  $patterns_details = patterns_get_pattern_details($pattern); // TODO: a user-readable error message is needed
 
   // TODO: handle multiple patterns correctly
   // Let us assume we have only one pattern in the returned array of details
   $pid = key($patterns_details);
-  $pattern_details = current($patterns_details); 
+  $pattern_details = current($patterns_details);
+
   $info = $pattern_details['info'];
-  
+
   // Array of infos of multiple patterns (we have only one for now)
   $infos = array($pid => $info);
-  
+
   $modules = $pattern_details['modules'];
   $sections = $pattern_details['sections'];
   
@@ -610,7 +611,7 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
  * @return array $return an array packed by patterns_results
  */
 //function patterns_invoke($op, &$data, $form_id = NULL, &$a = NULL) {
-// TODO: update documdntation
+// TODO: update documentation
 function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = NULL) {
   
   $tag_modules = patterns_get_tagmodules_index();
@@ -731,7 +732,7 @@ function patterns_get_pattern_obj ($pattern = array()) {
     'public' => 0,
     'updated' => '', // when enabled
     'enabled' => '', // when enabled
-    'title' => 'New Pattern',
+    'title' => t('New Pattern'),
     'pattern' => '', // the pattern code 
   );
   

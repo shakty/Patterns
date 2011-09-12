@@ -181,7 +181,7 @@ function patterns_execute_config($module) {
     $pattern->status = FALSE;
     $pattern->pattern['actions'] = $actions;
     
-    patterns_execute_pattern($pattern);
+    return patterns_start_engine($pattern);
   }
 }
 

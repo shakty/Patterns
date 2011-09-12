@@ -30,7 +30,7 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
   // Looping through the sections
   ///////////////////////////////
 
-  foreach ($sections as $section => $actions) { // TODO: is this loop necessary?
+  foreach ($sections as $section => $actions) {
     // $actions passed as reference
     $results = patterns_prepare_actions($actions, $actions_map);
     

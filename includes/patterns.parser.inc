@@ -191,29 +191,29 @@ function _patterns_analyze_patternscan($patternscan) {
   $msgs = array();
     
     if ($patternscan['info'] == 0) {       
-        $msgs[] = 'Info section is missing.';
+        $msgs[] = t('Info section is missing.');
     }
         
     if ($patternscan['info'] > 1) {
-        $msgs[] = 'Pattern can contain only one \'info\' section';
+        $msgs[] = t('Pattern can contain only one \'info\' section.');
     }
         
     if ($patternscan['modules'] > 1) {
-        $msgs[] = 'Pattern can contain only one \'modules\' section';
+        $msgs[] = t('Pattern can contain only one \'modules\' section.');
     }
         
     if (count($patternscan['other_sections']) == 0) { 
-        $msgs[] = 'Pattern does not contain any action';
+        $msgs[] = t('Pattern does not contain any actions.');
     }
     
     if (count($patternscan['invalid_actions']) != 0) { 
-        $out = 'Only ' . implode(', ',patterns_actions()) . ' are valid actions. Found: ';
+        $out = 'Only ' . implode(', ',patterns_actions()) . ' are valid actions. Found: '; // TODO: t()
         $out.= implode(', ', $patternscan['invalid_actions']);
         $msgs[] = $out;
     }
         
     if (count($patternscan['empties']) > 0) {
-        $msgs[] = 'Pattern contains empty actions: ' . implode(', ', $patternscan['empties']);
+        $msgs[] = t('Pattern contains empty actions: ') . implode(', ', $patternscan['empties']);
     }
   
   return $msgs;
@@ -319,13 +319,11 @@ function patterns_validate_service () {
     
     if (_patterns_validate_patternscan($scan)) {
       $count = count($scan['other_sections']) + $scan['info'] + $scan['modules']; 
-      $out = t('This pattern is valid. !count sections found.',array('!count'=>$count));
-      //$out.= print_r($scan,true);
+      $out = t('This pattern is valid. !count sections found.', array('!count'=>$count));
     }
     else {
       $errors = implode('<br/> ', _patterns_analyze_patternscan($scan));
-      $out = 'This pattern is NOT valid.<br/>' . $errors;
-      //$out.= print_r($scan,true); 
+      $out = t('This pattern is NOT valid.') . '<br/>' . $errors;
     }
  
     print $out;
@@ -339,17 +337,17 @@ function patterns_validate_service () {
  * @param $recursive if the directive include is valid
  * @param $pids ??
  * 
- * @return array $details array('pid1'=>$details, 'pid2'=>$details...)
+ * @return array $details array('pid1' => $details, 'pid2' => $details, ...)
  */
 function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = array()) {
 
   $scan = _patterns_scan_pattern($pattern->pattern);
-  
+
   $details = array();
   
   if (_patterns_validate_patternscan($scan)) {
     $details['info'] = $pattern->pattern['info'];
-    $details['sections'] = array_intersect_key($pattern->pattern,$scan['other_sections']);
+    $details['sections'] = array_intersect_key($pattern->pattern, $scan['other_sections']);
     $details['modules'] = ($scan['modules'] > 0 ) ? $pattern->pattern['modules'] : array();
   }
   
@@ -359,8 +357,8 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
   // IMPORTANT
   // The part below is for handling the include tag. Not used now;
   ////////////////////////////////////////////////////////////////
-  
-  
+
+
   // prevent infinite recursion
   // Disabled! Infinite recursion is possible!
   // This allows the same pattern to be re-executed with different parameters
@@ -537,7 +535,7 @@ function patterns_parser_validate_xml_pattern ($content) {
   
   // Add XML tag if missing
   if (strpos($content, '<?xml') !== 0) {
-    $content = '<?xml version="1.0" encoding="ISO-8859-1"?>' .$content;
+    $content = '<?xml version="1.0" encoding="UTF-8"?>' .$content;
   }
 
   $parse = drupal_xml_parser_create($content);

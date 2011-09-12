@@ -63,6 +63,15 @@ function patterns_patterns_directory() {
 }
 
 /**
+ * Implements hook_patterns_components().
+ * 
+ * Let us know about where the components are.
+ */
+function patterns_patterns_components() {
+  return drupal_get_path('module', 'patterns') . '/components/';
+}
+
+/**
  * Implements hook_requirements().
  *
  * @param string $phase The phase in which hook_requirements is run (install|runtime).

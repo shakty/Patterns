@@ -878,8 +878,8 @@ executes the tasks in a single PHP run. In this case, debugging can be easier.</
 <div class="sectionbody">
 <div class="paragraph"><p>In order to have your custom module be able to benefit from patterns,
 you must create a <em>component</em>, much like a driver software. The main components
-reside in <strong><tt>patterns/components/</tt></strong>, although there is support for a module to define hooks
-to expand over these components.</p></div>
+reside in <strong><tt>patterns/components/</tt></strong>, although modules can use the <strong><tt>hook_patterns_components</tt></strong> hook
+to expand the set of supported components.</p></div>
 <div class="paragraph"><p>You need to implement at most 6 pattern hooks, as here explained in the same
 order as they are being called by Patterns module. For examples, see the <strong><tt>block.inc</tt></strong>, <strong><tt>system.inc</tt></strong>, <strong><tt>taxonomy.inc</tt></strong>.</p></div>
 <div class="sidebarblock">
@@ -1115,7 +1115,7 @@ TODO: Handle administration themes separately.</p></td>
 <div id="footer">
 <div id="footer-text">
 Version 0.2<br />
-Last updated 2011-09-12 20:33:10 CEST
+Last updated 2011-09-12 21:34:04 CEST
 </div>
 </div>
 </body>

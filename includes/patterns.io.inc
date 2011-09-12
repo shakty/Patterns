@@ -207,7 +207,6 @@ function patterns_get_source($pid) {
 /**
  * Loads the Patterns handlers (component) from file system,
  * if they are not already loaded.
- * 
  */
 function patterns_load_components() {
   static $loaded = FALSE;
@@ -216,11 +215,11 @@ function patterns_load_components() {
     return;
   }
 
-  // Get list of directories to scan for patterns
-  $paths = patterns_paths();
+  // Get list of directories to scan for components.
+  $paths = module_invoke_all('patterns_components');
 
   foreach ($paths as $path) {
-    foreach (file_scan_directory($path . '/components/', '/\.inc$/') as $file) {
+    foreach (file_scan_directory($path, '/\.inc$/') as $file) {
       include_once $file->uri;
     }
   }

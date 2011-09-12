@@ -28,7 +28,7 @@ function patterns_editor($form_id, $pattern = array()) {
 function patterns_quickrun () {
   
   // Default
-  $content = '# Pattern';
+  $content = "# Pattern\n";
   $extension = 'yaml';
   
   $form['important'] = array (
@@ -78,19 +78,16 @@ function patterns_quickrun () {
 function patterns_quickrun_submit($form, $form_state) {
   
   // Parse the content of the textarea
-  $pattern['pattern'] = patterns_parse_yaml($form_state['values']['content']);
-  
+  $pattern['pattern'] = patterns_parse_yaml($form_state['values']['content']); // TODO: other formats as well
   
   $pattern = patterns_get_pattern_obj($pattern);
   
-  $mode = 'batch';
-  module_load_include('inc', 'patterns', 'includes/patterns.core.' . $mode);
-  
-  
-  $params['run-subpatterns'] = 'always';
+  $mode = 'batch'; // TODO
+
+  $params['run-subpatterns'] = 'always'; // TODO
   $params['quickrun'] = TRUE;
   
-  return patterns_execute_pattern($pattern, $params);
+  return patterns_start_engine($pattern, $params, $mode);
 }
 /**
  * Display the page for create a new pattern.
