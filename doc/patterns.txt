@@ -1,7 +1,7 @@
 Drupal 7 Patterns Documentation
 ===============================
 Qscience Team
-v0.1, Aug 2011
+v0.2, September, 2011
 
 // QScience Team <www.qlectives.eu>
 
@@ -28,8 +28,8 @@ a part of an automated web site deployment.
 Installation
 ------------
 
-Patterns is installed as a Drupal module. However, it makes
-uses of external libraries which must be installed separately:
+Patterns is installed as a Drupal module. Its dependencies are the Token and Libraries modules.
+It makes uses of external libraries which must be installed separately:
 *+Spyc+* and *+Codemirror+*.
 
 
@@ -44,14 +44,18 @@ uses of external libraries which must be installed separately:
 Both libraries should be installed under *+sites/all/libraries/+*
 under directory names of *+spyc+* and *+codemirror2+*. 
 
-
 [[pattern-example]]
 What is a Pattern?
 ------------------
 
-A Pattern is a file composed by an *+info+* section and a sequence of
-_action_s of the type *+create+*, *+modify+*, or *+delete+* grouped in
-categories (sections). 
+A Pattern is a file composed by an *+info+* section (generic metadata about the pattern)
+and a sequence of _action_s of the type *+create+*, *+modify+*, or *+delete+* grouped in
+categories (sections). The 'tag:' expression tells Patterns which component to use.
+Every component defines a list of tags it can handle, see <<callbacks,later>>. After choosing the 'tag',
+the pattern file has to supply every required data for the particular action.
+In this example: 'name', 'machine_name', 'description', 'hierarchy' are some of the data keys used, and all of them have values assigned.
+The data is passed to the pattern component as an associative array, most often referred to as *+$data+*.
+Some actions have alternative or optional parameter requirements.
 
 Categories can be arbitrarily defined (excluding the
 <<reserved-words,reserved words>>) and are executed sequentially.
@@ -125,8 +129,13 @@ executes the tasks in a single PHP run. In this case, debugging can be easier.
 How to implement Patterns for your own module
 -----------------------------------------------
 
+In order to have your custom module be able to benefit from patterns,
+you must create a 'component', much like a driver software. The main components
+reside in *+patterns/components/+*, although there is support for a module to define hooks
+to expand over these components.
+
 You need to implement at most 6 pattern hooks, as here explained in the same
-order as they are being called by Patterns module.
+order as they are being called by Patterns module. For examples, see the *+block.inc+*, *+system.inc+*, *+taxonomy.inc+*.
 
 *******************************************************************
 * *+hook_patterns()+*: declares that the module is able to handle
@@ -137,7 +146,7 @@ order as they are being called by Patterns module.
  values. Eventually, it can raise errors which halt further execution
  of the pattern.
 
-* *+function block_patterns_callbacks($action, $tag, &$data)+*: returns the array of form ID's which will be run
+* *+hook_patterns_callbacks($action, $tag, &$data)+*: returns the array of form ID's which will be run
  sequentially.
  If a value in this array is not present in the form id list returned by *+hook_patterns()+*, the
  value will be treated as a regular callback function and will be called with the *+($action, $data)+* parameters.
@@ -188,7 +197,7 @@ Returns the following array of actions:
 where *+$tag1+*, *+$tag2+* etc. are specific commands to execute
 (e.g. *+vocabulary+*, *+field+*, etc.). The list of possible form ID's is also provided 
 for each of the three actions (*+create+*, *+modify+*, *+delete+*). Note that this array
-can be empty as well, see <<callbacks,function block_patterns_callbacks>>.
+can be empty as well, see <<callbacks,function hook_patterns_callbacks>>.
 
 
 *+hook_patterns_build+*, *+hook_patterns_params+*, *+hook_patterns_cleanup+*
