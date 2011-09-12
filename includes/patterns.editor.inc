@@ -102,12 +102,12 @@ function patterns_quickrun () {
 }
 
 function patterns_quickrun_submit($form, $form_state) {
-  
+
   // Parse the content of the textarea
   $pattern['pattern'] = patterns_parse_yaml($form_state['values']['content']); // TODO: other formats as well
-  
+
   $pattern = patterns_get_pattern_obj($pattern);
-  
+
   // TODO: is this checking needed?
   if(!in_array($form_state['values']['mode'], array('batch', 'php'))) {
   	$mode = 'batch';
@@ -118,7 +118,7 @@ function patterns_quickrun_submit($form, $form_state) {
 
   $params['run-subpatterns'] = 'always'; // TODO
   $params['quickrun'] = TRUE;
-  
+
   return patterns_start_engine($pattern, $params, $mode);
 }
 /**

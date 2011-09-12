@@ -8,15 +8,16 @@
 class PatternsTestCase extends DrupalWebTestCase {
   public static function getInfo() {
     return array(
-      'name' => 'Run and edit patterns.',
-      'description' => 'Tests if the permissions are OK.',
+      'name' => 'Test running simple patterns using Quick Run',
+      'description' => 'Tests if the Quick Run interface works as expected. Also, checks for some permissions.',
       'group' => 'Patterns',
     );
   }
 
   public function setUp() {
     // Enable any modules required for the tests.
-    parent::setUp('libraries', 'token', 'patterns');
+    parent::setUp('patterns');
+    // TODO: how to ensure that Spyc is installed?
 
     // Create users.
     $this->pat_user = $this->drupalCreateUser(array('administer patterns'));
@@ -50,6 +51,62 @@ class PatternsTestCase extends DrupalWebTestCase {
     }
     // TODO: verify other pages
 
+  }
+
+  public function testQuickRun($mode = 'php') {
+    // TODO: find a better place for this.
+    $module_pattern1 = <<<EOD
+# YAML Modules Pattern
+# QScience
+
+info:
+  title: Enable/disable modules
+  description: Based on http://drupal.org/node/408960
+  author: QScience
+  category: QScience
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qscience.csko.hu
+
+actions: 
+
+  create:
+      tag: modules
+      - value: blog
+
+# TODO: this is not working as expected
+#  - tag: modules
+#     value: blog
+#     delete: 1
+
+  delete:
+      tag: modules
+      - value: admin_menu
+      - value: blog
+      - value: forum
+
+ 
+EOD;
+    // Login the patterns administrator.
+    $this->drupalLogin($this->pat_user);
+
+  	// Check for an invalid syntax run.
+    $edit = array();
+    $edit['format'] = 'yaml';
+    $edit['mode'] = $mode;
+    $edit['content'] = 'pattern with invalid syntax';
+    $this->drupalPost('admin/patterns/quickrun', $edit, t('Run'));
+    $this->assertText(t('Error(s) while processing pattern:'), 'Invalid pattern produces errors.');
+
+    // Check for a valid syntax run.
+    $edit2 = array();
+    $edit2['format'] = 'yaml';
+    $edit2['mode'] = $mode;
+    $edit2['content'] = $module_pattern1;
+    $this->drupalPost('admin/patterns/quickrun', $edit2, t('Run'));
+    $this->assertText(t('Pattern "@pattern" ran successfully.', array('@pattern' => 'Enable/disable modules')), 'Valid pattern runs without errors.');
+    
   }
 
   // TODO: Create test cases
