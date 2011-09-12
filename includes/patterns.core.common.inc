@@ -13,19 +13,19 @@
  * @return array $results array containing the description of eventual errors
  */
 function patterns_prepare_actions(&$actions, $actions_map) {
-  
+
   $status = PATTERNS_SUCCESS;
   $message = '';
-  
+
   if (empty($actions)) return patterns_results();
-  
+
   patterns_load_components();
 
   // Keep a list of which modules handle what tags
   $tag_modules = patterns_get_tagmodules_index();
 
   $errors = array();
-  
+
   /////////////////////////////////////////////
   // Prepare actions for validation/processing
   /////////////////////////////////////////////

@@ -226,9 +226,15 @@ function _patterns_analyze_patternscan($patternscan) {
  * @param array $analysis obtained from  _patterns_scan_pattern
  * @return TRUE if valid, FALSE otherwise
  */
-function _patterns_validate_patternscan($patternscan) {
+function _patterns_validate_patternscan($patternscan, $display_errors = FALSE) {
   $analysis = _patterns_analyze_patternscan($patternscan);
-  return (empty($analysis)) ? TRUE : FALSE;
+  if(empty($analysis)){
+    return TRUE;
+  }
+  if ($display_errors){
+    drupal_set_message(t('Error(s) while processing pattern:') . '<ul><li>'. implode('</li><li>', $analysis) . '</li></ul>', 'error');
+  }
+  return FALSE;
 }
 
 /**
@@ -337,7 +343,8 @@ function patterns_validate_service () {
  * @param $recursive if the directive include is valid
  * @param $pids ??
  * 
- * @return array $details array('pid1' => $details, 'pid2' => $details, ...)
+ * @return array $details array('pid1' => $details, 'pid2' => $details, ...),
+ *         FALSE if there were errors (in which case the errors will be displayed).
  */
 function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = array()) {
 
@@ -345,14 +352,16 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
 
   $details = array();
   
-  if (_patterns_validate_patternscan($scan)) {
+  if (_patterns_validate_patternscan($scan, TRUE)) { // This will display errors if there are any.
     $details['info'] = $pattern->pattern['info'];
     $details['sections'] = array_intersect_key($pattern->pattern, $scan['other_sections']);
     $details['modules'] = ($scan['modules'] > 0 ) ? $pattern->pattern['modules'] : array();
+    return array($pattern->pid => $details); // TODO: only one pattern
+  }else{
+    return FALSE;
   }
-  
-  return array($pattern->pid => $details);
-  
+ 
+
   ////////////////////////////////////////////////////////////////
   // IMPORTANT
   // The part below is for handling the include tag. Not used now;
@@ -435,6 +444,9 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
         }
 
         $a = patterns_get_pattern_details($p, TRUE, $pids);
+        if($a === FALSE){ // TODO: error handling
+          
+        }
         if (is_array($a) && empty($a)) {
           // An empty array is returned on infinite recursion detection
           drupal_set_message(t('Action #%key in %file: Infinite recursion detected while attempting to run pattern %pattern.<br/>Pattern execution will try to continue without it.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'warning');
