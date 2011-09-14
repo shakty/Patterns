@@ -55,7 +55,7 @@ function patterns_settings($form, &$form_state) {
 
 /**
  * Implements hook_patterns_directory().
- * 
+ *
  * Let us know about where the pattern files are at.
  */
 function patterns_patterns_directory() {
@@ -64,7 +64,7 @@ function patterns_patterns_directory() {
 
 /**
  * Implements hook_patterns_components().
- * 
+ *
  * Let us know about where the components are.
  */
 function patterns_patterns_components() {
@@ -82,7 +82,7 @@ function patterns_requirements($phase) {
   switch ($phase) {
     case 'runtime':
       $path = libraries_get_path('spyc') . '/spyc.php';
-      
+
       if (!file_exists($path)) {
         $requirements['spyc'] = array(
           'title'       => t('Spyc library (YAML parser)'),
@@ -122,7 +122,7 @@ function patterns_paths() {
     'profiles/' . $profile . '/patterns',
     'sites/all/patterns'
   );
-  
+
   // allow any module to include patterns too
   foreach (module_invoke_all('patterns_directory') as $path) {
     if (is_dir($path)) {
@@ -130,12 +130,12 @@ function patterns_paths() {
     }
   }
 
-  
+
   // Ste:was
   // also prepend files folder if it's valid
   //$path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
   //$path = "/sites/default/files/patterns";
-  
+
   // real_path(public) returns the path to the files dir
   $path = drupal_realpath('public://') . '/' . variable_get('patterns_save_xml', 'patterns');
 

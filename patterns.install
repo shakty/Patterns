@@ -3,7 +3,7 @@
  * @file
  * Installation file for Patterns.
  */
- 
+
 /**
  * Implements hook_install().
  */

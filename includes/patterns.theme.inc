@@ -69,7 +69,7 @@ function theme_patterns_form_helper($form_id, $values) {
  * 
  * @param array $args An associative array containing: containing key 'patterns'
  */
-function theme_patterns_list ($args) {
+function theme_patterns_list($args) {
   
   $patterns = $args['patterns'];
   $invalid = $args['invalid'];

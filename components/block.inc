@@ -11,7 +11,7 @@ function block_patterns() {
 
   $files = array('modules/block/block.admin.inc');
 
-  $actions['block'] = array('descr' => t('Create/Modify/Delete Blocks'), 
+  $actions['block'] = array('descr' => t('Create/Modify/Delete Blocks'),
     PATTERNS_CREATE => array('block_admin_display_form', 'block_admin_configure', 'block_add_block_form'),
     PATTERNS_MODIFY => array('block_admin_display_form', 'block_admin_configure'),
     PATTERNS_DELETE => array('block_custom_block_delete'),

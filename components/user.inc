@@ -12,14 +12,14 @@ function user_patterns() {
 
   $files = array('modules/user/user.admin.inc');
 
-  $actions['user'] = array('descr' => t('Create/Modify/Delete Users'), 
+  $actions['user'] = array('descr' => t('Create/Modify/Delete Users'),
     PATTERNS_CREATE => array('user_register_form'),
     PATTERNS_MODIFY => array('user_profile_form'),
     PATTERNS_DELETE => array('user_cancel_confirm_form'),
     'files'  => $files,
   );
 
-  $actions['role'] = array('descr' => t('Create/Modify/Delete Roles'), 
+  $actions['role'] = array('descr' => t('Create/Modify/Delete Roles'),
     PATTERNS_CREATE => array('user_admin_roles'),
     PATTERNS_MODIFY => array('user_admin_role'),
     PATTERNS_DELETE => array('user_admin_role_delete_confirm'),

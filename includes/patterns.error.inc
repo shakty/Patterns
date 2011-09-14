@@ -1,4 +1,5 @@
-<?php 
+<?php
+
 
 function patterns_set_error_handler() {
   // set custom error handler
@@ -22,11 +23,10 @@ function patterns_error_handler($errno, $message, $filename, $line, $context) {
 
   // @TODO  E_DEPRECATED does not work in PHP < 5.3
   if ($errno & (E_ALL ^ E_NOTICE)) { // ^ E_DEPRECATED)) {
-
     $types = array(
-      1 =>array('Error', WATCHDOG_ERROR),
+      1 => array('Error', WATCHDOG_ERROR),
       2 => array('Warning', WATCHDOG_WARNING),
-      4 => array('Parse error', WATCHDOG_ERROR), 
+      4 => array('Parse error', WATCHDOG_ERROR),
       8 => array('Notice', WATCHDOG_NOTICE),
       16 => array('Core error', WATCHDOG_ERROR),
       32 => array('Core warning', WATCHDOG_WARNING),
@@ -37,7 +37,7 @@ function patterns_error_handler($errno, $message, $filename, $line, $context) {
       1024 => array('User notice', WATCHDOG_NOTICE),
       2048 => array('Strict warning', WATCHDOG_DEBUG),
       4096 => array('Recoverable fatal error', WATCHDOG_ERROR),
-     );
+      );
 
     // For database errors, we want the line number/file name of the place that
     // the query was originally called, not _db_query().
@@ -61,8 +61,9 @@ function patterns_error_handler($errno, $message, $filename, $line, $context) {
     // 'patterns_error' is not a real error and should be skipped
     if ($message != 'patterns_error') {
       watchdog('php', '%message in %file on line %line.', array('%error' => $types[$errno][0], '%message' => $message, '%file' => $filename, '%line' => $line), $types[$errno][1]);
-      if($types[$errno][1] == WATCHDOG_ERROR)
+      if ($types[$errno][1] == WATCHDOG_ERROR) {
         patterns_error_set_last(array('message' => $message, 'type' => $errno, 'file' => $filename, 'line' => $line));
+      }
     }
   }
   return TRUE;
@@ -102,7 +103,7 @@ function patterns_error_get_last($op, $key, $description, $pattern_title, $patte
     $types = array(
         1 => array('Error', WATCHDOG_ERROR),
         2 => array('Warning', WATCHDOG_WARNING),
-        4 => array('Parse error', WATCHDOG_ERROR), 
+        4 => array('Parse error', WATCHDOG_ERROR),
         8 => array('Notice', WATCHDOG_NOTICE),
         16 => array('Core error', WATCHDOG_ERROR),
         32 => array('Core warning', WATCHDOG_WARNING),
@@ -113,8 +114,8 @@ function patterns_error_get_last($op, $key, $description, $pattern_title, $patte
         1024 => array('User notice', WATCHDOG_NOTICE),
         2048 => array('Strict warning', WATCHDOG_DEBUG),
         4096 => array('Recoverable fatal error', WATCHDOG_ERROR),
-     );
-    
+      );
+
     $php_error_message = $types[$error['type']][0] . ': ' . $error['message'] . ' in ' . $error['file'] . ' on line ' . $error['line'] . '.';
     $message = t('Pattern %title (%pattern_file)<br/>Action #%key: %description (op "%op")<br/>PHP error occured:<br/>%error', array('%key' => $key, '%title' => $pattern_title, '%op' => $op, '%description' => $description, '%error' => $php_error_message, '%pattern_file' => $pattern_file));
     return $message;
@@ -131,36 +132,36 @@ function patterns_error_last($error = NULL) {
   return $last_error;
 }
 
-function patterns_error_check_results (&$result) {
-  
+function patterns_error_check_results(&$result) {
+
   if ($result['status'] == PATTERNS_ERR) {
     $return = FALSE;
     $wd_type = WATCHDOG_ERROR;
     $msg_type = 'error';
   }
-  else if ($result['status'] == PATTERNS_WARN) {
+  elseif ($result['status'] == PATTERNS_WARN) {
     $return = TRUE;
     $wd_type = WATCHDOG_WARNING;
     $msg_type = 'warning';
   }
-  else { // Success 
+  else { // Success
     return TRUE;
   }
-  
+
   $msg = 'Error occurred in ';
-  
-  if (isset($result['details'])){
+
+  if (isset($result['details'])) {
     $msg = 'Hook: ' . $result['details']['hook'];
-    $msg.= ', Action: ' . $result['details']['action'];
-    $msg.= ', Function: ' . $result['details']['function'] . '. ';
+    $msg .= ', Action: ' . $result['details']['action'];
+    $msg .= ', Function: ' . $result['details']['function'] . '. ';
   }
   else {
-    $msg.= 'unspecified action. ';
+    $msg .= 'unspecified action. ';
   }
-  
-  $msg = (empty($result['msg'])) ? $msg : $msg.$result['msg']; 
+
+  $msg = (empty($result['msg'])) ? $msg : $msg . $result['msg'];
   watchdog('patterns', $msg, array(), $wd_type);
   drupal_set_message($result['msg'], $msg_type);
   return $return;
-    
+
 }

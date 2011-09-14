@@ -100,7 +100,7 @@ function _patterns_parse_tag($data, &$index = 0) {
     $type = $current['type'];
 
     if (!empty($current['attributes'])) {
-      foreach ((array)$current['attributes'] as $key => $value) {
+      foreach ((array) $current['attributes'] as $key => $value) {
         $current[$key] = $value;
       }
     }
@@ -150,11 +150,11 @@ function _patterns_parse_tag($data, &$index = 0) {
 /**
  * Scan the actions_map array and return info about the file the action was coming
  * from with the following info:
- * 
+ *
  * - index of the action within the batch_set
  * - title of the pattern
  * - file of the pattern
- * 
+ *
  * @param mixed $key The key of the action in the actions_map array
  * @param array $actions_map array containing information about of all the
  * actions of the batch_set
@@ -169,58 +169,58 @@ function patterns_locate_action($key, $actions_map) {
 
 
 /**
- * Check if pattern array or content from a file is valid 
+ * Check if pattern array or content from a file is valid
  *
  * @param mixed $pattern pattern array or content of a pattern file
  * @return TRUE if valid, FALSE otherwise
  */
 function patterns_validate_pattern($pattern) {
-  $scan = _patterns_scan_pattern ($pattern);
+  $scan = _patterns_scan_pattern($pattern);
   return _patterns_validate_patternscan($scan);
 }
 
 /**
- * Analyze the result of a call to _patterns_scan_pattern, and check whether 
+ * Analyze the result of a call to _patterns_scan_pattern, and check whether
  * the pattern was valid.
  *
  * @param array $analysis obtained from  _patterns_scan_pattern
  * @return TRUE if valid, FALSE otherwise
  */
 function _patterns_analyze_patternscan($patternscan) {
-  
+
   $msgs = array();
-    
-    if ($patternscan['info'] == 0) {       
-        $msgs[] = t('Info section is missing.');
-    }
-        
-    if ($patternscan['info'] > 1) {
-        $msgs[] = t('Pattern can contain only one \'info\' section.');
-    }
-        
-    if ($patternscan['modules'] > 1) {
-        $msgs[] = t('Pattern can contain only one \'modules\' section.');
-    }
-        
-    if (count($patternscan['other_sections']) == 0) { 
-        $msgs[] = t('Pattern does not contain any actions.');
-    }
-    
-    if (count($patternscan['invalid_actions']) != 0) { 
-        $out = 'Only ' . implode(', ',patterns_actions()) . ' are valid actions. Found: '; // TODO: t()
-        $out.= implode(', ', $patternscan['invalid_actions']);
-        $msgs[] = $out;
-    }
-        
-    if (count($patternscan['empties']) > 0) {
-        $msgs[] = t('Pattern contains empty actions: ') . implode(', ', $patternscan['empties']);
-    }
-  
+
+  if ($patternscan['info'] == 0) {
+    $msgs[] = t('Info section is missing.');
+  }
+
+  if ($patternscan['info'] > 1) {
+    $msgs[] = t('Pattern can contain only one \'info\' section.');
+  }
+
+  if ($patternscan['modules'] > 1) {
+    $msgs[] = t('Pattern can contain only one \'modules\' section.');
+  }
+
+  if (count($patternscan['other_sections']) == 0) {
+    $msgs[] = t('Pattern does not contain any actions.');
+  }
+
+  if (count($patternscan['invalid_actions']) != 0) {
+    $out = 'Only ' . implode(', ', patterns_actions()) . ' are valid actions. Found: '; // TODO: t()
+    $out .= implode(', ', $patternscan['invalid_actions']);
+    $msgs[] = $out;
+  }
+
+  if (count($patternscan['empties']) > 0) {
+    $msgs[] = t('Pattern contains empty actions: ') . implode(', ', $patternscan['empties']);
+  }
+
   return $msgs;
 }
 
 /**
- * Analyze the result of a call to _patterns_scan_pattern, and check whether 
+ * Analyze the result of a call to _patterns_scan_pattern, and check whether
  * the pattern was valid.
  *
  * @param array $analysis obtained from  _patterns_scan_pattern
@@ -228,24 +228,24 @@ function _patterns_analyze_patternscan($patternscan) {
  */
 function _patterns_validate_patternscan($patternscan, $display_errors = FALSE) {
   $analysis = _patterns_analyze_patternscan($patternscan);
-  if(empty($analysis)){
+  if (empty($analysis)) {
     return TRUE;
   }
-  if ($display_errors){
-    drupal_set_message(t('Error(s) while processing pattern:') . '<ul><li>'. implode('</li><li>', $analysis) . '</li></ul>', 'error');
+  if ($display_errors) {
+    drupal_set_message(t('Error(s) while processing pattern:') . '<ul><li>' . implode('</li><li>', $analysis) . '</li></ul>', 'error');
   }
   return FALSE;
 }
 
 /**
  * Pattern
- * 
+ *
  * // @TODO: Check if we can use patterns_load_yaml instead
- * 
+ *
  */
 function patterns_parse_yaml($pattern) {
-  
- if (!is_array($pattern)) {
+
+  if (!is_array($pattern)) {
     include_once libraries_get_path('spyc') . '/spyc.php';
     $pattern = Spyc::YAMLLoad($pattern);
   }
@@ -262,21 +262,21 @@ function patterns_parse_yaml($pattern) {
  *
  * @todo expand this function to include much more detailed validation
  */
-function _patterns_scan_pattern ($pattern) {
-  
+function _patterns_scan_pattern($pattern) {
+
   $result = array(
                   'info' => 0,
                   'modules' => 0,
                   'empties' => array(),
                   'include' => array(),
                   'invalid_actions' => array(),
-                  'other_sections'=> array(),
-  );          
-  
+                  'other_sections' => array(),
+  );
+
   $pattern = patterns_parse_yaml($pattern);
-  
+
   if (!empty($pattern)) {
-    
+
     // Patterns must contain:
     // 1 and only section info
     // 0 or 1 section modules
@@ -286,63 +286,63 @@ function _patterns_scan_pattern ($pattern) {
       if ($key == 'info') {
         $result['info']++;
       }
-      else if ($key == 'modules') {
+      elseif ($key == 'modules') {
         $result['modules']++;
       }
-      else if ($key == 'include') {
+      elseif ($key == 'include') {
         $result['include']++;
       }
       else {
         $result['other_sections'][$key] = $key; // TODO: add info about the section as value
-        
+
         foreach ($value as $action => $data) {
-          
-          if (!array_key_exists($action,patterns_actions())) {
-            $result['invalid_actions'][$action] = $action; 
+
+          if (!array_key_exists($action, patterns_actions())) {
+            $result['invalid_actions'][$action] = $action;
           }
         }
       }
-      
+
       if (empty($value)) {
         $result['empties'][] = $key;
       }
     }
   }
-  
+
   return $result;
 }
 
 
 
 /**
- * Callback of the url patterns/validate. Returns validation info about the 
+ * Callback of the url patterns/validate. Returns validation info about the
  * pattern passed in the $_POST array
- * 
+ *
  */
-function patterns_validate_service () {
-    
-    $scan = _patterns_scan_pattern($_POST['pattern']);
-    
-    if (_patterns_validate_patternscan($scan)) {
-      $count = count($scan['other_sections']) + $scan['info'] + $scan['modules']; 
-      $out = t('This pattern is valid. !count sections found.', array('!count'=>$count));
-    }
-    else {
-      $errors = implode('<br/> ', _patterns_analyze_patternscan($scan));
-      $out = t('This pattern is NOT valid.') . '<br/>' . $errors;
-    }
- 
-    print $out;
+function patterns_validate_service() {
+
+  $scan = _patterns_scan_pattern($_POST['pattern']);
+
+  if (_patterns_validate_patternscan($scan)) {
+    $count = count($scan['other_sections']) + $scan['info'] + $scan['modules'];
+    $out = t('This pattern is valid. !count sections found.', array('!count' => $count));
+  }
+  else {
+    $errors = implode('<br/> ', _patterns_analyze_patternscan($scan));
+    $out = t('This pattern is NOT valid.') . '<br/>' . $errors;
+  }
+
+  print $out;
 }
 
 /**
  * Return an array with detailed information about the pattern(s) referenced in
  * the pattern files (included).
- * 
+ *
  * @param stdClass $pattern Pattern object as loaded by patterns_get_pattern()
  * @param $recursive if the directive include is valid
  * @param $pids ??
- * 
+ *
  * @return array $details array('pid1' => $details, 'pid2' => $details, ...),
  *         FALSE if there were errors (in which case the errors will be displayed).
  */
@@ -351,16 +351,17 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
   $scan = _patterns_scan_pattern($pattern->pattern);
 
   $details = array();
-  
+
   if (_patterns_validate_patternscan($scan, TRUE)) { // This will display errors if there are any.
     $details['info'] = $pattern->pattern['info'];
     $details['sections'] = array_intersect_key($pattern->pattern, $scan['other_sections']);
     $details['modules'] = ($scan['modules'] > 0 ) ? $pattern->pattern['modules'] : array();
     return array($pattern->pid => $details); // TODO: only one pattern
-  }else{
+  }
+  else {
     return FALSE;
   }
- 
+
 
   ////////////////////////////////////////////////////////////////
   // IMPORTANT
@@ -376,12 +377,12 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
   $pids[$pattern->pid] = $pattern->pid;
 
 
-  $patterns[$pattern->pid] = (array)$pattern;
+  $patterns[$pattern->pid] = (array) $pattern;
   $patterns[$pattern->pid] = array_merge($patterns[$pattern->pid], $patterns[$pattern->pid]['pattern']['info']);
   unset($patterns[$pattern->pid]['pattern']);
 
-  
-  
+
+
   if ($recursive) {
     $result = array('modules' => $modules, 'info' => $patterns);
 
@@ -396,12 +397,12 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
         }
         if (!$p = patterns_get_pattern($name)) {
           // just give a warning and try to continue
-          drupal_set_message(t('Action #%key in %file: Pattern %pattern not found.<br/>Pattern execution will try to continue without it.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'warning');
+          drupal_set_message(t('Action #%key in %file: Pattern %pattern not found.<br/>Pattern execution will try to continue without it.', array('%key' => $key + 1, '%file' => $pattern->title, '%pattern' => $name)), 'warning');
           continue;
         }
-        
+
         // Decide if sub-pattern needs to be run based on the mode defined within the pattern or selected in UI at the time of form submission
-        // @TODO: UI setting should be able to override a setting defined within the pattern 
+        // @TODO: UI setting should be able to override a setting defined within the pattern
         $modes = array('first-update', 'always', 'update', 'first', 'never');
         if (!empty($action['run']) && in_array($action['run'], $modes)) {
           $mode = $action['run'];
@@ -412,28 +413,28 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
 
         switch ($mode) {
           case 'never':
-            // don't run sub-pattern 
-            drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to be skipped.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status'); 
+            // don't run sub-pattern
+            drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to be skipped.', array('%key' => $key + 1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
             continue 2;
             break;
           case 'first':
             // Only run on first run
             if ($p->status) {
-              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on the first run.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
+              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on the first run.', array('%key' => $key + 1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
               continue 2;
             }
             break;
           case 'update':
             // Only run on pattern update
             if ($p->enabled >= $p->updated) {
-              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on pattern update.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
+              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on pattern update.', array('%key' => $key + 1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
               continue 2;
             }
             break;
           case 'first-update':
             // Only run on first run or pattern update
             if ($p->status && $p->enabled >= $p->updated) {
-              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on first run or update.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
+              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on first run or update.', array('%key' => $key + 1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
               continue 2;
             }
             break;
@@ -444,12 +445,11 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
         }
 
         $a = patterns_get_pattern_details($p, TRUE, $pids);
-        if($a === FALSE){ // TODO: error handling
-          
+        if ($a === FALSE) { // TODO: error handling
         }
         if (is_array($a) && empty($a)) {
           // An empty array is returned on infinite recursion detection
-          drupal_set_message(t('Action #%key in %file: Infinite recursion detected while attempting to run pattern %pattern.<br/>Pattern execution will try to continue without it.', array('%key' => $key+1, '%file' => $pattern->title, '%pattern' => $name)), 'warning');
+          drupal_set_message(t('Action #%key in %file: Infinite recursion detected while attempting to run pattern %pattern.<br/>Pattern execution will try to continue without it.', array('%key' => $key + 1, '%file' => $pattern->title, '%pattern' => $name)), 'warning');
           continue;
         }
         // we replace for tokens in the generated pattern
@@ -489,44 +489,44 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
 
 /**
  * Validates a pattern name
- * 
+ *
  * @param mixed $name
  */
-function patterns_parser_validate_pattern_name ($name = NULL) {
-  
+function patterns_parser_validate_pattern_name($name = NULL) {
+
   if (empty($name)) {
     return FALSE;
-  } 
-  
+  }
+
   $pattern = array('/\.[^\.]*$/', '/[^a-zA-Z0-9_]/');
   $replacement = array('', '_');
   $name = preg_replace($pattern, $replacement, basename($name));
-  
+
   $analysis = _patterns_parser_analyze_pattern_name($name);
   return (empty($analysis)) ? TRUE : FALSE;
 }
 
 /**
  * Analyze a pattern name and return an array of errors msgs
- * 
+ *
  * @param mixed $name
  */
-function _patterns_parser_analyze_pattern_name ($name = NULL) {
+function _patterns_parser_analyze_pattern_name($name = NULL) {
   $msgs = array();
-  
+
   if (empty($name)) {
-   $msgs[] = t('No pattern name provided.');
-   return $msgs;
+    $msgs[] = t('No pattern name provided.');
+    return $msgs;
   }
-  
+
   if (preg_match('/[^a-zA-Z0-9_]/', $name)) {
     $msgs[] = t('You can only include letters, numbers, and underscores in the pattern identifier.');
   }
-  
-  if(preg_match('/^_/', $name)) {
+
+  if (preg_match('/^_/', $name)) {
     $msgs[] = t('You cannot start the pattern identifier with an underscore.');
   }
-  
+
   return $msgs;
 }
 
@@ -534,29 +534,29 @@ function _patterns_parser_analyze_pattern_name ($name = NULL) {
 
 /**
  * Validate an XML file
- * 
+ *
  * TODO: test it
  * TODO: improve XML validator
  * Check that the xml was properly parsed and also that the
- */ 
-function patterns_parser_validate_xml_pattern ($content) {
-    
+ */
+function patterns_parser_validate_xml_pattern($content) {
+
   if (empty($content)) {
-    return FALSE; 
+    return FALSE;
   }
-  
+
   // Add XML tag if missing
   if (strpos($content, '<?xml') !== 0) {
-    $content = '<?xml version="1.0" encoding="UTF-8"?>' .$content;
+    $content = '<?xml version="1.0" encoding="UTF-8"?>' . $content;
   }
 
   $parse = drupal_xml_parser_create($content);
   $success = xml_parse_into_struct($parse, $content, $vals, $index);
-  
+
   if (!$success || !$vals || $vals[0]['tag'] != 'PATTERN' || $vals[1]['tag'] != 'INFO') {
-      return FALSE;
+    return FALSE;
   }
-  
+
   return TRUE;
 }
 

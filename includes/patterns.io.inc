@@ -10,7 +10,7 @@ function patterns_load_yaml($path, $local = TRUE) {
 
   if (!patterns_validate_pattern($pattern)) {
     return FALSE;
-}
+  }
 
   return $pattern;
 }
@@ -99,7 +99,7 @@ function patterns_from_source($xml) {
 }
 
 function patterns_rearrange_data($pattern) {
-  foreach($pattern as $key => $value) {
+  foreach ($pattern as $key => $value) {
     if (is_string($key)) {
       unset($pattern[$key]);
     }
@@ -119,15 +119,15 @@ function patterns_rearrange_data($pattern) {
 
 function _patterns_rearrange_data($data, $parent = '') {
   $numeric = array();
-  $count=0;
+  $count = 0;
 
-  foreach($data as $key => $value) {
+  foreach ($data as $key => $value) {
     if (isset($value['value'])) {
       if ($value['value'] == 'false') {
-        $value['value'] = false;
+        $value['value'] = FALSE;
       }
-      else if ($value['value'] == 'true') {
-        $value['value'] = true;
+      elseif ($value['value'] == 'true') {
+        $value['value'] = TRUE;
       }
     }
 
@@ -139,14 +139,14 @@ function _patterns_rearrange_data($data, $parent = '') {
         $data[$count++] = $value['value'];
         unset($data[$value['tag']]);
       }
-      else if (in_array($value['tag'], $numeric)) {
+      elseif (in_array($value['tag'], $numeric)) {
         $data[$count++] = $value['value'];
       }
       else {
         $data[$value['tag']] = $value['value'];
       }
     }
-    else if (is_numeric($key)) {
+    elseif (is_numeric($key)) {
       $tag = $value['tag'];
       unset($value['tag']);
       $data[$tag][] = _patterns_rearrange_data($value, $tag);
@@ -154,7 +154,7 @@ function _patterns_rearrange_data($data, $parent = '') {
     }
   }
 
-  foreach($data as $key => $value) {
+  foreach ($data as $key => $value) {
     if (is_array($value) && count($value) == 1 && $value[0]) {
       $data[$key] = $data[$key][0];
     }
@@ -234,10 +234,10 @@ function patterns_get_patterns($reset = TRUE) {
   if ($reset || !variable_get('patterns_loaded', FALSE)) {
     // Get a listing of enabled patterns
     $enabled = array();
-    
+
     $priority = array();
     $errors = array();
-    
+
     // Get list of directories to scan for patterns
     $patterns_paths = patterns_paths();
 
@@ -259,7 +259,7 @@ function patterns_get_patterns($reset = TRUE) {
 
         // choose appropriate function based on the file extension: YAML or XML
         $func = 'patterns_load_' . substr($file->filename, strlen($file->name) + 1);
-             
+
         // Load and save pattern
         if ($pattern = $func($file->uri)) {
           patterns_db_save_pattern($pattern, $file->uri, $file->name);
@@ -273,17 +273,19 @@ function patterns_get_patterns($reset = TRUE) {
     variable_set('patterns_loaded', time());
   }
 
-  
+
   $result = db_query('SELECT * FROM {patterns}');
-  
+
 
   $messages = array();
   $patterns = array();
 
   foreach ($result as $pattern) {
-  
+
     // skip pattern if its file is missing
-    if (!is_file($pattern->file)) continue;
+    if (!is_file($pattern->file)) {
+      continue;
+    }
 
     // skip pattern if loading failed and report that to the user
     if (in_array($pattern->file, $errors)) {
@@ -316,7 +318,7 @@ function _patterns_check_file_dir() {
   return FALSE;
   // Ste: was
   //$path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
-  
+
   // real_path(public) returns the path to the files dir
   $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_xml', 'patterns');
 
@@ -334,32 +336,32 @@ function _patterns_check_file_dir() {
  * Check if the patterns directory exist and is writable.
  */
 function _patterns_is_patterns_dir_ready() {
-  $patterns_files_dir = '/srv/http/dr7/sites/default/files' . "/" . variable_get('patterns_save_file', 'patterns');  // TODO: move this out for performance
+  $patterns_files_dir = '/srv/http/dr7/sites/default/files' . "/" . variable_get('patterns_save_file', 'patterns'); // TODO: move this out for performance
   return (file_prepare_directory($patterns_files_dir)) ? TRUE : FALSE;
 }
 
 /**
- * 
+ *
  * @param unknown_type $pattern
  * @param unknown_type $format
- * 
+ *
  * @TODO: move $format as an element of pattern, a column in the db
- * 
+ *
  */
-function patterns_io_save_pattern ($content, $name, $format = 'yaml') {
-  
+function patterns_io_save_pattern($content, $name, $format = 'yaml') {
+
   // System Patterns Directory
   $dir = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
-  
+
   if (file_prepare_directory($dir, TRUE)) {
     $path =  $dir . '/' . $name . '.' . $format;
 
     if (file_unmanaged_save_data($content, $path, FILE_EXISTS_REPLACE)) {
-  
+
       // Load and save pattern
-      $load_func = 'patterns_load_' . $format; 
-      
-      if ($pattern = $load_func($path)) {      
+      $load_func = 'patterns_load_' . $format;
+
+      if ($pattern = $load_func($path)) {
         patterns_db_save_pattern($pattern, $path, $name);
         drupal_set_message(t('%name was saved.', array('%name' => $name)));
         // Not for now
@@ -370,7 +372,7 @@ function patterns_io_save_pattern ($content, $name, $format = 'yaml') {
         return FALSE;
       }
     }
-    else{
+    else {
       drupal_set_message(t('Error: file could not be saved.'), 'error');
       return FALSE;
     }
@@ -384,7 +386,7 @@ function patterns_io_save_pattern ($content, $name, $format = 'yaml') {
   return TRUE;
 }
 
-function patterns_io_remove_pattern($path){
+function patterns_io_remove_pattern($path) {
   // TODO
 }
 

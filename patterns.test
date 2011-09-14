@@ -8,8 +8,8 @@
 class PatternsPrivilegesTestCase extends DrupalWebTestCase {
   public static function getInfo() {
     return array(
-      'name' => 'Test running simple patterns using Quick Run',
-      'description' => 'Tests if the Quick Run interface works as expected. Also, checks for some permissions.',
+      'name' => 'Test privileges.',
+      'description' => 'Test that only the ones with the right privileges can access Patterns.',
       'group' => 'Patterns',
     );
   }
@@ -31,7 +31,7 @@ class PatternsPrivilegesTestCase extends DrupalWebTestCase {
     // Login the patterns administrator.
     $this->drupalLogin($this->pat_user);
     $this->verifyAccess(200);
-    
+
     // Login a regular user.
     $this->drupalLogin($this->std_user);
     $this->verifyAccess(403);
@@ -59,7 +59,7 @@ class PatternsPrivilegesTestCase extends DrupalWebTestCase {
  */
 abstract class PatternRunTestCase extends DrupalWebTestCase {
 
-	public function setUp() {
+  public function setUp() {
     // Enable any modules required for the tests.
     parent::setUp('patterns');
     // TODO: how to ensure that Spyc is installed?
@@ -72,12 +72,12 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
     $patterntext = $this->loadPattern($filename);
     $this->runTest($patterntext, $name);
   }
-  
+
   function runTest($pattern, $name) {
     // Login the patterns administrator.
-  	$this->drupalLogin($this->pat_user);
-  	$this->quickRun($pattern, $name, 'php');
-  	// TODO: Only run one mode in order to avoid duplicates, for now.
+    $this->drupalLogin($this->pat_user);
+    $this->quickRun($pattern, $name, 'php');
+    // TODO: Only run one mode in order to avoid duplicates, for now.
     //$this->quickRun($pattern, 'batch');
   }
 
@@ -85,7 +85,7 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
    * Runs a pattern through the Quick Run interface.
    */
   function quickRun($pattern, $name, $mode = 'php', $valid = TRUE) {
-  	// Fill the form.
+    // Fill the form.
     $edit = array();
     $edit['format'] = 'yaml'; // TODO
     $edit['mode'] = $mode;
@@ -99,11 +99,12 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
       // TODO: should this text appear exactly once?
       $this->assertText(t('Pattern "@pattern" ran successfully.', array('@pattern' => $name)), 'Valid pattern runs without errors.');
       $this->assertNoText(t('Error(s) while processing pattern:'), 'Valid pattern does not produce errors.');
-    } else {
+    }
+    else {
       // TODO: should this text appear exactly once?
-  		$this->assertText(t('Error(s) while processing pattern:'), 'Invalid pattern produces errors.');
+      $this->assertText(t('Error(s) while processing pattern:'), 'Invalid pattern produces errors.');
       $this->assertNoText(t('Pattern "@pattern" ran successfully.', array('@pattern' => $name)), 'Invalid pattern does not run without errors.');
-  	}
+    }
 
   }
   /*
@@ -111,26 +112,26 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
    * @filename The name of the pattern file.
    */
   function loadPattern($filename) {
-  	return file_get_contents(drupal_get_path('module', 'patterns') . '/patterns/' . $filename);
+    return file_get_contents(drupal_get_path('module', 'patterns') . '/patterns/' . $filename);
   }
 }
 
 class PatternsModuleComponent extends PatternRunTestCase {
 
-	static function getInfo() {
+  static function getInfo() {
     return array(
       'name' => 'Test the Modules component.',
       'description' => 'Enable and disable modules.',
       'group' => 'Patterns',
     );
-	}
+  }
 
-	/*
-	 * Check the database if a module is enabled/disabled.
-	 * @name Module name
-	 * @enabled TRUE iff the module should be enabled.
-	 */
-	private function assertModule($name, $enabled = TRUE) {
+  /*
+   * Check the database if a module is enabled/disabled.
+   * @name Module name
+   * @enabled TRUE iff the module should be enabled.
+   */
+  private function assertModule($name, $enabled = TRUE) {
     $forum = db_select('system', 's')
       ->fields('s', array('name'))
       ->condition('name', $name)
@@ -138,11 +139,11 @@ class PatternsModuleComponent extends PatternRunTestCase {
       ->condition('status', $enabled ? '1' : '0')
       ->execute()
       ->rowCount();
-    $this->assertEqual($forum, 1, $message= 'The ' . $name . ' module should ' . ($enabled ? '' : 'not ') . 'be enabled.');
-	}
+    $this->assertEqual($forum, 1, $message = 'The ' . $name . ' module should ' . ($enabled ? '' : 'not ') . 'be enabled.');
+  }
 
-	public function testEnableDisable() {
-		// Check for modules before running the pattern.
+  public function testEnableDisable() {
+    // Check for modules before running the pattern.
     $this->assertModule('aggregator', FALSE);
     $this->assertModule('forum', FALSE);
     $this->assertModule('overlay', TRUE);
@@ -165,7 +166,7 @@ class PatternsModuleComponent extends PatternRunTestCase {
     $this->assertModule('forum', TRUE);
     $this->assertModule('overlay', FALSE);
     $this->assertModule('number', TRUE);
-	}
+  }
 }
 // TODO: Create more test cases
 

@@ -12,7 +12,7 @@ function system_patterns() {
 
   $files = array('modules/system/system.admin.inc');
 
-  $actions['modules'] = array('descr' => t('Enable/Disable Modules'), 
+  $actions['modules'] = array('descr' => t('Enable/Disable Modules'),
     PATTERNS_CREATE => array(),
     PATTERNS_DELETE => array(),
     'files'  => $files,

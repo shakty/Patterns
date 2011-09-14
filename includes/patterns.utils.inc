@@ -3,9 +3,9 @@
 
 define('PATTERNS_FAILED_EDIT', 'patterns_failed_edit');
 
-function _patterns_clear_failed_edit(){
-	variable_del(PATTERNS_FAILED_EDIT);
-	return true;
+function _patterns_clear_failed_edit() {
+  variable_del(PATTERNS_FAILED_EDIT);
+  return true;
 }
 
 /**
@@ -128,11 +128,11 @@ function patterns_modules_page($pid) {
     $row[] = $available ? t('Yes') : '<span class="alert">' . t('No') . '</span>';
     $row[] = $enabled ? t('Yes') : '<span class="alert">' . t('No') . '</span>';
     $row[] = $delete ? t('Delete') : t('Enable');
-    
+
     // Ste: was
     //$rows[] = $row;
     $rows['data'] = $row;
-        
+
     if (!$available) {
       $not_available = TRUE;
     }
@@ -149,7 +149,7 @@ function patterns_modules_page($pid) {
   //return theme('table', array(t('Name'), t('Available'), t('Enabled'), t('Pattern Action')), $rows, t('Modules used for this pattern'));
   $header = array(t('Name'), t('Available'), t('Enabled'), t('Pattern Action'));
   return theme('table', array('header' => $header, 'rows' => $rows, 'caption' => 'Modules used for this pattern')); //
-  
+
 }
 
 /**
@@ -167,20 +167,24 @@ function patterns_execute_config($module) {
 
   // since this function is called from hook_enable(), we need to ensure that
   // it's executed only at module installation (first time module is enabled)
-  if (drupal_get_installed_schema_version($module) == SCHEMA_INSTALLED) return;
+  if (drupal_get_installed_schema_version($module) == SCHEMA_INSTALLED) {
+    return;
+  }
 
   $path = drupal_get_path('module', $module) . '/' . $module . '.config';
 
   if (file_exists($path)) {
     include_once($path);
 
-    if (empty($actions)) return;
+    if (empty($actions)) {
+      return;
+    }
 
     $pattern = new stdClass();
     $pattern->title = t('Default configuration for @module module', array('@module' => $module));
     $pattern->status = FALSE;
     $pattern->pattern['actions'] = $actions;
-    
+
     return patterns_start_engine($pattern);
   }
 }
@@ -250,13 +254,15 @@ function patterns_feed() {
 
 /**
  * Install required modules for executing the pattern.
- * 
+ *
  * @param array $modules
  */
 function patterns_install_modules(&$modules) {
   $result = array('success' => TRUE);
 
-  if (empty($modules)) return $result;
+  if (empty($modules)) {
+    return $result;
+  }
 
   $missing = patterns_check_module_dependencies($modules, TRUE);
   if (!empty($missing)) {
@@ -289,12 +295,14 @@ function patterns_install_modules(&$modules) {
  */
 function patterns_check_module_dependencies(&$modules, $update_list = FALSE) {
 
-  if (empty($modules)) return array();
+  if (empty($modules)) {
+    return array();
+  }
 
   // Ste: was
   //$modules_info = module_rebuild_cache();
   $modules_info = system_rebuild_module_data();
-  
+
   $result = array();
   $dependencies = array();
 
@@ -356,11 +364,11 @@ function _patterns_replace_tokens(&$a, &$b, $identifiers = array()) {
   // Ste: was
   //$a = token_replace($a, 'global', NULL, '@', '@');
   //$b = token_replace($b, 'global', NULL, '__', '__');\
-  
+
   //$a = token_replace($a, 'global', NULL, '@', '@');
   //$b = token_replace($b, 'global', NULL, '__', '__');
-  
-  
+
+
 }
 
 /**
@@ -389,9 +397,9 @@ function _patterns_recurse_tokens(&$object, $identifiers) {
 
 
 /**
- * 
+ *
  * @TODO: find a suitable place for this, and check who is calling it
- * 
+ *
  * @param unknown_type $b
  */
 function patterns_executing($b = NULL) {
@@ -428,43 +436,43 @@ function _get_file_phpdoc_version($path) {
 /**
  * Helper function to create the associative array of returned values from
  * an invoked function.
- * 
+ *
  * @param mixed $status One of [PATTERNS_SUCCESS, PATTERNS_WARN, PATTERNS_ERR]. Required.
  * @param array $msg A message.
  * @param mixed $result Any kind of additional data.
  */
 function patterns_results($status = PATTERNS_SUCCESS, $msg = 'Execution successful', $result = NULL) {
   // TODO: t($msg)
-  return array( 'status' => $status,
+  return array('status' => $status,
                 'msg' => $msg,
                 'result' => $result,
               );
 }
 /**
  * Check if a (supposedly) array is actually correctly formatted as a patterns_results
- * 
+ *
  * @param mixed $results the array to check;
- * 
+ *
  * @return TRUE if correct, FALSE otherwise
  */
-function _patterns_is_patterns_results ($results) {
-  
+function _patterns_is_patterns_results($results) {
+
   // It is the only mandatory field
-  if (!isset($results['status'])){  
+  if (!isset($results['status'])) {
     return FALSE;
   }
- 
+
   return TRUE;
 }
 
 /**
  * Returns an array of allowed actions, as defined in patterns.module
- * 
+ *
  * @return array Allowed actions
  */
 function patterns_actions() {
-  return array( PATTERNS_CREATE => PATTERNS_CREATE, 
-                PATTERNS_MODIFY => PATTERNS_MODIFY, 
+  return array(PATTERNS_CREATE => PATTERNS_CREATE,
+                PATTERNS_MODIFY => PATTERNS_MODIFY,
                 PATTERNS_DELETE => PATTERNS_DELETE,
                );
 }

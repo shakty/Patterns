@@ -2,14 +2,14 @@
 /*
  * @file
  * A simple, sequential version of running patterns.
- * 
+ *
  */
 
 
 /**
- * 
+ *
  * Execute a Pattern. Actions will be called sequentially.
- * 
+ *
  * @param stdClass $pattern Pattern object as loaded by patterns_get_pattern()
  * @param array $params Parameters for executing the pattern. Array format as follows:
  * pid => Pid of the pattern as it is in the database.
@@ -18,12 +18,12 @@
  * and the pattern is already loaded into $pattern.
  */
 function patterns_execute_pattern_php($pattern, $params, $patterns_details, $actions_map) {
-	$pattern_details = current($patterns_details);
+  $pattern_details = current($patterns_details);
   $pid = key($patterns_details);
 
-	$info = $pattern_details['info'];
+  $info = $pattern_details['info'];
   $infos = array($pid => $info);
-  
+
   $modules = $pattern_details['modules'];
   $sections = $pattern_details['sections'];
   ///////////////////////////////
@@ -34,7 +34,7 @@ function patterns_execute_pattern_php($pattern, $params, $patterns_details, $act
     // $actions passed as reference
     $results = patterns_prepare_actions($actions, $actions_map);
 
-    if (!patterns_error_check_results($results)){
+    if (!patterns_error_check_results($results)) {
       return $results;
     }
     $i = 0;
@@ -42,9 +42,9 @@ function patterns_execute_pattern_php($pattern, $params, $patterns_details, $act
       $results = patterns_php_actions($action, $data, $i, $actions_map);
       if (!patterns_error_check_results($results)) {
         drupal_set_message(t('Pattern "@pattern" ran with errors. Check the error messages to get more details.', array('@pattern' => $info['title'])));
-      	break;
+        break;
       }
-      else{
+      else {
         drupal_set_message(t('Pattern "@pattern" ran successfully.', array('@pattern' => $info['title'])));
         $query_params = array('en' => time(), 'pid' => $pid); // Note: time() != $_SERVER['REQUEST_TIME']
         db_query("UPDATE {patterns} SET status = 1, enabled = :en WHERE pid = :pid", $query_params);
@@ -60,12 +60,12 @@ function patterns_execute_pattern_php($pattern, $params, $patterns_details, $act
 
 
 /**
- * 
+ *
  * Execute a single pattern action.
- * 
+ *
  * @TODO improve documentation
- * 
- * 
+ *
+ *
  * @param array $action
  * @param mixed $place index of the current operation within the batch_set
  * @param array $actions_map [$pid pattern id, $index ??]
