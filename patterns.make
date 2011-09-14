@@ -21,7 +21,7 @@ projects[] = libraries
 projects[patterns][type] = "module"
 projects[patterns][download][type] = "git"
 projects[patterns][download][url] = "http://git.drupal.org/project/patterns.git"
-rojects[patterns][download][branch] = "7.x-1.x"
+projects[patterns][download][branch] = "7.x-1.x"
 
 ; Libraries
 ; ---------
