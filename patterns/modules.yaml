@@ -15,7 +15,8 @@ actions:
 
   create:
       tag: modules
-      - value: blog
+      - value: forum
+      - value: number
 
 # TODO: this is not working as expected
 #  - tag: modules
@@ -25,7 +26,6 @@ actions:
   delete:
       tag: modules
       - value: admin_menu
-      - value: blog
-      - value: forum
+      - value: overlay
+      - value: aggregator
 
- 

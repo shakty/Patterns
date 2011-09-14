@@ -68,20 +68,26 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
     $this->pat_user = $this->drupalCreateUser(array('administer patterns'));
   }
 
-  function runTest($pattern) {
+  function runFile($filename, $name) {
+    $patterntext = $this->loadPattern($filename);
+    $this->runTest($patterntext, $name);
+  }
+  
+  function runTest($pattern, $name) {
     // Login the patterns administrator.
   	$this->drupalLogin($this->pat_user);
-  	$this->quickRun($pattern, 'php');
-    $this->quickRun($pattern, 'batch');
+  	$this->quickRun($pattern, $name, 'php');
+  	// TODO: Only run one mode in order to avoid duplicates, for now.
+    //$this->quickRun($pattern, 'batch');
   }
 
   /*
    * Runs a pattern through the Quick Run interface.
    */
-  function quickRun($pattern, $mode = 'php', $valid = TRUE) {
+  function quickRun($pattern, $name, $mode = 'php', $valid = TRUE) {
   	// Fill the form.
     $edit = array();
-    $edit['format'] = 'yaml';
+    $edit['format'] = 'yaml'; // TODO
     $edit['mode'] = $mode;
     $edit['content'] = $pattern;
 
@@ -90,11 +96,22 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
 
     if ($valid) {
       // Check for a valid syntax run.
-      $this->assertText(t('Pattern "@pattern" ran successfully.', array('@pattern' => 'Enable/disable modules')), 'Valid pattern runs without errors.');
-  	} else {
-      $this->assertText(t('Error(s) while processing pattern:'), 'Invalid pattern produces errors.');
+      // TODO: should this text appear exactly once?
+      $this->assertText(t('Pattern "@pattern" ran successfully.', array('@pattern' => $name)), 'Valid pattern runs without errors.');
+      $this->assertNoText(t('Error(s) while processing pattern:'), 'Valid pattern does not produce errors.');
+    } else {
+      // TODO: should this text appear exactly once?
+  		$this->assertText(t('Error(s) while processing pattern:'), 'Invalid pattern produces errors.');
+      $this->assertNoText(t('Pattern "@pattern" ran successfully.', array('@pattern' => $name)), 'Invalid pattern does not run without errors.');
   	}
 
+  }
+  /*
+   * Loads a pattern text file from patterns/patterns/.
+   * @filename The name of the pattern file.
+   */
+  function loadPattern($filename) {
+  	return file_get_contents(drupal_get_path('module', 'patterns') . '/patterns/' . $filename);
   }
 }
 
@@ -107,42 +124,48 @@ class PatternsModuleComponent extends PatternRunTestCase {
       'group' => 'Patterns',
     );
 	}
+
+	/*
+	 * Check the database if a module is enabled/disabled.
+	 * @name Module name
+	 * @enabled TRUE iff the module should be enabled.
+	 */
+	private function assertModule($name, $enabled = TRUE) {
+    $forum = db_select('system', 's')
+      ->fields('s', array('name'))
+      ->condition('name', $name)
+      ->condition('type', 'module')
+      ->condition('status', $enabled ? '1' : '0')
+      ->execute()
+      ->rowCount();
+    $this->assertEqual($forum, 1, $message= 'The ' . $name . ' module should ' . ($enabled ? '' : 'not ') . 'be enabled.');
+	}
+
 	public function testEnableDisable() {
-		    $module_pattern1 = <<<EOD
-# YAML Modules Pattern
-# QScience
+		// Check for modules before running the pattern.
+    $this->assertModule('aggregator', FALSE);
+    $this->assertModule('forum', FALSE);
+    $this->assertModule('overlay', TRUE);
+    $this->assertModule('number', TRUE);
 
-info:
-  title: Enable/disable modules
-  description: Based on http://drupal.org/node/408960
-  author: QScience
-  category: QScience
-  version: 1.0
-  core: 7.x
-  author_email: sbalietti@ethz.ch
-  author_website: qscience.csko.hu
+    // Run the pattern.
+    parent::runFile('modules.yaml', 'Enable/disable modules');
 
-actions: 
+    // Expected messages.
+    $this->assertText(t('Module(s) forum, number enabled. No modules have been disabled.'), 'The forum module should get enabled.');
+    // TODO: some of these will fail because of an error in the engine (running multiple tags).
+    $this->assertText(t('No modules have been enabled. Module(s) overlay disabled.'), 'The overlay module should get disabled.');
+    $this->assertText(t('Warning: Could not disable admin_menu because it is missing.'), 'Disabling a missing module gives a warning.');
+    $this->assertText(t('Warning: Did not disable aggregator because it is already disabled.'), 'Disabling a disabled module gives a warning.');
+    $this->assertText(t('Warning: Did not enable number because it is already enabled.'), 'Enabling an enabled module gives a warning.');
 
-  create:
-      tag: modules
-      - value: blog
-
-# TODO: this is not working as expected
-#  - tag: modules
-#     value: blog
-#     delete: 1
-
-  delete:
-      tag: modules
-      - value: admin_menu
-      - value: blog
-      - value: forum
-
- 
-EOD;
-    parent::runTest($module_pattern1);
-	} 
+    // Check for modules after running the pattern.
+    // TODO: it might be good to check if every other module is left untouched.
+    $this->assertModule('aggregator', FALSE);
+    $this->assertModule('forum', TRUE);
+    $this->assertModule('overlay', FALSE);
+    $this->assertModule('number', TRUE);
+	}
 }
 // TODO: Create more test cases
 
