@@ -5,7 +5,7 @@
  * SimpleTests for Patterns.
  */
 
-class PatternsTestCase extends DrupalWebTestCase {
+class PatternsPrivilegesTestCase extends DrupalWebTestCase {
   public static function getInfo() {
     return array(
       'name' => 'Test running simple patterns using Quick Run',
@@ -52,10 +52,63 @@ class PatternsTestCase extends DrupalWebTestCase {
     // TODO: verify other pages
 
   }
+}
 
-  public function testQuickRun($mode = 'php') {
-    // TODO: find a better place for this.
-    $module_pattern1 = <<<EOD
+/*
+ * Abstract base class for testing pattern component behavior.
+ */
+abstract class PatternRunTestCase extends DrupalWebTestCase {
+
+	public function setUp() {
+    // Enable any modules required for the tests.
+    parent::setUp('patterns');
+    // TODO: how to ensure that Spyc is installed?
+
+    // Create users.
+    $this->pat_user = $this->drupalCreateUser(array('administer patterns'));
+  }
+
+  function runTest($pattern) {
+    // Login the patterns administrator.
+  	$this->drupalLogin($this->pat_user);
+  	$this->quickRun($pattern, 'php');
+    $this->quickRun($pattern, 'batch');
+  }
+
+  /*
+   * Runs a pattern through the Quick Run interface.
+   */
+  function quickRun($pattern, $mode = 'php', $valid = TRUE) {
+  	// Fill the form.
+    $edit = array();
+    $edit['format'] = 'yaml';
+    $edit['mode'] = $mode;
+    $edit['content'] = $pattern;
+
+    // Post the form.
+    $this->drupalPost('admin/patterns/quickrun', $edit, t('Run'));
+
+    if ($valid) {
+      // Check for a valid syntax run.
+      $this->assertText(t('Pattern "@pattern" ran successfully.', array('@pattern' => 'Enable/disable modules')), 'Valid pattern runs without errors.');
+  	} else {
+      $this->assertText(t('Error(s) while processing pattern:'), 'Invalid pattern produces errors.');
+  	}
+
+  }
+}
+
+class PatternsModuleComponent extends PatternRunTestCase {
+
+	static function getInfo() {
+    return array(
+      'name' => 'Test the Modules component.',
+      'description' => 'Enable and disable modules.',
+      'group' => 'Patterns',
+    );
+	}
+	public function testEnableDisable() {
+		    $module_pattern1 = <<<EOD
 # YAML Modules Pattern
 # QScience
 
@@ -88,26 +141,8 @@ actions:
 
  
 EOD;
-    // Login the patterns administrator.
-    $this->drupalLogin($this->pat_user);
-
-  	// Check for an invalid syntax run.
-    $edit = array();
-    $edit['format'] = 'yaml';
-    $edit['mode'] = $mode;
-    $edit['content'] = 'pattern with invalid syntax';
-    $this->drupalPost('admin/patterns/quickrun', $edit, t('Run'));
-    $this->assertText(t('Error(s) while processing pattern:'), 'Invalid pattern produces errors.');
-
-    // Check for a valid syntax run.
-    $edit2 = array();
-    $edit2['format'] = 'yaml';
-    $edit2['mode'] = $mode;
-    $edit2['content'] = $module_pattern1;
-    $this->drupalPost('admin/patterns/quickrun', $edit2, t('Run'));
-    $this->assertText(t('Pattern "@pattern" ran successfully.', array('@pattern' => 'Enable/disable modules')), 'Valid pattern runs without errors.');
-    
-  }
-
-  // TODO: Create test cases
+    parent::runTest($module_pattern1);
+	} 
 }
+// TODO: Create more test cases
+
