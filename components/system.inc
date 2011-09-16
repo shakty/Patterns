@@ -214,7 +214,7 @@ function system_patterns_validate($action, $tag, &$data = NULL) {
       $result = array();
       foreach ($data as $key => $item) {
         if (!in_array($key, $remove)) {
-          $result[$key] = $item;
+          $result[] = $item;
         }
       }
       $data = $result;
