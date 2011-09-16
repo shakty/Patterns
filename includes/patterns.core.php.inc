@@ -38,18 +38,20 @@ function patterns_execute_pattern_php($pattern, $params, $patterns_details, $act
       return $results;
     }
     $i = 0;
+    $success = TRUE;
     foreach ($actions as $action => $data) {
       $results = patterns_php_actions($action, $data, $i, $actions_map);
       if (!patterns_error_check_results($results)) {
         drupal_set_message(t('Pattern "@pattern" ran with errors. Check the error messages to get more details.', array('@pattern' => $info['title'])));
+        $success = FALSE;
         break;
       }
-      else {
-        drupal_set_message(t('Pattern "@pattern" ran successfully.', array('@pattern' => $info['title'])));
-        $query_params = array('en' => time(), 'pid' => $pid); // Note: time() != $_SERVER['REQUEST_TIME']
-        db_query("UPDATE {patterns} SET status = 1, enabled = :en WHERE pid = :pid", $query_params);
-      }
       $i++;
+    }
+    if ($success) {
+      drupal_set_message(t('Pattern "@pattern" ran successfully.', array('@pattern' => $info['title'])));
+      $query_params = array('en' => time(), 'pid' => $pid); // Note: time() != $_SERVER['REQUEST_TIME']
+      db_query("UPDATE {patterns} SET status = 1, enabled = :en WHERE pid = :pid", $query_params);
     }
   }
   drupal_flush_all_caches();

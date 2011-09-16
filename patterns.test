@@ -78,7 +78,7 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
     $this->drupalLogin($this->pat_user);
     $this->quickRun($pattern, $name, 'php');
     // TODO: Only run one mode in order to avoid duplicates, for now.
-    //$this->quickRun($pattern, 'batch');
+    //$this->quickRun($pattern, $name, 'batch');
   }
 
   /*
@@ -96,13 +96,11 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
 
     if ($valid) {
       // Check for a valid syntax run.
-      // TODO: should this text appear exactly once?
-      $this->assertText(t('Pattern "@pattern" ran successfully.', array('@pattern' => $name)), 'Valid pattern runs without errors.');
+      $this->assertUniqueText(t('Pattern "@pattern" ran successfully.', array('@pattern' => $name)), 'Valid pattern runs without errors.');
       $this->assertNoText(t('Error(s) while processing pattern:'), 'Valid pattern does not produce errors.');
     }
     else {
-      // TODO: should this text appear exactly once?
-      $this->assertText(t('Error(s) while processing pattern:'), 'Invalid pattern produces errors.');
+      $this->assertUniqueText(t('Error(s) while processing pattern:'), 'Invalid pattern produces errors.');
       $this->assertNoText(t('Pattern "@pattern" ran successfully.', array('@pattern' => $name)), 'Invalid pattern does not run without errors.');
     }
 
@@ -116,11 +114,11 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
   }
 }
 
-class PatternsModuleComponent extends PatternRunTestCase {
+class PatternsSystemComponent extends PatternRunTestCase {
 
   static function getInfo() {
     return array(
-      'name' => 'Test the Modules component.',
+      'name' => 'Test the System component.',
       'description' => 'Enable and disable modules.',
       'group' => 'Patterns',
     );
