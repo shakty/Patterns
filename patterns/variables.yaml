@@ -2,7 +2,7 @@
 # QScience
 
 info:
-  title: Set variables
+  title: Create and delete variables
   description: Based on http://drupal.org/node/409180
   author: QScience
   category: QScience
@@ -14,25 +14,21 @@ info:
 actions: 
   create:
      tag: variables
-       - variable
-         name: votingapi_anonymous_window
-         value: 3600
-       - variable
-         name: fivestar_widget
-         value: sites/all/modules/fivestar/widgets/craft/craft.css
+     - variable
+       name: votingapi_anonymous_window
+       value: 3600
+     - variable
+       name: fivestar_widget
+       value: sites/all/modules/fivestar/widgets/craft/craft.css
 
   delete:
      tag: variables
-       - variable
-         name: votingapi_anonymous_window
+     - variable
+       name: user_pictures
 
-
-
-#    <variables>
-#        <variable name="votingapi_anonymous_window">3600</variable>
-#        <variable name="fivestar_widget">
-#              sites/all/modules/fivestar/widgets/craft/craft.css
-#        </variable>
-#        <variable name="cache_lifetime">21600</variable>
-#    </variables>      
-#  </actions>
+#    <variable name="theme_settings">
+#      <toggle_node_info_page>0</toggle_node_info_page>
+#      <toggle_node_info_example>0</toggle_node_info_example>
+#      <toggle_node_info_blog>1</toggle_node_info_blog>
+#      <toggle_favicon>0</toggle_favicon>
+#    </variable>

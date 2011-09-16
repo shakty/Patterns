@@ -33,9 +33,9 @@ function system_patterns() {
   ); // TODO: Don't run through form.
 
   $actions['variables'] = array('descr'  => t('Set/Modify/Delete System Variables'), 
-    PATTERNS_CREATE => array(''),
-    PATTERNS_MODIFY => array(''), // TODO: ??
-    PATTERNS_DELETE => array(''),
+    PATTERNS_CREATE => array(),
+    PATTERNS_MODIFY => array(), // TODO: ??
+    PATTERNS_DELETE => array(),
   );
 
   $actions['variable'] = $actions['variables']; // Alias

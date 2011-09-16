@@ -140,7 +140,7 @@ class PatternsSystemComponent extends PatternRunTestCase {
     $this->assertEqual($forum, 1, $message = 'The ' . $name . ' module should ' . ($enabled ? '' : 'not ') . 'be enabled.');
   }
 
-  public function testEnableDisable() {
+  public function testModules() {
     // Check for modules before running the pattern.
     $this->assertModule('aggregator', FALSE);
     $this->assertModule('forum', FALSE);
@@ -151,12 +151,12 @@ class PatternsSystemComponent extends PatternRunTestCase {
     parent::runFile('modules.yaml', 'Enable/disable modules');
 
     // Expected messages.
-    $this->assertText(t('Module(s) forum, number enabled. No modules have been disabled.'), 'The forum module should get enabled.');
+    $this->assertUniqueText(t('Module(s) forum, number enabled. No modules have been disabled.'), 'The forum module should get enabled.');
     // TODO: some of these will fail because of an error in the engine (running multiple tags).
-    $this->assertText(t('No modules have been enabled. Module(s) overlay disabled.'), 'The overlay module should get disabled.');
-    $this->assertText(t('Warning: Could not disable admin_menu because it is missing.'), 'Disabling a missing module gives a warning.');
-    $this->assertText(t('Warning: Did not disable aggregator because it is already disabled.'), 'Disabling a disabled module gives a warning.');
-    $this->assertText(t('Warning: Did not enable number because it is already enabled.'), 'Enabling an enabled module gives a warning.');
+    $this->assertUniqueText(t('No modules have been enabled. Module(s) overlay disabled.'), 'The overlay module should get disabled.');
+    $this->assertUniqueText(t('Warning: Could not disable admin_menu because it is missing.'), 'Disabling a missing module gives a warning.');
+    $this->assertUniqueText(t('Warning: Did not disable aggregator because it is already disabled.'), 'Disabling a disabled module gives a warning.');
+    $this->assertUniqueText(t('Warning: Did not enable number because it is already enabled.'), 'Enabling an enabled module gives a warning.');
 
     // Check for modules after running the pattern.
     // TODO: it might be good to check if every other module is left untouched.
@@ -165,6 +165,35 @@ class PatternsSystemComponent extends PatternRunTestCase {
     $this->assertModule('overlay', FALSE);
     $this->assertModule('number', TRUE);
   }
+
+  public function testVariables(){
+    // Check for variables before running the pattern.
+    /* debug(db_select('variable', 'v')
+        ->fields('v', array('name'))
+        ->execute()
+        ->fetchAll());
+    */
+    $this->assertNotEqual(variable_get('user_pictures', NULL), NULL, 'user_pictures variable should be set.');
+    $this->assertEqual(variable_get('votingapi_anonymous_window', NULL), NULL, 'votingapi_anonymous_window variable should not be set.');
+    $this->assertEqual(variable_get('fivestar_widget', NULL), NULL, 'fivestar_widget variable should not be set.');
+    
+    // Run the pattern.
+    parent::runFile('variables.yaml', 'Create and delete variables');
+
+    $this->assertUniqueText(t('Variable(s) votingapi_anonymous_window, fivestar_widget updated.'), 'The votingapi_anonymous_window, fivestar_widget variables should get updated.');
+    $this->assertUniqueText(t('Variable(s) user_pictures updated.'), 'The user_pictures variable should get updated.');
+    
+   
+    // Check for variables after running the pattern.
+    $this->assertEqual(variable_get('user_pictures', NULL), NULL, 'user_pictures variable should not be set.');
+    $this->assertIdentical(variable_get('votingapi_anonymous_window', NULL), 3600, 'votingapi_anonymous_window variable should be set properly.');
+    $this->assertIdentical(variable_get('fivestar_widget', NULL), 'sites/all/modules/fivestar/widgets/craft/craft.css', 'fivestar_widget variable should be set properly.');
+    /* debug(db_select('variable', 'v')
+        ->fields('v', array('name'))
+        ->execute()
+        ->fetchAll());
+    */
+    }
 }
 // TODO: Create more test cases
 
