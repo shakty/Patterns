@@ -76,7 +76,7 @@ function taxonomy_patterns_prepare($action, $tag, &$data = NULL) {
 }  
 
 // Validate the values for an action before running the pattern
-function taxonomy_patterns_validate ($action, $tag, &$data = NULL) {
+function taxonomy_patterns_validate($action, $tag, &$data = NULL) {
   
     $status = PATTERNS_SUCCESS;
     $msg = '';

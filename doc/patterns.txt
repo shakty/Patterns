@@ -134,7 +134,7 @@ you must create a 'component', much like a driver software. The main components
 reside in *+patterns/components/+*, although modules can use the *+hook_patterns_components+* hook
 to expand the set of supported components.
 
-You need to implement at most 6 pattern hooks, as here explained in the same
+You need to implement at most 7 pattern hooks, as here explained in the same
 order as they are being called by Patterns module. For examples, see the *+block.inc+*, *+system.inc+*, *+taxonomy.inc+*.
 
 *******************************************************************
@@ -145,6 +145,9 @@ order as they are being called by Patterns module. For examples, see the *+block
 * *+hook_patterns_prepare($action, $tag, &$data)+*: checks the input and adds default
  values. Eventually, it can raise errors which halt further execution
  of the pattern.
+
+* *+hook_patterns_validate($action, $tag, &$data)+*: this hooks is similar to the previous one, however,
+you are working with the prepared data and you are checking against the database.
 
 * *+hook_patterns_callbacks($action, $tag, &$data)+*: returns the array of form ID's which will be run
  sequentially.

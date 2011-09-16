@@ -590,9 +590,6 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
   return $fun($pattern, $params, $patterns_details, $actions_map);
 }
 
-// @TODO: Take care of updating all the methods: the order of the parameters
-// $op and &$data have been switched
-
 // @TODO: Take care patterns_invoke does not return any more the tagmodules index
 // use patterns_get_tagmodules_index() instead.
 
@@ -627,7 +624,7 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
   $func = $module . '_patterns_' . $hook;
 
   if (function_exists($func)) {
-    if ($form_id) {
+    if ($form_id) { // We are past hook_patterns_build
       $return = $func($action, $form_id, $data, $a);
     }
     else {

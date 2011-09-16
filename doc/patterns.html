@@ -880,7 +880,7 @@ executes the tasks in a single PHP run. In this case, debugging can be easier.</
 you must create a <em>component</em>, much like a driver software. The main components
 reside in <strong><tt>patterns/components/</tt></strong>, although modules can use the <strong><tt>hook_patterns_components</tt></strong> hook
 to expand the set of supported components.</p></div>
-<div class="paragraph"><p>You need to implement at most 6 pattern hooks, as here explained in the same
+<div class="paragraph"><p>You need to implement at most 7 pattern hooks, as here explained in the same
 order as they are being called by Patterns module. For examples, see the <strong><tt>block.inc</tt></strong>, <strong><tt>system.inc</tt></strong>, <strong><tt>taxonomy.inc</tt></strong>.</p></div>
 <div class="sidebarblock">
 <div class="content">
@@ -897,6 +897,12 @@ order as they are being called by Patterns module. For examples, see the <strong
 <strong><tt>hook_patterns_prepare($action, $tag, &amp;$data)</tt></strong>: checks the input and adds default
  values. Eventually, it can raise errors which halt further execution
  of the pattern.
+</p>
+</li>
+<li>
+<p>
+<strong><tt>hook_patterns_validate($action, $tag, &amp;$data)</tt></strong>: this hooks is similar to the previous one, however,
+you are working with the prepared data and you are checking against the database.
 </p>
 </li>
 <li>
@@ -1115,7 +1121,7 @@ TODO: Handle administration themes separately.</p></td>
 <div id="footer">
 <div id="footer-text">
 Version 0.2<br />
-Last updated 2011-09-12 21:34:04 CEST
+Last updated 2011-09-16 23:36:47 CEST
 </div>
 </div>
 </body>

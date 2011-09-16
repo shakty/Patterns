@@ -35,7 +35,8 @@ function patterns_prepare_actions(&$actions, $actions_map) {
     patterns_invoke('prepare', $key, $data);
   }
 
-  // @TODO: do we need two foreach?
+  // @TODO: Do we need two foreaches? Not sure if prepare and validate could be merged.
+  //        Maybe they were required to be separate when we used to have subpatterns.
   foreach ($actions as $key => &$data) {
 
     /////////////////////////////////////////////////////////
@@ -51,7 +52,7 @@ function patterns_prepare_actions(&$actions, $actions_map) {
     $pattern_title = $pattern_info['title'];
 
     if (!array_key_exists($data['tag'], $tag_modules)) {
-      // TODO: $index is undefined.
+      // TODO: Use $index when there are multiple patterns again.
       $errors[] = t('Action #%num (%tag) in pattern %title: <%tag> is not a valid tag', array('%num' => $index + 1, '%tag' => $data['tag'], '%title' => $pattern_title));
     }
     else {
@@ -61,7 +62,7 @@ function patterns_prepare_actions(&$actions, $actions_map) {
       $results = patterns_invoke('validate', $key, $data);
 
       if (!patterns_error_check_results($results)) {
-        // TODO: $index is undefined.
+        // TODO: Use $index when there are multiple patterns again.
         $errors[] = t('Action #%num (%tag) in pattern %title: !msg', array('!msg' => $error, '%num' => $index + 1, '%tag' => $data['tag'], '%title' => $pattern_title));
       }
     }
