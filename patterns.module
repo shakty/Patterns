@@ -1,28 +1,4 @@
 <?php
-
-
-require_once 'includes/patterns.config.inc';
-require_once 'includes/patterns.db.inc';
-require_once 'includes/patterns.error.inc';
-require_once 'includes/patterns.io.inc';
-require_once 'includes/patterns.parser.inc';
-require_once 'includes/patterns.utils.inc';
-require_once 'includes/patterns.editor.inc';
-require_once 'includes/patterns.imports.inc';
-
-// Not used for now
-//require_once 'includes/patterns.servers.inc';
-
-require_once 'includes/patterns.theme.inc';
-
-define('PATTERNS_SUCCESS', 1);
-define('PATTERNS_WARN', 0);
-define('PATTERNS_ERR', -1);
-
-define('PATTERNS_CREATE', 'create');
-define('PATTERNS_MODIFY', 'modify');
-define('PATTERNS_DELETE', 'delete');
-
 /**
  * @file
  * Enables extremely simple adding/removing features to your site with minimal to no configuration.
@@ -72,11 +48,30 @@ define('PATTERNS_DELETE', 'delete');
  * // NOT USED NOW: Check if we need it later
  * - 'identifiers':    - ????? Get any primary identifiers from the action for further actions to take advantage of
  *
- *
- *
- *
- *
  */
+
+require_once 'includes/patterns.config.inc';
+require_once 'includes/patterns.db.inc';
+require_once 'includes/patterns.error.inc';
+require_once 'includes/patterns.io.inc';
+require_once 'includes/patterns.parser.inc';
+require_once 'includes/patterns.utils.inc';
+require_once 'includes/patterns.editor.inc';
+require_once 'includes/patterns.imports.inc';
+
+// Not used for now.
+//require_once 'includes/patterns.servers.inc';
+
+require_once 'includes/patterns.theme.inc';
+
+define('PATTERNS_SUCCESS', 1);
+define('PATTERNS_WARN', 0);
+define('PATTERNS_ERR', -1);
+
+define('PATTERNS_CREATE', 'create');
+define('PATTERNS_MODIFY', 'modify');
+define('PATTERNS_DELETE', 'delete');
+
 
 /**
  * @todo:
@@ -99,7 +94,6 @@ define('PATTERNS_DELETE', 'delete');
  * @ Increase performaces, it seems still slow.
  * @ **done**Check core.php.inc
  */
-
 
 
 /**
@@ -185,7 +179,7 @@ function patterns_menu() {
     'type' => MENU_CALLBACK
   );
 
-  // TODO: Check patterns.xml
+  // TODO: Check patterns.xml.
 
   $items['patterns.xml'] = array(
     'title' => 'Published Patterns',
@@ -194,7 +188,7 @@ function patterns_menu() {
     'type' => MENU_CALLBACK
   );
 
-  // TODO: Check import
+  // TODO: Check import.
 
   $items['admin/patterns/import'] = array(
     'title' => 'Import',
@@ -258,7 +252,7 @@ function patterns_menu() {
 //    'weight' => -5
 //  );
 
-  // This items were already commented
+  // This items were already commented.
   /////////////////////////////////////////////////////
 
 //     $items[] = array('path' => 'admin/patterns/configure',
@@ -296,14 +290,12 @@ function patterns_menu() {
 //       'type' => MENU_CALLBACK
 //     );
 
-
-
   return $items;
 }
 
 
 /**
- * First function to be called for displaying the pattern page.
+ * First function to be called for displaying the pattern list page.
  */
 function patterns_list() {
 
@@ -338,10 +330,10 @@ function patterns_list() {
   $output = drupal_render($form);
 
   // Load the the pattern handlers from compontents directory
-  // or from modules which implement hook_patterns()
+  // or from modules which implement hook_patterns().
   patterns_load_components();
 
-  // Load the patterns from database
+  // Load the patterns from database.
   $patterns = patterns_get_patterns();
 
   $output .= theme('patterns_list', array('patterns' => $patterns, 'invalid' => array()));
@@ -350,16 +342,17 @@ function patterns_list() {
 }
 
 /**
+ * Form constructor for the Patterns enabling form.
  *
- * Callback function of the path /enable/%
- * It prompts the user with a submenu of options regarding default behavior
- * with sub-patterns.
+ * It prompts the user with a submenu of options regarding default behavior with
+ * sub-patterns.
  *
- * @TODO: find a way to skip this in pattern_list, to quickly execute the pattern
+ * @TODO Find a way to skip this in pattern_list, to quickly execute the pattern.
  *
- * @param array $form the form array
- * @param array $form_state the state of the array
- * @param mixed $pid
+ * @param integer $pid The ID of the Pattern to enable.
+ *
+ * @see patterns_enable_pattern_submit()
+ * @ingroup forms
  */
 function patterns_enable_pattern($form, &$form_state, $pid) {
   $form['pid'] = array(
@@ -419,12 +412,13 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
 }
 
 /**
- * Takes the values from the form enable_pattern and starts the
- * whole process by calling execute_pattern
+ * Form submission handler for patterns_enable_pattern().
  *
- * @param $form form
- * @param $form_state form_state
- */
+ * Takes the values from the form enable_pattern and starts the  * whole
+ * process by calling execute_pattern.
+ *
+ * @see patterns_enable_pattern()
+*/
 function patterns_enable_pattern_submit($form, &$form_state) {
   $pid = $form_state['values']['pid'];
 
@@ -444,13 +438,15 @@ function patterns_enable_pattern_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/patterns';
 }
 
-
 /**
+ * Form constructor for the Patterns removing form.
  *
- * Callback function of the path /remove/%
  * Creates a confirm_form to make sure the removing operation was intentional.
  *
- * @param mixed $pid
+ * @param integer $pid The ID of the Pattern to enable.
+ *
+ * @see patterns_remove_pattern_submit()
+ * @ingroup forms
  */
 function patterns_remove_pattern($form, &$form_state, $pid = NULL) {
 
@@ -476,49 +472,53 @@ function patterns_remove_pattern($form, &$form_state, $pid = NULL) {
 }
 
 /**
- * Takes the values from the form enable_pattern and starts the
- * whole process by calling execute_pattern
+ * Form submission handler for user_login_form().
  *
- * @param $form form
- * @param $form_state form_state
+ * Takes the values from the form enable_pattern and starts the
+ * whole process by calling execute_pattern.
+ *
+ * @see patterns_remove_pattern()
  */
 function patterns_remove_pattern_submit($form, &$form_state) {
   $pid = $form_state['values']['pid'];
 
   $result = patterns_db_remove_pattern($pid);
 
-  //@TODO: remove the file as well
+  //@TODO: Remove the file as well.
 
   if (!$result) {
-    drupal_set_message('Pattern could not be removed', 'error');
+    drupal_set_message('Pattern could not be removed.', 'error');
   }
   else {
-    drupal_set_message('Pattern was removed succesfully', 'status');
+    drupal_set_message('Pattern was removed succesfully.', 'status');
   }
   $form_state['redirect'] = 'admin/patterns';
 }
 
 /**
- *
  * The beginning of the whole Patterns logic. Starts the execution in 'batch'
  * mode (default) or 'php' mode, which makes things easier for debugging.
  *
- * @param stdClass $pattern Pattern object as loaded by patterns_get_pattern()
- * @param array $params Parameters for executing the pattern. Array format as follows:
+ * @param stdClass $pattern Pattern object as loaded by patterns_get_pattern().
+ * @param array $params Parameters for executing the pattern. Array format is as follows:
  *
- *
- * pid => Pid of the pattern as it is in the database
- * run-subpatterns => ['first-update', always','update','first','never']
+ * - pid => Pid of the pattern as it is in the database.
+ * - run-subpatterns => ['first-update', always', 'update', 'first', 'never']
  *
  * If coming from form_confirm some other parameters are addes, such as:
- * confirm [1]
- * submit  [Confirm]
- * form_build_id
- * form_token
- * form_id
- * op  [Confirm]
+ * - confirm [1]
+ * - submit  [Confirm]
+ * - form_build_id
+ * - form_token
+ * - form_id
+ * - op  [Confirm]
  *
- * @param mixed $mode ['batch','php']
+ * @param string $mode The running mode, one of {'batch', 'php'}.
+ *
+ * @return The result of the appropriate patterns_execute_pattern_$mode function.
+ *
+ * @see patterns_execute_pattern_batch
+ * @see patterns_execute_pattern_php
  */
 function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
   module_load_include('inc', 'patterns', 'includes/patterns.core.common');
@@ -526,7 +526,7 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
   $fun = 'patterns_execute_pattern_' . $mode;
 
   if (!function_exists($fun) || !is_object($pattern)) {
-    return FALSE; // TODO: should not happen
+    return FALSE; // TODO: should not happen.
   }
 
   drupal_set_time_limit(0);
@@ -558,7 +558,7 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
 
   $info = $pattern_details['info'];
 
-  // Array of infos of multiple patterns (we have only one for now)
+  // Array of infos of multiple patterns (we have only one for now).
   $infos = array($pid => $info);
 
   $modules = $pattern_details['modules'];
@@ -567,18 +567,18 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
   // Ste: Actions_map seems to be used with includes. Probably we do not need it now.
   // $actions_map = array('patterns' => $pattern_details['info'], 'map' => $pattern_details['actions_map']);
 
-  // TODO: Patterns details was returning this in case of recursive includes
+  // TODO: Patterns details was returning this in case of recursive includes.
 //  $result['actions_map'][] = array(
 //          'pid'   => $pattern->pid,
 //          'index' => $key,
 //        );
 
-  $actions_map = array('patterns' => $infos, 'map' => NULL); // Fix this
+  $actions_map = array('patterns' => $infos, 'map' => NULL); // Fix this.
   ////////////////////////////////////////
 
-  // Install modules, if necessary
+  // Install modules, if necessary.
   $results = patterns_install_modules($modules);
-  if (!$results['success']) { // TODO: handle properly
+  if (!$results['success']) { // TODO: handle properly.
     drupal_set_message($results['error_message'], 'error');
     return FALSE;
   }
@@ -587,30 +587,34 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
   return $fun($pattern, $params, $patterns_details, $actions_map);
 }
 
-// @TODO: Take care patterns_invoke does not return any more the tagmodules index
-// use patterns_get_tagmodules_index() instead.
+// @TODO: Take care patterns_invoke does not return any more the tagmodules index.
+// Use patterns_get_tagmodules_index() instead.
 
 /**
- * Execute hook_patterns with the given operation and return the
- * results.
+ * Execute hook_patterns with the given operation and return the results.
  *
- * It also builds up, if necessary, the list of
- * available action-tags and binds them to the correct module.
+ * It also builds up, if necessary, the list of available action-tags and
+ * binds them to the correct module.
  *
- * @param array $data the
- * @param mixed $op operation to be performed by hook_patterns()
- * @param mixed $form_id name of the form to be passed to hook_patterns().
- * @param array $a extra parameters to pass to hook_patterns()
+ * @param string $hook
+ *   The hook to be called. One of {'prepare', 'validate', 'callbacks', 'build',
+ *   'params', 'cleanup'}.
+ * @param string $action
+ *   The action to be executed. One of {'create', 'modify', 'delete'}.
+ * @param array $data
+ *   (optional) The data supplied as an associative array. Defaults to NULL.
+ * @param mixed $form_id
+ *   (optional) The name of the form to be used. Defaults to NULL.
+ * @param array $a
+ *   (optional) Extra parameters to pass. Defaults to NULL.
  *
- * @return array $return an array packed by patterns_results
+ * @return array $return An array packed by patterns_results().
  */
-//function patterns_invoke($op, &$data, $form_id = NULL, &$a = NULL) {
-// TODO: update documentation
 function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = NULL) {
 
   $tag_modules = patterns_get_tagmodules_index();
 
-  // Unsetting it while the module performs operations
+  // Unsetting it while the module performs operations.
   $tag = $data['tag'];
   unset($data['tag']);
 
@@ -621,7 +625,7 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
   $func = $module . '_patterns_' . $hook;
 
   if (function_exists($func)) {
-    if ($form_id) { // We are past hook_patterns_build
+    if ($form_id) { // We are past hook_patterns_build().
       $return = $func($action, $form_id, $data, $a);
     }
     else {
@@ -633,18 +637,18 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
     $return = patterns_results(PATTERNS_ERR, $msg);
   }
 
-  // Check if the output is correctly formatted, and eventually try to correct it
+  // Check if the output is correctly formatted, and eventually try to correct it.
   if (!_patterns_is_patterns_results($return)) {
 
     if ($return === TRUE) {
       $return = array('status' => PATTERNS_SUCCESS);
     }
     elseif ($return === FALSE) {
-      $msg = t('Unspecified error occurred in %func', array('%func' => $func));
+      $msg = t('Unspecified error occurred in %func.', array('%func' => $func));
       $return = patterns_results(PATTERNS_ERR, $msg);
     }
     else {
-      $msg = t('The return value of %func is not properly formatted', array('%func' => $func));
+      $msg = t('The return value of %func is not properly formatted.', array('%func' => $func));
       $return = patterns_results(PATTERNS_ERR, $msg);
     }
   }
@@ -662,15 +666,17 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
  * Creates the list of modules implementing the pattern hook. Additional
  * information is provided such as the files or the forms needed by the tag.
  *
- *  @param mixed $tag if set, only information about this specific tag is returned.
- *  @param mixed $id if set, only this particular bit of information is returned.
- *  Allowed values for $id are: 'descr', PATTERNS_CREATE, PATTERNS_MODIFY,
- *  PATTERNS_DELETE, and 'files'.
+ * @param string $tag_name
+ *   (optional) If set, only information about this specific tag is returned. Defaults to NULL.
+ * @param integer $id
+ *   (optional) If set, only this particular bit of information is returned. Defaults to NULL.
+ *   Allowed values for $id are: 'descr', PATTERNS_CREATE, PATTERNS_MODIFY,
+ *   PATTERNS_DELETE, and 'files'.
  *
- *  @TODO: Attention: the return type has changed. It used to be an array of tag=>module
- *  now you get the info with tag['module'].
+ * @Note The return type has changed. It used to be an array of tag => module now
+ * you get the info with $tag['module'].
  *
- *  @return array $tag_modules The tag_modules index built according to the parameters.
+ * @return array $tag_modules The tag_modules index built according to the parameters.
  */
 function patterns_get_tagmodules_index($tag_name = NULL, $id = NULL) {
   static $tag_modules;
@@ -692,28 +698,22 @@ function patterns_get_tagmodules_index($tag_name = NULL, $id = NULL) {
     }
   }
 
-  return _patterns_scan_tagmodules_index($tag_modules, $tag_name, $id);
-}
-
-function _patterns_scan_tagmodules_index($tagmodules, $tag, $id) {
-
-  if (empty($tag)) {
-    return $tagmodules;
+  if (empty($tag_name)) {
+    return $tag_modules;
   }
-  elseif (empty($action)) {
-    return $tagmodules[$tag];
+  elseif (empty($id)) {
+    return $tag_modules[$tag_name];
   }
   else {
-    return $tagmodules[$tag][$id];
+    return $tag_modules[$tag_name][$id];
   }
 }
 
-
 /**
- * Constructs a Pattern obj with default standard values
+ * Constructs a Pattern object with default standard values.
  *
- * @param $pattern input parameter
- * @return StdClass $pattern
+ * @param array $pattern Input array structure of the pattern. Defaults to an empty array.
+ * @return StdClass $pattern The result object.
  */
 function patterns_get_pattern_obj($pattern = array()) {
 
@@ -739,10 +739,8 @@ function patterns_get_pattern_obj($pattern = array()) {
   return $pattern;
 }
 
-//@TODO patterns_refresh
+/**
+ * @TODO patterns_refresh().
+ */
 function patterns_refresh() {
-
-
 }
-
-

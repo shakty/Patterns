@@ -1,16 +1,19 @@
 <?php
-/*
+/**
  * @file
+ * The common functions used by the Batch and PHP running modes.
  */
 
 /**
- * Preparing and validating the action tags as they are written
- * in the pattern file. Concretely, it invokes operations 'prepare',
- * and 'validate' on the pattern component.
+ * Preparing and validating the action tags as they are written in the pattern
+ * file. Concretely, it invokes operations 'prepare', and 'validate' on the
+ * pattern component.
  *
  * @param array $actions
  * @param array $actions_map
+ *
  * @return array $results array containing the description of eventual errors
+ * @TODO Doc.
  */
 function patterns_prepare_actions(&$actions, $actions_map) {
 
@@ -83,6 +86,9 @@ function patterns_prepare_actions(&$actions, $actions_map) {
  * @param $identifiers
  * @param $place
  * @param $actions_map
+ *
+ * @return
+ * @TODO Doc.
  */
 function patterns_implement_action($action, $data, &$identifiers, $place = 0, $actions_map = NULL) {
 
@@ -252,9 +258,9 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
 /**
  * Execute an action.
  *
- * @param mixed $form_id the name of function to call
- * @param array $form_state the form_state object
- * @param array $params extra parameters to be passed to the form function
+ * @param mixed $form_id The name of function to call.
+ * @param array $form_state The form_state object.
+ * @param array $params Extra parameters to be passed to the form function.
  */
 function patterns_execute_action($form_id, &$form_state, $params) {
   // Make sure we always have a clear cache for everything.

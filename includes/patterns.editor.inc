@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Functions, forms related to the Patterns editor.
+ */
 
 /**
  * Builds up a pattern editing environment. Loads additional javascript libraries,

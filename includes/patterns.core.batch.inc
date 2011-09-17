@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * @file
  * Running patterns using Drupal's batch API.
 */
@@ -12,13 +12,17 @@
  * If there are no errors, it creates the batch array of operations. Each of them
  * is a call to patterns_batch_actions with different parameters.
  *
- * @param stdClass $pattern Pattern object as loaded by patterns_get_pattern()
+ * @param stdClass $pattern Pattern object as loaded by patterns_get_pattern().
  * @param array $params Parameters for executing the pattern. Array format as follows:
- * pid => Pid of the pattern as it is in the database
- * run-subpatterns => ['first-update', always', 'update', 'first', 'never']
- * quickrun => boolean flag to indicate that the execution was initiated from a quickrun
- * and the pattern is already loaded into $pattern
+ * - pid => Pid of the pattern as it is in the database
+ * - run-subpatterns => ['first-update', always', 'update', 'first', 'never']
+ * - quickrun => boolean flag to indicate that the execution was initiated from a quickrun
+ *   and the pattern is already loaded into $pattern.
+ * @param $patterns_details
+ * @param $actions_map
  *
+ * @return
+ * @TODO Doc.
  */
 function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $actions_map) {
   $pattern_details = current($patterns_details);
@@ -67,15 +71,13 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
 
 /**
  *
- * Execute a batch action.
- *
- * @TODO improve documentation
- *
+ * Executes a batch action.
  *
  * @param array $action
  * @param mixed $place index of the current operation within the batch_set
  * @param array $actions_map [$pid pattern id, $index ??]
  * @param array $context
+ * @TODO Doc.
  */
 function patterns_batch_actions($action, $data, $place, $actions_map, &$context) {
 
@@ -114,7 +116,8 @@ function patterns_batch_actions($action, $data, $place, $actions_map, &$context)
 }
 
 /**
- * Finish a batch operation
+ * Finishes a batch operation.
+ * @TODO Doc.
  */
 function patterns_batch_finish($success, $results, $operations) {
   $info = $_SESSION['patterns_batch_info'];
@@ -136,4 +139,3 @@ function patterns_batch_finish($success, $results, $operations) {
   unset($_SESSION['patterns_batch_info']);
   drupal_flush_all_caches();
 }
-

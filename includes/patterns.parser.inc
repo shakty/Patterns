@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * @file
  * Functions related to parsing pattern files.
  */

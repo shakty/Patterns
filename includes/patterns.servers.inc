@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * @file
  * Functions related to importing and publishing patterns on the web.
  */

@@ -1,8 +1,8 @@
 <?php
-/*
+/**
  * @file
  * Retrieve, save, and remove patterns from the database.
-*/
+ */
 
 /**
  * Remove a pattern from the database.
@@ -92,7 +92,7 @@ function patterns_db_save_pattern($pattern, $path, $name) {
 }
 
 /**
- * Load the pattern from the DB and return a stdClass obj, containing
+ * Loads the pattern from the DB and return a stdClass obj, containing
  * the pattern code as array (unserialized).
  *
  * @param mixed $id Numeric id or alphanumeric name of the pattern.
@@ -118,7 +118,7 @@ function patterns_get_pattern($id) {
 }
 
 /**
- * Loads a pattern object from the database based on the given name
+ * Loads a pattern object from the database based on the given name.
  *
  * @param $name
  */

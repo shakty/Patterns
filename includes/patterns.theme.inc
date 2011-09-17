@@ -1,10 +1,13 @@
 <?php
+/**
+ * @file
+ * Theme related functions, hooks.
+ */
 
 /**
- * Implementation of hook_theme().
+ * Implements hook_theme().
  */
 function patterns_theme() {
-  
   return array(
     'patterns_form_helper' => array(
       'arguments' => array('form_id' => NULL, 'values' => NULL),
@@ -22,13 +25,13 @@ function patterns_theme() {
       'render element' => 'form',
     ),
   );
- 
 }
 
 /**
- * TODO: add doc
+ * @TODO Doc.
  * 
  * @param $forms
+ * @ingroup themeable
  */
 function theme_patterns_form_helper_menu($forms) {
   $output = '<ul class="patterns-form-menu">';
@@ -43,10 +46,11 @@ function theme_patterns_form_helper_menu($forms) {
 }
 
 /**
- * TODO: add doc
+ * @TODO Doc.
  * 
  * @param unknown_type $form_id
  * @param unknown_type $values
+ * @ingroup themeable
  */
 function theme_patterns_form_helper($form_id, $values) {
 
@@ -68,6 +72,7 @@ function theme_patterns_form_helper($form_id, $values) {
  * Theme a list of patterns into separated fieldset ordered by category
  * 
  * @param array $args An associative array containing: containing key 'patterns'
+ * @ingroup themeable
  */
 function theme_patterns_list($args) {
   
@@ -105,7 +110,7 @@ function theme_patterns_list($args) {
     );
   }
   $output .= drupal_render($form);
-  
+
   return $output;
 }
 
@@ -170,8 +175,7 @@ function theme_patterns_patterns_fieldset($variables) {
  * @param array $extra associative array of extra parameters. Not used now.
  */
 function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
-  
-    // Add in the defaults.
+  // Add in the defaults.
   $extra = array(
     'requires' => array(),
     'required_by' => array(),

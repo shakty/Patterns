@@ -1,19 +1,25 @@
 <?php
-/*
+/**
  * @file
  * A simple, sequential version of running patterns.
  */
 
 /**
- *
  * Execute a Pattern. Actions will be called sequentially.
  *
- * @param stdClass $pattern Pattern object as loaded by patterns_get_pattern()
+ * E.g.: loading additional modules, and creating the array of patterns actions.
+ *
+ * @param stdClass $pattern Pattern object as loaded by patterns_get_pattern().
  * @param array $params Parameters for executing the pattern. Array format as follows:
- * pid => Pid of the pattern as it is in the database.
- * run-subpatterns => ['first-update', always', 'update', 'first', 'never']
- * quickrun => boolean flag to indicate that the execution was initiated from a quickrun
- * and the pattern is already loaded into $pattern.
+ * - pid => Pid of the pattern as it is in the database
+ * - run-subpatterns => ['first-update', always', 'update', 'first', 'never']
+ * - quickrun => boolean flag to indicate that the execution was initiated from a quickrun
+ *   and the pattern is already loaded into $pattern.
+ * @param $patterns_details
+ * @param $actions_map
+ *
+ * @return
+ * @TODO Doc.
  */
 function patterns_execute_pattern_php($pattern, $params, $patterns_details, $actions_map) {
   $pattern_details = current($patterns_details);
@@ -57,18 +63,14 @@ function patterns_execute_pattern_php($pattern, $params, $patterns_details, $act
   return TRUE;
 }
 
-
-
 /**
  *
  * Execute a single pattern action.
  *
- * @TODO improve documentation
- *
- *
  * @param array $action
  * @param mixed $place index of the current operation within the batch_set
  * @param array $actions_map [$pid pattern id, $index ??]
+ * @TODO Doc.
  */
 function patterns_php_actions($action, $data, $place, $actions_map) {
 
@@ -82,4 +84,3 @@ function patterns_php_actions($action, $data, $place, $actions_map) {
   $identifiers = array();
   return patterns_implement_action($action, $data, $identifiers, $place, $actions_map);
 }
-

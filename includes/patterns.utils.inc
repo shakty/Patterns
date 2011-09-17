@@ -1,16 +1,24 @@
 <?php
-
+/**
+ * @file
+ * Miscellaneous utility functions.
+ */
 
 define('PATTERNS_FAILED_EDIT', 'patterns_failed_edit');
 
+/**
+ * @TODO Doc.
+ */
 function _patterns_clear_failed_edit() {
   variable_del(PATTERNS_FAILED_EDIT);
-  return true;
+  return TRUE;
 }
 
 /**
- * Helper function to create a context array based on the supplied object
- * Supplying a parent object will set the parent for this context
+ * Helper function to create a context array based on the supplied object.
+ *
+ * Supplying a parent object will set the parent for this context.
+ * @TODO Doc.
  */
 function _patterns_array_context(&$obj, &$current = NULL) {
   // If a current context is set, use it's parent and key values
@@ -46,7 +54,8 @@ function _patterns_array_context(&$obj, &$current = NULL) {
 }
 
 /**
- * Helper function to filter values of the list of matches
+ * Helper function to filter values of the list of matches.
+ * @TODO Doc.
  */
 function _patterns_array_filter(&$matches, $operator, $value = NULL) {
   for ($i = count($matches) - 1; $i >= 0; $i--) {
@@ -63,7 +72,8 @@ function _patterns_array_filter(&$matches, $operator, $value = NULL) {
 }
 
 /**
- * Helper function to create a list of parent keys given a context item
+ * Helper function to create a list of parent keys given a context item.
+ * @TODO Doc.
  */
 function _patterns_array_trace($obj) {
   // Loop back up through the parents to fill in the trace value.
@@ -79,7 +89,8 @@ function _patterns_array_trace($obj) {
 
 
 /**
- * Helper function to flatter options, but keep the title/names in
+ * Helper function to flatter options, but keep the title/names in.
+ * @TODO Doc.
  */
 function patterns_options_flatten($array, $reset = TRUE) {
   static $return;
@@ -104,7 +115,8 @@ function patterns_options_flatten($array, $reset = TRUE) {
 }
 
 /**
- * List the modules used by a particular pattern
+ * Lists the modules used by a particular pattern.
+ * @TODO Doc.
  */
 function patterns_modules_page($pid) {
   $pattern = patterns_get_pattern($pid);
@@ -153,15 +165,17 @@ function patterns_modules_page($pid) {
 }
 
 /**
- * Execute default configuration for module during the module installation
+ * Executes default configuration for module during the module installation.
  *
- * This function should be called by other modules from
- * within their hook_enable() implementation.
+ * This function should be called by other modules from within their
+ * hook_enable() implementation.
  * Module should also provide modulename.config file containing PHP array
  * with the actions that need to be executed.
  *
  * @param $module
  *   name of the module calling the function
+ * @return
+ * @TODO Doc.
  */
 function patterns_execute_config($module) {
 
@@ -189,6 +203,9 @@ function patterns_execute_config($module) {
   }
 }
 
+/**
+ * @TODO Doc.
+ */
 function patterns_form_helper($form, $form_state) {
   static $form_id;
 
@@ -203,8 +220,7 @@ function patterns_form_helper($form, $form_state) {
 
 
 /**
- * Prints XML Feed of published (public) patterns
- *
+ * Prints XML feed of published (public) patterns.
  */
 function patterns_feed() {
   global $base_url;
@@ -253,9 +269,10 @@ function patterns_feed() {
 
 
 /**
- * Install required modules for executing the pattern.
+ * Installs required modules for executing the pattern.
  *
  * @param array $modules
+ * @TODO Doc.
  */
 function patterns_install_modules(&$modules) {
   $result = array('success' => TRUE);
@@ -282,16 +299,16 @@ function patterns_install_modules(&$modules) {
 }
 
 /**
- * Check if all the module dependencies are available
+ * Checks if all the module dependencies are available.
  *
- * @param $modules
- *   array of module names
+ * @param array $modules
+ *   Array of module names.
  * @param $update_list
- *   if TRUE, add all the dependecies to pattern's module list
- * @return
- *   empty array if all dependencies are available
- *   array of missing module's names if some dependencies are not available
- *
+ *   (optional) If TRUE, add all the dependecies to pattern's module list.
+ *    Defaults to FALSE.
+ * @return array
+ *   An empty array if all dependencies are available.
+ *   Array of missing modules' names if some dependencies are not available.
  */
 function patterns_check_module_dependencies(&$modules, $update_list = FALSE) {
 
@@ -334,9 +351,9 @@ function patterns_check_module_dependencies(&$modules, $update_list = FALSE) {
 // Tokens
 
 /**
- * Implementation of hook_token_values()
+ * Implements hook_token_values()
  *
- * @If these get implementated directly into token.module, this should be removed
+ * @TODO If these get implementated directly into token.module, this should be removed.
  */
 function patterns_token_values($type, $object = NULL, $options = array()) {
   if ($type == 'global') {
@@ -347,7 +364,7 @@ function patterns_token_values($type, $object = NULL, $options = array()) {
 }
 
 /**
- * Array walk callback to replace tokens inside form values
+ * Array walk callback to replace tokens inside form values.
  */
 function _patterns_replace_tokens(&$a, &$b, $identifiers = array()) {
   static $count = 0;
@@ -373,8 +390,8 @@ function _patterns_replace_tokens(&$a, &$b, $identifiers = array()) {
 
 /**
  * Recurse an array and replace with tokens
- * @ This is used instead of array_walk_recursive because
- *   of some strange issues with token_get_values failing.
+ * @TODO This is used instead of array_walk_recursive because of some strange
+ * issues with token_get_values failing.
  */
 function _patterns_recurse_tokens(&$object, $identifiers) {
   foreach ($object as $key => $value) {
@@ -398,7 +415,8 @@ function _patterns_recurse_tokens(&$object, $identifiers) {
 
 /**
  *
- * @TODO: find a suitable place for this, and check who is calling it
+ * @TODO Find a suitable place for this, and check who is calling it.
+ * @TODO Doc.
  *
  * @param unknown_type $b
  */
@@ -440,6 +458,9 @@ function _get_file_phpdoc_version($path) {
  * @param mixed $status One of [PATTERNS_SUCCESS, PATTERNS_WARN, PATTERNS_ERR]. Required.
  * @param array $msg A message.
  * @param mixed $result Any kind of additional data.
+ *
+ * @return
+ * @TODO Doc.
  */
 function patterns_results($status = PATTERNS_SUCCESS, $msg = 'Execution successful', $result = NULL) {
   // TODO: t($msg)
@@ -449,15 +470,15 @@ function patterns_results($status = PATTERNS_SUCCESS, $msg = 'Execution successf
               );
 }
 /**
- * Check if a (supposedly) array is actually correctly formatted as a patterns_results
+ * Checks if a (supposed) array is actually correctly formatted as a patterns_results().
  *
- * @param mixed $results the array to check;
+ * @param mixed $results The array to check.
  *
- * @return TRUE if correct, FALSE otherwise
+ * @return bool TRUE if correct, FALSE otherwise.
+ * @see patterns_results()
  */
 function _patterns_is_patterns_results($results) {
-
-  // It is the only mandatory field
+  // 'status' is the only mandatory field.
   if (!isset($results['status'])) {
     return FALSE;
   }
@@ -466,9 +487,9 @@ function _patterns_is_patterns_results($results) {
 }
 
 /**
- * Returns an array of allowed actions, as defined in patterns.module
+ * Returns an array of allowed actions, as defined in patterns.module.
  *
- * @return array Allowed actions
+ * @return array Allowed actions.
  */
 function patterns_actions() {
   return array(PATTERNS_CREATE => PATTERNS_CREATE,

@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * @file
  * Functions that are unused at the moment.
  */

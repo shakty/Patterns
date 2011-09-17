@@ -1,10 +1,10 @@
 <?php
-/*
+/**
  * @file
  * Functions related to input/output operations.
  */
 
-/*
+/**
  * Loads and validates a YAML pattern file.
  *
  * @param string $path The path of the pattern file.
@@ -40,7 +40,7 @@ function patterns_load_yaml($path, $local = TRUE) {
 //  return $pattern;
 //}
 
-/*
+/**
  * Loads an XML pattern file without validating.
  *
  * @param string $path The path of the pattern file.
@@ -62,7 +62,7 @@ function patterns_load_xml($path, $local = TRUE) {
   return patterns_load_string_xml($xml);
 }
 
-/*
+/**
  * @TODO
  */
 function patterns_load_string_xml($source) {
@@ -88,7 +88,7 @@ function patterns_load_string_xml($source) {
   return $pattern;
 }
 
-/*
+/**
  * Loads and validates a PHP pattern file.
  *
  * @param string $path The path of the pattern file.
@@ -116,9 +116,6 @@ function patterns_load_php($path, $local = TRUE) {
 }
 
 /**
- * Create a pattern from an XML data source.
- */
-/*
  * Creates a pattern from an XML data source.
  *
  * @param string $xml The XML string of the data source.
@@ -216,6 +213,7 @@ function _patterns_rearrange_data($data, $parent = '') {
 
   return $data;
 }
+
 /**
  * Menu callback, returns source code of the requested pattern
  * if the pattern is public.
@@ -268,7 +266,7 @@ function patterns_load_components() {
   $loaded = TRUE;
 }
 
-/*
+/**
  * Loads the available patterns.
  *
  * Checks inside the directories defined by patterns_paths().

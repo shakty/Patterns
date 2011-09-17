@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * @file
  * Importing Patterns from a file or using an URL.
  */
@@ -251,8 +251,7 @@ function patterns_import_submit($form, &$form_state) {
 }
 
 /**
- * Helper function to be called in one of the import validation handlers
- *
+ * Helper function to be called in one of the import validation handlers.
  */
 function _patterns_imports_check_dirs() {
   // Check Patterns Directory
@@ -266,8 +265,7 @@ function _patterns_imports_check_dirs() {
 }
 
 /**
- * Helper function to be called in one of the import validation handlers
- *
+ * Helper function to be called in one of the import validation handlers.
  */
 function _patterns_imports_check_name($name = '') {
   // Name Validation

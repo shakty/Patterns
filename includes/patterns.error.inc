@@ -1,10 +1,10 @@
 <?php
-/*
+/**
  * @file
  * Error handling.
  */
 
-/*
+/**
  * Sets the custom Patterns error handler.
  */
 function patterns_set_error_handler() {
@@ -16,7 +16,7 @@ function patterns_set_error_handler() {
   @trigger_error('patterns_error');
 }
 
-/*
+/**
  * Wrapper for restore_error_handler().
  */
 function patterns_restore_error_handler() {
@@ -124,7 +124,7 @@ function patterns_error_get_last($op, $key, $description, $pattern_title, $patte
   return FALSE;
 }
 
-/*
+/**
  * Returns or sets the last error.
  */
 function patterns_error_last($error = NULL) {
@@ -136,7 +136,7 @@ function patterns_error_last($error = NULL) {
   return $last_error;
 }
 
-/*
+/**
  * Helper function for checking errors.
  */
 function patterns_error_check_results(&$result) {
