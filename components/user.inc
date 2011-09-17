@@ -58,11 +58,21 @@ function user_patterns_prepare($action, $tag, &$data = NULL) {
         return t('Cannot create/modify user. Missing name and uid.');
       }
       // Retrieve the username name from the db
-      $data['name'] = db_query('SELECT name FROM {users} WHERE uid = :uid', array('uid ' => $data['uid']))->fetchField();
+      $data['name'] = db_select('users', 'u')
+                        ->fields('u', array('name'))
+                        ->condition('u.uid', $data['uid'])
+                        ->execute()
+                        ->fetchField();
+//      $data['name'] = db_query('SELECT name FROM {users} WHERE uid = :uid', array('uid ' => $data['uid']))->fetchField();
     }
     else {
       if (!isset($data['uid'])) {
-        $data['uid'] = db_query('SELECT uid FROM {users} WHERE name = :name', array('name' => $data['name']))->fetchField();
+        $data['uid'] = db_select('users', 'u')
+                        ->fields('u', array('uid'))
+                        ->condition('u.name', $data['name'])
+                        ->execute()
+                        ->fetchField();
+//        $data['uid'] = db_query('SELECT uid FROM {users} WHERE name = :name', array('name' => $data['name']))->fetchField();
       }
     }
 
@@ -89,7 +99,7 @@ function user_patterns_prepare($action, $tag, &$data = NULL) {
     }
 
     else {
-      // Default Europe/Berlin
+      // Default timezone is Europe/Berlin.
       $data['timezone'] = 'Europe/Berlin';
     }
   }
@@ -100,7 +110,12 @@ function user_patterns_prepare($action, $tag, &$data = NULL) {
     }
 
     if (empty($data['rid'])) {
-      $rid = db_query("SELECT rid FROM {role} WHERE name = :name", array('name' => $data['name']))->fetchField();
+      $rid = db_select('role', 'r')
+               ->fields('r', array('rid'))
+               ->condition('r.name', $data['name'])
+               ->execute()
+               ->fetchField();
+//      $rid = db_query("SELECT rid FROM {role} WHERE name = :name", array('name' => $data['name']))->fetchField();
       if ($rid) {
         $data['rid'] = $rid;
       }
@@ -121,17 +136,21 @@ function user_patterns_validate($action, $tag, &$data = NULL) {
   $msg = '';
 
   if ($tag == 'user') {
-    // make sure uid is valid
-    // Ste: was
-    //if (!empty($data['uid']) && !db_result(db_query("SELECT COUNT(*) FROM {users} WHERE uid = %d", $data['uid']))) {
-    if (!empty($data['uid']) && !db_query("SELECT COUNT(*) FROM {users} WHERE uid = :uid", array('uid' => $data['uid']))->fetchField()) {
+    // Make sure uid is valid.
+    $count = db_select('users', 'u')
+               ->condition('u.uid', $data['uid'])
+               ->countQuery()
+               ->execute()
+               ->fetchField();
+    //$count = db_query("SELECT COUNT(*) FROM {users} WHERE uid = :uid", array('uid' => $data['uid']))->fetchField();
+    if (!empty($data['uid']) && !$count) {
       $status = PATTERNS_ERR;
       $msg = t('Invalid user ID supplied: %uid', array('%uid' => $data['uid']));
     }
 
-    // TODO: check $data['method'] for valid values if PATTERNS_DELETE
+    // TODO: check $data['method'] for valid values if PATTERNS_DELETE.
 
-    // Cannot create/edit/delete anon user
+    // Cannot create/edit/delete anon user.
     global $user; // TODO: what is this?
 
     if ($data['uid'] === 0) {
@@ -190,6 +209,7 @@ function user_patterns_validate($action, $tag, &$data = NULL) {
 
   return patterns_results($status, $msg);
 }
+
 // Return which callback functions to actually use.
 function user_patterns_callbacks($action, $tag, &$data = NULL) {
 

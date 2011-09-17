@@ -67,6 +67,7 @@ function block_patterns_prepare($action, $tag, &$data = NULL) {
     }
     // Block description for custom blocks is always unique so we can try to get delta by looking up info field
     elseif ($data['info']) {
+      // TODO: Rewrite using db_select().
       $delta = db_query('SELECT delta FROM {block} bl INNER JOIN {block_custom} bo ON bl.delta = bo.bid AND bl.module = :module WHERE bo.info = :info', array('module' => 'block', 'info' => $data['info']))->fetchField();
       if ($delta) {
         $data['delta'] = $delta;

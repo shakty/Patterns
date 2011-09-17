@@ -135,8 +135,9 @@ class PatternsSystemComponent extends PatternRunTestCase {
       ->condition('name', $name)
       ->condition('type', 'module')
       ->condition('status', $enabled ? '1' : '0')
-      ->execute()
-      ->rowCount();
+      ->countQuery()->execute()->fetchField();
+//      ->execute()
+//      ->rowCount();
     $this->assertEqual($forum, 1, $message = 'The ' . $name . ' module should ' . ($enabled ? '' : 'not ') . 'be enabled.');
   }
 

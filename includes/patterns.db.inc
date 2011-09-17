@@ -55,7 +55,11 @@ function patterns_db_save_pattern($pattern, $path, $name) {
 
   }
 
-  $pattern_data = db_query("SELECT pid, file, updated FROM {patterns} WHERE name = :name", array('name' => $name))->fetchAssoc();
+  $pattern_data = db_select('patterns', 'p')
+                    ->fields('p', array('pid', 'file', 'updated'))
+                    ->condition('p.name', $name)
+                    ->execute()
+                    ->fetchAssoc();
 
   // Pattern already in the DB, data needs to be updated.
   if (!empty($pattern_data)) {
@@ -101,12 +105,17 @@ function patterns_db_save_pattern($pattern, $path, $name) {
  */
 function patterns_get_pattern($id) {
   $pattern = FALSE;
+
+  $query = db_select('patterns', 'p');
+
   if (is_numeric($id)) {
-    $pattern = db_query("SELECT * FROM {patterns} WHERE pid = :pid", array('pid' => $id))->FetchAll();
+    $query = $query->condition('p.pid', $id);
   }
   elseif (is_string($id)) {
-    $pattern = db_query("SELECT * FROM {patterns} WHERE name = :name", array('name' => $id))->FetchAll();
+    $query = $query->condition('p.name', $id);
   }
+
+  $pattern = $query->execute()->FetchAll();
 
   if (!$pattern) {
     return FALSE;
