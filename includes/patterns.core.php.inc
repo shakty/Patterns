@@ -2,9 +2,7 @@
 /*
  * @file
  * A simple, sequential version of running patterns.
- *
  */
-
 
 /**
  *

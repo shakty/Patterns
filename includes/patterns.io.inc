@@ -1,5 +1,19 @@
 <?php
+/*
+ * @file
+ * Functions related to input/output operations.
+ */
 
+/*
+ * Loads and validates a YAML pattern file.
+ *
+ * @param string $path The path of the pattern file.
+ * @param bool $local
+ *   (optional) TRUE if the pattern file is local. Defaults to TRUE.
+ *
+ * @return array|bool
+ *   The pattern structure, or FALSE.
+ */
 function patterns_load_yaml($path, $local = TRUE) {
   if ($local && !file_exists($path)) {
     return FALSE;
@@ -26,6 +40,16 @@ function patterns_load_yaml($path, $local = TRUE) {
 //  return $pattern;
 //}
 
+/*
+ * Loads an XML pattern file without validating.
+ *
+ * @param string $path The path of the pattern file.
+ * @param bool $local
+ *   (optional) TRUE if the pattern file is local. Defaults to TRUE.
+ *
+ * @return array|bool
+ *   The pattern structure, or FALSE.
+ */
 function patterns_load_xml($path, $local = TRUE) {
   if ($local && !file_exists($path)) {
     return FALSE;
@@ -38,6 +62,9 @@ function patterns_load_xml($path, $local = TRUE) {
   return patterns_load_string_xml($xml);
 }
 
+/*
+ * @TODO
+ */
 function patterns_load_string_xml($source) {
   $pattern = patterns_from_source($source);
   if (empty($pattern) || $pattern['tag'] != 'pattern') {
@@ -61,8 +88,15 @@ function patterns_load_string_xml($source) {
   return $pattern;
 }
 
-/**
- * Read and evaluate a php file to return a 'pattern'
+/*
+ * Loads and validates a PHP pattern file.
+ *
+ * @param string $path The path of the pattern file.
+ * @param bool $local
+ *   (optional) TRUE if the pattern file is local. Defaults to TRUE.
+ *
+ * @return array|bool
+ *   The pattern structure, or FALSE.
  */
 function patterns_load_php($path, $local = TRUE) {
   if ($local && !file_exists($path)) {
@@ -70,7 +104,7 @@ function patterns_load_php($path, $local = TRUE) {
   }
   $pattern = array();
 
-  @include($path);
+  include($path);
   // That should have declared a 'pattern' into current scope.
 
   if (!patterns_validate_pattern($pattern)) {
@@ -82,8 +116,17 @@ function patterns_load_php($path, $local = TRUE) {
 }
 
 /**
- * Create a pattern from an XML data source
+ * Create a pattern from an XML data source.
  */
+/*
+ * Creates a pattern from an XML data source.
+ *
+ * @param string $xml The XML string of the data source.
+ *
+ * @return array|bool
+ *   The pattern structure, or FALSE.
+ */
+
 function patterns_from_source($xml) {
   $parse = drupal_xml_parser_create($xml);
   xml_parser_set_option($parse, XML_OPTION_CASE_FOLDING, 0);
@@ -92,7 +135,7 @@ function patterns_from_source($xml) {
     return FALSE;
   }
 
-  // Create a multi-dimensional array representing the XML structure
+  // Create a multi-dimensional array representing the XML structure.
   $pattern = current(_patterns_parse_tag($vals));
 
   return $pattern;
@@ -174,13 +217,11 @@ function _patterns_rearrange_data($data, $parent = '') {
   return $data;
 }
 /**
- * Menu callback - returns source code of the requested pattern
- * if the pattern is public
+ * Menu callback, returns source code of the requested pattern
+ * if the pattern is public.
  *
- * @param $pid
- *   pattern id
- * @return
- *   source code of the requested pattern
+ * @param integer $pid
+ *   The ID of the Pattern to be displayed.
  */
 function patterns_get_source($pid) {
   if (!is_numeric($pid)) {
@@ -189,7 +230,7 @@ function patterns_get_source($pid) {
 
   $pattern = patterns_get_pattern($pid);
 
-  // make sure pattern is public (published)
+  // Make sure pattern is public (published).
   if (!$pattern->public) {
     exit;
   }
@@ -205,7 +246,7 @@ function patterns_get_source($pid) {
 }
 
 /**
- * Loads the Patterns handlers (component) from file system,
+ * Loads the Patterns handlers (component) from the filesystem,
  * if they are not already loaded.
  */
 function patterns_load_components() {
@@ -227,40 +268,50 @@ function patterns_load_components() {
   $loaded = TRUE;
 }
 
-
+/*
+ * Loads the available patterns.
+ *
+ * Checks inside the directories defined by patterns_paths().
+ * @see patterns_paths
+ *
+ * @param $reset
+ *
+ * @return array The array of available patterns.
+ */
 function patterns_get_patterns($reset = TRUE) {
   patterns_load_components();
 
   if ($reset || !variable_get('patterns_loaded', FALSE)) {
-    // Get a listing of enabled patterns
+    // Get a listing of enabled patterns.
     $enabled = array();
 
     $priority = array();
     $errors = array();
 
-    // Get list of directories to scan for patterns
+    // Get list of directories to scan for patterns.
     $patterns_paths = patterns_paths();
 
-    // get valid file extensions
+    // Get valid file extensions.
     $mask = '/.\.(' . implode('|', patterns_file_types()) . ')$/';
 
-    // prepare list of files/folders to be excluded
-    // 'enabled' - Don't save enabled pattern backups
+    // Prepare list of files/folders to be excluded.
+    // 'enabled' - Don't save enabled pattern backups.
+    // @TODO: extend these.
     $no_mask = array('.', '..', 'CVS', '.svn', 'enabled');
 
     foreach ($patterns_paths as $path) {
       foreach (file_scan_directory($path, $mask, $no_mask) as $file) {
-        // Can't update existing patterns that are enabled
+        // Can't update existing patterns that are enabled.
         if (in_array($file->filename, $enabled) || in_array($file->name, $priority)) {
           continue;
         }
 
         $priority[] = $file->name;
 
-        // choose appropriate function based on the file extension: YAML or XML
+        // Choose appropriate function based on the file extension: YAML or XML.
         $func = 'patterns_load_' . substr($file->filename, strlen($file->name) + 1);
 
-        // Load and save pattern
+        // Load and save pattern.
         if ($pattern = $func($file->uri)) {
           patterns_db_save_pattern($pattern, $file->uri, $file->name);
         }
@@ -281,13 +332,12 @@ function patterns_get_patterns($reset = TRUE) {
   $patterns = array();
 
   foreach ($result as $pattern) {
-
-    // skip pattern if its file is missing
+    // Skip pattern if its file is missing.
     if (!is_file($pattern->file)) {
       continue;
     }
 
-    // skip pattern if loading failed and report that to the user
+    // Skip pattern if loading failed and report that to the user.
     if (in_array($pattern->file, $errors)) {
       $messages[] = t("Pattern couldn't be loaded from the file '%file'", array('%file' => $pattern->file));
       continue;
@@ -303,7 +353,6 @@ function patterns_get_patterns($reset = TRUE) {
     drupal_set_message(implode('<br/>', $messages) . '<br/>' . t('Make sure that above file(s) are readable and contain valid data.'), 'error');
   }
 
-  // Ste: $patterns may have not been initialized
   return $patterns;
 }
 
@@ -312,7 +361,7 @@ function patterns_io_get_patterns_service() {
 }
 
 /**
- * Check if a .htaccess file exists to prevent downloads of pattern files
+ * Checks if a .htaccess file exists to prevent downloads of pattern files.
  */
 function _patterns_check_file_dir() {
   return FALSE;
@@ -333,7 +382,7 @@ function _patterns_check_file_dir() {
 }
 
 /**
- * Check if the patterns directory exist and is writable.
+ * Checks if the patterns directory exist and is writable.
  */
 function _patterns_is_patterns_dir_ready() {
   $patterns_files_dir = '/srv/http/dr7/sites/default/files' . "/" . variable_get('patterns_save_file', 'patterns'); // TODO: move this out for performance
@@ -341,16 +390,25 @@ function _patterns_is_patterns_dir_ready() {
 }
 
 /**
+ * Saves a pattern.
  *
- * @param unknown_type $pattern
- * @param unknown_type $format
+ * Replaces the pattern if it already exists. Produces error messages if the
+ * pattern could not be saved.
  *
- * @TODO: move $format as an element of pattern, a column in the db
+ * @param string $content The content of the pattern to be saved.
+ * @param string $name The name of the pattern file.
+ * @param string $format
+ *   (optional) The format of the pattern. Defaults to 'yaml'.
+ *
+ * @return bool
+ *   TRUE on success, FALSE otherwise.
+ *
+ * @TODO: Move $format as an element of pattern, a column in the DB.
  *
  */
 function patterns_io_save_pattern($content, $name, $format = 'yaml') {
 
-  // System Patterns Directory
+  // System Patterns directory.
   $dir = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
 
   if (file_prepare_directory($dir, TRUE)) {
@@ -358,13 +416,13 @@ function patterns_io_save_pattern($content, $name, $format = 'yaml') {
 
     if (file_unmanaged_save_data($content, $path, FILE_EXISTS_REPLACE)) {
 
-      // Load and save pattern
+      // Load and save pattern.
       $load_func = 'patterns_load_' . $format;
 
       if ($pattern = $load_func($path)) {
         patterns_db_save_pattern($pattern, $path, $name);
         drupal_set_message(t('%name was saved.', array('%name' => $name)));
-        // Not for now
+        // Not for now.
         //_patterns_clear_failed_edit();
       }
       else {
@@ -387,6 +445,5 @@ function patterns_io_save_pattern($content, $name, $format = 'yaml') {
 }
 
 function patterns_io_remove_pattern($path) {
-  // TODO
+  // @TODO
 }
-

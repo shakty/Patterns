@@ -1,11 +1,14 @@
 <?php
-
+/*
+ * @file
+ * Functions that are unused at the moment.
+ */
 
 // Forms Submission
 //////////////////////////////////////////////////////
 
 
-// Custom process, submit and validate
+// Custom process, submit and validate.
 
 /**
  * Custom implementation of drupal_process_form()

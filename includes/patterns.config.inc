@@ -2,6 +2,8 @@
 /*
  * @file
  * Configuration file.
+ *
+ * Permission, help, and other hooks. Requirements. Settings form.
  */
 
 /**
@@ -33,6 +35,7 @@ function patterns_help($section, $arg = NULL) {
 
 /**
  * Display the pattern settings form.
+ * @TODO proper doc.
  */
 function patterns_settings($form, &$form_state) {
   $form['patterns_form_helper'] = array(
@@ -49,7 +52,7 @@ function patterns_settings($form, &$form_state) {
   );
   // Reload patterns while we are here and ensure the lists are up to date
   patterns_get_patterns(TRUE);
-  
+
   return system_settings_form($form);
 }
 
@@ -107,7 +110,7 @@ function patterns_requirements($phase) {
 
 
 /**
- * Return a list of paths that will be scanned for patterns/
+ * Return a list of paths that will be scanned for patterns/.
  */
 function patterns_paths() {
   global $profile;
@@ -148,9 +151,10 @@ function patterns_paths() {
 
 
 /**
- * Return file extensions supported by patterns module.
+ * Return file extensions supported by the patterns module.
  *
- * @return array of supported file types
+ * @return array
+ *   Array of supported file types.
  *
  * @todo convert this into pluggable system
  */

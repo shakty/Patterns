@@ -2,7 +2,7 @@
 
 /**
  * Builds up a pattern editing environment. Loads additional javascript libraries,
- * and supplies ajax validation on the fly.
+ * and supplies AJAX validation on the fly.
  *
  * @param mixed $pattern
  *
@@ -25,7 +25,13 @@ function patterns_editor($form_id, $pattern = array()) {
   return $editor;
 }
 
-function patterns_quickrun() {
+/**
+ * Form constructor for the Quick Run form.
+ *
+ * @see patterns_quickrun_submit()
+ * @ingroup forms
+ */
+function patterns_quickrun($form, &$form_state) {
   // TODO: this form could be reused, see function patterns_enable_pattern().
   // Default
   $content = "# Pattern\n";
@@ -101,6 +107,12 @@ function patterns_quickrun() {
   return $form;
 }
 
+/**
+ * Form submission handler for patterns_quickrun().
+ *
+ * @see patterns_quickrun()
+*/
+    
 function patterns_quickrun_submit($form, $form_state) {
 
   // Parse the content of the textarea
@@ -122,8 +134,7 @@ function patterns_quickrun_submit($form, $form_state) {
   return patterns_start_engine($pattern, $params, $mode);
 }
 /**
- * Display the page for create a new pattern.
- *
+ * Display the page for creating a new pattern.
  */
 function patterns_create_page($pid = NULL) {
 
@@ -148,8 +159,7 @@ function patterns_create_page($pid = NULL) {
 }
 
 /*
- * Display the page for editing patterns.
- *
+ * Display the page for editing a pattern.
  */
 function patterns_edit_page($pid = NULL) {
   if (!is_numeric($pid)) {
@@ -177,8 +187,6 @@ function patterns_edit_page($pid = NULL) {
 //                                                                   t('This is a NOT saved, edited version of the original pattern!!') ;
 
 
-
-
   $out = '<h6>Info</h6>';
   $out .= theme('table', array('rows' => $info, 'attributes' => array('class' => 'patterns-list')));
   $out .= patterns_editor('patterns_edit', $pattern);
@@ -188,7 +196,11 @@ function patterns_edit_page($pid = NULL) {
 
 
 /**
- * Create the form to edit patterns
+ * Form constructor for editing a pattern.
+ * TODO:params
+ * @see patterns_edit_validate()
+ * @see patterns_edit_submit()
+ * @ingroup forms
  */
 function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
   // TODO: this form could be reused, see function patterns_enable_pattern().
@@ -304,10 +316,13 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
 //  drupal_goto('admin/patterns/enable/'.$pattern->pid);
 //}
 
-
 /**
- * Validate pattern modifications (still to do...)
- */
+ * Form validation handler for patterns_edit_form().
+ *
+ * @todo Do this properly.
+ *
+ * @see patterns_edit_submit()
+*/
 function patterns_edit_validate($form, &$form_state) {
 
   // real_path(public) returns the path to the files dir
@@ -320,10 +335,11 @@ function patterns_edit_validate($form, &$form_state) {
 }
 
 /**
- * Submit edits to the pattern
- */
+ * Form submission handler for patterns_edit_form().
+ *
+ * @see patterns_edit_validate()
+*/
 function patterns_edit_submit($form, &$form_state) {
-
   $name = $form_state['values']['name'];
   $content = $form_state['values']['content'];
   $format = $form_state['values']['format'];
@@ -331,7 +347,6 @@ function patterns_edit_submit($form, &$form_state) {
   patterns_io_save_pattern($content, $name, $format);
 
   //variable_set(PATTERNS_FAILED_EDIT,$form_state['values']['content']);
-
 }
 
 ///**
@@ -415,12 +430,9 @@ function patterns_edit_submit($form, &$form_state) {
 
 
 /**
- *
- * Adds the javascript files to load the Co2 Editing TextArea
- *
+ * Adds the JavaScript files to load the Co2 Editing textarea.
  */
 function patterns_load_co2() {
-
   // Load the CodeMirror Editor if installed in the libraries folder
   $co2_path = libraries_get_path('codemirror2');
   if (!empty($co2_path)) {
@@ -441,7 +453,5 @@ function patterns_load_co2() {
 
     return TRUE;
   }
-
   return FALSE;
-
 }

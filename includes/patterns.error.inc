@@ -1,20 +1,31 @@
 <?php
+/*
+ * @file
+ * Error handling.
+ */
 
-
+/*
+ * Sets the custom Patterns error handler.
+ */
 function patterns_set_error_handler() {
   // set custom error handler
   set_error_handler('patterns_error_handler');
   // trigger dummy error
-  // this will be used as a refrence to determine if any real error
-  // occured during the pattern execution
+  // This will be used as a refrence to determine if any real error
+  // occured during the pattern execution.
   @trigger_error('patterns_error');
 }
 
+/*
+ * Wrapper for restore_error_handler().
+ */
 function patterns_restore_error_handler() {
   restore_error_handler();
 }
 
 /**
+ * Custom Patterns error handler.
+ *
  * Custom error handler used only during patterns execution
  * in order to catch and properly handle PHP errors.
  * Based on drupal_error_handler().
@@ -58,46 +69,36 @@ function patterns_error_handler($errno, $message, $filename, $line, $context) {
       }
     }
 
-    // 'patterns_error' is not a real error and should be skipped
+    // 'patterns_error' is not a real error and should be skipped.
     if ($message != 'patterns_error') {
       watchdog('php', '%message in %file on line %line.', array('%error' => $types[$errno][0], '%message' => $message, '%file' => $filename, '%line' => $line), $types[$errno][1]);
       if ($types[$errno][1] == WATCHDOG_ERROR) {
-        patterns_error_set_last(array('message' => $message, 'type' => $errno, 'file' => $filename, 'line' => $line));
+        patterns_error_last(array('message' => $message, 'type' => $errno, 'file' => $filename, 'line' => $line));
       }
     }
   }
   return TRUE;
 }
 
-function patterns_error_set_last($error = NULL) {
-  static $last_error = array();
-
-  if (isset($error)) {
-    $last_error = $error;
-  }
-  return $last_error;
-}
-
 /**
- * Check and report PHP errors during patterns execution
+ * Check and report PHP errors during patterns execution.
  *
  * @param $op
- *   operation within hook_patterns() during which error occured
+ *   Operation within hook_patterns() during which the error occured.
  * @param $key
- *   number of the action currently proccessed
+ *   Number of the actions currently proccessed.
  * @param $description
- *   description of the current action
+ *   Description of the current action.
  * @param $pattern_title
- *   title of the pattern currently proccessed
+ *   Title of the pattern currently proccessed.
  * @param $pattern_file
- *   path to pattern file currently proccessed
+ *   Path to pattern file currently proccessed.
  * @return
- *   error message if new error encountered
- *   FALSE if there are no new errors
- *
+ *   Error message if new error encountered,
+ *   FALSE if there are no new errors.
  */
 function patterns_error_get_last($op, $key, $description, $pattern_title, $pattern_file) {
-  $error = patterns_error_set_last();
+  $error = patterns_error_last();
 
   if (!empty($error) && $error['message'] != 'patterns_error') {
     $types = array(
@@ -123,6 +124,9 @@ function patterns_error_get_last($op, $key, $description, $pattern_title, $patte
   return FALSE;
 }
 
+/*
+ * Returns or sets the last error.
+ */
 function patterns_error_last($error = NULL) {
   static $last_error = array();
 
@@ -132,8 +136,10 @@ function patterns_error_last($error = NULL) {
   return $last_error;
 }
 
+/*
+ * Helper function for checking errors.
+ */
 function patterns_error_check_results(&$result) {
-
   if ($result['status'] == PATTERNS_ERR) {
     $return = FALSE;
     $wd_type = WATCHDOG_ERROR;
@@ -144,7 +150,7 @@ function patterns_error_check_results(&$result) {
     $wd_type = WATCHDOG_WARNING;
     $msg_type = 'warning';
   }
-  else { // Success
+  else { // Success.
     return TRUE;
   }
 
@@ -162,6 +168,6 @@ function patterns_error_check_results(&$result) {
   $msg = (empty($result['msg'])) ? $msg : $msg . $result['msg'];
   watchdog('patterns', $msg, array(), $wd_type);
   drupal_set_message($result['msg'], $msg_type);
-  return $return;
 
+  return $return;
 }

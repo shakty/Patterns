@@ -97,7 +97,7 @@ define('PATTERNS_DELETE', 'delete');
  * @ In the pattern details, list any sub-patterns directly on the patterns listing page
  * @ Create a Pattern class (?) check performance
  * @ Increase performaces, it seems still slow.
- * @ Check core.php.inc
+ * @ **done**Check core.php.inc
  */
 
 
@@ -137,7 +137,7 @@ function patterns_menu() {
   );
 
   $items['admin/patterns/create/%'] = array(
-    'title' => 'Create a New Pattern',
+    'title' => 'Create a new Pattern',
     'page callback' => 'patterns_create_page',
     'page arguments' => array(3),
     'access arguments' => array('administer patterns'),
@@ -302,11 +302,8 @@ function patterns_menu() {
 }
 
 
-
-
 /**
  * First function to be called for displaying the pattern page.
- *
  */
 function patterns_list() {
 

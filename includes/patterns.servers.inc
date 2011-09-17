@@ -1,12 +1,20 @@
 <?php
+/*
+ * @file
+ * Functions related to importing and publishing patterns on the web.
+ */
 
 /**
- * Display the import pattern from server form
+ * Form constructor for the pattern importing from server form.
+ *
+ * @see patterns_import_server_validate()
+ * @see patterns_import_server_submit()
+ * @ingroup forms
  */
 function patterns_import_server($form, &$form_state) {
   if (empty($form_state['storage'])) {
     
-    // real_path(public) returns the path to the files dir
+    // real_path(public) returns the path to the files dir.
     $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
   
     // Ste: was
@@ -57,6 +65,11 @@ function patterns_import_server($form, &$form_state) {
   return $form;
 }
 
+/**
+ * Form submission handler for patterns_import_server().
+ *
+ * @see patterns_import_server_validate()
+ */
 function patterns_import_server_validate($form, &$form_state) {
   if (empty($form_state['storage'])) {
     if (!ini_get('allow_url_fopen')) {
@@ -72,7 +85,7 @@ function patterns_import_server_validate($form, &$form_state) {
       form_set_error('server_url', t('Failed to retreive the patterns feed from: %url. Please check your URL and try again.', array('%url' => $form_state['values']['server_url'])));
       return;
     }
-    // @todo: replace this with proper XML validation
+    // @todo: replace this with proper XML validation.
     if (strpos($xml, '<?xml') !== 0) {
       form_set_error('', t('URL %url is not a valid XML file.', array('%url' => $form_state['values']['server_url'])));
       return;
@@ -99,6 +112,11 @@ function patterns_import_server_validate($form, &$form_state) {
   }
 }
 
+/**
+ * Form validation handler for patterns_import_server().
+ *
+ * @see patterns_import_server_submit()
+*/
 function patterns_import_server_submit($form, &$form_state) {
 
   if ($form_state['storage']['step'] == 'get url') {
@@ -117,7 +135,7 @@ function patterns_import_server_submit($form, &$form_state) {
       $errors['get file'][] = $pattern_info;
       continue;
     }
-    
+
     // real_path(public) returns the path to the files dir
     $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
     $path .= '/' . $pattern_info['name'] . '.' . $pattern_info['file_type'];
@@ -126,10 +144,10 @@ function patterns_import_server_submit($form, &$form_state) {
       continue;
     }
 
-      // choose appropriate function based on the file extension
+    // Choose appropriate function based on the file extension.
     $func = 'patterns_load_' . $pattern_info['file_type'];
 
-    // Load pattern
+    // Load pattern.
     if (!$pattern = $func($saved)) {
       $errors['load pattern'][] = $pattern_info;
       unlink($saved);
@@ -190,7 +208,7 @@ function patterns_feed_rearrange_data($feed) {
 
 
 /**
- * Not really doing anything for now
+ * @TODO Not really doing anything for now.
  * @param mixed $pid
  */
 function patterns_publish_pattern($pid) {
@@ -201,6 +219,10 @@ function patterns_publish_pattern($pid) {
   drupal_goto('admin/patterns');
 }
 
+/**
+ * @TODO Not really doing anything for now.
+ * @param mixed $pid
+ */
 function patterns_unpublish_pattern($pid) {
   if (is_numeric($pid)) {
     $result = db_query("UPDATE {patterns} SET public = 0 WHERE pid = :pid", array('pid' => $pid));
@@ -208,4 +230,3 @@ function patterns_unpublish_pattern($pid) {
   drupal_set_message(t('Pattern unpublished.'));
   drupal_goto('admin/patterns');
 }
-

@@ -1,7 +1,15 @@
 <?php
+/*
+ * @file
+ * Importing Patterns from a file or using an URL.
+ */
 
 /**
- * Display the import pattern form
+ * Form constructor for the Pattern import form.
+ *
+ * @see patterns_import_validate()
+ * @see patterns_import_submit()
+ * @ingroup forms
  */
 function patterns_import_source($form, &$form_state) {
 

@@ -1,24 +1,25 @@
 <?php
-
+/*
+ * @file
+ * Functions related to parsing pattern files.
+ */
 
 /**
- * Find parts of an array based on
- * a semi-compatible xpath syntax.
+ * Finds parts of an array based on a semi-compatible Xpath syntax.
  *
- * Returns an array of constructs that includes the
- * references 'item' and 'parent' from the matching values
- * in the $data object along with extra keys 'key' for the key
- * of the current match and 'trace' for a full list of keys
- * till the root of the $data object
+ * Returns an array of constructs that includes the references 'item' and
+ * 'parent' from the matching values in the $data object along with extra keys
+ * 'key' for the key of the current match and 'trace' for a full list of keys
+ * until the root of the $data object.
  *
- * Loosely based off of Cake function Set::extract
+ * Loosely based off of Cake function Set::extract.
  *
- * @Note: Ensure this always only returns matches from a single level
- * in the array. Changes made to matches in different levels can possibly
- * mess up the above-level matches. To this end, you cannot change the keys
- * of a current match because the other matches cannot change their keys as well
- * to sync with the new parent array.
- * @TODO: Think of a solution for the above note (BROKEN RIGHT NOW)
+ * @Note: Ensure this always only returns matches from a single level in the
+ * array. Changes made to matches in different levels can possibly mess up the
+ * above-level matches. To this end, you cannot change the keys of a current
+ * match because the other matches cannot change their keys as well to sync with
+ * the new parent array.
+ * @TODO: Think of a solution for the above note (BROKEN RIGHT NOW).
  */
 function patterns_array_fetch($path, &$data, $context = NULL) {
   if (!$context && (empty($data) || !is_array($data))) {
@@ -88,7 +89,6 @@ function patterns_array_fetch($path, &$data, $context = NULL) {
   return $matches;
 }
 
-
 /**
  * Recurse through the values of a parsed xml file to create a
  * multi-dimensional representation of the data.
@@ -155,10 +155,11 @@ function _patterns_parse_tag($data, &$index = 0) {
  * - title of the pattern
  * - file of the pattern
  *
- * @param mixed $key The key of the action in the actions_map array
- * @param array $actions_map array containing information about of all the
- * actions of the batch_set
- * @return array $result concise description of the action
+ * @param mixed $key The key of the action in the actions_map array.
+ * @param array $actions_map
+ *   Array containing information about of all the actions of the batch_set.
+ *
+ * @return array $result Concise description of the action.
  */
 function patterns_locate_action($key, $actions_map) {
   $result['key'] = $actions_map['map'][$key]['index'];
@@ -169,10 +170,11 @@ function patterns_locate_action($key, $actions_map) {
 
 
 /**
- * Check if pattern array or content from a file is valid
+ * Check if pattern array or content from a file is valid.
  *
- * @param mixed $pattern pattern array or content of a pattern file
- * @return TRUE if valid, FALSE otherwise
+ * @param mixed $pattern Pattern array or content of a pattern file.
+ * 
+ * @return bool TRUE if valid, FALSE otherwise.
  */
 function patterns_validate_pattern($pattern) {
   $scan = _patterns_scan_pattern($pattern);
@@ -183,11 +185,11 @@ function patterns_validate_pattern($pattern) {
  * Analyze the result of a call to _patterns_scan_pattern, and check whether
  * the pattern was valid.
  *
- * @param array $analysis obtained from  _patterns_scan_pattern
+ * @param array $analysis Obtained from  _patterns_scan_pattern.
+ *
  * @return TRUE if valid, FALSE otherwise
  */
 function _patterns_analyze_patternscan($patternscan) {
-
   $msgs = array();
 
   if ($patternscan['info'] == 0) {
@@ -207,7 +209,8 @@ function _patterns_analyze_patternscan($patternscan) {
   }
 
   if (count($patternscan['invalid_actions']) != 0) {
-    $out = 'Only ' . implode(', ', patterns_actions()) . ' are valid actions. Found: '; // TODO: t()
+    // @TODO: t()
+    $out = 'Only ' . implode(', ', patterns_actions()) . ' are valid actions. Found: ';
     $out .= implode(', ', $patternscan['invalid_actions']);
     $msgs[] = $out;
   }
@@ -223,8 +226,9 @@ function _patterns_analyze_patternscan($patternscan) {
  * Analyze the result of a call to _patterns_scan_pattern, and check whether
  * the pattern was valid.
  *
- * @param array $analysis obtained from  _patterns_scan_pattern
- * @return TRUE if valid, FALSE otherwise
+ * @param array $analysis Obtained from  _patterns_scan_pattern.
+ *
+ * @return bool TRUE if valid, FALSE otherwise.
  */
 function _patterns_validate_patternscan($patternscan, $display_errors = FALSE) {
   $analysis = _patterns_analyze_patternscan($patternscan);
@@ -238,13 +242,11 @@ function _patterns_validate_patternscan($patternscan, $display_errors = FALSE) {
 }
 
 /**
- * Pattern
+ * Parses a YAML pattern.
  *
- * // @TODO: Check if we can use patterns_load_yaml instead
- *
+ * @TODO: Check if we can use patterns_load_yaml instead.
  */
 function patterns_parse_yaml($pattern) {
-
   if (!is_array($pattern)) {
     include_once libraries_get_path('spyc') . '/spyc.php';
     $pattern = Spyc::YAMLLoad($pattern);
@@ -253,14 +255,14 @@ function patterns_parse_yaml($pattern) {
 }
 
 /**
- * Scan a pattern and returns a brief summary of its properties
+ * Scans a pattern and returns a brief summary of its properties.
  *
  * @param $pattern
- *   pattern array obtained by parsing pattern file
+ *   pattern array Obtained by parsing pattern file.
  * @return
- *   array $result summary of the pattern
+ *   array $result Summary of the pattern.
  *
- * @todo expand this function to include much more detailed validation
+ * @TODO Expand this function to include much more detailed validation.
  */
 function _patterns_scan_pattern($pattern) {
 
@@ -312,12 +314,10 @@ function _patterns_scan_pattern($pattern) {
   return $result;
 }
 
-
-
 /**
- * Callback of the url patterns/validate. Returns validation info about the
- * pattern passed in the $_POST array
+ * Callback of the url patterns/validate.
  *
+ * Returns validation info about the pattern passed in the $_POST array.
  */
 function patterns_validate_service() {
 
@@ -336,18 +336,18 @@ function patterns_validate_service() {
 }
 
 /**
- * Return an array with detailed information about the pattern(s) referenced in
+ * Returns an array with detailed information about the pattern(s) referenced in
  * the pattern files (included).
  *
- * @param stdClass $pattern Pattern object as loaded by patterns_get_pattern()
- * @param $recursive if the directive include is valid
- * @param $pids ??
+ * @param stdClass $pattern Pattern object as loaded by patterns_get_pattern().
+ * @param bool $recursive If the directive include is valid.
+ * @param array $pids ??
  *
- * @return array $details array('pid1' => $details, 'pid2' => $details, ...),
- *         FALSE if there were errors (in which case the errors will be displayed).
+ * @return array $details
+ *   array('pid1' => $details, 'pid2' => $details, ...),
+ *   FALSE if there were errors (in which case the errors will be displayed).
  */
 function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = array()) {
-
   $scan = _patterns_scan_pattern($pattern->pattern);
 
   $details = array();
@@ -361,7 +361,6 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
   else {
     return FALSE;
   }
-
 
   ////////////////////////////////////////////////////////////////
   // IMPORTANT
@@ -380,7 +379,6 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
   $patterns[$pattern->pid] = (array) $pattern;
   $patterns[$pattern->pid] = array_merge($patterns[$pattern->pid], $patterns[$pattern->pid]['pattern']['info']);
   unset($patterns[$pattern->pid]['pattern']);
-
 
 
   if ($recursive) {
@@ -482,15 +480,16 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
     //unset($pids[$pattern->pid]);
     return $result;
   }
-  // Remove pid from recursion stack
-  //unset($pids[$pattern->pid]);
+  // Remove pid from recursion stack.
+  // unset($pids[$pattern->pid]);
   return array('actions' => $actions, 'modules' => $modules, 'info' => $patterns);
 }
 
 /**
- * Validates a pattern name
+ * Validates a pattern name.
  *
  * @param mixed $name
+ * @TODO Doc.
  */
 function patterns_parser_validate_pattern_name($name = NULL) {
 
@@ -507,9 +506,10 @@ function patterns_parser_validate_pattern_name($name = NULL) {
 }
 
 /**
- * Analyze a pattern name and return an array of errors msgs
+ * Analyzes a pattern name and return an array of errors messages.
  *
  * @param mixed $name
+ * @TODO Doc.
  */
 function _patterns_parser_analyze_pattern_name($name = NULL) {
   $msgs = array();
@@ -533,8 +533,9 @@ function _patterns_parser_analyze_pattern_name($name = NULL) {
 
 
 /**
- * Validate an XML file
+ * Validates an XML file.
  *
+ * @TODO Doc.
  * TODO: test it
  * TODO: improve XML validator
  * Check that the xml was properly parsed and also that the
@@ -545,7 +546,7 @@ function patterns_parser_validate_xml_pattern($content) {
     return FALSE;
   }
 
-  // Add XML tag if missing
+  // Add XML tag if missing.
   if (strpos($content, '<?xml') !== 0) {
     $content = '<?xml version="1.0" encoding="UTF-8"?>' . $content;
   }
@@ -559,4 +560,3 @@ function patterns_parser_validate_xml_pattern($content) {
 
   return TRUE;
 }
-
