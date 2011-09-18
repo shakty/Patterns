@@ -17,7 +17,8 @@ jQuery('document').ready( function() {
 				jQuery.ajax({
 					type: 'POST',
 					url: url,
-					data: 'pattern='+textarea.value,
+					// TODO: This needs to be encoded.
+					data: 'pattern=' + textarea.value,
 					success: function ( data, status, xhr ) {
 								document.getElementById('validation_result').innerHTML = '<strong>'+data+'</strong>';
 								//$('validation_result').replaceWith(data);

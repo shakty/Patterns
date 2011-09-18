@@ -8,8 +8,8 @@
 class PatternsPrivilegesTestCase extends DrupalWebTestCase {
   public static function getInfo() {
     return array(
-      'name' => 'Test privileges.',
-      'description' => 'Test that only the ones with the right privileges can access Patterns.',
+      'name' => 'General test.',
+      'description' => 'Test privileges, enabling a pattern, the editor.',
       'group' => 'Patterns',
     );
   }
@@ -20,10 +20,32 @@ class PatternsPrivilegesTestCase extends DrupalWebTestCase {
     // TODO: how to ensure that Spyc is installed?
 
     // Create users.
+    $this->adm_user = $this->drupalCreateUser(array('administer site configuration'));
     $this->pat_user = $this->drupalCreateUser(array('administer patterns'));
     $this->std_user = $this->drupalCreateUser(array());
   }
 
+  function testSpyc() {
+    // Login the site administrator.
+    $this->drupalLogin($this->adm_user);
+
+    $this->drupalGet('admin/reports/status');
+    $this->assertResponse(200);
+    if ($this->spycAvailable()) {
+      $this->assertRaw('Spyc library (YAML parser)</td><td class="status-value">0.5', t('Spyc 0.5 is installed and detected.'));
+    } else {
+      $this->assertRaw('Spyc library (YAML parser)</td><td class="status-value">' . t('Missing'), t('Spyc 0.5 is not detected and the proper error message is shown.'));
+    }
+  }
+
+  private function spycAvailable() {
+    $path = libraries_get_path('spyc') . '/spyc.php';
+    if(!file_exists($path)){
+      return FALSE;
+    }
+    return TRUE;
+  }
+  
   /**
    * Login users, load the Patterns list page.
    */
@@ -47,14 +69,71 @@ class PatternsPrivilegesTestCase extends DrupalWebTestCase {
     $this->drupalGet('admin/patterns');
     $this->assertResponse($response);
     if ($response == 200) {
-      $this->assertText(t('Patterns will be looked for in files under the following locations:'), t('Patterns list was displayed'));
-    }
-    // TODO: verify other pages
+      $this->checkPage();
 
+      $this->assertUniqueText(t('Patterns will be looked for in files under the following locations:'), t('Patterns list was displayed'));
+      //$this->assertTitle('Patterns');
+    }
+
+    // Enabling form for the first pattern.
+    $this->drupalGet('admin/patterns/enable/1');
+    $this->assertResponse($response);
+    if ($response == 200) {
+      $this->checkPage();
+
+      // Some assertions.
+      $name = "Enable/disable modules";
+      $this->assertRaw(t('Proceed with running pattern %pattern?', array('%pattern' => $name)));
+
+      // Fill the form.
+      $edit = array();
+      $edit['mode'] = 'php';
+
+      // Post the form.
+      $this->drupalPost('admin/patterns/enable/1', $edit, t('Confirm'));
+      $this->assertResponse($response);
+
+      // Some assertions.
+      // TODO: make this more general.
+      $this->assertUniqueText(t('Pattern "@pattern" ran successfully.', array('@pattern' => $name)), t('Valid pattern runs without errors.'));
+      $this->assertNoText(t('Error(s) while processing pattern:'), t('Valid pattern does not produce errors.'));
+      $this->assertRaw('Enabled</td><td><label><strong>' . $name);
+    }
+
+    // Use the editor.
+    // $this->assertTitle('Patterns');
+    $this->drupalGet('admin/patterns/edit/2');
+    $this->assertResponse($response);
+    if ($response == 200) {
+      //$this->assertTitle('Edit Pattern');
+      // TODO: Get path.
+      // $filepath = 
+      // $this->assertRaw(t('Path') . ':</td><td>' . $filepath);
+      $this->assertRaw('<td>' . t('Enabled') . ':</td><td>' . t('No') . t('</td>'));
+      // TODO: Why can't I use PatternRunTestCase::loadPattern('variables.yaml') ? Maybe because the class is abstract?
+      $filename = 'block_delete.yaml';
+      $patternfile = file_get_contents(drupal_get_path('module', 'patterns') . '/patterns/' . $filename);
+      $this->assertRaw('class="form-textarea">' . $patternfile);
+
+      /* TODO
+      // Try validating.
+      $values = array('pattern' => $patternfile);
+      $this->drupalPost('patterns/validate', $values, array('path' => 'patterns/validate', ));
+      */
+      
+    }
+  }
+
+  private function checkPage() {
+    // TODO: regexp?
+    // TODO: do this better?
+    $this->assertNoText(t('Error'), t('There should be no errors.'));
+    $this->assertNoText(t('Warning'), t('There should be no warnings.'));
+    $this->assertNoText(t('Notice'), t('There should be no notices.'));
   }
 }
 
-/*
+/**
  * Abstract base class for testing pattern component behavior.
  */
 abstract class PatternRunTestCase extends DrupalWebTestCase {
@@ -69,7 +148,7 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
   }
 
   function runFile($filename, $name) {
-    $patterntext = $this->loadPattern($filename);
+    $patterntext = self::loadPattern($filename);
     $this->runTest($patterntext, $name);
   }
 
@@ -81,7 +160,7 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
     //$this->quickRun($pattern, $name, 'batch');
   }
 
-  /*
+  /**
    * Runs a pattern through the Quick Run interface.
    */
   function quickRun($pattern, $name, $mode = 'php', $valid = TRUE) {
@@ -96,20 +175,20 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
 
     if ($valid) {
       // Check for a valid syntax run.
-      $this->assertUniqueText(t('Pattern "@pattern" ran successfully.', array('@pattern' => $name)), 'Valid pattern runs without errors.');
-      $this->assertNoText(t('Error(s) while processing pattern:'), 'Valid pattern does not produce errors.');
+      $this->assertUniqueText(t('Pattern "@pattern" ran successfully.', array('@pattern' => $name)), t('Valid pattern runs without errors.'));
+      $this->assertNoText(t('Error(s) while processing pattern:'), t('Valid pattern does not produce errors.'));
     }
     else {
-      $this->assertUniqueText(t('Error(s) while processing pattern:'), 'Invalid pattern produces errors.');
-      $this->assertNoText(t('Pattern "@pattern" ran successfully.', array('@pattern' => $name)), 'Invalid pattern does not run without errors.');
+      $this->assertUniqueText(t('Error(s) while processing pattern:'), t('Invalid pattern produces errors.'));
+      $this->assertNoText(t('Pattern "@pattern" ran successfully.', array('@pattern' => $name)), t('Invalid pattern does not run without errors.'));
     }
 
   }
-  /*
+  /**
    * Loads a pattern text file from patterns/patterns/.
    * @filename The name of the pattern file.
    */
-  function loadPattern($filename) {
+  public static function loadPattern($filename) {
     return file_get_contents(drupal_get_path('module', 'patterns') . '/patterns/' . $filename);
   }
 }
@@ -119,12 +198,12 @@ class PatternsSystemComponent extends PatternRunTestCase {
   static function getInfo() {
     return array(
       'name' => 'Test the System component.',
-      'description' => 'Enable and disable modules.',
+      'description' => 'Enable and disable modules, set and delete variables.',
       'group' => 'Patterns',
     );
   }
 
-  /*
+  /**
    * Check the database if a module is enabled/disabled.
    * @name Module name
    * @enabled TRUE iff the module should be enabled.
@@ -152,12 +231,12 @@ class PatternsSystemComponent extends PatternRunTestCase {
     parent::runFile('modules.yaml', 'Enable/disable modules');
 
     // Expected messages.
-    $this->assertUniqueText(t('Module(s) forum, number enabled. No modules have been disabled.'), 'The forum module should get enabled.');
+    $this->assertUniqueText(t('Module(s) forum, number enabled. No modules have been disabled.'), t('The forum module should get enabled.'));
     // TODO: some of these will fail because of an error in the engine (running multiple tags).
-    $this->assertUniqueText(t('No modules have been enabled. Module(s) overlay disabled.'), 'The overlay module should get disabled.');
-    $this->assertUniqueText(t('Warning: Could not disable admin_menu because it is missing.'), 'Disabling a missing module gives a warning.');
-    $this->assertUniqueText(t('Warning: Did not disable aggregator because it is already disabled.'), 'Disabling a disabled module gives a warning.');
-    $this->assertUniqueText(t('Warning: Did not enable number because it is already enabled.'), 'Enabling an enabled module gives a warning.');
+    $this->assertUniqueText(t('No modules have been enabled. Module(s) overlay disabled.'), t('The overlay module should get disabled.'));
+    $this->assertUniqueText(t('Warning: Could not disable admin_menu because it is missing.'), t('Disabling a missing module gives a warning.'));
+    $this->assertUniqueText(t('Warning: Did not disable aggregator because it is already disabled.'), t('Disabling a disabled module gives a warning.'));
+    $this->assertUniqueText(t('Warning: Did not enable number because it is already enabled.'), t('Enabling an enabled module gives a warning.'));
 
     // Check for modules after running the pattern.
     // TODO: it might be good to check if every other module is left untouched.
@@ -174,21 +253,21 @@ class PatternsSystemComponent extends PatternRunTestCase {
         ->execute()
         ->fetchAll());
     */
-    $this->assertNotEqual(variable_get('user_pictures', NULL), NULL, 'user_pictures variable should be set.');
-    $this->assertEqual(variable_get('votingapi_anonymous_window', NULL), NULL, 'votingapi_anonymous_window variable should not be set.');
-    $this->assertEqual(variable_get('fivestar_widget', NULL), NULL, 'fivestar_widget variable should not be set.');
+    $this->assertNotEqual(variable_get('user_pictures', NULL), NULL, t('user_pictures variable should be set.'));
+    $this->assertEqual(variable_get('votingapi_anonymous_window', NULL), NULL, t('votingapi_anonymous_window variable should not be set.'));
+    $this->assertEqual(variable_get('fivestar_widget', NULL), NULL, t('fivestar_widget variable should not be set.'));
     
     // Run the pattern.
     parent::runFile('variables.yaml', 'Create and delete variables');
 
-    $this->assertUniqueText(t('Variable(s) votingapi_anonymous_window, fivestar_widget updated.'), 'The votingapi_anonymous_window, fivestar_widget variables should get updated.');
-    $this->assertUniqueText(t('Variable(s) user_pictures updated.'), 'The user_pictures variable should get updated.');
+    $this->assertUniqueText(t('Variable(s) votingapi_anonymous_window, fivestar_widget updated.'), t('The votingapi_anonymous_window, fivestar_widget variables should get updated.'));
+    $this->assertUniqueText(t('Variable(s) user_pictures updated.'), t('The user_pitures variabcle should get updated.'));
     
    
     // Check for variables after running the pattern.
-    $this->assertEqual(variable_get('user_pictures', NULL), NULL, 'user_pictures variable should not be set.');
-    $this->assertIdentical(variable_get('votingapi_anonymous_window', NULL), 3600, 'votingapi_anonymous_window variable should be set properly.');
-    $this->assertIdentical(variable_get('fivestar_widget', NULL), 'sites/all/modules/fivestar/widgets/craft/craft.css', 'fivestar_widget variable should be set properly.');
+    $this->assertEqual(variable_get('user_pictures', NULL), NULL, t('user_pictures variable should not be set.'));
+    $this->assertIdentical(variable_get('votingapi_anonymous_window', NULL), 3600, t('votingapi_anonymous_window variable should be set properly.'));
+    $this->assertIdentical(variable_get('fivestar_widget', NULL), 'sites/all/modules/fivestar/widgets/craft/craft.css', t('fivestar_widget variable should be set properly.'));
     /* debug(db_select('variable', 'v')
         ->fields('v', array('name'))
         ->execute()
