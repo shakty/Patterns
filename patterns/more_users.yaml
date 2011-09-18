@@ -2,7 +2,7 @@
 # QScience
 
 info:
-  title: Create users!
+  title: Create users
   description: as title
   author: QScience
   category: QScience
@@ -13,28 +13,23 @@ info:
 
 actions:
   create:
-    tag: user 
-      uid: 3
-      name: fujicoAsdasda
-      mail: fujico@mailinator.org     
-      password: fujico
-      timezone: Europe/Berlin
-      roles: 2
-      status: 1
-      #delete: 3
-      #create:1
-      edit:1
+    tag: user
+    uid: 3
+    name: fujicoAsdasda
+    mail: fujico@mailinator.org
+    password: fujico
+    timezone: Europe/Berlin
+    roles: 2
+    status: 1
+    #delete: 3
+    #create:1
+    edit:1
 
   create:
-    tag: user 
-      name: lupin
-      mail: lupin@mailinator.org     
-      password: lupin
-      roles: 2
-      status: 1
----
+    tag: user
+    name: lupin
+    mail: lupin@mailinator.org
+    password: lupin
+    roles: 2
+    status: 1
 
-
-#  - tag: field
-#      name: unfieldo
-#      type: text

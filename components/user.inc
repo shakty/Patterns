@@ -4,10 +4,9 @@
  * Patterns component for users.
  */
 
-/*
+/**
  * Implements hook_patterns() for the user module.
  */
-
 function user_patterns() {
 
   $files = array('modules/user/user.admin.inc');
@@ -49,7 +48,9 @@ function user_patterns_actions() {
       );
 }
 
-// Prepare data for processing
+/**
+ * Implements hook_patterns_prepare() for the user module.
+ */
 function user_patterns_prepare($action, $tag, &$data = NULL) {
   if ($tag == 'user') {
     // Check with isset first, otherwise we get a notice
@@ -214,7 +215,7 @@ function user_patterns_validate($action, $tag, &$data = NULL) {
 function user_patterns_callbacks($action, $tag, &$data = NULL) {
 
   if ($tag == 'user') {
-    // Check if the user needs updating
+    // Check if the user needs updating.
     if ($data['uid']) {
       if ($action === PATTERNS_DELETE) {
         $result = array('user_cancel_confirm_form');
@@ -226,10 +227,10 @@ function user_patterns_callbacks($action, $tag, &$data = NULL) {
       }
     }
     else {
-      // Ste: was
-      //return 'user_register';
-      if (!$action === PATTERNS_DELETE) {
+      if (!($action === PATTERNS_DELETE)) {
         $result = array('user_register_form');
+      } else {
+        // TODO: ???
       }
     }
   }
