@@ -9,8 +9,9 @@
  * and supplies AJAX validation on the fly.
  *
  * @param mixed $pattern
- *
- */
+ * @return
+ * @todo Doc.
+  */
 function patterns_editor($form_id, $pattern = array()) {
 
   $pattern = patterns_get_pattern_obj($pattern);
@@ -23,7 +24,7 @@ function patterns_editor($form_id, $pattern = array()) {
     $editor .= t('Install !co2 in sites/all/libraries/codemirror2 for advanced editing functionalities.', array('!co2' => $co2));
   }
 
-  // Load the JS of for the ajax validation
+  // Load the JS of for the ajax validation.
   drupal_add_js(drupal_get_path('module', 'patterns') . '/js/ajax_validation.js');
 
   return $editor;

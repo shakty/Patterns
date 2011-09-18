@@ -106,7 +106,8 @@ function patterns_db_save_pattern($pattern, $path, $name) {
 function patterns_get_pattern($id) {
   $pattern = FALSE;
 
-  $query = db_select('patterns', 'p');
+  $query = db_select('patterns', 'p')
+             ->fields('p');
 
   if (is_numeric($id)) {
     $query = $query->condition('p.pid', $id);
