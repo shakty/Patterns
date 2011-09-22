@@ -1,0 +1,23 @@
+# YAML Taxonomies Pattern
+# QScience
+
+info:
+  title: Taxonomy Vocabulary MODIFY -- working
+  description: as title
+  author: QScience
+  category: Taxonomy
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qscience.csko.hu
+  
+  
+
+actions:
+        
+   modify:
+        tag: vocabulary
+        machine_name: anothervoc
+        name: Yet Another Vocabulary
+        description: Yet another Vocabulary, very useless
+        hierarchy: 0

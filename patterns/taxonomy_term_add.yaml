@@ -1,9 +1,9 @@
- # YAML Taxonomies Pattern
+# YAML Taxonomy Pattern
 # QScience
 
 info:
-  title: TAXONOMY add Terms
-  description: as title
+  title: Taxonomy Terms ADD -- working
+  description: Add a term to a vocabulary
   author: QScience
   category: Taxonomy
   version: 1.0
@@ -15,8 +15,9 @@ info:
 
 actions:
         
-    - tag: term
-        name: Term2
-        descr: This is a 2-term
-        #vid: 2
+    create:
+        tag: term
+        name: Patatina
+        descr: This is a Patatina
         vocabulary: anothervoc # machine_name
+        #vid: 2

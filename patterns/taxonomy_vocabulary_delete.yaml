@@ -1,0 +1,21 @@
+# YAML Taxonomies Pattern
+# QScience
+
+info:
+  title: Taxonomy Vocabulary DELETE -- working
+  description: Delete a vocabulary
+  author: QScience
+  category: Taxonomy
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qscience.csko.hu
+  
+  
+
+actions:
+        
+   delete:
+        tag: vocabulary
+        machine_name: anothervoc
+        #vid: 2 # the actual vid must be checked carefully

@@ -2,10 +2,10 @@
 # Example Pattern
 
 info: # mandatory name
-  title: New Vocabulary
-  description: Adds a new vocabulary to the website 
+  title: Create, modify and delete a Vocabulary
+  description: as title
   author: QScience
-  category: Examples
+  category: Taxonomy
   
 actions: # any name is good for this category
 
