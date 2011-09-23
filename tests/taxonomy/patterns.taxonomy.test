@@ -1,0 +1,81 @@
+<?php
+
+/**
+ * @file
+ * SimpleTests for the Taxonomy Component of Patterns.
+ */
+
+class PatternsTaxonomyTestCase extends PatternRunTestCase {
+  
+  const TAXO_TESTS_DIR = 'tests/taxonomy';
+  
+  public static function getInfo() {
+    return array(
+      'name' => 'Taxonomy Component for Patterns.',
+      'description' => 'Test creating, modifying, deleting Vocabularies and Terms.',
+      'group' => 'Patterns',
+    );
+  }
+
+  public function setUp() {
+    // Enable any modules required for the tests.
+    parent::setUp('patterns');
+
+    // Create users.
+    //$this->adm_user = $this->drupalCreateUser(array('administer site configuration'));
+    //$this->drupalLogin($this->adm_user);
+    
+  }
+  
+  /**
+   * Test the:
+   * 
+   *    * Creation
+   *    * Modification of name and description
+   *    * Deletion
+   *    
+   * of a vocabulary with machine_name 'anothervoc'.
+   * 
+   */
+  public function testCMDVocabulary() {
+    
+    // Make sure that 'anothervoc' matches the name in the pattern file
+    $voc = 'anothervoc';
+    $taxo = taxonomy_vocabulary_machine_name_load($voc);
+    $this->assertFALSE($taxo, t('Make sure that vocabulary \'anothervoc\' is not already existing.'));
+    
+    if (!$taxo) {
+      // CREATE VOCABULARY pattern.
+      parent::runFile('taxonomy_vocabulary_add.yaml', 'Creates \'anothervoc\' vocabulary.', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
+      
+      $taxo = taxonomy_vocabulary_machine_name_load($voc);
+      $this->assertTRUE($taxo, t('Vocabulary \'anothervoc\' created.'));
+    }
+    
+    // MODIFY VOCABULARY pattern
+    
+    $vid  = $taxo->vid;
+    $name = $taxo->name;
+    $descr = $taxo->description;
+    
+    parent::runFile('taxonomy_vocabulary_modify.yaml', 'Modifies \'anothervoc\' vocabulary.', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
+    
+    $taxo = taxonomy_vocabulary_machine_name_load($voc);
+    
+    $this->assertEqual($taxo->vid, $vid, t('Modify Vocabulary pattern did no alter vid.'));
+    $this->assertNotEqual($taxo->name, $name, t('Modify Vocabulary pattern changed name correctly'));
+    $this->assertNotEqual($taxo->description, $descr, t('Modify Vocabulary pattern changed description correctly'));
+    
+    // Delete VOCABULARY pattern
+    
+    $vid  = $taxo->vid;
+    
+    parent::runFile('taxonomy_vocabulary_delete.yaml', 'Deletes \'anothervoc\' vocabulary.', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
+    
+    $taxo = taxonomy_vocabulary_load($vid);
+    $this->assertFALSE($taxo, t('Vocabulary \'anothervoc\' deleted.'));
+    
+  }
+
+ 
+}

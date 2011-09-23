@@ -147,8 +147,8 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
     $this->pat_user = $this->drupalCreateUser(array('administer patterns'));
   }
 
-  function runFile($filename, $name) {
-    $patterntext = self::loadPattern($filename);
+  function runFile($filename, $name, $dir) {
+    $patterntext = self::loadPattern($filename, $dir);
     $this->runTest($patterntext, $name);
   }
 
@@ -184,13 +184,18 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
     }
 
   }
+  
   /**
-   * Loads a pattern text file from patterns/patterns/.
+   * Loads a pattern text file from a directory contained in the Patterns module.
+   *  
    * @filename The name of the pattern file.
+   * @dir The subdirectory of the patterns module where the pattern is located
+   * 
    */
-  public static function loadPattern($filename) {
-    return file_get_contents(drupal_get_path('module', 'patterns') . '/patterns/' . $filename);
+  public static function loadPattern($filename, $dir = 'patterns') {
+    return file_get_contents(drupal_get_path('module', 'patterns') . '/' . $dir . '/' . $filename); 
   }
+    
 }
 
 class PatternsSystemComponent extends PatternRunTestCase {

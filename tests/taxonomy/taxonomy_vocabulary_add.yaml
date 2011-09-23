@@ -1,0 +1,23 @@
+# YAML Taxonomies Pattern
+# QScience
+
+info:
+  title: Taxonomy Vocabulary ADD -- working
+  description: Adds a vocabulary
+  author: QScience
+  category: Taxonomy
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qlectives.eu
+  
+  
+
+actions:
+        
+   create:
+        tag: vocabulary
+        name: Another Vocabulary
+        machine_name: anothervoc
+        description: Another Vocabulary, useless
+        hierarchy: 0
