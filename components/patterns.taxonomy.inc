@@ -115,7 +115,7 @@ function taxonomy_patterns_callbacks ($action, $tag, &$data = NULL) {
 // Prepare for valid processing of this type of component
 function taxonomy_patterns_build ($action, $form_id, &$data = NULL, &$a) {
   module_load_include('inc', 'taxonomy', 'taxonomy.admin'); // TODO: Isn't this already loaded?
-  return patterns_results();
+  return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $data);
 }
 
 // Build a patterns actions and parameters
