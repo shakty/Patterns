@@ -7,18 +7,18 @@
 
 function taxonomy_patterns () {
 
-  $actions['vocabulary'] = array('descr' => t('Create/Modify/Delete Taxonomy Vocabularies'), 
+  $actions['vocabulary'] = array(PATTERNS_INFO   => t('Create/Modify/Delete Taxonomy Vocabularies'), 
                                  PATTERNS_CREATE => array('taxonomy_form_vocabulary'),
                                  PATTERNS_MODIFY => array('taxonomy_form_vocabulary'),
                                  PATTERNS_DELETE => array('taxonomy_vocabulary_confirm_delete'),
-                                 'files'  => array('modules/taxonomy/taxonomy.admin.inc'),
+                                 PATTERNS_FILES  => array('modules/taxonomy/taxonomy.admin.inc'),
                                 );
 
-  $actions['term'] = array('descr'  => t('Create/Modify/Delete Taxonomy Terms'), 
+  $actions['term'] = array(PATTERNS_INFO   => t('Create/Modify/Delete Taxonomy Terms'), 
                            PATTERNS_CREATE => array('taxonomy_form_term'),
                            PATTERNS_MODIFY => array('taxonomy_form_term'),
                            PATTERNS_DELETE => array('taxonomy_term_confirm_delete'),
-                           'files'  => array('modules/taxonomy/taxonomy.admin.inc'),
+                           PATTERNS_FILES  => array('modules/taxonomy/taxonomy.admin.inc'),
                           );
 
   return $actions;                
