@@ -1,0 +1,26 @@
+ # YAML Taxonomies Pattern
+# QScience
+
+info:
+  title: Modify field weight
+  description: Modify field weight
+  author: Yanbo
+  category: Field
+  version: 1.0
+  core: 7.x
+  author_email: nbboob@gmail.com
+  author_website: http://www.qlectives.eu
+  
+  
+
+actions:
+        
+  modify:
+      tag: field_weight
+      entity: user
+      bundle: user
+      weight:
+        first:1
+        second:2
+        third:3
+

@@ -1,0 +1,66 @@
+ # YAML Taxonomies Pattern
+# QScience
+
+info:
+  title: Add custom fields to USER and NODE
+  description: Add custom fields to USER and NODE
+  author: Yanbo
+  category: Field
+  version: 1.0
+  core: 7.x
+  author_email: nbboob@gmail.com
+  author_website: http://www.qlectives.eu
+  
+  
+
+actions:
+
+  create:
+      tag: instance
+      entity: user
+      bundle: user
+      name: sponsor 
+      label: Sponsor Name
+      type:text
+      widget:text_textfield
+      weight: 1
+     
+  create:
+      tag: instance
+      entity: node
+      bundle: article
+      name: sponsor 
+      label: Sponsor
+      weight: 1
+      
+  create:
+      tag: instance
+      entity: node
+      bundle: article
+      name: first 
+      label: first
+      type:text
+      widget:text_textfield
+      weight: 5
+ 
+  create:
+      tag: instance
+      entity: node
+      bundle: article
+      name: second 
+      label: second
+      type:text
+      widget:text_textfield
+      weight: 4
+    
+  create:
+      tag: instance
+      entity: node
+      bundle: article
+      name: third 
+      label: third
+      type:text
+      widget:text_textfield
+      weight: 3
+ 
+ 

@@ -1,0 +1,22 @@
+ # YAML Taxonomies Pattern
+# QScience
+
+info:
+  title: Delete fields
+  description: Delete fields
+  author: Yanbo
+  category: Field
+  version: 1.0
+  core: 7.x
+  author_email: nbboob@gmail.com
+  author_website: http://www.qlectives.eu
+  
+  
+
+actions:
+
+  delete:
+      tag: instance
+      entity: node
+      bundle: article
+      name: sponsor

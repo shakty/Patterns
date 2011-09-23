@@ -1,0 +1,25 @@
+ # YAML Taxonomies Pattern
+# QScience
+
+info:
+  title: Modify field setting
+  description: Modify field setting
+  author: Yanbo
+  category: Field
+  version: 1.0
+  core: 7.x
+  author_email: nbboob@gmail.com
+  author_website: http://www.qlectives.eu
+  
+  
+
+actions:
+
+  modify:
+      tag: field
+      entity: user
+      bundle: user
+      name: sponsor
+      settings:      
+        max_length:100
+
