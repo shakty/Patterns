@@ -11,24 +11,25 @@ info:
   author_email: sbalietti@ethz.ch
   author_website: qscience.csko.hu
 
-actions: 
-  create:
-     tag: variables
-     - variable
-       name: votingapi_anonymous_window
-       value: 3600
-     - variable
-       name: fivestar_widget
-       value: sites/all/modules/fivestar/widgets/craft/craft.css
+actions:
+  - create:
+      tag: variables
+      - variable
+        name: votingapi_anonymous_window
+        value: 3600
+      - variable
+        name: fivestar_widget
+        value: sites/all/modules/fivestar/widgets/craft/craft.css
 
-  delete:
-     tag: variables
-     - variable
-       name: user_pictures
+  - delete:
+      tag: variables
+      - variable
+        name: user_pictures
 
-#    <variable name="theme_settings">
-#      <toggle_node_info_page>0</toggle_node_info_page>
-#      <toggle_node_info_example>0</toggle_node_info_example>
-#      <toggle_node_info_blog>1</toggle_node_info_blog>
-#      <toggle_favicon>0</toggle_favicon>
-#    </variable>
+# <variable name="theme_settings">
+# <toggle_node_info_page>0</toggle_node_info_page>
+# <toggle_node_info_example>0</toggle_node_info_example>
+# <toggle_node_info_blog>1</toggle_node_info_blog>
+# <toggle_favicon>0</toggle_favicon>
+# </variable>
+

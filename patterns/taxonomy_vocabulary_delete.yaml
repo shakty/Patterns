@@ -10,12 +10,12 @@ info:
   core: 7.x
   author_email: sbalietti@ethz.ch
   author_website: qscience.csko.hu
-  
-  
+
+
 
 actions:
-        
-   delete:
+
+   - delete:
         tag: vocabulary
         machine_name: anothervoc
         #vid: 2 # the actual vid must be checked carefully

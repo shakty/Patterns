@@ -15,7 +15,7 @@ info:
 
 actions:
 
-  create:
+  - create:
       tag: instance
       entity: user
       bundle: user
@@ -24,16 +24,16 @@ actions:
       type:text
       widget:text_textfield
       weight: 1
-     
-  create:
+
+  - create:
       tag: instance
       entity: node
       bundle: article
       name: sponsor 
       label: Sponsor
       weight: 1
-      
-  create:
+
+  - create:
       tag: instance
       entity: node
       bundle: article
@@ -42,8 +42,8 @@ actions:
       type:text
       widget:text_textfield
       weight: 5
- 
-  create:
+
+  - create:
       tag: instance
       entity: node
       bundle: article
@@ -52,8 +52,8 @@ actions:
       type:text
       widget:text_textfield
       weight: 4
-    
-  create:
+
+  - create:
       tag: instance
       entity: node
       bundle: article
@@ -62,5 +62,4 @@ actions:
       type:text
       widget:text_textfield
       weight: 3
- 
- 
+

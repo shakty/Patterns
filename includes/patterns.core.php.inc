@@ -35,7 +35,9 @@ function patterns_execute_pattern_php($pattern, $params, $patterns_details, $act
   ///////////////////////////////
 
   foreach ($sections as $section => $actions) { // TODO: is this loop necessary?
-    // $actions passed as reference
+    // Reformat the actions. $actions passed as reference.
+    patterns_reformat($actions);
+    // $actions passed as reference.
     $results = patterns_prepare_actions($actions, $actions_map);
 
     if (!patterns_error_check_results($results)) {
@@ -43,8 +45,8 @@ function patterns_execute_pattern_php($pattern, $params, $patterns_details, $act
     }
     $i = 0;
     $success = TRUE;
-    foreach ($actions as $action => $data) {
-      $results = patterns_php_actions($action, $data, $i, $actions_map);
+    foreach ($actions as $action) {
+      $results = patterns_php_actions($action['action'], $action['data'], $i, $actions_map);
       if (!patterns_error_check_results($results)) {
         drupal_set_message(t('Pattern "@pattern" ran with errors. Check the error messages to get more details.', array('@pattern' => $info['title'])));
         $success = FALSE;

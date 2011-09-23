@@ -74,6 +74,10 @@ class PatternsPrivilegesTestCase extends DrupalWebTestCase {
       $this->assertUniqueText(t('Patterns will be looked for in files under the following locations:'), t('Patterns list was displayed'));
       //$this->assertTitle('Patterns');
     }
+/*
+   // TODO: Temporarily disabled until we find a better way of doing this.
+
+
 
     // Enabling form for the first pattern.
     $this->drupalGet('admin/patterns/enable/1');
@@ -115,13 +119,14 @@ class PatternsPrivilegesTestCase extends DrupalWebTestCase {
       $patternfile = file_get_contents(drupal_get_path('module', 'patterns') . '/patterns/' . $filename);
       $this->assertRaw('class="form-textarea">' . $patternfile);
 
-      /* TODO
-      // Try validating.
-      $values = array('pattern' => $patternfile);
-      $this->drupalPost('patterns/validate', $values, array('path' => 'patterns/validate', ));
-      */
-      
+      // TODO
+      //// Try validating.
+      //$values = array('pattern' => $patternfile);
+      //$this->drupalPost('patterns/validate', $values, array('path' => 'patterns/validate', ));
+
+
     }
+    */
   }
 
   private function checkPage() {

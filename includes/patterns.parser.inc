@@ -211,9 +211,15 @@ function _patterns_analyze_patternscan($patternscan) {
   if (count($patternscan['invalid_actions']) != 0) {
     // @TODO: t()
     $out = 'Only ' . implode(', ', patterns_actions()) . ' are valid actions. Found: ';
-    $out .= implode(', ', $patternscan['invalid_actions']);
+    $invalidactions = array();
+    foreach ($patternscan['invalid_actions'] as $key => $value) {
+      $invalidactions[] = $value['key'];
+    }
+    $out .= implode(', ', $invalidactions);
     $msgs[] = $out;
   }
+
+  // TODO: extra_actions
 
   if (count($patternscan['empties']) > 0) {
     $msgs[] = t('Pattern contains empty actions: ') . implode(', ', $patternscan['empties']);
@@ -272,18 +278,19 @@ function _patterns_scan_pattern($pattern) {
                   'empties' => array(),
                   'include' => array(),
                   'invalid_actions' => array(),
+                  'extra_actions' => array(),
                   'other_sections' => array(),
   );
 
   $pattern = patterns_parse_yaml($pattern);
 
   if (!empty($pattern)) {
-
     // Patterns must contain:
     // 1 and only section info
     // 0 or 1 section modules
     // 1 or more other sections
     // All the sections must be a non-empty array
+    $valid_actions = patterns_actions();
     foreach ($pattern as $key => $value) {
       if ($key == 'info') {
         $result['info']++;
@@ -295,14 +302,30 @@ function _patterns_scan_pattern($pattern) {
         $result['include']++;
       }
       else {
-        $result['other_sections'][$key] = $key; // TODO: add info about the section as value
+        $result['other_sections'][$key] = $key; // TODO: Add info about the section as value.
 
-        foreach ($value as $action => $data) {
+        $resultactions = array();
+        $newactions = array();
+        foreach ($value as $action => &$data) {
 
-          if (!array_key_exists($action, patterns_actions())) {
-            $result['invalid_actions'][$action] = $action;
+          // Make sure there is only one valid action in each array element.
+          // NOTE: Having additional valid actions will work, but is discouraged,
+          // and therefore undocumented.
+          $found = FALSE;
+          foreach ($data as $akey => $avalue) {
+            if (!array_key_exists($akey, $valid_actions)) {
+              $result['invalid_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
+            }else{
+              // Report additional valid actions.
+              if ($found){
+                $result['extra_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
+              }
+              $newactions[] = array('action' => $akey, 'data' => $avalue);
+              $found = TRUE;
+            }
           }
         }
+        $value = $newactions;
       }
 
       if (empty($value)) {
@@ -529,8 +552,6 @@ function _patterns_parser_analyze_pattern_name($name = NULL) {
 
   return $msgs;
 }
-
-
 
 /**
  * Validates an XML file.

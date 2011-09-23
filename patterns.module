@@ -617,6 +617,7 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
   $tag_modules = patterns_get_tagmodules_index();
 
   // Unsetting it while the module performs operations.
+  // TODO: this needs to be checked (and produce an error message, if needed).
   $tag = $data['tag'];
   unset($data['tag']);
 

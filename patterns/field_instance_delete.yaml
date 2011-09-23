@@ -10,12 +10,12 @@ info:
   core: 7.x
   author_email: nbboob@gmail.com
   author_website: http://www.qlectives.eu
-  
-  
+
+
 
 actions:
 
-  delete:
+  - delete:
       tag: instance
       entity: node
       bundle: article
