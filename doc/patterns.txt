@@ -159,7 +159,7 @@ you are working with the prepared data and you are checking against the database
  action. This can either be just the form values, or it can be the
  full _form_state_ object.
 
-* *+hook_patterns_params($action, $form_id, &$data &$action_state)+*: returns extra parametersthat the form may require.
+* *+hook_patterns_params($action, $form_id, &$data &$action_state)+*: returns extra parameters that the form may require.
 
 * *+hook_patterns_cleanup($action, $tag, &$data)+*: performs optional additional operations,
    after the execution of the action has finished.
@@ -188,11 +188,12 @@ Return values
 
 Returns the following array of actions:
 ------------------
-  $actions['tag1'] = array('descr' => t('Description of this tag'), 
+  $actions['tag1'] = array(
+    PATTERNS_INFO => t('Description of this tag'), 
     PATTERNS_CREATE => array('form_to_create_tag1', 'form_to_create_tag2'),
     PATTERNS_MODIFY => array('form_to_modify_tag1', 'form_to_modify_tag2'),
     PATTERNS_DELETE => array('form_to_delete_tag1', 'form_to_delete_tag2'),
-    'files'  => $files = array('some file that needs to be included');,
+    PATTERNS_FILES  => $files = array('some file that needs to be included'),
   );
   $actions['tag2'] = ... ;
 -----------------
