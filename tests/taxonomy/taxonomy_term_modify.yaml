@@ -1,0 +1,23 @@
+# YAML Taxonomy Pattern
+# QScience
+
+info:
+  title: Taxonomy Terms MODIFY -- working
+  description: Modify a term within a vocabulary
+  author: QScience
+  category: Taxonomy
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qlectives.eu
+  
+  
+
+actions:
+
+  modify:
+        tag: term
+        name: Not_Patatina
+        descr: This is not a Patatina
+        tid: 1
+        vocabulary: anothervoc # machine_name

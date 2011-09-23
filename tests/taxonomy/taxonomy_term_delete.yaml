@@ -1,0 +1,26 @@
+# YAML Taxonomy Pattern
+# QScience
+
+info:
+  title: Taxonomy Terms DELETE  -- working
+  description: Delete a term from a vocabulary
+  author: QScience
+  category: Taxonomy
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qlectives.eu
+  
+
+# In order to delete a term a unique term name must exist. 
+# Multiple deletion of terms with the same name are not allowed.
+
+# Alternatively the tid can be passed
+
+actions:
+        
+    delete:
+        tag: term
+        vocabulary: anothervoc # machine_name
+        name: Not_Patatina
+        #tid: 1
