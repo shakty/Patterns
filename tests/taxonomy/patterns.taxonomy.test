@@ -41,7 +41,7 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
     //$this->assertFALSE($taxo, t('Make sure that vocabulary \'anothervoc\' is not already existing.'));
     
     // CREATE VOCABULARY pattern.
-    parent::runFile('taxonomy_vocabulary_add.yaml', 'Creates \'anothervoc\' vocabulary.', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
+    parent::runFile('taxonomy_vocabulary_add.yaml', 'Taxonomy_Vocabulary_ADD', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
     
     $taxo = taxonomy_vocabulary_machine_name_load($voc);
     $this->assertNotNull($taxo, t('Vocabulary \'anothervoc\' created.'));
@@ -56,25 +56,37 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
     
     $taxo = NULL;
     
-    parent::runFile('taxonomy_vocabulary_modify.yaml', 'Modifies \'anothervoc\' vocabulary.', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
+    parent::runFile('taxonomy_vocabulary_modify.yaml', 'Taxonomy_Vocabulary_MODIFY', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
     
-    $taxo = taxonomy_vocabulary_machine_name_load($voc);
+    // Seems to fail 
+    // $taxo = taxonomy_vocabulary_machine_name_load($voc);
     
-    $this->verbose('Vocabulary modified: ' . var_export($taxo, TRUE));
+    $taxos = db_select('taxonomy_vocabulary', 'tv')
+                    ->fields('tv', array('vid', 'name', 'description'))
+                    ->condition('tv.machine_name', $voc)
+                    ->execute()
+                    ->fetchAll(); // return array of Std objs
+                    
+    $this->assertEqual(count($taxos), 1, t('One vocabulary found'));                 
+    $taxo = $taxos[0];
     
     $this->assertEqual($taxo->vid, $vid, t('Modify Vocabulary pattern did no alter vid.'));
     $this->assertNotEqual($taxo->name, $name, t('Modify Vocabulary pattern changed name correctly'));
     $this->assertNotEqual($taxo->description, $descr, t('Modify Vocabulary pattern changed description correctly'));
     
     // Delete VOCABULARY pattern
+        
+    parent::runFile('taxonomy_vocabulary_delete.yaml', 'Taxonomy_Vocabulary_DELETE', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
     
-    $vid  = $taxo->vid;
+    $taxos = db_select('taxonomy_vocabulary', 'tv')
+                    ->fields('tv', array('vid', 'name', 'description'))
+                    ->condition('tv.machine_name', $voc)
+                    ->execute()
+                    ->fetchAll(); // return array of Std objs
     
-    parent::runFile('taxonomy_vocabulary_delete.yaml', 'Deletes \'anothervoc\' vocabulary.', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
+    $this->assertEqual(count($taxos), 0, t('Vocabulary \'anothervoc\' deleted.'));
     
-    $taxo = taxonomy_vocabulary_load($vid);
-    $this->assertFALSE($taxo, t('Vocabulary \'anothervoc\' deleted.'));
-    
+    //$this->verbose('Vocabulary modified: ' . var_export($taxo, TRUE));
   }
 
  

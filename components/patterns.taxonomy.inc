@@ -106,7 +106,7 @@ function taxonomy_patterns_validate($action, $tag, &$data = NULL) {
 function taxonomy_patterns_callbacks ($action, $tag, &$data = NULL) {
 	// Just return the form ids specified above. No custom functions used here.
 	$desc = taxonomy_patterns();
-  throw new Exception($result);
+	$result = $desc[$tag][$action];
 	return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
 
