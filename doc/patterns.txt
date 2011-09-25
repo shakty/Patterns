@@ -268,3 +268,24 @@ TODO: Handle administration themes separately.
  | delete
 
 |====
+
+
+Patterns function names conventions
+-----------------------------------
+
+TODO
+
+Besides standard link:http://drupal.org/coding-standards[Drupal coding
+conventions] the Patterns module uses the following naming conventions :
+
+- *PHP file names*: any extra php used for Patterns execution  should begin
+   with the prefix *+patterns.+*. E.g.: *+patterns.editor.inc+*;
+
+- *Function names*: functions declared in .inc files should contain
+   the name of the .inc file in their
+   name. E.g. *+patterns_io_save_pattern()+* is defined in
+   *+includes/patterns.io.inc+*. Notice: does not apply for theme functions. 
+
+- *AJAX call*: methods which are called during AJAX operations, and
+   print directly their output instead of returning it should end with
+   the suffix *+_service+*. E.g. : *+patterns_parser_validate_service()+*;
