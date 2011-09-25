@@ -3,13 +3,13 @@
 
 info:
   title: Taxonomy Vocabulary ADD -- working
-  description: as title
+  description: Adds a vocabulary
   author: QScience
   category: Taxonomy
   version: 1.0
   core: 7.x
   author_email: sbalietti@ethz.ch
-  author_website: qscience.csko.hu
+  author_website: qlectives.eu
   
   
 

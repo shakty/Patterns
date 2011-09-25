@@ -21,3 +21,4 @@ actions:
         name: Yet Another Vocabulary
         description: Yet another Vocabulary, very useless
         hierarchy: 0
+        # vid: 3

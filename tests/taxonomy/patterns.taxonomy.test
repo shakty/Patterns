@@ -19,12 +19,7 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
 
   public function setUp() {
     // Enable any modules required for the tests.
-    parent::setUp('patterns');
-
-    // Create users.
-    //$this->adm_user = $this->drupalCreateUser(array('administer site configuration'));
-    //$this->drupalLogin($this->adm_user);
-    
+    parent::setUp();    
   }
   
   /**
@@ -41,16 +36,17 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
     
     // Make sure that 'anothervoc' matches the name in the pattern file
     $voc = 'anothervoc';
-    $taxo = taxonomy_vocabulary_machine_name_load($voc);
-    $this->assertFALSE($taxo, t('Make sure that vocabulary \'anothervoc\' is not already existing.'));
     
-    if (!$taxo) {
-      // CREATE VOCABULARY pattern.
-      parent::runFile('taxonomy_vocabulary_add.yaml', 'Creates \'anothervoc\' vocabulary.', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
-      
-      $taxo = taxonomy_vocabulary_machine_name_load($voc);
-      $this->assertTRUE($taxo, t('Vocabulary \'anothervoc\' created.'));
-    }
+    //$taxo = taxonomy_vocabulary_machine_name_load($voc);
+    //$this->assertFALSE($taxo, t('Make sure that vocabulary \'anothervoc\' is not already existing.'));
+    
+    // CREATE VOCABULARY pattern.
+    parent::runFile('taxonomy_vocabulary_add.yaml', 'Creates \'anothervoc\' vocabulary.', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
+    
+    $taxo = taxonomy_vocabulary_machine_name_load($voc);
+    $this->assertNotNull($taxo, t('Vocabulary \'anothervoc\' created.'));
+    $this->assertEqual($taxo->machine_name, $voc, t('Vocabulary \'anothervoc\' created with machine_name \'anothervoc\'.'));
+    
     
     // MODIFY VOCABULARY pattern
     
@@ -58,9 +54,13 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
     $name = $taxo->name;
     $descr = $taxo->description;
     
+    $taxo = NULL;
+    
     parent::runFile('taxonomy_vocabulary_modify.yaml', 'Modifies \'anothervoc\' vocabulary.', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
     
     $taxo = taxonomy_vocabulary_machine_name_load($voc);
+    
+    $this->verbose('Vocabulary modified: ' . var_export($taxo, TRUE));
     
     $this->assertEqual($taxo->vid, $vid, t('Modify Vocabulary pattern did no alter vid.'));
     $this->assertNotEqual($taxo->name, $name, t('Modify Vocabulary pattern changed name correctly'));
