@@ -9,7 +9,8 @@
  * file. Concretely, it invokes operations 'prepare', and 'validate' on the
  * pattern component.
  *
- * @param array $actions
+ * @param array $actions An array of actions. Each action is an associative
+ *   array with keys 'action' and 'data'.
  * @param array $actions_map
  *
  * @return array $results array containing the description of eventual errors
@@ -34,13 +35,15 @@ function patterns_prepare_actions(&$actions, $actions_map) {
   /////////////////////////////////////////////
   // Prepare actions for validation/processing
   /////////////////////////////////////////////
-  foreach ($actions as $key => &$data) {
-    patterns_invoke('prepare', $key, $data);
+  foreach ($actions as &$action) {
+    patterns_invoke('prepare', $action['action'], $action['data']);
   }
 
-  // @TODO: Do we need two foreaches? Not sure if prepare and validate could be merged.
-  //        Maybe they were required to be separate when we used to have subpatterns.
-  foreach ($actions as $key => &$data) {
+  // @TODO Not sure if prepare and validate could be merged.
+  //       Maybe they were required to be separate when we used to have subpatterns.
+  foreach ($actions as &$action) {
+  	$key = &$action['action'];
+  	$data = &$action['data'];
 
     /////////////////////////////////////////////////////////
     // This is in case of included patterns. Not for now

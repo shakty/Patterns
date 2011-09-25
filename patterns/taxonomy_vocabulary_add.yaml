@@ -11,11 +11,9 @@ info:
   author_email: sbalietti@ethz.ch
   author_website: qlectives.eu
   
-  
-
 actions:
-        
-   create:
+
+  - create:
         tag: vocabulary
         name: Another Vocabulary
         machine_name: anothervoc

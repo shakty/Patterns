@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * SimpleTests for Patterns.
@@ -45,7 +44,7 @@ class PatternsPrivilegesTestCase extends DrupalWebTestCase {
     }
     return TRUE;
   }
-  
+
   /**
    * Login users, load the Patterns list page.
    */
@@ -74,6 +73,10 @@ class PatternsPrivilegesTestCase extends DrupalWebTestCase {
       $this->assertUniqueText(t('Patterns will be looked for in files under the following locations:'), t('Patterns list was displayed'));
       //$this->assertTitle('Patterns');
     }
+/*
+   // TODO: Temporarily disabled until we find a better way of doing this.
+
+
 
     // Enabling form for the first pattern.
     $this->drupalGet('admin/patterns/enable/1');
@@ -115,13 +118,14 @@ class PatternsPrivilegesTestCase extends DrupalWebTestCase {
       $patternfile = file_get_contents(drupal_get_path('module', 'patterns') . '/patterns/' . $filename);
       $this->assertRaw('class="form-textarea">' . $patternfile);
 
-      /* TODO
-      // Try validating.
-      $values = array('pattern' => $patternfile);
-      $this->drupalPost('patterns/validate', $values, array('path' => 'patterns/validate', ));
-      */
-      
+      // TODO
+      //// Try validating.
+      //$values = array('pattern' => $patternfile);
+      //$this->drupalPost('patterns/validate', $values, array('path' => 'patterns/validate', ));
+
+
     }
+    */
   }
 
   private function checkPage() {
@@ -147,7 +151,7 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
     $this->pat_user = $this->drupalCreateUser(array('administer patterns'));
   }
 
-  function runFile($filename, $name, $dir) {
+  function runFile($filename, $name, $dir = 'patterns') {
     $patterntext = self::loadPattern($filename, $dir);
     $this->runTest($patterntext, $name);
   }
@@ -184,18 +188,18 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
     }
 
   }
-  
+
   /**
    * Loads a pattern text file from a directory contained in the Patterns module.
-   *  
-   * @filename The name of the pattern file.
-   * @dir The subdirectory of the patterns module where the pattern is located
-   * 
+   *
+   * @param string $filename The name of the pattern file.
+   * @param string $dir The subdirectory of the patterns module where the
+   *   pattern is located.
    */
   public static function loadPattern($filename, $dir = 'patterns') {
-    return file_get_contents(drupal_get_path('module', 'patterns') . '/' . $dir . '/' . $filename); 
+    return file_get_contents(drupal_get_path('module', 'patterns') . '/' . $dir . '/' . $filename); // TODO: / properly.
   }
-    
+
 }
 
 class PatternsSystemComponent extends PatternRunTestCase {

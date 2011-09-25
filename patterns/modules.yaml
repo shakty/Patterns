@@ -11,21 +11,15 @@ info:
   author_email: sbalietti@ethz.ch
   author_website: qscience.csko.hu
 
-actions: 
+actions:
 
-  create:
+  - create:
       tag: modules
       - value: forum
       - value: number
 
-# TODO: this is not working as expected
-#  - tag: modules
-#     value: blog
-#     delete: 1
-
-  delete:
+  - delete:
       tag: modules
       - value: admin_menu
       - value: overlay
       - value: aggregator
-

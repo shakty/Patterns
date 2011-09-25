@@ -19,7 +19,7 @@ info:
 
 actions:
         
-    delete:
+    - delete:
         tag: term
         vocabulary: anothervoc # machine_name
         name: Not_Patatina

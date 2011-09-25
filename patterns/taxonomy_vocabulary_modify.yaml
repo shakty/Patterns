@@ -9,13 +9,13 @@ info:
   version: 1.0
   core: 7.x
   author_email: sbalietti@ethz.ch
-  author_website: qscience.csko.hu
-  
-  
+  author_website: qlectives.eu
+
+
 
 actions:
-        
-   modify:
+
+   - modify:
         tag: vocabulary
         machine_name: anothervoc
         name: Yet Another Vocabulary

@@ -6,14 +6,7 @@ core = 7.x
 package = Site Setup
 php = 5.1
 
-; The files[] array works only for Classes and Interfaces
-; so it useless now. Probably to remove from here.
-files[] = includes/config.inc
-files[] = includes/io.inc
-files[] = includes/parser.inc
-files[] = includes/utils.inc
-files[] = includes/servers.inc
-
 ; Test Files
 files[] = tests/patterns.test
 files[] = tests/taxonomy/patterns.taxonomy.test
+

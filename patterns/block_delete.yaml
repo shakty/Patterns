@@ -12,8 +12,8 @@ info:
   author_website: qscience.csko.hu
 
 actions:
-  delete:
-    tag: block
-    module: block # Custom block
-#    delta: 2 # Only specify when editing a block
-    info: Test custom block # This is unique among blocks as well, so it identifies the block
+  - delete:
+     tag: block
+     module: block # Custom block
+#     delta: 2 # Only specify when editing a block
+     info: Test custom block # This is unique among blocks as well, so it identifies the block

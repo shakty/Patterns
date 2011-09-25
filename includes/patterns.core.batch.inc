@@ -39,7 +39,10 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
   ///////////////////////////////
 
   foreach ($sections as $section => $actions) {
-    // $actions passed as reference
+    // Reformat the actions. $actions passed as reference.
+    patterns_reformat($actions);
+
+    // $actions passed as reference.
     $results = patterns_prepare_actions($actions, $actions_map);
 
     if (!patterns_error_check_results($results)) {
@@ -56,8 +59,8 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
 
     $i = 0;
     //$total = count($actions);
-    foreach ($actions as $action => $data) {
-      $batch['operations'][] = array('patterns_batch_actions', array($action, $data, $i, $actions_map));
+    foreach ($actions as $action) {
+      $batch['operations'][] = array('patterns_batch_actions', array($action['action'], $action['data'], $i, $actions_map));
       $i++;
     }
 

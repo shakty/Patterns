@@ -497,3 +497,24 @@ function patterns_actions() {
                 PATTERNS_DELETE => PATTERNS_DELETE,
                );
 }
+
+function patterns_reformat(&$actions) {
+  $valid_actions = patterns_actions();
+  $newactions = array();
+  foreach ($actions as $key => $value) {
+  $found = FALSE;
+  foreach ($value as $akey => $avalue) {
+    if (!array_key_exists($akey, $valid_actions)) {
+      // TODO: Invalid action. Should not happen.
+    } else {
+      // Additional actions. Discouraged and undocumented.
+      if ($found){
+        $result['extra_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
+      }
+      $newactions[] = array('action' => $akey, 'data' => $avalue);
+      $found = TRUE;
+      }
+    }
+  }
+  $actions = $newactions;
+}
