@@ -85,7 +85,11 @@ function theme_patterns_list($args) {
   
   $output = '';
   
-  $form['patterns'] = array('#tree' => TRUE);
+  $form['patterns'] = array(
+    '#prefix' => '<div id="all_patterns_div">',
+    '#suffix' => ' </div>',
+    '#tree' => TRUE,
+  );
 
   foreach ($patterns as $pid => $pattern) {
     

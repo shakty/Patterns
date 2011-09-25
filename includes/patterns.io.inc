@@ -354,8 +354,17 @@ function patterns_get_patterns($reset = TRUE) {
   return $patterns;
 }
 
+/**
+ * Prints an HTML formatted list of patterns.
+ * 
+ */
 function patterns_io_get_patterns_service() {
-  return 'Ciao'; // TODO
+  
+  print "Vaffa";
+  
+//  $patterns = patterns_get_patterns();
+//  $output .= theme('patterns_list', array('patterns' => $patterns, 'invalid' => array()));
+//  print $output;
 }
 
 /**

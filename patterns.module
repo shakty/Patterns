@@ -201,13 +201,13 @@ function patterns_menu() {
   );
 
   // old
-//  $items['admin/patterns/import'] = array(
-//    'title' => 'Import',
-//    'page callback' => 'drupal_get_form',
-//    'page arguments' => array('patterns_import_source'),
-//    'access arguments' => array('administer patterns'),
-//    'type' => MENU_LOCAL_TASK
-//  );
+  //  $items['admin/patterns/import'] = array(
+  //    'title' => 'Import',
+  //    'page callback' => 'drupal_get_form',
+  //    'page arguments' => array('patterns_import_source'),
+  //    'access arguments' => array('administer patterns'),
+  //    'type' => MENU_LOCAL_TASK
+  //  );
 
   $items['admin/patterns/import/source'] = array(
     'title' => 'Import Source Code',
@@ -232,65 +232,65 @@ function patterns_menu() {
   // Disable for Now.
   // TODO Check publish/unpublish
 
-//  $items['admin/patterns/publish'] = array(
-//    'title' => 'Publish Pattern',
-//    'page callback' => 'patterns_publish_pattern',
-//    'access arguments' => array('administer patterns'),
-//    'type' => MENU_CALLBACK
-//  );
-//  $items['admin/patterns/unpublish'] = array(
-//    'title' => 'Unpublish Pattern',
-//    'page callback' => 'patterns_unpublish_pattern',
-//    'access arguments' => array('administer patterns'),
-//    'type' => MENU_CALLBACK
-//  );
+  //  $items['admin/patterns/publish'] = array(
+  //    'title' => 'Publish Pattern',
+  //    'page callback' => 'patterns_publish_pattern',
+  //    'access arguments' => array('administer patterns'),
+  //    'type' => MENU_CALLBACK
+  //  );
+  //  $items['admin/patterns/unpublish'] = array(
+  //    'title' => 'Unpublish Pattern',
+  //    'page callback' => 'patterns_unpublish_pattern',
+  //    'access arguments' => array('administer patterns'),
+  //    'type' => MENU_CALLBACK
+  //  );
 
-//  $items['admin/patterns/server'] = array(
-//    'title' => 'Patterns Server',
-//    'page callback' => 'drupal_get_form',
-//    'page arguments' => array('patterns_import_server'),
-//    'access arguments' => array('administer patterns'),
-//    'type' => MENU_LOCAL_TASK,
-//    'weight' => -5
-//  );
+  //  $items['admin/patterns/server'] = array(
+  //    'title' => 'Patterns Server',
+  //    'page callback' => 'drupal_get_form',
+  //    'page arguments' => array('patterns_import_server'),
+  //    'access arguments' => array('administer patterns'),
+  //    'type' => MENU_LOCAL_TASK,
+  //    'weight' => -5
+  //  );
 
   // This items were already commented.
   /////////////////////////////////////////////////////
 
-//     $items[] = array('path' => 'admin/patterns/configure',
-//       'title' => t('Configure Pattern'),
-//       'callback' => 'drupal_get_form',
-//       'callback arguments' => array('patterns_configure_pattern'),
-//       'type' => MENU_CALLBACK
-//     );
+  //     $items[] = array('path' => 'admin/patterns/configure',
+  //       'title' => t('Configure Pattern'),
+  //       'callback' => 'drupal_get_form',
+  //       'callback arguments' => array('patterns_configure_pattern'),
+  //       'type' => MENU_CALLBACK
+  //     );
 
-//     $items[] = array('path' => 'admin/patterns/info',
-//       'title' => t('Pattern Details'),
-//       'callback' => 'patterns_info',
-//       'type' => MENU_CALLBACK
-//     );
+  //     $items[] = array('path' => 'admin/patterns/info',
+  //       'title' => t('Pattern Details'),
+  //       'callback' => 'patterns_info',
+  //       'type' => MENU_CALLBACK
+  //     );
 
-//     $items[] = array('path' => 'admin/patterns/disable',
-//       'access' => user_access('administer patterns'),
-//       'title' => t('Disable Pattern'),
-//       'callback' => 'drupal_get_form',
-//       'callback arguments' => array('patterns_disable_pattern'),
-//       'type' => MENU_CALLBACK
-//     );
+  //     $items[] = array('path' => 'admin/patterns/disable',
+  //       'access' => user_access('administer patterns'),
+  //       'title' => t('Disable Pattern'),
+  //       'callback' => 'drupal_get_form',
+  //       'callback arguments' => array('patterns_disable_pattern'),
+  //       'type' => MENU_CALLBACK
+  //     );
 
-//  $items['admin/patterns/modules'] = array(
-//    'title' => 'Pattern Modules',
-//    'page callback' => 'patterns_modules_page',
-//    'access arguments' => array('administer patterns'),
-//    'type' => MENU_CALLBACK
-//  );
+  //  $items['admin/patterns/modules'] = array(
+  //    'title' => 'Pattern Modules',
+  //    'page callback' => 'patterns_modules_page',
+  //    'access arguments' => array('administer patterns'),
+  //    'type' => MENU_CALLBACK
+  //  );
 
-//     $items[] = array('path' => 'admin/patterns/revert',
-//       'access' => user_access('administer patterns'),
-//       'title' => t('Revert Pattern'),
-//       'callback' => 'patterns_revert',
-//       'type' => MENU_CALLBACK
-//     );
+  //     $items[] = array('path' => 'admin/patterns/revert',
+  //       'access' => user_access('administer patterns'),
+  //       'title' => t('Revert Pattern'),
+  //       'callback' => 'patterns_revert',
+  //       'type' => MENU_CALLBACK
+  //     );
 
   return $items;
 }
@@ -301,13 +301,13 @@ function patterns_menu() {
  */
 function patterns_list() {
 
-  drupal_add_css(drupal_get_path('module', 'patterns') . '/css/patterns.css');
-  drupal_add_js(drupal_get_path('module', 'patterns') . '/js/patterns.js');
-
+//  drupal_add_css(drupal_get_path('module', 'patterns') . '/css/patterns.css');
+//  drupal_add_js(drupal_get_path('module', 'patterns') . '/js/patterns.js');
+  
   $form['commands'] = array(
     '#type' => 'fieldset',
     '#title' => 'Commands'
-  );
+    );
 
   $form['commands']['refresh'] = array(
     '#type' => 'button',
@@ -315,7 +315,7 @@ function patterns_list() {
     '#attributes' => array('style' => 'float:right'),
     '#ajax' => array(
       'callback' => 'patterns_io_get_patterns_service',
-      'wrapper' => 'replace_textfield_div',
+      'wrapper' => 'all_patterns_div',
     ),
   );
 
@@ -323,10 +323,8 @@ function patterns_list() {
     '#type' => 'button',
     '#value' => 'Create New',
     '#attributes' => array('style' => 'float:right'),
-    '#ajax' => array(
-      'callback' => 'patterns_io_get_patterns_service',
-      'wrapper' => 'replace_textfield_div',
-    ),
+    '#prefix' => '<a href="'.url('admin/patterns/import').'">',
+    '#suffix' => '</a>',
   );
 
   $output = drupal_render($form);
@@ -420,7 +418,7 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
  * process by calling execute_pattern.
  *
  * @see patterns_enable_pattern()
-*/
+ */
 function patterns_enable_pattern_submit($form, &$form_state) {
   $pid = $form_state['values']['pid'];
 
@@ -570,10 +568,10 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
   // $actions_map = array('patterns' => $pattern_details['info'], 'map' => $pattern_details['actions_map']);
 
   // TODO: Patterns details was returning this in case of recursive includes.
-//  $result['actions_map'][] = array(
-//          'pid'   => $pattern->pid,
-//          'index' => $key,
-//        );
+  //  $result['actions_map'][] = array(
+  //          'pid'   => $pattern->pid,
+  //          'index' => $key,
+  //        );
 
   $actions_map = array('patterns' => $infos, 'map' => NULL); // Fix this.
   ////////////////////////////////////////
@@ -581,8 +579,8 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
   // Install modules, if necessary.
   $results = patterns_install_modules($modules);
   if (!$results['success']) { // TODO: handle properly.
-    drupal_set_message($results['error_message'], 'error');
-    return FALSE;
+  drupal_set_message($results['error_message'], 'error');
+  return FALSE;
   }
 
   // Execute the Pattern using the selected mode.
