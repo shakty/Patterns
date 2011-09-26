@@ -47,6 +47,8 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
     $this->assertNotNull($taxo, t('Vocabulary \'anothervoc\' created.'));
     $this->assertEqual($taxo->machine_name, $voc, t('Vocabulary \'anothervoc\' created with machine_name \'anothervoc\'.'));
     
+    // Run test on terms with the newly created vocabulary
+    $this->testCMDTerm();   
     
     // MODIFY VOCABULARY pattern
     
@@ -89,5 +91,71 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
     //$this->verbose('Vocabulary modified: ' . var_export($taxo, TRUE));
   }
 
- 
+/**
+   * Test the:
+   * 
+   *    * Creation
+   *    * Modification of name and description
+   *    * Deletion
+   *    
+   * of a term with name 'Patatina'.
+   * 
+   */
+  private function testCMDTerm() {
+    
+    // Make sure that 'anothervoc' matches the name in the pattern file
+    $term = 'Patatina';
+        
+    // CREATE Term pattern.
+    parent::runFile('taxonomy_term_add.yaml', 'Taxonomy_Term_ADD', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
+    
+    $terms = taxonomy_get_term_by_name($term);
+    //$this->assertNotNull($terms, t('Terms found.'));
+    $this->assertEqual(count($terms), 1, 'Term found');
+    
+    $t = $terms[1];
+    
+    $this->assertEqual($t->name, $term, t('Term created with name \'Patatina\'.'));
+    
+    
+    // MODIFY Term pattern
+    
+    $vid = $t->vid;
+    $tid = $t->tid; 
+    $name = $t->name;
+    $descr = $t->description;
+    
+    $t = NULL;
+    
+    parent::runFile('taxonomy_term_modify.yaml', 'Taxonomy_Term_MODIFY', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
+    
+    $terms = db_select('taxonomy_term_data', 'ttd')
+                    ->fields('ttd', array('vid', 'tid', 'name', 'description'))
+                    ->condition('ttd.tid', $tid)
+                    ->execute()
+                    ->fetchAll(); // return array of Std objs
+                    
+    $this->assertEqual(count($terms), 1, t('One term found'));                 
+    $t = $terms[0];
+    
+    $this->assertEqual($t->vid, $vid, t('Modify Term pattern did no alter vid.'));
+    $this->assertEqual($t->tid, $tid, t('Modify Term pattern did no alter tid.'));
+    $this->assertNotEqual($t->name, $name, t('Modify Term pattern changed name correctly'));
+    $this->assertNotEqual($t->description, $descr, t('Modify Term pattern changed description correctly'));
+    
+    // DELETE Term pattern
+        
+    parent::runFile('taxonomy_term_delete.yaml', 'Taxonomy_Term_DELETE', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
+    
+    $terms = db_select('taxonomy_term_data', 'ttd')
+                    ->fields('ttd', array('vid', 'tid', 'name', 'description'))
+                    ->condition('ttd.name', $term)
+                    ->execute()
+                    ->fetchAll(); // return array of Std objs
+    
+    $this->assertEqual(count($terms), 0, t('Term \'Patatina\' deleted.'));
+    
+    //$this->verbose('Vocabulary modified: ' . var_export($taxo, TRUE));
+  }
+  
 }

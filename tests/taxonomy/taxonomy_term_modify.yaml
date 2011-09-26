@@ -2,7 +2,7 @@
 # QScience
 
 info:
-  title: Taxonomy Terms MODIFY -- working
+  title: Taxonomy_Term_MODIFY
   description: Modify a term within a vocabulary
   author: QScience
   category: Taxonomy
@@ -17,7 +17,8 @@ actions:
 
   - modify:
         tag: term
+        tid: 1 # actual tid must be verified
         name: Not_Patatina
         descr: This is not a Patatina
-        tid: 1
         vocabulary: anothervoc # machine_name
+        
