@@ -78,6 +78,7 @@ function patterns_quickrun($form, &$form_state) {
     '#description' => t('Batch mode uses the Batch API provided by Drupal thus providing intermediate feedback about the progress. PHP will only return when every action has been processed (or there has been an error), which is easier to debug.'),
     '#options' => $options_run_mode,
     '#default_value' => 'batch',
+    '#element_validate' => array('patterns_mode_validate'),
   );
 
   $form['format'] = array(
@@ -125,18 +126,10 @@ function patterns_quickrun_submit($form, $form_state) {
 
   $pattern = patterns_get_pattern_obj($pattern);
 
-  // TODO: is this checking needed?
-  if (!in_array($form_state['values']['mode'], array('batch', 'php'))) {
-    $mode = 'batch';
-  }
-  else {
-    $mode = $form_state['values']['mode'];
-  }
-
   $params['run-subpatterns'] = 'always'; // TODO
   $params['quickrun'] = TRUE;
 
-  return patterns_start_engine($pattern, $params, $mode);
+  return patterns_start_engine($pattern, $params, $form_state['values']['mode']);
 }
 /**
  * Display the page for creating a new pattern.

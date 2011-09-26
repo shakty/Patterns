@@ -139,7 +139,7 @@ function patterns_import_file_validate($form, &$form_state) {
     }
   }
 
-  // TODO: Check what happens with different formats
+  // TODO: Check what happens with different formats.
   $form_state['values']['format'] = $format;
 
   return TRUE;

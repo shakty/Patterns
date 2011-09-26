@@ -172,8 +172,8 @@ function patterns_modules_page($pid) {
  * Module should also provide modulename.config file containing PHP array
  * with the actions that need to be executed.
  *
- * @param $module
- *   name of the module calling the function
+ * @param string $module
+ *   Name of the module calling the function.
  * @return
  * @TODO Doc.
  */
@@ -462,8 +462,10 @@ function _get_file_phpdoc_version($path) {
  * @return
  * @TODO Doc.
  */
-function patterns_results($status = PATTERNS_SUCCESS, $msg = 'Execution successful', $result = NULL) {
-  // TODO: t($msg)
+function patterns_results($status = PATTERNS_SUCCESS, $msg = NULL, $result = NULL) {
+  if ($msg === NULL) {
+  	$msg = t('Execution successful');
+  }
   return array('status' => $status,
                 'msg' => $msg,
                 'result' => $result,
@@ -497,7 +499,11 @@ function patterns_actions() {
                 PATTERNS_DELETE => PATTERNS_DELETE,
                );
 }
-
+/**
+ * Group the action and the data fields.
+ * 
+ * @param array $actions The array of actions.
+ */
 function patterns_reformat(&$actions) {
   $valid_actions = patterns_actions();
   $newactions = array();
@@ -505,7 +511,8 @@ function patterns_reformat(&$actions) {
   $found = FALSE;
   foreach ($value as $akey => $avalue) {
     if (!array_key_exists($akey, $valid_actions)) {
-      // TODO: Invalid action. Should not happen.
+    	// Should not happen.
+    	drupal_set_message(t("Invalid action: %action.", $akey), 'error');
     } else {
       // Additional actions. Discouraged and undocumented.
       if ($found){

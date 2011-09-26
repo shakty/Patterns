@@ -173,6 +173,7 @@ function patterns_menu() {
   );
 
   // TODO: Check admin/patterns/get
+  // TODO: permission
 
   $items['admin/patterns/get'] = array(
     'title' => 'Download Pattern Source',
@@ -355,7 +356,19 @@ function patterns_list() {
  * @ingroup forms
  */
 function patterns_enable_pattern($form, &$form_state, $pid) {
-  $form['pid'] = array(
+
+	$pattern = patterns_get_pattern($pid);
+	if (empty($pattern)) {
+    $form['not_existing'] = array(
+      '#markup' => t('Invalid pattern ID. ') . l(t('Back'), 'admin/patterns'),
+      '#prefix' => '<div id="important">',
+      '#suffix' => '<br/></div>',
+    );
+    $form_state['redirect'] = 'admin/patterns';
+    return $form;
+  }
+
+	$form['pid'] = array(
     '#type' => 'value',
     '#value' => $pid,
   );
@@ -385,6 +398,7 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
     '#description' => t('Batch mode uses the Batch API provided by Drupal thus providing intermediate feedback about the progress. PHP will only return when every action has been processed (or there has been an error), which is easier to debug.'),
     '#options' => $options_run_mode,
     '#default_value' => 'batch',
+    '#element_validate' => array('patterns_mode_validate'),
   );
 
   $options = array(
@@ -405,17 +419,20 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
 
   $disclaimer = t('Please be sure to backup your site before running a pattern. Patterns are not guaranteed to be reversable in case they do not execute well or if unforseen side effects occur.');
 
-  $pattern = patterns_get_pattern($pid);
-  // TODO: check if $patterns === FALSE
-
   return confirm_form($form, t('Proceed with running pattern %pattern?', array('%pattern' => $pattern->title)), 'admin/patterns', $disclaimer);
+}
+
+function patterns_mode_validate($element, &$form_state, $form) {
+  if (!in_array($form_state['values']['mode'], array('batch', 'php'))) {
+    form_error($element, t('Mode must be one of \'batch\' or \'php\'.'));
+  }
 }
 
 /**
  * Form submission handler for patterns_enable_pattern().
  *
- * Takes the values from the form enable_pattern and starts the  * whole
- * process by calling execute_pattern.
+ * Takes the values from the form enable_pattern and starts the whole process
+ * by calling execute_pattern.
  *
  * @see patterns_enable_pattern()
  */
@@ -425,15 +442,7 @@ function patterns_enable_pattern_submit($form, &$form_state) {
   patterns_load_components();
   $pattern = patterns_get_pattern($pid);
 
-  // TODO: is this checking needed?
-  if (!in_array($form_state['values']['mode'], array('batch', 'php'))) {
-    $mode = 'batch';
-  }
-  else {
-    $mode = $form_state['values']['mode'];
-  }
-
-  patterns_start_engine($pattern, $form_state['values'], $mode);
+  patterns_start_engine($pattern, $form_state['values'], $form_state['values']['mode']);
 
   $form_state['redirect'] = 'admin/patterns';
 }
@@ -454,7 +463,7 @@ function patterns_remove_pattern($form, &$form_state, $pid = NULL) {
 
   if (empty($pattern)) {
     $form['not_existing'] = array(
-      '#markup' => t('A non valid pattern to remove was provided. ') . l(t('Cancel'), 'admin/patterns'),
+      '#markup' => t('Invalid pattern ID for removal. ') . l(t('Cancel'), 'admin/patterns'),
       '#prefix' => '<div id="important">',
       '#suffix' => '<br/></div>',
     );
@@ -525,9 +534,9 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
   module_load_include('inc', 'patterns', 'includes/patterns.core.' . $mode);
   $fun = 'patterns_execute_pattern_' . $mode;
 
-  if (!function_exists($fun) || !is_object($pattern)) {
-    return FALSE; // TODO: should not happen.
-  }
+//  if (!function_exists($fun) || !is_object($pattern)) {
+//    return FALSE; // TODO: should not happen.
+//  }
 
   drupal_set_time_limit(0);
 
