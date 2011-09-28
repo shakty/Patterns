@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * SimpleTests for Patterns.
+ * General SimpleTests for Patterns. Also, a Pattern running base class which uses QuickRun.
  */
 
 class PatternsPrivilegesTestCase extends DrupalWebTestCase {
@@ -151,7 +151,7 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
     $this->pat_user = $this->drupalCreateUser(array('administer patterns'));
   }
 
-  function runFile($filename, $name, $dir = 'patterns') {
+  function runFile($filename, $name, $dir = 'patterns/') {
     $patterntext = self::loadPattern($filename, $dir);
     $this->runTest($patterntext, $name);
   }
@@ -196,8 +196,8 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
    * @param string $dir The subdirectory of the patterns module where the
    *   pattern is located.
    */
-  public static function loadPattern($filename, $dir = 'patterns') {
-    return file_get_contents(drupal_get_path('module', 'patterns') . '/' . $dir . '/' . $filename); // TODO: / properly.
+  public static function loadPattern($filename, $dir = 'patterns/') {
+    return file_get_contents(drupal_get_path('module', 'patterns') . '/' . $dir . $filename);
   }
 
 }

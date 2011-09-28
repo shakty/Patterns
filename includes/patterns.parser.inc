@@ -296,7 +296,7 @@ function _patterns_scan_pattern($pattern) {
                   'other_sections' => array(),
   );
 
-  $pattern = patterns_parse_yaml($pattern);
+  $pattern = patterns_parse_yaml($pattern); // TODO: other formats as well.
 
   if (!empty($pattern)) {
     // Patterns must contain:

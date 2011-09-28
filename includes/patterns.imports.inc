@@ -125,6 +125,7 @@ function patterns_import_file_validate($form, &$form_state) {
 
   $format = pathinfo($form_state['pattern_uri']->uri, PATHINFO_EXTENSION);
 
+  // TODO: PHP format
   if ($format == 'yaml') {
     // YAML
     $patternscan = _patterns_scan_pattern($form_state['values']['content']);

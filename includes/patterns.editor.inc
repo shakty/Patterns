@@ -20,7 +20,7 @@ function patterns_editor($form_id, $pattern = array()) {
   $editor  = drupal_render($form);
 
   if (!patterns_load_co2()) {
-    $co2 = l('Codemirror', 'http://codemirror.net/');
+    $co2 = l(t('Codemirror'), 'http://codemirror.net/');
     $editor .= t('Install !co2 in sites/all/libraries/codemirror2 for advanced editing functionalities.', array('!co2' => $co2));
   }
 

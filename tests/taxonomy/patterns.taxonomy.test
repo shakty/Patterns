@@ -7,7 +7,7 @@
 
 class PatternsTaxonomyTestCase extends PatternRunTestCase {
   
-  const TAXO_TESTS_DIR = 'tests/taxonomy';
+  const TAXO_TESTS_DIR = 'tests/taxonomy/';
   
   public static function getInfo() {
     return array(

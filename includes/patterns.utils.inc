@@ -459,18 +459,18 @@ function _get_file_phpdoc_version($path) {
  * @param array $msg A message.
  * @param mixed $result Any kind of additional data.
  *
- * @return
- * @TODO Doc.
+ * @return array An associative array of the input values with keys 'status', 'msg', 'result'.
  */
 function patterns_results($status = PATTERNS_SUCCESS, $msg = NULL, $result = NULL) {
   if ($msg === NULL) {
-  	$msg = t('Execution successful');
+    $msg = t('Execution successful');
   }
   return array('status' => $status,
                 'msg' => $msg,
                 'result' => $result,
               );
 }
+
 /**
  * Checks if a (supposed) array is actually correctly formatted as a patterns_results().
  *
@@ -499,6 +499,7 @@ function patterns_actions() {
                 PATTERNS_DELETE => PATTERNS_DELETE,
                );
 }
+
 /**
  * Group the action and the data fields.
  * 
