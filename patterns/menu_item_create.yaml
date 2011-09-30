@@ -1,0 +1,22 @@
+# YAML Forms Pattern
+# QScience
+
+info:
+  title: add/edit/delete menu items
+  description: Based on http://drupal.org/node/408952
+  author: yanbo
+  category: menu
+  version: 1.0
+  core: 7.x
+  author_email: sbalietti@ethz.ch
+  author_website: qscience.csko.hu
+  
+actions:
+
+  - create:      
+      tag: menu_item
+      menu_name: menu-footer-links
+      link_path:http://123.com
+      link_title: menu link title
+      disable:1
+    
