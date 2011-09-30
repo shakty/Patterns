@@ -32,14 +32,15 @@ class PatternsPrivilegesTestCase extends DrupalWebTestCase {
     $this->assertResponse(200);
     if ($this->spycAvailable()) {
       $this->assertRaw('Spyc library (YAML parser)</td><td class="status-value">0.5', t('Spyc 0.5 is installed and detected.'));
-    } else {
+    }
+    else {
       $this->assertRaw('Spyc library (YAML parser)</td><td class="status-value">' . t('Missing'), t('Spyc 0.5 is not detected and the proper error message is shown.'));
     }
   }
 
   private function spycAvailable() {
     $path = libraries_get_path('spyc') . '/spyc.php';
-    if(!file_exists($path)){
+    if (!file_exists($path)) {
       return FALSE;
     }
     return TRUE;
@@ -255,7 +256,7 @@ class PatternsSystemComponent extends PatternRunTestCase {
     $this->assertModule('number', TRUE);
   }
 
-  public function testVariables(){
+  public function testVariables() {
     // Check for variables before running the pattern.
     /* debug(db_select('variable', 'v')
         ->fields('v', array('name'))

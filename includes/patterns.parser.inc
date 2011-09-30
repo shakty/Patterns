@@ -215,7 +215,7 @@ function _patterns_analyze_patternscan($patternscan) {
     }
     $msgs[] = t('Only %actions are valid actions. Found: %found.',
             array('%actions' => implode(', ', patterns_actions()),
-                  '%found' =>implode(', ', $invalidactions)));
+                  '%found' => implode(', ', $invalidactions)));
   }
 
   if (count($patternscan['extra_actions']) != 0) {
@@ -224,18 +224,18 @@ function _patterns_analyze_patternscan($patternscan) {
       $extraactions[] = $value['key'];
     }
     $msgs[] = t('Extra actions have been found on one level: %found.',
-            array('%found' =>implode(', ', $extraactions)));
+            array('%found' => implode(', ', $extraactions)));
   }
 
   // TODO: This is not yet working.
   if (count($patternscan['missing_tag']) != 0) {
-  	foreach ($patternscan['missing_tag'] as $key => $value) {
+    foreach ($patternscan['missing_tag'] as $key => $value) {
       $msgs[] = t('The \'tag\' value is missing for action %action.', array('%action' => $value['key']));
-  	}
+    }
   }
 
   if (count($patternscan['empties']) > 0) {
-    $msgs[] = t('Pattern contains empty actions: ') . implode(', ', $patternscan['empties']);
+    $msgs[] = t('Pattern contains empty actions:') . ' ' . implode(', ', $patternscan['empties']);
   }
 
   return $msgs;
@@ -329,15 +329,17 @@ function _patterns_scan_pattern($pattern) {
           foreach ($data as $akey => $avalue) {
             if (!array_key_exists($akey, $valid_actions)) {
               $result['invalid_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
-            }else{
+            }
+            else{
               // Report additional valid actions.
-              if ($found){
+              if ($found) {
                 $result['extra_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
               }
               // Check if 'tag' is present.
               if (!isset($avalue['tag']) or !is_string($avalue['tag'])) {
-              	$result['missing_tag'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
-              } else {
+                $result['missing_tag'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
+              }
+              else {
                 $newactions[] = array('action' => $akey, 'data' => $avalue);
               }
               $found = TRUE;

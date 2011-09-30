@@ -229,7 +229,8 @@ function user_patterns_callbacks($action, $tag, &$data = NULL) {
     else {
       if (!($action === PATTERNS_DELETE)) {
         $result = array('user_register_form');
-      } else {
+      }
+      else {
         // TODO: ???
       }
     }
