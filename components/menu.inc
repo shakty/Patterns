@@ -3,7 +3,204 @@
  * @file
  * Patterns component for the menu system.
  */
-function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
+
+function menu_patterns () {
+	$files = array('modules/menu/menu.admin.inc');
+
+  $actions['menu'] = array('descr' => t('Create/Modify/Delete menu'), 
+                                 PATTERNS_CREATE => array('menu_edit_menu'),
+                                 PATTERNS_MODIFY => array('menu_edit_menu'),
+                                 PATTERNS_DELETE => array('menu_delete_menu_confirm'),
+                                 PATTERNS_FILES =>$files
+                                );
+  $actions['menu_item'] = array('descr' => t('Create/Modify/Delete menu item'), 
+                                 PATTERNS_CREATE => array('menu_edit_item'),
+                                 PATTERNS_MODIFY => array('menu_edit_item'),
+                                 PATTERNS_DELETE => array('menu_item_delete_form'),
+                                 PATTERNS_FILES =>$files
+                                );
+                          
+  return $actions;                
+  
+}
+
+function menu_patterns_actions() {
+   return array(
+        'menu_edit_menu' => t('Menu: Add or edit menu'),
+        'menu_delete_menu_confirm' => t('Menu: Delete menu'),
+        'menu_edit_item' => t('Menu: Add or edit menu item'),
+        'menu_item_delete_form' => t('Menu: Delete menu item'),
+      );
+}
+
+// Prepare data for processing
+function menu_patterns_prepare($action, $tag, &$data = NULL) {
+	if($action==PATTERNS_DELETE){
+		$data['confirm'] = 1;
+	}
+	switch ($tag) {
+        case 'menu':
+          if (empty($data['menu_name']) && !empty($data['name'])) {
+            $data['menu_name'] = $data['name'];
+            unset($data['name']);
+          }
+        break;
+        case 'menu_item':
+          if (!empty($data['id'])) {
+            $data['mlid'] = $data['id'];
+            unset($data['id']);
+          }
+
+          if (!empty($data['path'])) $data['link_path'] = $data['path'];
+          unset($data['path']);
+          if (!empty($data['title'])) $data['link_title'] = $data['title'];
+          unset($data['title']);
+
+          if (!empty($data['link_path'])) $data['link_path'] = str_replace(array('[', ']'), array('<', '>'), $data['link_path']);
+          
+          if(!empty($data['menu_name'])){
+          	if (!isset($data['parent'] )||$data['parent'] == '0') {
+            	$data['parent'] = $data['menu_name'] . ':0';
+          	}
+          	elseif (is_numeric($data['parent'])  && db_query("SELECT mlid FROM {menu_links} WHERE menu_name = :menu AND mlid = :mlid", array('menu' => $data['menu_name'],'mlid'=>$data['parent']))->fetchField()) {
+            	$data['parent'] = $data['menu_name'] . ':' . $data['parent'];
+         	 }
+          // @TODO this may not work if there is more then one menu item with the same title within the same menu
+          	elseif (is_string($data['parent']) && $plid = db_query("SELECT mlid FROM {menu_links} WHERE menu_name = :menu AND link_title = :title", array('menu' => $data['menu_name'],'title'=>$data['parent']))->fetchField()) {
+            	$data['parent'] = $data['menu_name'] . ':' . $plid;
+          	}
+          	elseif (empty($data['mlid']) && empty($data['parent']) && !empty($data['link_title']) && !empty($data['link_path'])) {
+           	 	$data['parent'] = $data['menu_name'] . ':0';
+          	}
+          }
+          
+          if ($action==PATTERNS_MODIFY) {
+        		$data['customized'] = 1;
+        		$data['module'] = 'menu';
+        		if ($data['disable']) {
+          			$data['enabled'] = 0;
+          			unset($data['disable']);
+        		}
+        		elseif ($data['enable']) {
+          			$data['enabled'] = 1;
+          			unset($data['disable']);
+        		}
+      		}
+
+        break;
+      }
+      return patterns_results();
+}
+
+// Validate the values for an action before running the pattern
+function menu_patterns_validate ($action, $tag, &$data = NULL) {
+	$status = PATTERNS_SUCCESS;
+  	$msg = '';
+
+  	if($tag=="menu"){  		
+  		if(empty($data['menu_name'])){
+  			$msg = t('The menu name is required.');
+  		}elseif (!empty($data['menu_name']) && preg_match('/[^a-z0-9\-]/', $data['menu_name'])) {
+  			$status = PATTERNS_ERR;
+  			$msg = t('The menu name may only consist of lowercase letters, numbers, and hyphens: %menu', array('%menu' => $data['menu_name']));
+        }else{
+  			$count = db_query("SELECT COUNT(*) FROM {menu_custom} WHERE menu_name = :menu", array('menu' => $data['menu_name']))->fetchField();
+  			if($action == PATTERNS_DELETE && !$count){
+  				$status = PATTERNS_ERR;
+  				$msg = t('Attempt to delete a nonexistent menu');  				
+  			}elseif($action == PATTERNS_MODIFY && !$count){
+  				$status = PATTERNS_ERR;
+  				$msg = t('Attempt to update a nonexistent menu');  				
+  			}elseif($action == PATTERNS_CREATE ){
+  				$count = db_query("SELECT COUNT(*) FROM {menu_custom} WHERE menu_name = :menu", array('menu' => 'menu-'.$data['menu_name']))->fetchField();
+  				if($count){
+  					$status = PATTERNS_ERR;
+  					$msg = t('The machine-readable menu name is already in use. It must be unique.');  	
+  				}
+  			}
+  		}
+  		
+  	}else if ($tag=="menu_item") {
+  		
+  		if($action == PATTERNS_CREATE){
+  			if(empty($data['menu_name'])){
+  				$status = PATTERNS_ERR;
+            	$msg =  t('"menu_name" is required.');
+  			}
+  			elseif (empty($data['link_path'])) {
+  				$status = PATTERNS_ERR;
+             	$msg =  t('"path" is required.');
+            }
+            elseif (empty($data['link_title'])) {
+            	$status = PATTERNS_ERR;
+              	$msg =  t('"title" is required.');
+            }
+  		}
+  		elseif($action == PATTERNS_MODIFY ||$action == PATTERNS_DELETE){
+  			if (empty($data['mlid'])) {
+            	$status = PATTERNS_ERR;
+            	$msg = t('"menu link id" is required.');
+          	}
+  		}
+          if (!empty($data['parent']) && $action !== PATTERNS_DELETE) {
+            list($menu_name, $mlid) = explode(':', $data['parent']);
+            if ($mlid != 0 && !db_query("SELECT count(*) FROM {menu_links} WHERE menu_name = :menu AND mlid = :mlid",array('menu' => $menu_name,'mlid'=>$mlid))->fetchField()) {
+            	$status = PATTERNS_ERR;
+              $msg = t('"parent" is not valid.');
+            }
+          }
+      }
+       return patterns_results($status, $msg);    
+}
+
+// Prepare for valid processing of this type of component
+function menu_patterns_build ($action, $tag, &$data = NULL, $form_id) {
+	  module_load_include('inc', 'menu', 'menu.admin');
+  return patterns_results(PATTERNS_SUCCESS,  t('Execution successful'), $data);
+}
+
+// Build a patterns actions and parameters
+function menu_patterns_params($action, $form_id, &$data = NULL,&$a) {
+	 switch ($form_id) {
+        case 'menu_edit_menu':
+
+          	if($action == PATTERNS_CREATE){
+          		$result='add';
+          	}else if($action == PATTERNS_MODIFY ){
+          		$menu = menu_load($data['menu_name']);
+            	$result= array('edit', $menu);
+          	}
+        break;
+        case 'menu_delete_menu_confirm':
+          $result=array(menu_load($data['menu_name']));
+        break;
+        case 'menu_edit_item':
+          if($action == PATTERNS_CREATE) {
+            $result= array('add', NULL, menu_load($data['menu_name']));
+          }
+          else if($action == PATTERNS_MODIFY){
+            $result= array('edit', menu_link_load($data['mlid']), NULL);
+          }
+        break;
+        case 'menu_item_delete_form':
+          $result=array(menu_link_load($data['mlid']));
+        break;
+      }
+       return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
+}
+
+function menu_patterns_cleanup($action, $tag, &$data = NULL) {
+ return patterns_results();
+}
+
+// Return which callback functions to actually use.
+function menu_patterns_callbacks ($action, $tag, &$data = NULL) {
+	$desc = menu_patterns();
+  	$result = $desc[$tag][$action];
+  	return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
+}
+	
+/*function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {	
   switch ($op) {
     // Return the valid tags that this component can prepare and process
     case 'tags':
@@ -252,4 +449,4 @@ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
       }
     break;
   }
-}
+}*/

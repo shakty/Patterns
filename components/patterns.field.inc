@@ -5,17 +5,17 @@ function field_patterns () {
   $files = array('modules/field_ui/field_ui.admin.inc');
   $actions['field'] = array('descr' => t('Create/Modify/Delete field'), 
                                  PATTERNS_MODIFY => array('field_ui_field_settings_form'),
-                                 'files'  => $files,
+                                 PATTERNS_FILES => $files,
                                 );
   $actions['instance'] = array('descr' => t('Create/Modify/Delete field'), 
                                  PATTERNS_CREATE => array('field_ui_field_overview_form'),
                                  PATTERNS_MODIFY => array('field_ui_field_edit_form'),
                                  PATTERNS_DELETE => array('field_ui_field_delete_form'),
-                                 'files'  => $files,
+                                 PATTERNS_FILES  => $files,
                                 );
   $actions['field_weight'] = array('descr' => t('Order the fields'), 
                                  PATTERNS_MODIFY => array('field_ui_field_overview_form'),
-                                 'files'  => $files,
+                                 PATTERNS_FILES  => $files,
                                 );
                           
   return $actions;                

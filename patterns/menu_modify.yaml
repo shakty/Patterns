@@ -2,7 +2,7 @@
 # QScience
 
 info:
-  title: Create a menu
+  title: Edit a menu
   description: Based on http://drupal.org/node/408952
   author: yanbo
   category: menu
@@ -13,11 +13,11 @@ info:
   
 
 actions:
-
-  - create:
+ 
+  - modify:
       tag: menu
-      name: footer-links
+      name: menu-footer-links
       title: Footer Links
-      description: Menu description.
-    
+      description: Menu description changed.
+
     

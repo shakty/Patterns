@@ -2,22 +2,18 @@
 # QScience
 
 info:
-  title: Create a menu
+  title: Delete menu items
   description: Based on http://drupal.org/node/408952
   author: yanbo
   category: menu
   version: 1.0
   core: 7.x
-  author_email: nbboob@gmail.com
+  author_email: sbalietti@ethz.ch
   author_website: qscience.csko.hu
   
-
 actions:
 
-  - create:
-      tag: menu
-      name: footer-links
-      title: Footer Links
-      description: Menu description.
-    
+  - delete:      
+      tag: menu_item
+      mlid:361
     

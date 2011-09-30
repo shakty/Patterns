@@ -2,7 +2,7 @@
 # QScience
 
 info:
-  title: Create a menu
+  title: Delete a menu
   description: Based on http://drupal.org/node/408952
   author: yanbo
   category: menu
@@ -13,11 +13,8 @@ info:
   
 
 actions:
-
-  - create:
-      tag: menu
-      name: footer-links
-      title: Footer Links
-      description: Menu description.
     
+  - delete:
+      tag: menu
+      name: menu-footer-links
     
