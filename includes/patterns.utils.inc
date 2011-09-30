@@ -512,11 +512,12 @@ function patterns_reformat(&$actions) {
   $found = FALSE;
   foreach ($value as $akey => $avalue) {
     if (!array_key_exists($akey, $valid_actions)) {
-    	// Should not happen.
-    	drupal_set_message(t("Invalid action: %action.", $akey), 'error');
-    } else {
+      // Should not happen.
+      drupal_set_message(t("Invalid action: %action.", $akey), 'error');
+    }
+    else {
       // Additional actions. Discouraged and undocumented.
-      if ($found){
+      if ($found) {
         $result['extra_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
       }
       $newactions[] = array('action' => $akey, 'data' => $avalue);
