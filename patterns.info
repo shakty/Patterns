@@ -3,10 +3,11 @@ description = Enables extremely simple adding/removing features to your site wit
 dependencies[] = token
 dependencies[] = libraries
 core = 7.x
+version = 7.x-1.x-dev
 package = Site Setup
 php = 5.1
 
 ; Test Files
 files[] = tests/patterns.test
 files[] = tests/taxonomy/patterns.taxonomy.test
-
+files[] = tests/system/system.test
