@@ -5,7 +5,7 @@ info:
   title: Blocks (modify)
   description: Modifies a module-provided and a custom block.
   author: QScience
-  category: QScience
+  category: Block
   version: 1.0
   core: 7.x
   author_email: sbalietti@ethz.ch

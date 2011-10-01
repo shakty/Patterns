@@ -5,7 +5,7 @@ info:
   title: Create and delete variables
   description: Based on http://drupal.org/node/409180
   author: QScience
-  category: QScience
+  category: System
   version: 1.0
   core: 7.x
   author_email: sbalietti@ethz.ch
