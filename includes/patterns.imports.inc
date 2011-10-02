@@ -4,6 +4,10 @@
  * Importing Patterns from a file or using an URL.
  */
 
+
+// TODO: Check whether is possible to move this to patterns.module
+// define('PATTERNS_FILES_DIR', drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns'));
+
 /**
  * Form constructor for the Pattern import form.
  *
