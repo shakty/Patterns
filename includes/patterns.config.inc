@@ -56,16 +56,15 @@ function patterns_config_settings($form, &$form_state) {
   return system_settings_form($form);
 }
 
+
 /**
  * Implements hook_patterns_components().
  *
- * Let us know about where the components are.
+ * Tell the pattern engine where the components are.
  */
-function patterns_config_get_components_dir() {
+function patterns_patterns_components() {
   return drupal_get_path('module', 'patterns') . '/components/';
 }
-
-
 
 /**
  * Return the path to the directory containing the patterns files (imported  or
@@ -84,12 +83,11 @@ function patterns_paths() {
   if (!isset($profile)) {
     $profile = variable_get('install_profile', 'default');
   }
-
-  // Array of all the paths where we should look for patterns.
   $patterns_paths = array(
-    conf_path() . '/patterns',
-    'profiles/' . $profile . '/patterns',
-    'sites/all/patterns'
+    //conf_path() . '/patterns',
+    drupal_get_path('module', 'patterns') . '/patterns/',
+    //'profiles/' . $profile . '/patterns',
+    //'sites/all/patterns',
   );
 
   // Allow any module to include patterns too.

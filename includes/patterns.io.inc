@@ -369,22 +369,22 @@ function patterns_io_get_patterns_service() {
 /**
  * Checks if a .htaccess file exists to prevent downloads of pattern files.
  */
-function _patterns_io_check_file_dir() {
-  return FALSE;
-  // Ste: was
-  //$path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
 
-  // real_path(public) returns the path to the files dir
-  $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_xml', 'patterns');
+/**
+	 * Checks if a .htaccess file exists to prevent downloads of pattern files.
+	  */
+function _patterns_io_check_htaccess() {
 
-  if (!is_file($path . '/.htaccess')) {
-    $content = '# Prevent downloading site patterns
-<FilesMatch "\.xml$">
-  Order allow,deny
-</FilesMatch>
-';
-    file_save_data($content, $path . '/.htaccess');
-  }
+   $path = patterns_config_get_files_dir();
+
+	   if (!is_file($path . '/.htaccess')) {
+			    $content = '# Prevent downloading site patterns
+					 <FilesMatch "\.xml$">
+					   Order allow,deny
+					</FilesMatch>
+					';
+			file_save_data($content, $path . '/.htaccess');
+		}
 }
 
 /**

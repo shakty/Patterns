@@ -594,7 +594,7 @@ function _patterns_modify_value(&$form) {
 
 // function patterns_revert($pid) {
 //   if ($name = db_result(db_query('SELECT name FROM {patterns} WHERE pid = "%d"', $pid))) {
-//     $path = file_create_path(variable_get('patterns_save_xml', 'patterns') .'/enabled/'. $name .'.xml');
+//     $path = file_create_path(variable_get('patterns_save_file', 'patterns') .'/enabled/'. $name .'.xml');
 //     $new = db_result(db_query('SELECT file FROM {patterns} WHERE pid = "%d"'));
 //   }
 //   else {
