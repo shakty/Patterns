@@ -159,7 +159,7 @@ function patterns_menu() {
   $items['admin/patterns/settings'] = array(
     'title' => 'Settings',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('patterns_settings'),
+    'page arguments' => array('patterns_config_settings'),
     'access arguments' => array('administer patterns'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10

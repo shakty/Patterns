@@ -3,7 +3,8 @@
  * @file
  * Configuration file.
  *
- * Permission, help, and other hooks. Requirements. Settings form.
+ * Permissions, Help, Requirements. Settings form. Path to directories.
+ * 
  */
 
 /**
@@ -32,12 +33,11 @@ function patterns_help($section, $arg = NULL) {
   return $output;
 }
 
-
 /**
  * Display the pattern settings form.
  * @TODO proper doc.
  */
-function patterns_settings($form, &$form_state) {
+function patterns_config_settings($form, &$form_state) {
   $form['patterns_form_helper'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable Patterns Form Helper'),
@@ -57,56 +57,15 @@ function patterns_settings($form, &$form_state) {
 }
 
 /**
- * Implements hook_patterns_directory().
- *
- * Let us know about where the pattern files are at.
- */
-function patterns_patterns_directory() {
-  return drupal_get_path('module', 'patterns');
-}
-
-/**
  * Implements hook_patterns_components().
  *
  * Let us know about where the components are.
  */
-function patterns_patterns_components() {
+function patterns_config_get_components_dir() {
   return drupal_get_path('module', 'patterns') . '/components/';
 }
 
-/**
- * Implements hook_requirements().
- *
- * @param string $phase The phase in which hook_requirements is run (install|runtime).
- */
-function patterns_requirements($phase) {
-  $requirements = array();
 
-  switch ($phase) {
-    case 'runtime':
-      $path = libraries_get_path('spyc') . '/spyc.php';
-
-      if (!file_exists($path)) {
-        $requirements['spyc'] = array(
-          'title'       => t('Spyc library (YAML parser)'),
-          'description' => t('Patterns module requires Spyc library for working with YAML patterns. To enable YAML support, download the !spyc package to obtain spyc.php. Create a directory for the library (e.g. sites/all/libraries/spyc/) and place spyc.php there.',
-                              array('!spyc' => l(t('spyc'), 'http://code.google.com/p/spyc/', array('absolute' => TRUE)))),
-          'severity'    => REQUIREMENT_WARNING,
-          'value'       => t('Missing'),
-        );
-      }
-      else {
-        require_once($path);
-        $requirements['spyc'] = array(
-          'title'       => t('Spyc library (YAML parser)'),
-          'severity'    => REQUIREMENT_OK,
-          'value'       => _get_file_phpdoc_version($path),
-        );
-      }
-      break;
-  }
-  return $requirements;
-}
 
 /**
  * Return the path to the directory containing the patterns files (imported  or
