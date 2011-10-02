@@ -369,22 +369,18 @@ function patterns_io_get_patterns_service() {
 /**
  * Checks if a .htaccess file exists to prevent downloads of pattern files.
  */
-
-/**
-	 * Checks if a .htaccess file exists to prevent downloads of pattern files.
-	  */
 function _patterns_io_check_htaccess() {
 
-   $path = patterns_config_get_files_dir();
+  $path = patterns_config_get_files_dir();
 
-	   if (!is_file($path . '/.htaccess')) {
-			    $content = '# Prevent downloading site patterns
-					 <FilesMatch "\.xml$">
-					   Order allow,deny
-					</FilesMatch>
-					';
-			file_save_data($content, $path . '/.htaccess');
-		}
+  if (!is_file($path . '/.htaccess')) {
+    $content = '# Prevent downloading site patterns
+<FilesMatch "\.xml$">
+  Order allow,deny
+</FilesMatch>
+';
+    file_save_data($content, $path . '/.htaccess');
+  }
 }
 
 /**

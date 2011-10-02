@@ -4,6 +4,7 @@
  * Installation file for Patterns.
  */
 
+
 require_once 'includes/patterns.config.inc';
 require_once 'includes/patterns.io.inc';
 
