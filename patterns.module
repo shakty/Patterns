@@ -134,7 +134,7 @@ function patterns_menu() {
 
   $items['admin/patterns/create/%'] = array(
     'title' => 'Create a new Pattern',
-    'page callback' => 'patterns_create_page',
+    'page callback' => 'patterns_editor_create_page',
     'page arguments' => array(3),
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
@@ -148,6 +148,22 @@ function patterns_menu() {
     'type' => MENU_CALLBACK
   );
 
+  $items['admin/patterns/trash'] = array(
+    'title' => 'Move Pattern to Recycle Bin',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('patterns_trash_pattern'),
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK
+  );
+  
+//  $items['admin/patterns/trash/%'] = array(
+//    'title' => 'Move Pattern to Recycle Bin',
+//    'page callback' => 'patterns_trash_pattern',
+//    'page arguments' => array(3),
+//    'access arguments' => array('administer patterns'),
+//    'type' => MENU_CALLBACK
+//  );
+  
   $items['admin/patterns/remove'] = array(
     'title' => 'Remove Pattern',
     'page callback' => 'drupal_get_form',
@@ -215,6 +231,7 @@ function patterns_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10
   );
+  
   $items['admin/patterns/import/file'] = array(
     'title' => 'Import File',
     'page callback' => 'drupal_get_form',
@@ -447,12 +464,60 @@ function patterns_enable_pattern_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/patterns';
 }
 
+
 /**
  * Form constructor for the Patterns removing form.
  *
  * Creates a confirm_form to make sure the removing operation was intentional.
  *
- * @param integer $pid The ID of the Pattern to enable.
+ * @param mixed $pid The ID of the Pattern to enable.
+ *
+ * @see patterns_remove_pattern_submit()
+ * @ingroup forms
+ */
+function patterns_trash_pattern($form, &$form_state, $pid = NULL) {
+
+  $pattern = patterns_get_pattern($pid);
+
+  if (empty($pattern)) {
+    drupal_set_message(t('Pattern could not be moved into the trash bin.'), 'error');
+    $form_state['redirect'] = 'admin/patterns';
+    return $form;
+  }
+
+  $form['pid'] = array(
+    '#type' => 'value',
+    '#value' => $pid,
+  );
+  
+  return $form;
+}
+
+/**
+ * Executes patterns_db_trash_pattern() and display a message.
+ *
+ * @see patterns_db_trash_pattern()
+ */
+function patterns_trash_pattern_submit($form, &$form_state, $pid = NULL) {
+  
+  $result = patterns_db_trash_pattern($pid);
+
+  if (!$result) {
+    drupal_set_message(t('Pattern could not be moved into the trash bin.'), 'error');
+  }
+  else {
+    drupal_set_message(t('Pattern succesfully moved into the trash bin.'), 'status');
+  }
+  
+  $form_state['redirect'] = 'admin/patterns';
+}
+
+/**
+ * Form constructor for the Patterns removing form.
+ *
+ * Creates a confirm_form to make sure the removing operation was intentional.
+ *
+ * @param mixed $pid The ID of the Pattern to enable.
  *
  * @see patterns_remove_pattern_submit()
  * @ingroup forms
@@ -481,10 +546,7 @@ function patterns_remove_pattern($form, &$form_state, $pid = NULL) {
 }
 
 /**
- * Form submission handler for user_login_form().
- *
- * Takes the values from the form enable_pattern and starts the
- * whole process by calling execute_pattern.
+ * Form submission handler for patterns_remove_pattern().
  *
  * @see patterns_remove_pattern()
  */

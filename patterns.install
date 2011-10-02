@@ -4,7 +4,6 @@
  * Installation file for Patterns.
  */
 
-
 require_once 'includes/patterns.config.inc';
 require_once 'includes/patterns.io.inc';
 
@@ -43,7 +42,6 @@ function patterns_schema() {
       'status' => array(
         'type' => 'int',
         'size' => 'tiny',
-        'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
         'description' => 'Boolean indicating whether the pattern has been executed (enabled).',

@@ -49,7 +49,7 @@ function patterns_import_server($form, &$form_state) {
         '#type' => 'checkbox',
         '#title' => $pattern['title'],
         '#description' => $pattern['description'],
-        '#disabled' => in_array($pattern['file_type'], patterns_file_types()) ? FALSE : TRUE,
+        '#disabled' => in_array($pattern['file_type'], patterns_config_get_file_types()) ? FALSE : TRUE,
       );
     }
   }

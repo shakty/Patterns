@@ -30,6 +30,7 @@ function patterns_import_source($form, &$form_state) {
     '#value' => t('Import')
   );
 
+  // ? Double array ?
   $form['#validate'][] = 'patterns_import_validate';
   $form['#submit'][] = 'patterns_import_submit';
 

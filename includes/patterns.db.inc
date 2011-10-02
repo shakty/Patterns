@@ -4,8 +4,49 @@
  * Retrieve, save, and remove patterns from the database.
  */
 
+
+/*
+ * Valid pattern installed in the db, ready to be enabled 
+ */
+define('PATTERNS_DB_STATUS_READY', 0);
+
+/*
+ * Pattern enabled
+ */
+define('PATTERNS_DB_STATUS_ENABLED', 1);
+
+/*
+ * Pattern installed in the db, but it is invalid
+ */
+define('PATTERNS_DB_STATUS_INVALID', -5);
+
+/*
+ * Pattern marked as trashed in the db, ready to be permanently deleted
+ */
+define('PATTERNS_DB_STATUS_TRASHED', -10);
+
+
+
+
 /**
- * Remove a pattern from the database.
+ * Mark that pattern status as trashed in the database.
+ *
+ * @param mixed $pid
+ *   The id of the pattern to remove.
+ * @return bool
+ *   TRUE on success, FALSE otherwise.
+ */
+function patterns_db_trash_pattern($pid) {
+  $trashed = db_update('patterns')
+    ->fields(array('status' => PATTERNS_DB_STATUS_TRASHED))
+    ->condition('pid', $pid)
+    ->execute();
+
+  return ($trashed == 1) ? TRUE : FALSE;
+}
+
+/**
+ * Remove permanently a pattern from the database.
  *
  * @param mixed $pid
  *   The id of the pattern to remove.

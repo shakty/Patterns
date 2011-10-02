@@ -269,8 +269,8 @@ function patterns_load_components() {
 /**
  * Loads the available patterns.
  *
- * Checks inside the directories defined by patterns_paths().
- * @see patterns_paths
+ * Checks inside the directories defined by patterns_config_get_paths().
+ * @see patterns_config_get_paths
  *
  * @param $reset
  *
@@ -287,10 +287,10 @@ function patterns_get_patterns($reset = TRUE) {
     $errors = array();
 
     // Get list of directories to scan for patterns.
-    $patterns_paths = patterns_paths();
+    $patterns_paths = patterns_config_get_paths();
 
     // Get valid file extensions.
-    $mask = '/.\.(' . implode('|', patterns_file_types()) . ')$/';
+    $mask = '/.\.(' . implode('|', patterns_config_get_file_types()) . ')$/';
 
     // Prepare list of files/folders to be excluded.
     // 'enabled' - Don't save enabled pattern backups.
