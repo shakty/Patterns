@@ -4,10 +4,6 @@
  * Importing Patterns from a file or using an URL.
  */
 
-
-// TODO: Check whether is possible to move this to patterns.module
-// define('PATTERNS_FILES_DIR', drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns'));
-
 /**
  * Form constructor for the Pattern import form.
  *
@@ -260,8 +256,8 @@ function patterns_import_submit($form, &$form_state) {
  */
 function _patterns_imports_check_dirs() {
   // Check Patterns Directory
-  if (!_patterns_is_patterns_dir_ready()) {
-    $message = t("Destination folder doesn't exist: !path<br />", array('!path' => drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns'))); // TODO: move this out for performance
+  if (!_patterns_io_is_patterns_dir_ready()) {
+    $message = t("Destination folder doesn't exist: !path<br />", array('!path' => patterns_config_get_files_dir())); // TODO: move this out for performance
     $link = l(t('status report'), 'admin/reports/status');
     $message .= t('You might want to check the !link to ensure your files directory exists and is writable.', array('!link' => $link));
     form_set_error('pattern_file', $message);

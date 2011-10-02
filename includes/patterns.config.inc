@@ -108,6 +108,13 @@ function patterns_requirements($phase) {
   return $requirements;
 }
 
+/**
+ * Return the path to the directory containing the patterns files (imported  or
+ * executed ones).
+ */
+function patterns_config_get_files_dir() {
+  return drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns'); 
+}
 
 /**
  * Return a list of paths that will be scanned for patterns/.
@@ -133,14 +140,7 @@ function patterns_paths() {
     }
   }
 
-
-  // Ste:was
-  // also prepend files folder if it's valid
-  // $path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
-  // $path = "/sites/default/files/patterns";
-
-  // real_path(public) returns the path to the files dir
-  $path = drupal_realpath('public://') . '/' . variable_get('patterns_save_xml', 'patterns');
+  $path = patterns_config_get_files_dir();
 
   // Ste: was directory_check (included in prepared dir)
   if (file_prepare_directory($path)) {
