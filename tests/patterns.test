@@ -150,6 +150,8 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
 
     // Create users.
     $this->pat_user = $this->drupalCreateUser(array('administer patterns'));
+    // Login the patterns administrator.
+    $this->drupalLogin($this->pat_user);
   }
 
   function runFile($filename, $name, $dir = 'patterns/') {
@@ -158,8 +160,6 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
   }
 
   function runTest($pattern, $name) {
-    // Login the patterns administrator.
-    $this->drupalLogin($this->pat_user);
     $this->quickRun($pattern, $name, 'php');
     // TODO: Only run one mode in order to avoid duplicates, for now.
     //$this->quickRun($pattern, $name, 'batch');
