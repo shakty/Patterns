@@ -1,0 +1,23 @@
+# YAML Forms Pattern
+# QScience
+
+info:
+  title: Edit a menu
+  description: Based on http://drupal.org/node/408952
+  author: yanbo
+  category: menu
+  version: 1.0
+  core: 7.x
+  author_email: nbboob@gmail.com
+  author_website: qscience.csko.hu
+  
+
+actions:
+ 
+  - modify:
+      tag: menu
+      name: menu-footer-links
+      title: Footer Links
+      description: Menu description changed.
+
+    

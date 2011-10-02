@@ -133,7 +133,7 @@ function system_patterns_prepare($action, $tag, &$data = NULL) {
   return patterns_results();
 }
 
-// Validate the values for an action before running the pattern
+// Validate the values for an action before running the pattern.
 function system_patterns_validate($action, $tag, &$data = NULL) {
   $status = PATTERNS_SUCCESS;
   $msg = '';
@@ -148,21 +148,21 @@ function system_patterns_validate($action, $tag, &$data = NULL) {
   }
   elseif ($tag == 'modules') {
     if (!isset($modules_info) || !is_array($modules_info)) {
-      $modules_info = system_rebuild_module_data(); // list of available modules
+      $modules_info = system_rebuild_module_data(); // list of available modules.
     }
 
-    $modules = module_list(); // list of enabled modules
+    $modules = module_list(); // List of enabled modules.
     $delete = $action === PATTERNS_DELETE;
     for ($i = 0; isset($data[$i]) && ($item = $data[$i]); $i++) {
       $module = $item['value'];
 
-      // Ensure a module can be disabled safely
+      // Ensure a module can be disabled safely.
       if ($delete) { // TODO: Move this out of the loop?
-        if (array_key_exists($module, $modules_info)) { // Module is available
-          if (array_key_exists($module, $modules)) { // Module is enabled
+        if (array_key_exists($module, $modules_info)) { // Module is available.
+          if (array_key_exists($module, $modules)) { // Module is enabled.
             /*
              * TODO: no more dependents field in Drupal7.x
-             foreach ((array)$modules_info[$module]->info['dependents'] as $dependent) { // Dependency check
+             foreach ((array)$modules_info[$module]->info['dependents'] as $dependent) { // Dependency check.
              if (array_key_exists($dependent, $modules)) {
              $remove[] = $i;
              drupal_set_message(t('Warning: Could not disable %module because other modules depend on it.', array('%module' => $module)), "warning");
@@ -183,10 +183,10 @@ function system_patterns_validate($action, $tag, &$data = NULL) {
           $msg .= t('Warning: Could not disable %module because it is missing.', array('%module' => $module)) . '<br/>';
         }
       }
-      // Ensure a module and all of its dependencies exist
+      // Ensure a module and all of its dependencies exist.
       else {
-        if (!array_key_exists($module, $modules)) { // Module not yet enabled
-          if (!array_key_exists($module, $modules_info)) { // Module does not exist
+        if (!array_key_exists($module, $modules)) { // Module not yet enabled.
+          if (!array_key_exists($module, $modules_info)) { // Module does not exist.
             $required[] = $module;
           }
           else {
@@ -245,13 +245,13 @@ function system_patterns_validate($action, $tag, &$data = NULL) {
 
 // Return which callback functions to actually use.
 function system_patterns_callbacks($action, $tag, &$data = NULL) {
-  if ($tag == 'modules') { // Custom functions will do the work
+  if ($tag == 'modules') { // Custom functions will do the work.
     $result = array('modules_execute');
   }
-  elseif ($tag == 'variables') { // Custom functions will do the work
+  elseif ($tag == 'variables') { // Custom functions will do the work.
     $result = array('variables_execute');
   }
-  else { // Just regular forms
+  else { // Just regular forms.
     $desc = system_patterns();
     $result = $desc[$tag][$action];
   }
@@ -367,12 +367,12 @@ function system_patterns_old($op, $id = NULL, &$data = NULL) {
   static $modules_info;
 
   switch ($op) {
-    // Return the valid tags that this component can prepare and process
+    // Return the valid tags that this component can prepare and process.
     case 'tags':
       return array('modules', 'form', 'variables', 'variable', 'theme', 'call_php_func');
       break;
 
-      // Return a list of forms/actions this component can handle
+    // Return a list of forms/actions this component can handle.
     case 'actions':
       return array(
         'system_modules' => t('System: Enable or disable module'),
@@ -535,10 +535,10 @@ function system_patterns_old($op, $id = NULL, &$data = NULL) {
           $modules_info = system_rebuild_module_data(); // list of available modules
         }
 
-        $modules = module_list(); // list of enabled modules
+        $modules = module_list(); // List of enabled modules.
+        $delete = $action === PATTERNS_DELETE;
         for ($i = 0; isset($data[$i]) && ($item = $data[$i]); $i++) {
           $module = $item['value'];
-          $delete = (!empty($data['delete']) || !empty($item['delete']));
 
           // Ensure a module can be disabled safely
           if ($delete) {
@@ -667,7 +667,7 @@ function system_patterns_old($op, $id = NULL, &$data = NULL) {
       if ($id == 'system_modules') {
 
         $enabled = $disabled = array();
-        $delete = (!empty($data['delete']) || !empty($item['delete']));
+        $delete = $action === PATTERNS_DELETE;
         for ($i = 0; $module = $data[$i]; $i++) {
           if ($delete) {
             module_disable(array($module['value']), TRUE);

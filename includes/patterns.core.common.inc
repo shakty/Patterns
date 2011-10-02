@@ -42,8 +42,8 @@ function patterns_prepare_actions(&$actions, $actions_map) {
   // @TODO Not sure if prepare and validate could be merged.
   //       Maybe they were required to be separate when we used to have subpatterns.
   foreach ($actions as &$action) {
-  	$key = &$action['action'];
-  	$data = &$action['data'];
+    $key = &$action['action'];
+    $data = &$action['data'];
 
     /////////////////////////////////////////////////////////
     // This is in case of included patterns. Not for now
@@ -256,7 +256,7 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
 
   patterns_restore_error_handler();
 
-  return $results; // TODO: this is only the last action's cleanup?
+  return patterns_results();
 }
 
 /**

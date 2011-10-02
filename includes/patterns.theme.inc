@@ -234,7 +234,7 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
   $status_long = '';
 
   //@TODO: do some checking about pattern compatibility
-  $compatible = TRUE; 
+  $compatible = TRUE;
   
   // If this module is compatible, present a checkbox indicating
   // this module may be installed. Otherwise, show a big red X.

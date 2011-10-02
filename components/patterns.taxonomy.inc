@@ -1,134 +1,139 @@
 <?php
-
+/**
+ * @file
+ * Patterns component for taxonomy vocabularies and terms.
+ */
 //@TODO: handle the case of multiple vocabulary with the same machine name
 
 
 // Return an error string only in case of error, otherwise modify $data
 
-function taxonomy_patterns () {
+function taxonomy_patterns() {
 
-  $actions['vocabulary'] = array(PATTERNS_INFO   => t('Create/Modify/Delete Taxonomy Vocabularies'), 
-                                 PATTERNS_CREATE => array('taxonomy_form_vocabulary'),
-                                 PATTERNS_MODIFY => array('taxonomy_form_vocabulary'),
-                                 PATTERNS_DELETE => array('taxonomy_vocabulary_confirm_delete'),
-                                 PATTERNS_FILES  => array('modules/taxonomy/taxonomy.admin.inc'),
-                                );
+  $actions['vocabulary'] = array(
+    PATTERNS_INFO => t('Create/Modify/Delete Taxonomy Vocabularies'),
+    PATTERNS_CREATE => array('taxonomy_form_vocabulary'),
+    PATTERNS_MODIFY => array('taxonomy_form_vocabulary'),
+    PATTERNS_DELETE => array('taxonomy_vocabulary_confirm_delete'),
+    PATTERNS_FILES => array('modules/taxonomy/taxonomy.admin.inc'),
+  );
 
-  $actions['term'] = array(PATTERNS_INFO   => t('Create/Modify/Delete Taxonomy Terms'), 
-                           PATTERNS_CREATE => array('taxonomy_form_term'),
-                           PATTERNS_MODIFY => array('taxonomy_form_term'),
-                           PATTERNS_DELETE => array('taxonomy_term_confirm_delete'),
-                           PATTERNS_FILES  => array('modules/taxonomy/taxonomy.admin.inc'),
-                          );
+  $actions['term'] = array(
+    PATTERNS_INFO => t('Create/Modify/Delete Taxonomy Terms'),
+    PATTERNS_CREATE => array('taxonomy_form_term'),
+    PATTERNS_MODIFY => array('taxonomy_form_term'),
+    PATTERNS_DELETE => array('taxonomy_term_confirm_delete'),
+    PATTERNS_FILES => array('modules/taxonomy/taxonomy.admin.inc'),
+  );
 
-  return $actions;                
-  
+  return $actions;
+
 }
 
 // Return a list of forms/actions this component can handle
 function taxonomy_patterns_actions() {
-      return array(
-        'taxonomy_form_vocabulary' => t('Taxonomy: Add or edit vocabulary'),
-        'taxonomy_form_term' => t('Taxonomy: Add or edit a term to a vocabulary'),
-        'taxonomy_vocabulary_confirm_delete' => t('Taxonomy: Delete a vocabulary'),
-      );
-}  
+  return array(
+    'taxonomy_form_vocabulary' => t('Taxonomy: Add or edit vocabulary'),
+    'taxonomy_form_term' => t('Taxonomy: Add or edit a term to a vocabulary'),
+    'taxonomy_vocabulary_confirm_delete' => t('Taxonomy: Delete a vocabulary'),
+  );
+}
 
 // Prepare data for processing
 function taxonomy_patterns_prepare($action, $tag, &$data = NULL) {
-    
+
   // VOCABULARY
   if ($tag == 'vocabulary') {
-      if ($action == PATTERNS_DELETE ) {
-        $data = _taxonomy_patterns_prepare_vocabulary_delete($action, $data);
-      } 
-      else { // Create or Modify      
-        $data = _taxonomy_patterns_prepare_vocabulary($action, $data);
-      }
-  } 
-      
+    if ($action == PATTERNS_DELETE ) {
+      $data = _taxonomy_patterns_prepare_vocabulary_delete($action, $data);
+    }
+    else { // Create or Modify
+      $data = _taxonomy_patterns_prepare_vocabulary($action, $data);
+    }
+  }
+
   // TERM
-  else if ($tag == 'term') {
+  elseif ($tag == 'term') {
     $data = _taxonomy_patterns_prepare_term($action, $data);
   }
-  
+
   // TERMS
-  else if ($tag == 'terms') {       
-    // Get the vid first, so that we do not re-request always  
+  elseif ($tag == 'terms') {
+    // Get the vid first, so that we do not re-request always
     if (isset($data['vid'])) {
       $vid = $data['vid'];
     }
-    else if (isset($data['vocabulary'])) {
+    elseif (isset($data['vocabulary'])) {
       $taxo = taxonomy_vocabulary_machine_name_load($data['vocabulary']);
       $vid = $taxo->vid;
     }
-    
+
     if (isset($vid)) {
       foreach ($data as $term) {
-        $terms[] = _taxonomy_patterns_prepare_term($data,$vid);
+        $terms[] = _taxonomy_patterns_prepare_term($data, $vid);
       }
     }
-    
+
   } // End vocabulary,term,terms
-  
+
   return patterns_results();
-}  
+}
 
 // Validate the values for an action before running the pattern
 function taxonomy_patterns_validate($action, $tag, &$data = NULL) {
-  
-    $status = PATTERNS_SUCCESS;
-    $msg = '';
-    
-    if ($tag == 'term') {
-      if (!$data['vid'] && !empty($data['vocabulary'])) {
-        $vocabs = taxonomy_get_vocabularies();
 
-        foreach ($vocabs as $vid => $vocab) {
-          if (strtolower($vocab->name) == strtolower($data['vocabulary'])) {
-            $data['vid'] = $vid;
-            break;
-          }
+  $status = PATTERNS_SUCCESS;
+  $msg = '';
+
+  if ($tag == 'term') {
+    if (!$data['vid'] && !empty($data['vocabulary'])) {
+      $vocabs = taxonomy_get_vocabularies();
+
+      foreach ($vocabs as $vid => $vocab) {
+        if (strtolower($vocab->name) == strtolower($data['vocabulary'])) {
+          $data['vid'] = $vid;
+          break;
         }
       }
-      
-      // we can't proceed without valid vocabulary ID
-      if (empty($data['vid'])) {
-        $status = PATTERNS_ERR;
-        $msg = t("Vocabulary %vocab doesn't exist.", array('%vocab' => $data['vocabulary']));
-      }
     }
-    
-    return patterns_results($status, $msg);
+
+    // we can't proceed without valid vocabulary ID
+    if (empty($data['vid'])) {
+      $status = PATTERNS_ERR;
+      $msg = t("Vocabulary %vocab doesn't exist.", array('%vocab' => $data['vocabulary']));
+    }
+  }
+
+  return patterns_results($status, $msg);
 }
 
 // Return which callback functions to actually use.
-function taxonomy_patterns_callbacks ($action, $tag, &$data = NULL) {
-	// Just return the form ids specified above. No custom functions used here.
-	$desc = taxonomy_patterns();
-	$result = $desc[$tag][$action];
-	return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
+function taxonomy_patterns_callbacks($action, $tag, &$data = NULL) {
+  // Just return the form ids specified above. No custom functions used here.
+  $desc = taxonomy_patterns();
+  $result = $desc[$tag][$action];
+  return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
 
 // Prepare for valid processing of this type of component
-function taxonomy_patterns_build ($action, $form_id, &$data = NULL, &$a) {
+function taxonomy_patterns_build($action, $form_id, &$data = NULL, &$a) {
   module_load_include('inc', 'taxonomy', 'taxonomy.admin'); // TODO: Isn't this already loaded?
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $data);
 }
 
 // Build a patterns actions and parameters
 function taxonomy_patterns_params($action, $form_id, &$data = NULL, &$a) {
-      
+
   if ($form_id == 'taxonomy_form_vocabulary') {
     if ($data['vid']) {
       $result = taxonomy_vocabulary_load($data['vid']);
     }
   }
-  else if ( $form_id == 'taxonomy_vocabulary_confirm_delete') {
+  elseif ( $form_id == 'taxonomy_vocabulary_confirm_delete') {
     if ($data['vid']) {
       $result = $data['vid'];
     }
-    else if (!isset($data['machine_name'])) {
+    elseif (!isset($data['machine_name'])) {
       $taxo = taxonomy_vocabulary_machine_name_load($data['machine_name']);
       $vid = $taxo->vid;
       if (!empty($vid)) {
@@ -136,21 +141,21 @@ function taxonomy_patterns_params($action, $form_id, &$data = NULL, &$a) {
       }
     }
   }
-  else if ( $form_id == 'taxonomy_form_term') {
+  elseif ( $form_id == 'taxonomy_form_term') {
     $vocab = taxonomy_vocabulary_load($data['vid']);
     $result = array($data, $vocab);
   }
-  else if ( $form_id == 'taxonomy_term_confirm_delete') {
+  elseif ( $form_id == 'taxonomy_term_confirm_delete') {
     $result = $data['tid'];
   }
-      
+
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
 
 // Cleanup any global settings after the action runs
 function taxonomy_patterns_cleanup($action, $tag, &$data = NULL) {
-    unset($_POST['op']);
-    return patterns_results();
+  unset($_POST['op']);
+  return patterns_results();
 }
 
 
@@ -163,62 +168,61 @@ function taxonomy_patterns_cleanup($action, $tag, &$data = NULL) {
 /*
  * Does the standard prepararion for a single term given the vocabulary id
  */
-function _taxonomy_patterns_prepare_term ($action, $data, $vid = NULL) {
-  
+function _taxonomy_patterns_prepare_term($action, $data, $vid = NULL) {
+
   // Get the vid first
-  
+
   if (isset($data['vocabulary'])) {
     $data['vocabulary_machine_name'] = $data['vocabulary'];
     unset($data['vocabulary']);
   }
-  
+
   // Set the vocabulary-id if not alraeady present
   if (!isset($data['vid'])) {
     // use the parameter if not null
     if (!empty($vid)) {
-       $data['vid'] = $vid;
+      $data['vid'] = $vid;
     }
     // Search for it
     else {
       $taxo = taxonomy_vocabulary_machine_name_load($data['vocabulary_machine_name']);
       $data['vid'] = $taxo->vid;
     }
-   
+
   }
-  
+
   if (!isset($data['tid'])) {
     if (isset($data['name'])) {
       // TODO: Check this
       $terms = taxonomy_get_term_by_name($data['name']);
-      
+
       // We set it only if there is one and only term with the same name.
-      if(count($terms)==1){
+      if (count($terms) == 1) {
         $term = array_pop($terms);
         $data['tid'] = $term->tid;
       }
     }
   }
   //return 'taxonomy_form_term';
-  
-  
-  if(isset($data['delete'])) { // TODO: action === 'delete'
+
+
+  if (isset($data['delete'])) { // TODO: action === 'delete'
     $data['confirm_delete'] = TRUE;
   }
   else { // If it was not a delete request do a lot more
-    
     $default_weight = 0;
     $default_textformat = 'filtered_html';
 
     if (!isset($data['format'])) {
       $data['format'] = $default_textformat; // was ''
     }
-    
+
     if (!isset($data['weight'])) {
       $data['weight'] = $default_weight;
     }
-    
+
     // @TODO: Check 'tid' => NULL,
-  
+
     if (isset($data['descr'])) {
       $data['description']['value'] = $data['descr'];
       if (isset($data['descr-format'])) {
@@ -226,28 +230,29 @@ function _taxonomy_patterns_prepare_term ($action, $data, $vid = NULL) {
         unset($data['descr-format']);
       }
       else {
-        $data['description']['format'] = $default_textformat;  
+        $data['description']['format'] = $default_textformat;
       }
-      
+
       unset($data['descr']);
     }
-  }// End Not Delete
-  
+  }
+  // End Not Delete
+
   return $data;
 }
 
-function _taxonomy_patterns_prepare_vocabulary ($action, $data) {
-  
+function _taxonomy_patterns_prepare_vocabulary($action, $data) {
+
   if ($action == PATTERNS_MODIFY) {
-    if (!isset($data['vid'])){
-      
+    if (!isset($data['vid'])) {
+
       // We are modifying the machine_name as well
-      if (isset($data['old_machine_name'])){  
+      if (isset($data['old_machine_name'])) {
         $taxo = taxonomy_vocabulary_machine_name_load($data['old_machine_name']);
         $vid = $taxo->vid;
       }
       // We are changing other stuff
-      else if (isset($data['machine_name'])){  
+      elseif (isset($data['machine_name'])) {
         $taxo = taxonomy_vocabulary_machine_name_load($data['machine_name']);
         if (!empty($taxo)) {
           $vid = $taxo->vid;
@@ -255,39 +260,39 @@ function _taxonomy_patterns_prepare_vocabulary ($action, $data) {
           $data['old_machine_name'] = $data['machine_name'];
         }
       }
-     
-      if(!empty($vid)) {
+
+      if (!empty($vid)) {
         $data['vid'] = $vid;
       }
-      
+
     } // End: vid missing
   } // End: PATTERNS_MODIFY
-  
+
   $default_weight = 0;
   $default_hierarchy = 0;
 
   if (!isset($data['weight'])) {
     $data['weight'] = $default_weight;
   }
-  
+
   if (!isset($data['hierarchy'])) {
     $data['hierarchy'] = $default_hierarchy;
   }
 
-  
+
   return $data;
 }
 
-function _taxonomy_patterns_prepare_vocabulary_delete ($action, $data) {
+function _taxonomy_patterns_prepare_vocabulary_delete($action, $data) {
   // Firt use the vid, if we have it
   if (isset($data['vid'])) {
     $taxo = taxonomy_vocabulary_load($data['vid']);
   }
-  else if (isset($data['machine_name'])) {
+  elseif (isset($data['machine_name'])) {
     $taxo = taxonomy_vocabulary_machine_name_load($data['machine_name']);
   }
-  
-  if (!empty($taxo)){
+
+  if (!empty($taxo)) {
     $data['vid'] = $taxo->vid;
     $data['name'] = $taxo->machine_name;
 
@@ -295,13 +300,13 @@ function _taxonomy_patterns_prepare_vocabulary_delete ($action, $data) {
     $data['confirm'] =  1;
     $data['op'] = 'Delete';
   }
-  
+
   return $data;
 }
 
 // Return a summary of an action
 //function taxonomy_patterns_summary ($id = NULL, &$data = NULL) {
-//  
+//
 //  switch ($id) {
 //    case 'taxonomy_form_vocabulary':
 //      if (!$data['name'] && $data['vid']) {
@@ -322,17 +327,17 @@ function _taxonomy_patterns_prepare_vocabulary_delete ($action, $data) {
 // Pre validate actions
 // Need to check for required tags etc...
 //function taxonomy_patterns_validate($action, $tag, &$data = NULL) {
-//      
+//
 //    if ($tag = 'vocabulary') {
 //      if (!empty($data['vid']) && !taxonomy_vocabulary_load($data['vid'])) {
 //        return t("Invalid vid: %vid. This vocabulary doesn't exist", array('%vid' => $data['vid']));
 //      }
-//    }     
+//    }
 //}
 
 // Return the form_id('s) for each action
 //function taxonomy_patterns_form_id ($id = NULL, &$data = NULL) {
-//     
+//
 //  // VOCABULARY
 //  if ($id =='vocabulary') {
 //    if (isset($data['delete'])) {
@@ -604,7 +609,7 @@ function _taxonomy_patterns_prepare_vocabulary_delete ($action, $data) {
 //    // If the tree data was not in the cache, build $tree_parameters.
 //    if (!isset($tree_parameters)) {
 //      $tree_parameters = array(
-//        'min_depth' => 1, 
+//        'min_depth' => 1,
 //        'max_depth' => $max_depth,
 //      );
 //      if ($mlid) {
@@ -636,77 +641,77 @@ function _taxonomy_patterns_prepare_vocabulary_delete ($action, $data) {
 
 /*old drupal6
  * function _patterns_menu_tree_all_data($menu_name = 'navigation', $item = NULL) {
-  $tree = array();
+ $tree = array();
 
-  // Use $mlid as a flag for whether the data being loaded is for the whole tree.
-  $mlid = isset($item['mlid']) ? $item['mlid'] : 0;
-  // Generate a cache ID (cid) specific for this $menu_name and $item.
-  $cid = 'links:' . $menu_name . ':all-cid:' . $mlid;
+ // Use $mlid as a flag for whether the data being loaded is for the whole tree.
+ $mlid = isset($item['mlid']) ? $item['mlid'] : 0;
+ // Generate a cache ID (cid) specific for this $menu_name and $item.
+ $cid = 'links:' . $menu_name . ':all-cid:' . $mlid;
 
-  // If the static variable doesn't have the data, check {cache_menu}.
-  $cache = cache_get($cid, 'cache_menu');
-  if ($cache && isset($cache->data)) {
-    // If the cache entry exists, it will just be the cid for the actual data.
-    // This avoids duplication of large amounts of data.
-    $cache = cache_get($cache->data, 'cache_menu');
-    if ($cache && isset($cache->data)) {
-      $data = $cache->data;
-    }
-  }
-  // If the tree data was not in the cache, $data will be NULL.
-  if (!isset($data)) {
-    // Build and run the query, and build the tree.
-    if ($mlid) {
-      // The tree is for a single item, so we need to match the values in its
-      // p columns and 0 (the top level) with the plid values of other links.
-      $args = array(0);
-      for ($i = 1; $i < MENU_MAX_DEPTH; $i++) {
-        $args[] = $item["p$i"];
-      }
-      $args = array_unique($args);
-      $placeholders = implode(', ', array_fill(0, count($args), '%d'));
-      $where = ' AND ml.plid IN (' . $placeholders . ')';
-      $parents = $args;
-      $parents[] = $item['mlid'];
-    }
-    else {
-      // Get all links in this menu.
-      $where = '';
-      $args = array();
-      $parents = array();
-    }
-    array_unshift($args, $menu_name);
-    // Select the links from the table, and recursively build the tree.  We
-    // LEFT JOIN since there is no match in {menu_router} for an external
-    // link.
-    
-    // Ste: was    
-//    $data['tree'] = menu_tree_data(db_query("
-//      SELECT m.load_functions, m.to_arg_functions, m.access_callback, m.access_arguments, m.page_callback, m.page_arguments, m.title, m.title_callback, m.title_arguments, m.type, m.description, ml.*
-//      FROM {menu_links} ml LEFT JOIN {menu_router} m ON m.path = ml.router_path
-//      WHERE ml.menu_name = '%s'". $where ."
-//      ORDER BY p1 ASC, p2 ASC, p3 ASC, p4 ASC, p5 ASC, p6 ASC, p7 ASC, p8 ASC, p9 ASC", $args), $parents);
-    
-      $data['tree'] = menu_tree_data(db_query("
-      SELECT m.load_functions, m.to_arg_functions, m.access_callback, m.access_arguments, m.page_callback, m.page_arguments, m.title, m.title_callback, m.title_arguments, m.type, m.description, ml.*
-      FROM {menu_links} ml LEFT JOIN {menu_router} m ON m.path = ml.router_path
-      WHERE ml.menu_name = :args" . $where . "
-      ORDER BY p1 ASC, p2 ASC, p3 ASC, p4 ASC, p5 ASC, p6 ASC, p7 ASC, p8 ASC, p9 ASC", array('args' => $args)), $parents);
-       
-    
-    $data['node_links'] = array();
-    menu_tree_collect_node_links($data['tree'], $data['node_links']);
-    // Cache the data, if it is not already in the cache.
-    $tree_cid = _menu_tree_cid($menu_name, $data);
-    if (!cache_get($tree_cid, 'cache_menu')) {
-      cache_set($tree_cid, $data, 'cache_menu');
-    }
-    // Cache the cid of the (shared) data using the menu and item-specific cid.
-    cache_set($cid, $tree_cid, 'cache_menu');
-  }
-  // Check access for the current user to each item in the tree.
-  menu_tree_check_access($data['tree'], $data['node_links']);
-  $tree[$cid] = $data['tree'];
+ // If the static variable doesn't have the data, check {cache_menu}.
+ $cache = cache_get($cid, 'cache_menu');
+ if ($cache && isset($cache->data)) {
+ // If the cache entry exists, it will just be the cid for the actual data.
+ // This avoids duplication of large amounts of data.
+ $cache = cache_get($cache->data, 'cache_menu');
+ if ($cache && isset($cache->data)) {
+ $data = $cache->data;
+ }
+ }
+ // If the tree data was not in the cache, $data will be NULL.
+ if (!isset($data)) {
+ // Build and run the query, and build the tree.
+ if ($mlid) {
+ // The tree is for a single item, so we need to match the values in its
+ // p columns and 0 (the top level) with the plid values of other links.
+ $args = array(0);
+ for ($i = 1; $i < MENU_MAX_DEPTH; $i++) {
+ $args[] = $item["p$i"];
+ }
+ $args = array_unique($args);
+ $placeholders = implode(', ', array_fill(0, count($args), '%d'));
+ $where = ' AND ml.plid IN (' . $placeholders . ')';
+ $parents = $args;
+ $parents[] = $item['mlid'];
+ }
+ else {
+ // Get all links in this menu.
+ $where = '';
+ $args = array();
+ $parents = array();
+ }
+ array_unshift($args, $menu_name);
+ // Select the links from the table, and recursively build the tree.  We
+ // LEFT JOIN since there is no match in {menu_router} for an external
+ // link.
 
-  return $tree[$cid];
-}*/
+ // Ste: was
+ //    $data['tree'] = menu_tree_data(db_query("
+ //      SELECT m.load_functions, m.to_arg_functions, m.access_callback, m.access_arguments, m.page_callback, m.page_arguments, m.title, m.title_callback, m.title_arguments, m.type, m.description, ml.*
+ //      FROM {menu_links} ml LEFT JOIN {menu_router} m ON m.path = ml.router_path
+ //      WHERE ml.menu_name = '%s'". $where ."
+ //      ORDER BY p1 ASC, p2 ASC, p3 ASC, p4 ASC, p5 ASC, p6 ASC, p7 ASC, p8 ASC, p9 ASC", $args), $parents);
+
+ $data['tree'] = menu_tree_data(db_query("
+ SELECT m.load_functions, m.to_arg_functions, m.access_callback, m.access_arguments, m.page_callback, m.page_arguments, m.title, m.title_callback, m.title_arguments, m.type, m.description, ml.*
+ FROM {menu_links} ml LEFT JOIN {menu_router} m ON m.path = ml.router_path
+ WHERE ml.menu_name = :args" . $where . "
+ ORDER BY p1 ASC, p2 ASC, p3 ASC, p4 ASC, p5 ASC, p6 ASC, p7 ASC, p8 ASC, p9 ASC", array('args' => $args)), $parents);
+
+
+ $data['node_links'] = array();
+ menu_tree_collect_node_links($data['tree'], $data['node_links']);
+ // Cache the data, if it is not already in the cache.
+ $tree_cid = _menu_tree_cid($menu_name, $data);
+ if (!cache_get($tree_cid, 'cache_menu')) {
+ cache_set($tree_cid, $data, 'cache_menu');
+ }
+ // Cache the cid of the (shared) data using the menu and item-specific cid.
+ cache_set($cid, $tree_cid, 'cache_menu');
+ }
+ // Check access for the current user to each item in the tree.
+ menu_tree_check_access($data['tree'], $data['node_links']);
+ $tree[$cid] = $data['tree'];
+
+ return $tree[$cid];
+ }*/

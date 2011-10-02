@@ -209,20 +209,33 @@ function _patterns_analyze_patternscan($patternscan) {
   }
 
   if (count($patternscan['invalid_actions']) != 0) {
-    // @TODO: t()
-    $out = 'Only ' . implode(', ', patterns_actions()) . ' are valid actions. Found: ';
     $invalidactions = array();
     foreach ($patternscan['invalid_actions'] as $key => $value) {
       $invalidactions[] = $value['key'];
     }
-    $out .= implode(', ', $invalidactions);
-    $msgs[] = $out;
+    $msgs[] = t('Only %actions are valid actions. Found: %found.',
+            array('%actions' => implode(', ', patterns_actions()),
+                  '%found' => implode(', ', $invalidactions)));
   }
 
-  // TODO: extra_actions
+  if (count($patternscan['extra_actions']) != 0) {
+    $extraactions = array();
+    foreach ($patternscan['extra_actions'] as $key => $value) {
+      $extraactions[] = $value['key'];
+    }
+    $msgs[] = t('Extra actions have been found on one level: %found.',
+            array('%found' => implode(', ', $extraactions)));
+  }
+
+  // TODO: This is not yet working.
+  if (count($patternscan['missing_tag']) != 0) {
+    foreach ($patternscan['missing_tag'] as $key => $value) {
+      $msgs[] = t('The \'tag\' value is missing for action %action.', array('%action' => $value['key']));
+    }
+  }
 
   if (count($patternscan['empties']) > 0) {
-    $msgs[] = t('Pattern contains empty actions: ') . implode(', ', $patternscan['empties']);
+    $msgs[] = t('Pattern contains empty actions:') . ' ' . implode(', ', $patternscan['empties']);
   }
 
   return $msgs;
@@ -279,10 +292,11 @@ function _patterns_scan_pattern($pattern) {
                   'include' => array(),
                   'invalid_actions' => array(),
                   'extra_actions' => array(),
+                  'missing_tag' => array(),
                   'other_sections' => array(),
   );
 
-  $pattern = patterns_parse_yaml($pattern);
+  $pattern = patterns_parse_yaml($pattern); // TODO: other formats as well.
 
   if (!empty($pattern)) {
     // Patterns must contain:
@@ -315,12 +329,19 @@ function _patterns_scan_pattern($pattern) {
           foreach ($data as $akey => $avalue) {
             if (!array_key_exists($akey, $valid_actions)) {
               $result['invalid_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
-            }else{
+            }
+            else{
               // Report additional valid actions.
-              if ($found){
+              if ($found) {
                 $result['extra_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
               }
-              $newactions[] = array('action' => $akey, 'data' => $avalue);
+              // Check if 'tag' is present.
+              if (!isset($avalue['tag']) or !is_string($avalue['tag'])) {
+                $result['missing_tag'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
+              }
+              else {
+                $newactions[] = array('action' => $akey, 'data' => $avalue);
+              }
               $found = TRUE;
             }
           }
@@ -434,26 +455,26 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
 
         switch ($mode) {
           case 'never':
-            // don't run sub-pattern
+            // Don't run sub-pattern.
             drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to be skipped.', array('%key' => $key + 1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
             continue 2;
             break;
           case 'first':
-            // Only run on first run
+            // Only run on first run.
             if ($p->status) {
               drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on the first run.', array('%key' => $key + 1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
               continue 2;
             }
             break;
           case 'update':
-            // Only run on pattern update
+            // Only run on pattern update.
             if ($p->enabled >= $p->updated) {
               drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on pattern update.', array('%key' => $key + 1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
               continue 2;
             }
             break;
           case 'first-update':
-            // Only run on first run or pattern update
+            // Only run on first run or pattern update.
             if ($p->status && $p->enabled >= $p->updated) {
               drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on first run or update.', array('%key' => $key + 1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
               continue 2;
@@ -461,7 +482,7 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
             break;
           case 'always':
           default:
-            // Run always
+            // Run always.
             break;
         }
 

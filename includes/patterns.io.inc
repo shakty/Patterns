@@ -108,8 +108,8 @@ function patterns_load_php($path, $local = TRUE) {
   // That should have declared a 'pattern' into current scope.
 
   if (!patterns_validate_pattern($pattern)) {
-    // TODO: t()
-    trigger_error("Failed to evaluate a useful pattern from the input file $path. Pattern did not validate. May have been invalid syntax. ", E_USER_WARNING);
+    // TODO: why not drupal_set_message?
+    trigger_error(t("Failed to evaluate a useful pattern from the input file %path. Pattern did not validate. May have been invalid syntax.", array('%path' => $path)), E_USER_WARNING);
     return FALSE;
   }
   return $pattern;
@@ -294,8 +294,7 @@ function patterns_get_patterns($reset = TRUE) {
 
     // Prepare list of files/folders to be excluded.
     // 'enabled' - Don't save enabled pattern backups.
-    // @TODO: extend these.
-    $no_mask = array('.', '..', 'CVS', '.svn', 'enabled');
+    $no_mask = array('.', '..', 'CVS', '.svn', '.git', '.bzr', 'enabled');
 
     foreach ($patterns_paths as $path) {
       foreach (file_scan_directory($path, $mask, $no_mask) as $file) {

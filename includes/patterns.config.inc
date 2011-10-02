@@ -14,7 +14,7 @@ function patterns_permission() {
     'administer patterns' => array(
       'title' => t('administer patterns'),
     ),
-    // TODO: more detailed set of permissions
+    // TODO: More detailed set of permissions.
   );
 }
 
@@ -50,7 +50,7 @@ function patterns_settings($form, &$form_state) {
     '#description' => t('When enabled, you will be able to "publish" selected patterns and make them available to other patterns users on the following URL: %url.', array('%url' => url(NULL, array('absolute' => TRUE)) . (variable_get('clean_url', 0) ? '' : '?q=') . 'patterns.xml')),
     '#default_value' => variable_get('patterns_allow_publish', FALSE),
   );
-  // Reload patterns while we are here and ensure the lists are up to date
+  // Reload patterns while we are here and ensure the lists are up to date.
   patterns_get_patterns(TRUE);
 
   return system_settings_form($form);
@@ -119,14 +119,14 @@ function patterns_paths() {
     $profile = variable_get('install_profile', 'default');
   }
 
-  // array of all the paths where we should look for patterns
+  // Array of all the paths where we should look for patterns.
   $patterns_paths = array(
     conf_path() . '/patterns',
     'profiles/' . $profile . '/patterns',
     'sites/all/patterns'
   );
 
-  // allow any module to include patterns too
+  // Allow any module to include patterns too.
   foreach (module_invoke_all('patterns_directory') as $path) {
     if (is_dir($path)) {
       $patterns_paths[] = $path . '/patterns';
@@ -136,13 +136,13 @@ function patterns_paths() {
 
   // Ste:was
   // also prepend files folder if it's valid
-  //$path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
-  //$path = "/sites/default/files/patterns";
+  // $path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
+  // $path = "/sites/default/files/patterns";
 
   // real_path(public) returns the path to the files dir
   $path = drupal_realpath('public://') . '/' . variable_get('patterns_save_xml', 'patterns');
 
-  //Ste: was directory_check (included in prepared dir)
+  // Ste: was directory_check (included in prepared dir)
   if (file_prepare_directory($path)) {
     array_unshift($patterns_paths, $path);
   }
@@ -156,7 +156,7 @@ function patterns_paths() {
  * @return array
  *   Array of supported file types.
  *
- * @todo convert this into pluggable system
+ * @todo Convert this into pluggable system.
  */
 function patterns_file_types() {
   $result = array('xml', 'php');
