@@ -235,7 +235,7 @@ function _patterns_analyze_patternscan($patternscan) {
   }
 
   if (count($patternscan['empties']) > 0) {
-    $msgs[] = t('Pattern contains empty actions:') . ' ' . implode(', ', $patternscan['empties']);
+    $msgs[] = t('Pattern contains empty sections or actions:') . ' ' . implode(', ', $patternscan['empties']);
   }
 
   return $msgs;
@@ -306,31 +306,36 @@ function _patterns_scan_pattern($pattern) {
     // All the sections must be a non-empty array
     $valid_actions = patterns_actions();
     foreach ($pattern as $key => $value) {
-      if ($key == 'info') {
+      if ($key === 'info') {
         $result['info']++;
       }
-      elseif ($key == 'modules') {
+      elseif ($key === 'modules') {
         $result['modules']++;
       }
-      elseif ($key == 'include') {
+      elseif ($key === 'include') {
         $result['include']++;
       }
       else {
-        $result['other_sections'][$key] = $key; // TODO: Add info about the section as value.
 
         $resultactions = array();
         $newactions = array();
+        $section_info[PATTERNS_CREATE] = 0;
+        $section_info[PATTERNS_MODIFY] = 0;
+        $section_info[PATTERNS_DELETE] = 0;
         foreach ($value as $action => &$data) {
 
           // Make sure there is only one valid action in each array element.
           // NOTE: Having additional valid actions will work, but is discouraged,
           // and therefore undocumented.
-          $found = FALSE;
+          $found = FALSE;          
           foreach ($data as $akey => $avalue) {
             if (!array_key_exists($akey, $valid_actions)) {
               $result['invalid_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
             }
             else{
+              // Update count;
+              $section_info[$akey] = $section_info[$akey]+1;
+              
               // Report additional valid actions.
               if ($found) {
                 $result['extra_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
@@ -347,10 +352,14 @@ function _patterns_scan_pattern($pattern) {
           }
         }
         $value = $newactions;
+        
+        $result['other_sections'][$key] =  '(' . PATTERNS_CREATE.':'.$section_info[PATTERNS_CREATE] . ', ' .
+                                           PATTERNS_MODIFY.':'.$section_info[PATTERNS_MODIFY] . ', ' .
+                                           PATTERNS_DELETE.':'.$section_info[PATTERNS_DELETE] . ')';
       }
 
       if (empty($value)) {
-        $result['empties'][] = $key;
+        $result['empties'][] = ($key === 0) ? 'undefined' : $key; // If the YAML is not loaded correctly you get 0
       }
     }
   }
@@ -369,7 +378,14 @@ function patterns_validate_service() {
 
   if (_patterns_validate_patternscan($scan)) {
     $count = count($scan['other_sections']) + $scan['info'] + $scan['modules'];
-    $out = t('This pattern is valid. !count sections found.', array('!count' => $count));
+    $out = t('This pattern is valid. !count sections found -> ', array('!count' => $count));
+    
+    $out.= ($scan['info']) ? 'info ' : '' ;
+    $out.= ($scan['modules']) ? 'modules ' : '' ;
+    
+    foreach($scan['other_sections'] as $key => $value) {
+      $out.= $key . ' ' . $value;
+    }
   }
   else {
     $errors = implode('<br/> ', _patterns_analyze_patternscan($scan));
