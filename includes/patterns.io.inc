@@ -355,16 +355,15 @@ function patterns_get_patterns($reset = TRUE) {
 
 /**
  * Prints an HTML formatted list of patterns.
- * 
  */
 function patterns_io_get_patterns_service($type = 'ajax') {
 
   if ($type == 'ajax') {
     $patterns = patterns_get_patterns();
     $output = '<div id="all_patterns_div"><strong>last update: </strong>' . date(DATE_RFC822);
-    $output.= theme('patterns_list', array('patterns' => $patterns, 'invalid' => array()));
-    $output.= ' </div>';
-   
+    $output .= theme('patterns_list', array('patterns' => $patterns, 'invalid' => array()));
+    $output .= '</div>';
+
     print $output;
   }
 
@@ -391,7 +390,7 @@ function _patterns_io_check_htaccess() {
  * Checks if the patterns directory exist and is writable.
  */
 function _patterns_io_is_patterns_dir_ready() {
-  // TODO: keep pattern_files_dir in a separate location. Warning definind a constant creates an error
+  // TODO: keep pattern_files_dir in a separate location. Warning: defining a constant creates an error.
   $patterns_files_dir = patterns_config_get_files_dir(); // TODO: move this out for performance
   return (file_prepare_directory($patterns_files_dir)) ? TRUE : FALSE;
 }

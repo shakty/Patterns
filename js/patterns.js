@@ -39,6 +39,6 @@ window.onload = function() {
 		};
 	}
 	else{
-		alert('NO');
+		alert('NO'); // TODO?
 	}
 }
