@@ -7,8 +7,8 @@
 class PatternsPrivilegesTestCase extends DrupalWebTestCase {
   public static function getInfo() {
     return array(
-      'name' => 'General test.',
-      'description' => 'Test privileges, enabling a pattern, the editor.',
+      'name' => 'General test',
+      'description' => 'Tests privileges, enabling a pattern, the editor.',
       'group' => 'Patterns',
     );
   }
@@ -150,6 +150,8 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
 
     // Create users.
     $this->pat_user = $this->drupalCreateUser(array('administer patterns'));
+    // Login the patterns administrator.
+    $this->drupalLogin($this->pat_user);
   }
 
   function runFile($filename, $name, $dir = 'patterns/') {
@@ -158,8 +160,6 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
   }
 
   function runTest($pattern, $name) {
-    // Login the patterns administrator.
-    $this->drupalLogin($this->pat_user);
     $this->quickRun($pattern, $name, 'php');
     // TODO: Only run one mode in order to avoid duplicates, for now.
     //$this->quickRun($pattern, $name, 'batch');
@@ -202,88 +202,4 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
   }
 
 }
-
-class PatternsSystemComponent extends PatternRunTestCase {
-
-  static function getInfo() {
-    return array(
-      'name' => 'Test the System component.',
-      'description' => 'Enable and disable modules, set and delete variables.',
-      'group' => 'Patterns',
-    );
-  }
-
-  /**
-   * Check the database if a module is enabled/disabled.
-   * @name Module name
-   * @enabled TRUE iff the module should be enabled.
-   */
-  private function assertModule($name, $enabled = TRUE) {
-    $forum = db_select('system', 's')
-      ->fields('s', array('name'))
-      ->condition('name', $name)
-      ->condition('type', 'module')
-      ->condition('status', $enabled ? '1' : '0')
-      ->countQuery()->execute()->fetchField();
-//      ->execute()
-//      ->rowCount();
-    $this->assertEqual($forum, 1, $message = 'The ' . $name . ' module should ' . ($enabled ? '' : 'not ') . 'be enabled.');
-  }
-
-  public function testModules() {
-    // Check for modules before running the pattern.
-    $this->assertModule('aggregator', FALSE);
-    $this->assertModule('forum', FALSE);
-    $this->assertModule('overlay', TRUE);
-    $this->assertModule('number', TRUE);
-
-    // Run the pattern.
-    parent::runFile('modules.yaml', 'Enable/disable modules');
-
-    // Expected messages.
-    $this->assertUniqueText(t('Module(s) forum, number enabled. No modules have been disabled.'), t('The forum module should get enabled.'));
-    // TODO: some of these will fail because of an error in the engine (running multiple tags).
-    $this->assertUniqueText(t('No modules have been enabled. Module(s) overlay disabled.'), t('The overlay module should get disabled.'));
-    $this->assertUniqueText(t('Warning: Could not disable admin_menu because it is missing.'), t('Disabling a missing module gives a warning.'));
-    $this->assertUniqueText(t('Warning: Did not disable aggregator because it is already disabled.'), t('Disabling a disabled module gives a warning.'));
-    $this->assertUniqueText(t('Warning: Did not enable number because it is already enabled.'), t('Enabling an enabled module gives a warning.'));
-
-    // Check for modules after running the pattern.
-    // TODO: it might be good to check if every other module is left untouched.
-    $this->assertModule('aggregator', FALSE);
-    $this->assertModule('forum', TRUE);
-    $this->assertModule('overlay', FALSE);
-    $this->assertModule('number', TRUE);
-  }
-
-  public function testVariables() {
-    // Check for variables before running the pattern.
-    /* debug(db_select('variable', 'v')
-        ->fields('v', array('name'))
-        ->execute()
-        ->fetchAll());
-    */
-    $this->assertNotEqual(variable_get('user_pictures', NULL), NULL, t('user_pictures variable should be set.'));
-    $this->assertEqual(variable_get('votingapi_anonymous_window', NULL), NULL, t('votingapi_anonymous_window variable should not be set.'));
-    $this->assertEqual(variable_get('fivestar_widget', NULL), NULL, t('fivestar_widget variable should not be set.'));
-    
-    // Run the pattern.
-    parent::runFile('variables.yaml', 'Create and delete variables');
-
-    $this->assertUniqueText(t('Variable(s) votingapi_anonymous_window, fivestar_widget updated.'), t('The votingapi_anonymous_window, fivestar_widget variables should get updated.'));
-    $this->assertUniqueText(t('Variable(s) user_pictures updated.'), t('The user_pitures variabcle should get updated.'));
-    
-   
-    // Check for variables after running the pattern.
-    $this->assertEqual(variable_get('user_pictures', NULL), NULL, t('user_pictures variable should not be set.'));
-    $this->assertIdentical(variable_get('votingapi_anonymous_window', NULL), 3600, t('votingapi_anonymous_window variable should be set properly.'));
-    $this->assertIdentical(variable_get('fivestar_widget', NULL), 'sites/all/modules/fivestar/widgets/craft/craft.css', t('fivestar_widget variable should be set properly.'));
-    /* debug(db_select('variable', 'v')
-        ->fields('v', array('name'))
-        ->execute()
-        ->fetchAll());
-    */
-    }
-}
-// TODO: Create more test cases
 

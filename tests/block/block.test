@@ -1,0 +1,190 @@
+<?php
+/**
+ * @file
+ * SimpleTests for the System component of Patterns.
+ */
+
+class PatternsBlockTestCase extends PatternRunTestCase {
+
+  const BLOCK_TESTS_DIR = 'tests/block/';
+
+  static function getInfo() {
+    return array(
+      'name' => 'Block component',
+      'description' => 'Creates and deletes a custom block. Modifies a module-provided block.',
+      'group' => 'Patterns',
+    );
+  }
+
+  public function testCreate() {
+    // The block should not exist at this point.
+    $block_count = db_select('block', 'b')
+      ->fields('b', array('bid'))
+      ->condition('module', 'block')
+      ->condition('title', 'Test title')
+      ->countQuery()->execute()->fetchField();
+    $this->assertIdentical($block_count, '0', t('The custom block should not exist at this point.'));
+
+    // Run the pattern.
+    parent::runFile('block.yaml', 'Blocks (create)', PatternsBlockTestCase::BLOCK_TESTS_DIR);
+
+    // Expected messages.
+    $this->assertUniqueText(t('The block has been created.'));
+    $this->assertUniqueText(t('The block settings have been updated.'));
+
+    // The block should exist with the right values for the bartik and seven themes.
+    $block = db_select('block', 'b')
+      ->fields('b')
+      ->condition('module', 'block')
+      ->condition('theme', 'bartik')
+      ->condition('title', 'Test title');
+    $block->join('block_custom', 'bc', 'b.delta = bc.bid');
+    $block = $block->fields('bc')->execute()->fetchAll();
+    $this->assertIdentical(count($block), 1);
+    $this->assertIdentical($block[0]->status, '0');
+    $this->assertIdentical($block[0]->weight, '0');
+    $this->assertIdentical($block[0]->region, '-1');
+    $this->assertIdentical($block[0]->custom, '1');
+    $this->assertIdentical($block[0]->visibility, '0');
+    // TODO
+    //$this->assertEqual($block[0]->pages, "page1\npage2\npage3");
+    //debug($block[0]->pages); debug("page1\npage2\npage3"); debug($block[0]->pages == "page1\npage2\npage3");
+    $this->assertIdentical($block[0]->body, 'Here comes the body text.');
+    $this->assertIdentical($block[0]->info, 'Test custom block');
+    $this->assertIdentical($block[0]->format, 'filtered_html');
+
+    $block = db_select('block', 'b')
+      ->fields('b')
+      ->condition('module', 'block')
+      ->condition('theme', 'seven')
+      ->condition('title', 'Test title');
+    $block->join('block_custom', 'bc', 'b.delta = bc.bid');
+    $block = $block->fields('bc')->execute()->fetchAll();
+    $this->assertIdentical(count($block), 1);
+    $this->assertIdentical($block[0]->status, '1');
+    $this->assertIdentical($block[0]->weight, '4');
+    $this->assertIdentical($block[0]->region, 'content');
+    $this->assertIdentical($block[0]->custom, '1');
+    $this->assertIdentical($block[0]->visibility, '0');
+    // TODO
+    //$this->assertEqual($block[0]->pages, "page1\npage2\npage3");
+    //debug($block[0]->pages); debug("page1\npage2\npage3"); debug($block[0]->pages == "page1\npage2\npage3");
+  }
+
+  public function testDelete() {
+    // First, create the block.
+    parent::runFile('block.yaml', 'Blocks (create)', PatternsBlockTestCase::BLOCK_TESTS_DIR);
+
+    // The block should exist at this point.
+    $block_count = db_select('block', 'b')
+      ->fields('b', array('bid'))
+      ->condition('module', 'block')
+      ->condition('title', 'Test title')
+      ->countQuery()->execute()->fetchField();
+    $this->assertEqual($block_count, '2', t('The custom block should exist at this point.'));
+
+    // Run the pattern.
+    parent::runFile('block_delete.yaml', 'Blocks (custom) delete', PatternsBlockTestCase::BLOCK_TESTS_DIR);
+
+    // Expected messages.
+    $this->assertUniqueText(t('The block Test custom block has been removed.'));
+
+    // The block should not exist at this point.
+    $block_count = db_select('block', 'b')
+      ->fields('b', array('bid'))
+      ->condition('module', 'block')
+      ->condition('title', 'Test title')
+      ->countQuery()->execute()->fetchField();
+    $this->assertIdentical($block_count, '0', t('The custom block should not exist at this point.'));
+  }
+
+  // TODO
+  private function testModify() {
+    // First, create the custom block.
+    parent::runFile('block.yaml', 'Blocks (create)', PatternsBlockTestCase::BLOCK_TESTS_DIR);
+
+    $block = db_select('block', 'b')
+      ->fields('b')
+      ->condition('module', 'block')
+      ->condition('title', 'Test title');
+    $block->join('block_custom', 'bc', 'b.delta = bc.bid');
+    $block_count = $block->fields('bc')->execute()->fetchAll();
+    debug($block_count);
+    
+    // The custom block should exist at this point.
+    $block = db_select('block', 'b')
+      ->fields('b')
+      ->condition('module', 'block')
+      ->condition('title', 'Test title');
+    $block->join('block_custom', 'bc', 'b.delta = bc.bid');
+    $block_count = $block->fields('bc')->countQuery()->execute()->fetchField();
+    $this->assertIdentical($block_count, '2', t('The custom block should exist at this point.'));
+
+    // The user block should provide an online block for two themes.
+    $block_count = db_select('block', 'b')
+      ->fields('b', array('bid'))
+      ->condition('module', 'user')
+      ->condition('delta', 'online')
+      ->countQuery()->execute()->fetchField();
+    $this->assertIdentical($block_count, '2', t('The user block should provide an online block.'));
+
+    parent::runFile('block_modify.yaml', 'Blocks (modify)', PatternsBlockTestCase::BLOCK_TESTS_DIR);
+
+    // Expected messages.
+    // TODO: 2 times each.
+    $this->assertText(t('The block settings have been updated.'));
+    $this->assertText(t('The block configuration has been saved.'));
+
+    // The user block should be set up. 
+    // TODO
+
+    // The custom block should exist with the right values for the bartik and seven themes.
+    $block = db_select('block', 'b')
+      ->fields('b')
+      ->condition('module', 'block')
+      ->condition('theme', 'bartik')
+      ->condition('delta', '1');
+    $block->join('block_custom', 'bc', 'b.delta = bc.bid');
+    $block = $block->fields('bc')->execute()->fetchAll();
+
+    $this->assertIdentical(count($block), 1);
+    $this->assertIdentical($block[0]->status, '0');
+    $this->assertIdentical($block[0]->title, 'Test title2');
+    $this->assertIdentical($block[0]->weight, '4');
+    $this->assertIdentical($block[0]->region, '-1');
+    $this->assertIdentical($block[0]->custom, '1');
+    $this->assertIdentical($block[0]->visibility, '0');
+    debug($block);
+    // TODO
+    //$this->assertEqual($block[0]->pages, "page2\npage3\npage4");
+    //debug($block[0]->pages); debug("page2\npage3\npage4"); debug($block[0]->pages == "page2\npage3\npage4");
+    $this->assertIdentical($block[0]->body, 'Here comes the body text.2');
+    $this->assertIdentical($block[0]->info, 'Test custom block2');
+    $this->assertIdentical($block[0]->format, 'full_html');
+
+    $block = db_select('block', 'b')
+      ->fields('b')
+      ->condition('module', 'block')
+      ->condition('theme', 'seven')
+      ->condition('delta', '1');
+    $block->join('block_custom', 'bc', 'b.delta = bc.bid');
+    $block = $block->fields('bc')->execute()->fetchAll();
+
+    $this->assertIdentical(count($block), 1);
+    $this->assertIdentical($block[0]->status, '0');
+    $this->assertIdentical($block[0]->weight, '4');
+    $this->assertIdentical($block[0]->region, '-1');
+    $this->assertIdentical($block[0]->custom, '1');
+    $this->assertIdentical($block[0]->visibility, '0');
+    // TODO
+    //$this->assertEqual($block[0]->pages, "page2\npage3\npage4");
+    //debug($block[0]->pages); debug("page2\npage3\npage4"); debug($block[0]->pages == "page2\npage3\npage4");
+    debug($block);
+
+    $block = db_select('block', 'b')
+      ->fields('b')->execute()->fetchAll();
+    debug($block);
+    $this->drupalGet('admin/structure/block');
+    $this->drupalGet('admin/structure/block/manage/block/1/configure');
+  }
+}

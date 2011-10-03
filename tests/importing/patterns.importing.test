@@ -1,0 +1,43 @@
+<?php
+/**
+ * @file Test Importing files in Patterns module.
+ * 
+ */
+
+class PatternsImportTestCase extends PatternRunTestCase {
+  
+  const IMPORTING_TESTS_DIR = 'tests/importing/';
+  
+  public static function getInfo() {
+    return array(
+      'name' => 'Import files test',
+      'description' => 'Tests importing patterns files .',
+      'group' => 'Patterns',
+    );
+  }
+  
+  public function setUp() {
+    // Enable any modules required for the tests.
+    parent::setUp();
+  }
+  
+  public function testImportFileFromSource() {
+    
+    $name = 'Test_Import_From_Source';
+    
+    // Fill the form.
+    $edit = array();
+    
+    $edit['name'] = $name;
+    $edit['content'] = $this->loadPattern('importing.yaml', self::IMPORTING_TESTS_DIR);
+
+//    $edit['#validate'] = 'patterns_import_validate';
+//    $edit['#submit'] = 'patterns_import_submit';
+    
+    // Post the form.
+    $this->drupalPost('admin/patterns/import/source', $edit, t('Import'));
+    
+//    $this->assertNoText('Errors on the name of the pattern','Errors in the name of the patterns found');
+    
+  }
+}

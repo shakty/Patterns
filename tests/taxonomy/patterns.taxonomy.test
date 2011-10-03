@@ -1,34 +1,33 @@
 <?php
-
 /**
  * @file
- * SimpleTests for the Taxonomy Component of Patterns.
+ * SimpleTests for the Taxonomy component of Patterns.
  */
 
 class PatternsTaxonomyTestCase extends PatternRunTestCase {
-  
+
   const TAXO_TESTS_DIR = 'tests/taxonomy/';
-  
+
   public static function getInfo() {
     return array(
-      'name' => 'Taxonomy Component for Patterns.',
-      'description' => 'Test creating, modifying, deleting Vocabularies and Terms.',
+      'name' => 'Taxonomy component',
+      'description' => 'Tests creating, modifying, deleting Vocabularies and Terms.',
       'group' => 'Patterns',
     );
   }
 
   public function setUp() {
     // Enable any modules required for the tests.
-    parent::setUp();    
+    parent::setUp();
   }
-  
+
   /**
    * Test the:
-   * 
+   *
    *    * Creation
    *    * Modification of name and description
    *    * Deletion
-   *    
+   *
    * of a vocabulary with machine_name 'anothervoc'.
    * 
    */

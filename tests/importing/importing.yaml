@@ -2,16 +2,14 @@
 # QScience
 
 info:
-  title: Taxonomy_Term_ADD
-  description: Add a term to a vocabulary
+  title: Importing a pattern test
+  description: Importing test
   author: QScience
-  category: Taxonomy
+  category: Test
   version: 1.0
   core: 7.x
   author_email: sbalietti@ethz.ch
   author_website: qlectives.eu
-
-
 
 actions:
 

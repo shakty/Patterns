@@ -369,29 +369,30 @@ function patterns_io_get_patterns_service() {
 /**
  * Checks if a .htaccess file exists to prevent downloads of pattern files.
  */
-function _patterns_check_file_dir() {
-  return FALSE;
-  // Ste: was
-  //$path = file_create_path(variable_get('patterns_save_xml', 'patterns'));
 
-  // real_path(public) returns the path to the files dir
-  $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_xml', 'patterns');
+/**
+	 * Checks if a .htaccess file exists to prevent downloads of pattern files.
+	  */
+function _patterns_io_check_htaccess() {
 
-  if (!is_file($path . '/.htaccess')) {
-    $content = '# Prevent downloading site patterns
-<FilesMatch "\.xml$">
-  Order allow,deny
-</FilesMatch>
-';
-    file_save_data($content, $path . '/.htaccess');
-  }
+   $path = patterns_config_get_files_dir();
+
+	   if (!is_file($path . '/.htaccess')) {
+			    $content = '# Prevent downloading site patterns
+					 <FilesMatch "\.xml$">
+					   Order allow,deny
+					</FilesMatch>
+					';
+			file_save_data($content, $path . '/.htaccess');
+		}
 }
 
 /**
  * Checks if the patterns directory exist and is writable.
  */
-function _patterns_is_patterns_dir_ready() {
-  $patterns_files_dir = '/srv/http/dr7/sites/default/files' . "/" . variable_get('patterns_save_file', 'patterns'); // TODO: move this out for performance
+function _patterns_io_is_patterns_dir_ready() {
+  // TODO: keep pattern_files_dir in a separate location. Warning definind a constant creates an error
+  $patterns_files_dir = patterns_config_get_files_dir(); // TODO: move this out for performance
   return (file_prepare_directory($patterns_files_dir)) ? TRUE : FALSE;
 }
 

@@ -1,0 +1,99 @@
+<?php
+/**
+ * @file
+ * SimpleTests for the System component of Patterns.
+ */
+
+class PatternsSystemTestCase extends PatternRunTestCase {
+
+  const SYSTEM_TESTS_DIR = 'tests/system/';
+
+  static function getInfo() {
+    return array(
+      'name' => 'System component',
+      'description' => 'Enables and disables modules, sets and deletes variables, enables a theme.',
+      'group' => 'Patterns',
+    );
+  }
+
+  /**
+   * Check the database if a module is enabled/disabled.
+   * @name Module name
+   * @enabled TRUE iff the module should be enabled.
+   */
+  private function assertModule($name, $enabled = TRUE) {
+    $module = db_select('system', 's')
+      ->fields('s', array('name'))
+      ->condition('name', $name)
+      ->condition('type', 'module')
+      ->condition('status', $enabled ? '1' : '0')
+      ->countQuery()->execute()->fetchField();
+    $this->assertEqual($module, 1, $message = 'The ' . $name . ' module should ' . ($enabled ? '' : 'not ') . 'be enabled.');
+  }
+
+  public function testModules() {
+    // Check for modules before running the pattern.
+    $this->assertModule('aggregator', FALSE);
+    $this->assertModule('forum', FALSE);
+    $this->assertModule('overlay', TRUE);
+    $this->assertModule('number', TRUE);
+
+    // Run the pattern.
+    parent::runFile('modules.yaml', 'Enable/disable modules', PatternsSystemTestCase::SYSTEM_TESTS_DIR);
+
+    // Expected messages.
+    $this->assertUniqueText(t('Module(s) forum, number enabled. No modules have been disabled.'), t('The forum module should get enabled.'));
+    $this->assertUniqueText(t('No modules have been enabled. Module(s) overlay disabled.'), t('The overlay module should get disabled.'));
+    $this->assertUniqueText(t('Warning: Could not disable admin_menu because it is missing.'), t('Disabling a missing module gives a warning.'));
+    $this->assertUniqueText(t('Warning: Did not disable aggregator because it is already disabled.'), t('Disabling a disabled module gives a warning.'));
+    $this->assertUniqueText(t('Warning: Did not enable number because it is already enabled.'), t('Enabling an enabled module gives a warning.'));
+
+    // Check for modules after running the pattern.
+    // TODO: it might be good to check if every other module is left untouched.
+    $this->assertModule('aggregator', FALSE);
+    $this->assertModule('forum', TRUE);
+    $this->assertModule('overlay', FALSE);
+    $this->assertModule('number', TRUE);
+  }
+
+  public function testVariables() {
+    // Check for variables before running the pattern.
+    /* debug(db_select('variable', 'v')
+        ->fields('v', array('name'))
+        ->execute()
+        ->fetchAll());
+    */
+    $this->assertNotEqual(variable_get('user_pictures', NULL), NULL, t('user_pictures variable should be set.'));
+    $this->assertEqual(variable_get('votingapi_anonymous_window', NULL), NULL, t('votingapi_anonymous_window variable should not be set.'));
+    $this->assertEqual(variable_get('fivestar_widget', NULL), NULL, t('fivestar_widget variable should not be set.'));
+
+    // Run the pattern.
+    parent::runFile('variables.yaml', 'Create and delete variables', PatternsSystemTestCase::SYSTEM_TESTS_DIR);
+
+    $this->assertUniqueText(t('Variable(s) votingapi_anonymous_window, fivestar_widget updated.'), t('The votingapi_anonymous_window, fivestar_widget variables should get updated.'));
+    $this->assertUniqueText(t('Variable(s) user_pictures updated.'), t('The user_pitures variabcle should get updated.'));
+
+
+    // Check for variables after running the pattern.
+    $this->assertEqual(variable_get('user_pictures', NULL), NULL, t('user_pictures variable should not be set.'));
+    $this->assertIdentical(variable_get('votingapi_anonymous_window', NULL), 3600, t('votingapi_anonymous_window variable should be set properly.'));
+    $this->assertIdentical(variable_get('fivestar_widget', NULL), 'sites/all/modules/fivestar/widgets/craft/craft.css', t('fivestar_widget variable should be set properly.'));
+    /* debug(db_select('variable', 'v')
+        ->fields('v', array('name'))
+        ->execute()
+        ->fetchAll());
+    */
+    }
+
+  public function testTheme() {
+    // Check for the current theme.
+    $this->assertEqual(variable_get('theme_default', NULL), 'bartik', t('The default theme is bartik.'));
+
+    // Run the pattern.
+    parent::runFile('theme.yaml', 'Set theme', PatternsSystemTestCase::SYSTEM_TESTS_DIR);
+
+    // Check for the current theme after running the pattern.
+    $this->assertEqual(variable_get('theme_default', NULL), 'garland', t('The default theme is garland.'));
+  }
+
+}
