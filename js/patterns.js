@@ -1,22 +1,17 @@
 window.onload = function() {
-
-	(function ($) {
 	
-	  Drupal.behaviors.patternsBehavior = {
-	    attach: function(context, settings) {
-		  $('.pattern-info').hide();
-		  $('.pattern-info').css({'position' : 'absolute', 'width' : '300px'});
-		  $('.pattern-title').hover(
-		    function(){
-		      $('#' + $(this).attr('id') + '-info').show();
-		    },
-		    function(){
-		      $('#' + $(this).attr('id') + '-info').hide();
-		    }
-		  );
+	jQuery('.pattern-info').hide();
+	jQuery('.pattern-info').css({'position' : 'absolute', 'width' : '300px'});
+	jQuery('.pattern-title').hover(
+	    function(){
+	    	//jQuery('.pattern-info').show();
+	    	//alert('#' + jQuery(this).attr('id') + '-info');
+	    	jQuery('#' + jQuery(this).attr('id') + '-info').show();
+	    },
+	    function(){
+	    	jQuery('#' + jQuery(this).attr('id') + '-info').hide();
 	    }
-	  };
-	})(jQuery);
+	  );
 	
   	var url = location.href.substring(0,location.href.lastIndexOf('admin/patterns/') + 'admin/patterns/'.length) + 'refresh';
 	
@@ -37,8 +32,5 @@ window.onload = function() {
 						}
 			});
 		};
-	}
-	else{
-		alert('NO');
 	}
 }

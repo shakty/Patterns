@@ -13,6 +13,7 @@
 }
 
 .pattern-info {
+	display:none;
   background-color: #fff1a8;
   border: 1px solid #ccc;
   padding: 8px;
