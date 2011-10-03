@@ -178,7 +178,7 @@ function patterns_menu() {
     'type' => MENU_CALLBACK
   );
   
-    $items['admin/patterns/refresh/nojs/'] = array(
+    $items['admin/patterns/refresh'] = array(
     'title' => 'Refresh Patterns',
     'page callback' => 'patterns_io_get_patterns_service',
     'access arguments' => array('administer patterns'),
@@ -332,8 +332,8 @@ function patterns_menu() {
  */
 function patterns_list() {
 
-//  drupal_add_css(drupal_get_path('module', 'patterns') . '/css/patterns.css');
-//  drupal_add_js(drupal_get_path('module', 'patterns') . '/js/patterns.js');
+  drupal_add_css(drupal_get_path('module', 'patterns') . '/css/patterns.css');
+  drupal_add_js(drupal_get_path('module', 'patterns') . '/js/patterns.js');
 
   $form['commands'] = array(
     '#type' => 'fieldset',
@@ -350,18 +350,12 @@ function patterns_list() {
 //    ),
 //  );
 
-//    $form['commands']['refresh'] = array(
-//    '#type' => 'button',
-//    '#value' => 'Refresh',
-//    '#attributes' => array('style' => 'float:right',
-//                           'class' => array('use-ajax'),
-//                           ),
-//    '#prefix' => '<a href="' . url('admin/patterns/refresh') . '">',
-//    '#suffix' => '</a>',
-//    );
-    
-   $form['commands']['refresh'] = array(
-    '#markup' =>  l(t('Refresh'), 'admin/patterns/refresh/', array('attributes' => array('class' => array('use-ajax')))),
+    $form['commands']['refresh'] = array(
+      '#type' => 'button',
+      '#value' => 'Refresh All',
+      '#attributes' => array('style' => 'float:right',
+                             'id' => 'refresh-all',
+                             ),
     );
 
   $form['commands']['create'] = array(
