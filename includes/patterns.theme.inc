@@ -205,7 +205,7 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
     $actions['edit'] = l(t('Edit'), 'admin/patterns/edit/' . $pid);
     
     // Remove Link
-    $actions['remove'] = l(t('Trash'), 'admin/patterns/trash/' . $pid);
+    $actions['remove'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax')))); 
     
     //Publish/Unpublish link
     if (variable_get('patterns_allow_publish', FALSE)) {

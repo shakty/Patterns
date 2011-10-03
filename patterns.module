@@ -75,6 +75,12 @@ define('PATTERNS_DELETE', 'delete');
 define('PATTERNS_FILES', 'files');
 define('PATTERNS_INFO', 'descr');
 
+
+// Add libraries for performing AJAX calls outside forms
+drupal_add_library('system', 'drupal.ajax'); 
+drupal_add_library('system', 'jquery.form');
+
+
 /**
  * @todo:
  * @ Load (some) of the includes only when really needed
@@ -148,26 +154,33 @@ function patterns_menu() {
     'type' => MENU_CALLBACK
   );
 
-  $items['admin/patterns/trash'] = array(
-    'title' => 'Move Pattern to Recycle Bin',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('patterns_trash_pattern'),
-    'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
-  );
-  
-//  $items['admin/patterns/trash/%'] = array(
+//  $items['admin/patterns/trash'] = array(
 //    'title' => 'Move Pattern to Recycle Bin',
-//    'page callback' => 'patterns_trash_pattern',
-//    'page arguments' => array(3),
+//    'page callback' => 'drupal_get_form',
+//    'page arguments' => array('patterns_trash_pattern'),
 //    'access arguments' => array('administer patterns'),
 //    'type' => MENU_CALLBACK
 //  );
+  
+  $items['admin/patterns/trash/%'] = array(
+    'title' => 'Move Pattern to Recycle Bin',
+    'page callback' => 'patterns_trash_pattern',
+    'page arguments' => array(3),
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK
+  );
   
   $items['admin/patterns/remove'] = array(
     'title' => 'Remove Pattern',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('patterns_remove_pattern'),
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK
+  );
+  
+    $items['admin/patterns/refresh/nojs/'] = array(
+    'title' => 'Refresh Patterns',
+    'page callback' => 'patterns_io_get_patterns_service',
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
@@ -327,15 +340,29 @@ function patterns_list() {
     '#title' => 'Commands'
     );
 
-  $form['commands']['refresh'] = array(
-    '#type' => 'button',
-    '#value' => 'Refresh',
-    '#attributes' => array('style' => 'float:right'),
-    '#ajax' => array(
-      'callback' => 'patterns_io_get_patterns_service',
-      'wrapper' => 'all_patterns_div',
-    ),
-  );
+//  $form['commands']['refresh'] = array(
+//    '#type' => 'button',
+//    '#value' => 'Refresh',
+//    '#attributes' => array('style' => 'float:right'),
+//    '#ajax' => array(
+//      'callback' => 'patterns_io_get_patterns_service',
+//      'wrapper' => 'all_patterns_div',
+//    ),
+//  );
+
+//    $form['commands']['refresh'] = array(
+//    '#type' => 'button',
+//    '#value' => 'Refresh',
+//    '#attributes' => array('style' => 'float:right',
+//                           'class' => array('use-ajax'),
+//                           ),
+//    '#prefix' => '<a href="' . url('admin/patterns/refresh') . '">',
+//    '#suffix' => '</a>',
+//    );
+    
+   $form['commands']['refresh'] = array(
+    '#markup' =>  l(t('Refresh'), 'admin/patterns/refresh/', array('attributes' => array('class' => array('use-ajax')))),
+    );
 
   $form['commands']['create'] = array(
     '#type' => 'button',

@@ -357,13 +357,21 @@ function patterns_get_patterns($reset = TRUE) {
  * Prints an HTML formatted list of patterns.
  * 
  */
-function patterns_io_get_patterns_service() {
-  
-  print "Vaffa";
-  
-//  $patterns = patterns_get_patterns();
-//  $output .= theme('patterns_list', array('patterns' => $patterns, 'invalid' => array()));
-//  print $output;
+function patterns_io_get_patterns_service($type = 'ajax') {
+
+  if ($type == 'ajax') {
+    $patterns = patterns_get_patterns();
+    $output = '<div id="all_patterns_div">';
+    $output.= theme('patterns_list', array('patterns' => $patterns, 'invalid' => array()));
+    $output.= ' </div>';
+    
+    $commands[] = ajax_command_replace('all_patterns_div', t('ciao')); 
+    $page = array('#type' => 'ajax_commands', '#commands' => $commands); 
+    ajax_deliver($page);
+    
+    //print $page;
+  }
+
 }
 
 /**
