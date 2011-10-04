@@ -16,7 +16,7 @@ window.onload = function() {
 		  );
 		
 	  	var url = location.href.substring(0,location.href.lastIndexOf('admin/patterns') + 'admin/patterns'.length) + '/refresh';
-		alert(url);
+		//alert(url);
 		var refresh = document.getElementById("refresh-all");
 		
 		if (refresh) {	
