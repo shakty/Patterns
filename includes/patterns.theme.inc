@@ -151,25 +151,25 @@ function theme_patterns_patterns_fieldset($variables) {
     }
 
     $row[] = $label . '><strong>' . drupal_render($pattern['name']) . '</strong></label>';
-        
+
     $row[] = drupal_render($pattern['version']);
     // Add the description, along with any modules it requires.
     $description = drupal_render($pattern['description']);
-    
+
     if ($pattern['#requires']) {
       $description .= '<div class="admin-requirements">' . t('Requires: !module-list', array('!module-list' => implode(', ', $pattern['#requires']))) . '</div>';
     }
     if ($pattern['#required_by']) {
       $description .= '<div class="admin-requirements">' . t('Required by: !module-list', array('!module-list' => implode(', ', $pattern['#required_by']))) . '</div>';
     }
-    
+
     $row[] = array('data' => $description, 'class' => array('description'));
-    
+
     // Display links (such as help or permissions) in their own columns.
     foreach ($pattern['links'] as $key => $value) {
       $row[] = array('data' => $value);
     }
-    
+
     $rows[] = $row;   
   }
 
@@ -193,9 +193,9 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
     'enabled' => FALSE,
     'links' => array(),
   );
-  
+
   $actions = array();
-    
+
     // Build Run/Re-Run/Update pattern links
     if (!$pattern->status) {
       $actions['run'] =  l(t('Run'), 'admin/patterns/enable/' . $pid);
@@ -206,36 +206,36 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
     else {
       $actions['run'] = l(t('Run Update'), 'admin/patterns/enable/' . $pid);
     }
-    
+
     // Edit Link
     $actions['edit'] = l(t('Edit'), 'admin/patterns/edit/' . $pid);
-    
+
     // Remove Link
     $actions['remove'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax')))); 
-    
+
     //Publish/Unpublish link
     if (variable_get('patterns_allow_publish', FALSE)) {
       $actions['publish'] = $pattern->public ? l(t('Unpublish'), 'admin/patterns/unpublish/' . $pid) : l(t('Publish'), 'admin/patterns/publish/' . $pid);
     }
-    
+
   $form = array(
     '#tree' => TRUE,
   );
-  
+
   // Set the basic properties.
-  
+
   // Creating overlay div with extra info
-  $title = '<span id="pid-'. $pid .'" class="pattern-title">'. $pattern->title .'</span>';
-    
+  $title = '<span id="pid-' . $pid . '" class="pattern-title">' . $pattern->title . '</span>';
+
   $info = array();
-  $info[] = t('Author: ') . @$pattern->info['author'];
-  $info[] = t('Email: ') . @$pattern->info['author_email'];
-  $info[] = t('Web: ') . @$pattern->info['author_website'];
+  $info[] = t('Author:') . ' ' . @$pattern->info['author'];
+  $info[] = t('Email:') . ' ' . @$pattern->info['author_email'];
+  $info[] = t('Web:') . ' ' . @$pattern->info['author_website'];
   $author = theme('item_list', array('items' => $info));
 
-  $title .= '<div id="pid-'. $pid .'-info" class="pattern-info">'. $author .'</div>';
-  
-  
+  $title .= '<div id="pid-' . $pid . '-info" class="pattern-info">' . $author . '</div>';
+
+
   $form['name'] = array(
     '#markup' => $title,
   );
@@ -279,7 +279,6 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
   }
 
   $form['links'] = $actions;
-
 
   return $form;
 }
