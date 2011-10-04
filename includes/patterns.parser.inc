@@ -352,14 +352,14 @@ function _patterns_scan_pattern($pattern) {
           }
         }
         $value = $newactions;
-        
-        $result['other_sections'][$key] =  '(' . PATTERNS_CREATE.':'.$section_info[PATTERNS_CREATE] . ', ' .
-                                           PATTERNS_MODIFY.':'.$section_info[PATTERNS_MODIFY] . ', ' .
-                                           PATTERNS_DELETE.':'.$section_info[PATTERNS_DELETE] . ')';
+
+        $result['other_sections'][$key] =  '(' . PATTERNS_CREATE . ':' . $section_info[PATTERNS_CREATE] . ', ' .
+                                           PATTERNS_MODIFY . ':' . $section_info[PATTERNS_MODIFY] . ', ' .
+                                           PATTERNS_DELETE . ':' . $section_info[PATTERNS_DELETE] . ')';
       }
 
       if (empty($value)) {
-        $result['empties'][] = ($key === 0) ? 'undefined' : $key; // If the YAML is not loaded correctly you get 0
+        $result['empties'][] = ($key === 0) ? 'undefined' : $key; // If the YAML is not loaded correctly you get 0.
       }
     }
   }
@@ -378,13 +378,13 @@ function patterns_validate_service() {
 
   if (_patterns_validate_patternscan($scan)) {
     $count = count($scan['other_sections']) + $scan['info'] + $scan['modules'];
-    $out = t('This pattern is valid. !count sections found -> ', array('!count' => $count));
-    
-    $out.= ($scan['info']) ? 'info ' : '' ;
-    $out.= ($scan['modules']) ? 'modules ' : '' ;
-    
-    foreach($scan['other_sections'] as $key => $value) {
-      $out.= $key . ' ' . $value;
+    $out = t('This pattern is valid. !count sections found ->', array('!count' => $count)) . ' ';
+
+    $out .= ($scan['info']) ? 'info ' : '' ;
+    $out .= ($scan['modules']) ? 'modules ' : '' ;
+
+    foreach ($scan['other_sections'] as $key => $value) {
+      $out .= $key . ' ' . $value;
     }
   }
   else {
