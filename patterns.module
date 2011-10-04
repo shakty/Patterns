@@ -86,21 +86,17 @@ drupal_add_library('system', 'jquery.form');
  * @ Load (some) of the includes only when really needed
  * @ When you modify a pattern you always need to reload the main pattern page, so it noticed that the pattern is actually changed. In confirm form it is too late.
  * @ Enable pattern configurations
- * @ **done**Enable actions to see ids created/updated from other actions inside the pattern (tokens?)
- * @ **semi-done** Reset patterns
  * @ Enable components to analyze the current pattern for better validation
  * @ Allow module version restricting
  * @ Put in functionality to auto-download modules (and the correct version)
  * @ Enable backups before running patterns and reverting back to those backups
  * @ Implement a progress meter
- * @ Handle default values better to allow for absolute minimal actions
  * @ Enable interactive actions by allowing patterns to resume from a saved position
  * @ Implement an export feature for all available form_ids
  * @ Allow resuming failed patterns
  * @ In the pattern details, list any sub-patterns directly on the patterns listing page
  * @ Create a Pattern class (?) check performance
  * @ Increase performaces, it seems still slow.
- * @ **done**Check core.php.inc
  */
 
 
