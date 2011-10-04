@@ -1,7 +1,7 @@
 jQuery('document').ready( function() {
 
 	(function(){
-		var url = location.href.substring(0,location.href.lastIndexOf('admin/patterns/') + 'admin/patterns/'.length) + 'validate';
+		var url = location.href.substring(0,location.href.lastIndexOf('admin/patterns') + 'admin/patterns'.length) + '/validate';
 		
 		var textarea = document.getElementById("edit-content");
 		
