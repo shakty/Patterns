@@ -1,33 +1,36 @@
-(function ($) {
-
-  Drupal.behaviors.patternsBehavior = {
-    attach: function(context, settings) {
-	  $('.pattern-info').hide();
-	  $('.pattern-info').css({'position' : 'absolute', 'width' : '300px'});
-	  $('.pattern-title').hover(
+window.onload = function() {
+	
+	jQuery('.pattern-info').hide();
+	jQuery('.pattern-info').css({'position' : 'absolute', 'width' : '300px'});
+	jQuery('.pattern-title').hover(
 	    function(){
-	      $('#' + $(this).attr('id') + '-info').show();
+	    	//jQuery('.pattern-info').show();
+	    	//alert('#' + jQuery(this).attr('id') + '-info');
+	    	jQuery('#' + jQuery(this).attr('id') + '-info').show();
 	    },
 	    function(){
-	      $('#' + $(this).attr('id') + '-info').hide();
+	    	jQuery('#' + jQuery(this).attr('id') + '-info').hide();
 	    }
 	  );
-    }
-  };
-
-})(jQuery);
-
-
-
-//Drupal.behaviors.patternsBehavior = function (context) {
-//  $('.pattern-info').hide();
-//  $('.pattern-info').css({'position' : 'absolute', 'width' : '300px'});
-//  $('.pattern-title').hover(
-//    function(){
-//      $('#' + $(this).attr('id') + '-info').show();
-//    },
-//    function(){
-//      $('#' + $(this).attr('id') + '-info').hide();
-//    }
-//  );
-//};
+	
+  	var url = location.href.substring(0,location.href.lastIndexOf('admin/patterns/') + 'admin/patterns/'.length) + 'refresh';
+	
+	var refresh = document.getElementById("refresh-all");
+	
+	if (refresh) {	
+		refresh.onclick = function() {
+			document.getElementById('all_patterns_div').innerHTML = '...refreshing...';
+			
+			jQuery.ajax({
+				type: 'POST',
+				url: url,
+				// TODO: This needs to be encoded.
+				//data: 'pattern=' + textarea.value,
+				success: function ( data, status, xhr ) {
+							document.getElementById('all_patterns_div').innerHTML = data;
+							//$('all_patterns_div').replaceWith(data);
+						}
+			});
+		};
+	}
+}

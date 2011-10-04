@@ -140,31 +140,37 @@ function theme_patterns_patterns_fieldset($variables) {
   // Iterate through all the modules, which are
   // children of this fieldset.
   foreach (element_children($form) as $key) {
-    // Stick it into $module for easier accessing.
-    $module = $form[$key];
+    // Stick it into $pattern for easier accessing.
+    $pattern = $form[$key];
     $row = array();
-    unset($module['enable']['#title']);
-    $row[] = array('class' => array('checkbox'), 'data' => drupal_render($module['enable']));
-    $label = '<label';
-    if (isset($module['enable']['#id'])) {
-      $label .= ' for="' . $module['enable']['#id'] . '"';
+    unset($pattern['enable']['#title']);
+    $row[] = array('class' => array('checkbox'), 'data' => drupal_render($pattern['enable']));
+    $label = '<label ';
+    if (isset($pattern['enable']['#id'])) {
+      $label .= ' for="' . $pattern['enable']['#id'] . '"';
     }
-    $row[] = $label . '><strong>' . drupal_render($module['name']) . '</strong></label>';
-    $row[] = drupal_render($module['version']);
+
+    $row[] = $label . '><strong>' . drupal_render($pattern['name']) . '</strong></label>';
+        
+    $row[] = drupal_render($pattern['version']);
     // Add the description, along with any modules it requires.
-    $description = drupal_render($module['description']);
-    if ($module['#requires']) {
-      $description .= '<div class="admin-requirements">' . t('Requires: !module-list', array('!module-list' => implode(', ', $module['#requires']))) . '</div>';
+    $description = drupal_render($pattern['description']);
+    
+    if ($pattern['#requires']) {
+      $description .= '<div class="admin-requirements">' . t('Requires: !module-list', array('!module-list' => implode(', ', $pattern['#requires']))) . '</div>';
     }
-    if ($module['#required_by']) {
-      $description .= '<div class="admin-requirements">' . t('Required by: !module-list', array('!module-list' => implode(', ', $module['#required_by']))) . '</div>';
+    if ($pattern['#required_by']) {
+      $description .= '<div class="admin-requirements">' . t('Required by: !module-list', array('!module-list' => implode(', ', $pattern['#required_by']))) . '</div>';
     }
+    
     $row[] = array('data' => $description, 'class' => array('description'));
+    
     // Display links (such as help or permissions) in their own columns.
-    foreach ($module['links'] as $key => $value) {
+    foreach ($pattern['links'] as $key => $value) {
       $row[] = array('data' => $value);
     }
-    $rows[] = $row;
+    
+    $rows[] = $row;   
   }
 
   return theme('table', array('header' => $form['#header'], 'rows' => $rows));
@@ -205,7 +211,7 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
     $actions['edit'] = l(t('Edit'), 'admin/patterns/edit/' . $pid);
     
     // Remove Link
-    $actions['remove'] = l(t('Remove'), 'admin/patterns/remove/' . $pid);
+    $actions['remove'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax')))); 
     
     //Publish/Unpublish link
     if (variable_get('patterns_allow_publish', FALSE)) {
@@ -215,9 +221,23 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
   $form = array(
     '#tree' => TRUE,
   );
+  
   // Set the basic properties.
+  
+  // Creating overlay div with extra info
+  $title = '<span id="pid-'. $pid .'" class="pattern-title">'. $pattern->title .'</span>';
+    
+  $info = array();
+  $info[] = t('Author: ') . @$pattern->info['author'];
+  $info[] = t('Email: ') . @$pattern->info['author_email'];
+  $info[] = t('Web: ') . @$pattern->info['author_website'];
+  $author = theme('item_list', array('items' => $info));
+
+  $title .= '<div id="pid-'. $pid .'-info" class="pattern-info">'. $author .'</div>';
+  
+  
   $form['name'] = array(
-    '#markup' => $pattern->title,
+    '#markup' => $title,
   );
   $form['description'] = array(
     '#markup' => t($pattern->description),

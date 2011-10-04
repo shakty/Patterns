@@ -42,7 +42,6 @@ function patterns_schema() {
       'status' => array(
         'type' => 'int',
         'size' => 'tiny',
-        'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
         'description' => 'Boolean indicating whether the pattern has been executed (enabled).',
@@ -109,7 +108,7 @@ function patterns_schema() {
  */
 function patterns_requirements($phase) {
   $requirements = array();
-  
+
  // Checking if patterns directory is writable
  // Must be done at installation and runtime
   if (!_patterns_io_is_patterns_dir_ready()) {
@@ -127,7 +126,7 @@ function patterns_requirements($phase) {
         'value'       => 'Writable',
       );
     }
-  
+
   switch ($phase) {
     case 'runtime':
       $path = libraries_get_path('spyc') . '/spyc.php';
@@ -149,7 +148,7 @@ function patterns_requirements($phase) {
           'value'       => _get_file_phpdoc_version($path),
         );
       }
-    break;   
+    break;
   }
   return $requirements;
 }

@@ -27,7 +27,7 @@ function patterns_help($section, $arg = NULL) {
   $output = '';
   switch ($section) {
     case 'admin/patterns':
-      $output = t('Patterns will be looked for in files under the following locations:') . ' ' . theme('item_list', array('items' => patterns_paths()));
+      $output = t('Patterns will be looked for in files under the following locations:') . ' ' . theme('item_list', array('items' => patterns_config_get_paths()));
       break;
   }
   return $output;
@@ -77,7 +77,7 @@ function patterns_config_get_files_dir() {
 /**
  * Return a list of paths that will be scanned for patterns/.
  */
-function patterns_paths() {
+function patterns_config_get_paths() {
   global $profile;
 
   if (!isset($profile)) {
@@ -115,7 +115,7 @@ function patterns_paths() {
  *
  * @todo Convert this into pluggable system.
  */
-function patterns_file_types() {
+function patterns_config_get_file_types() {
   $result = array('xml', 'php');
   if (file_exists(libraries_get_path('spyc') . '/spyc.php')) {
     $result[] = 'yaml';

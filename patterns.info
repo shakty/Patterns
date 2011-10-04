@@ -8,7 +8,13 @@ package = Site Setup
 php = 5.1
 
 ; Test Files
+
+; Core
 files[] = tests/patterns.test
+; Not yet
+;files[] = tests/importing/patterns.importing.test
+
+; Components
 files[] = tests/taxonomy/patterns.taxonomy.test
 files[] = tests/system/system.test
 files[] = tests/block/block.test

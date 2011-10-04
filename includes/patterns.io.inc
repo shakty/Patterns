@@ -269,8 +269,8 @@ function patterns_load_components() {
 /**
  * Loads the available patterns.
  *
- * Checks inside the directories defined by patterns_paths().
- * @see patterns_paths
+ * Checks inside the directories defined by patterns_config_get_paths().
+ * @see patterns_config_get_paths
  *
  * @param $reset
  *
@@ -287,10 +287,10 @@ function patterns_get_patterns($reset = TRUE) {
     $errors = array();
 
     // Get list of directories to scan for patterns.
-    $patterns_paths = patterns_paths();
+    $patterns_paths = patterns_config_get_paths();
 
     // Get valid file extensions.
-    $mask = '/.\.(' . implode('|', patterns_file_types()) . ')$/';
+    $mask = '/.\.(' . implode('|', patterns_config_get_file_types()) . ')$/';
 
     // Prepare list of files/folders to be excluded.
     // 'enabled' - Don't save enabled pattern backups.
@@ -355,43 +355,42 @@ function patterns_get_patterns($reset = TRUE) {
 
 /**
  * Prints an HTML formatted list of patterns.
- * 
  */
-function patterns_io_get_patterns_service() {
-  
-  print "Vaffa";
-  
-//  $patterns = patterns_get_patterns();
-//  $output .= theme('patterns_list', array('patterns' => $patterns, 'invalid' => array()));
-//  print $output;
+function patterns_io_get_patterns_service($type = 'ajax') {
+
+  if ($type == 'ajax') {
+    $patterns = patterns_get_patterns();
+    $output = '<div id="all_patterns_div"><strong>last update: </strong>' . date(DATE_RFC822);
+    $output .= theme('patterns_list', array('patterns' => $patterns, 'invalid' => array()));
+    $output .= '</div>';
+
+    print $output;
+  }
+
 }
 
 /**
  * Checks if a .htaccess file exists to prevent downloads of pattern files.
  */
-
-/**
-	 * Checks if a .htaccess file exists to prevent downloads of pattern files.
-	  */
 function _patterns_io_check_htaccess() {
 
-   $path = patterns_config_get_files_dir();
+  $path = patterns_config_get_files_dir();
 
-	   if (!is_file($path . '/.htaccess')) {
-			    $content = '# Prevent downloading site patterns
-					 <FilesMatch "\.xml$">
-					   Order allow,deny
-					</FilesMatch>
-					';
-			file_save_data($content, $path . '/.htaccess');
-		}
+  if (!is_file($path . '/.htaccess')) {
+    $content = '# Prevent downloading site patterns
+<FilesMatch "\.xml$">
+  Order allow,deny
+</FilesMatch>
+';
+    file_save_data($content, $path . '/.htaccess');
+  }
 }
 
 /**
  * Checks if the patterns directory exist and is writable.
  */
 function _patterns_io_is_patterns_dir_ready() {
-  // TODO: keep pattern_files_dir in a separate location. Warning definind a constant creates an error
+  // TODO: keep pattern_files_dir in a separate location. Warning: defining a constant creates an error.
   $patterns_files_dir = patterns_config_get_files_dir(); // TODO: move this out for performance
   return (file_prepare_directory($patterns_files_dir)) ? TRUE : FALSE;
 }

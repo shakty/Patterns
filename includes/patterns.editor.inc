@@ -84,7 +84,7 @@ function patterns_quickrun($form, &$form_state) {
   $form['format'] = array(
     '#type' => 'select',
     '#title' => t('Pattern syntax'),
-    '#options' => array_combine(patterns_file_types(), patterns_file_types()),
+    '#options' => array_combine(patterns_config_get_file_types(), patterns_config_get_file_types()),
     '#default_value' => $extension,
   );
 
@@ -134,7 +134,7 @@ function patterns_quickrun_submit($form, $form_state) {
 /**
  * Display the page for creating a new pattern.
  */
-function patterns_create_page($pid = NULL) {
+function patterns_editor_create_page($pid = NULL) {
 
   $info = array();
   $pattern = array();
@@ -233,7 +233,7 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
   $form['format'] = array(
     '#type' => 'select',
     '#title' => t('Pattern syntax'),
-    '#options' => array_combine(patterns_file_types(), patterns_file_types()),
+    '#options' => array_combine(patterns_config_get_file_types(), patterns_config_get_file_types()),
     '#default_value' => $extension,
   );
 
