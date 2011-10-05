@@ -1,73 +1,180 @@
-# EPF
-# yaml pattern file
+# YAML Econophysics Forum, QScience
+
 info:
-  title: EconoPhysics Forum
-  description: The EconoPhysics Forum content types, views, columns, front page
+  title: Set up the Econophysics Forum
+  description: Enables the theme, adds blocks, sets variables, enables modules, adds path aliases and menu items.
   author: QScience
   category: QScience
   version: 1.0
-  core: 6.x
-  author_email: csko@inf.u-szeged.hu
+  core: 7.x
+  author_email: qscience@...
+  author_website: http://www.qlectives.eu
 
 modules:
-  #- views
-  #- cck_redirection
-  #- admin_menu
-  #- advanced_help
-  - event
-  - content
-  - text
+  -pathauto
 
 actions:
-  - tag: content
-    name: Paper
-    type: paper
-    description: Paper content type
-    comment: 2
-  - tag: field
-    type: paper
-    name: field_authors
-    label: Authors
-    option: text
-    widget: text_textarea 
-    required
-  - tag: field
-    type: paper
-    name: field_abstract
-    label: Abstract
-    option: text
-    widget: text_textarea 
-    required
 
-  - tag: content
-    name: Book review
-    type: bookreview
-    description: A book review
-    comment: 2
-  - tag: field
-    type: bookreview
-    name: field_authors
-    label: Authors
-    option: text
-    widget: text_textarea 
-    required
-  - tag: field
-    type: paper
-    name: field_reviewer
-    label: Reviewer
-    option: text
-    widget: text_textarea 
-    required
+# ---------- Modules ----------
 
-  - tag: content
-    name: Editorial
-    type: editorial
-    description: Editorials
-    comment: 2
-  - tag: field
-    type: editorial
-    name: field_authors
-    label: Authors
-    option: text
-    widget: text_textarea 
-    required
+  - create:
+      tag: modules
+      - blog
+      - taxonomy
+      - comment
+      - aggregator
+      - votingapi
+      - fivestar
+      - path
+      - pathauto
+
+  - delete:
+      tag: modules
+      - overlay
+
+# ---------- Theme ----------
+
+  - create:
+      tag: theme
+      value: garland
+
+# ---------- Blocks ----------
+
+  - modify:
+      tag: block
+      module: system
+      delta: powered-by
+      status: 0
+      weight: 0
+      theme: garland
+      region: -1
+      regions:
+          seven: -1
+          bartik: -1
+          garland: -1
+
+  - modify:
+      tag: block
+      module: node
+      delta: recent
+      status: 1
+      weight: -5
+      theme: garland
+      region: sidebar_second
+      regions:
+          seven: -1
+          bartik: -1
+          garland: sidebar_second
+
+# ---------- Menu and Path ----------
+
+  - create:
+      tag: url_alias
+      source: node
+      alias: home
+
+  - create:
+      tag: url_alias
+      source: node
+      alias: editorial
+
+  - create:
+      tag: url_alias
+      source: node
+      alias: news
+
+  - create:
+      tag: url_alias
+      source: node
+      alias: events
+
+  - create:
+      tag: url_alias
+      source: node
+      alias: bookreviews
+
+  - create:
+      tag: url_alias
+      source: node
+      alias: papers
+
+  - create:
+      tag: menu_item
+      menu_name: main-menu
+      link_path: home
+      link_title: Home
+      weight: -5
+
+  - create:
+      tag: menu_item
+      menu_name: main-menu
+      link_path: editorial
+      link_title: Editorial
+      weight: -4
+
+  - create:
+      tag: menu_item
+      menu_name: main-menu
+      link_path: news
+      link_title: News
+      weight: -3
+
+  - create:
+      tag: menu_item
+      menu_name: main-menu
+      link_path: events
+      link_title: Events
+      weight: -2
+
+  - create:
+      tag: menu_item
+      menu_name: main-menu
+      link_path: bookreviews
+      link_title: Book reviews
+      weight: -1
+
+  - create:
+      tag: menu_item
+      menu_name: main-menu
+      link_path: papers
+      link_title: Papers
+      weight: 0
+
+
+  - create:
+      tag: menu_item
+      menu_name: main-menu
+      link_path: blog
+      link_title: Blogs
+      weight: 1
+
+# ---------- Variables ----------
+
+  - create:
+      tag: variables
+      - variable
+        name: date_default_timezone
+        value: Europe/Berlin
+      - variable
+        name: site_frontpage
+        value: node
+      - variable
+        name: user_register
+        value: 2
+      - variable
+        name: site_name
+        value: EconoPhysics Forum
+
+# ---------- Users ----------
+
+#  - create:
+#      tag: user
+#      name: Editor
+#      mail: editor@qlectives.eu
+#      password: ediToRpaSS1
+#      timezone: Europe/Zurich
+#      roles: 2
+#      status: 1
+
+
+
