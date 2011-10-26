@@ -5,7 +5,7 @@
  */
 function field_patterns() {
 
-  $files = array('modules/field_ui/field_ui.admin.inc');
+  $files = array('modules/field_ui/field_ui.admin.inc','modules/field/field.info.inc');
   $actions['field'] = array(
     'descr' => t('Create/Modify/Delete field'),
     PATTERNS_MODIFY => array('field_ui_field_settings_form'),

@@ -1,0 +1,29 @@
+ # YAML Taxonomies Pattern
+# QScience
+
+info:
+  title: Edit fields
+  description: Edit fields
+  author: Yanbo
+  category: Field
+  version: 1.0
+  core: 7.x
+  author_email: nbboob@gmail.com
+  author_website: http://www.qlectives.eu
+
+
+
+actions:
+
+  - modify:
+      tag: instance
+      entity:node
+      bundle: article
+      name: first 
+      label:edit
+      cardinality:3
+      required:1
+      default_value:bobo
+      description:test
+      size:10
+      text_processing:1

@@ -1,0 +1,78 @@
+<?php
+/**
+ * @file
+ * SimpleTests for the Field component of Patterns.
+ */
+
+class PatternsFieldTestCase extends PatternRunTestCase {
+
+  const FIELD_TESTS_DIR = 'tests/field/';
+
+  static function getInfo() {
+    return array(
+      'name' => 'Field component',
+      'description' => 'Create/Delete a Field, Define extra settings for Instances or field',
+      'group' => 'Patterns',
+    );
+  }
+  
+   public function setUp() {
+    // Enable any modules required for the tests.
+    parent::setUp();
+  }
+
+
+  public function testField() {
+  	 // Make sure that matches the name in the pattern file
+    $entity_type = 'node';$name = 'field_first';$bundle_name = 'article';
+    // create a new field
+  	parent::runFile('field_instance_create.yaml', 'Add custom fields to USER and NODE', PatternsFieldTestCase::FIELD_TESTS_DIR);
+  	_field_info_collate_fields(true);
+  	$inst=field_info_instance($entity_type, $name, $bundle_name);
+  	//break;
+  	$this->assertNotNull($inst, t('Instance created.'));
+  	
+	$weight=$inst['widget']['weight'];
+    // Run the pattern.
+    parent::runFile('field_weight_modify.yaml', 'Modify field weight', PatternsFieldTestCase::FIELD_TESTS_DIR);
+    _field_info_collate_fields(true);
+   	$inst=field_info_instance($entity_type, $name, $bundle_name);
+   	$this->assertNotNull($inst, t('Instance created.'));
+    $this->assertNotEqual($inst['widget']['weight'], $weight, t('Modify Field pattern change instance weight correctly.'));
+  	
+ 
+  	$field = field_info_field($name);     
+    $length=$field['settings']['max_length'];
+    //modify the field
+    parent::runFile('field_field_modify.yaml', 'Modify field setting', PatternsFieldTestCase::FIELD_TESTS_DIR);
+    _field_info_collate_fields(true);
+    $field= field_info_field($name);
+    $this->assertNotNull($field, t('Field found.'));      	
+  	$this->assertNotEqual($field['settings']['max_length'], $length, t('Modify Field pattern change max_length correctly.'));
+    
+    $label = $inst['label']; 
+    $require = $inst['required'];
+    $descr = $inst['description'];
+    $cardi=$field['cardinality'];
+    $textp = $inst['settings']['text_processing'];
+  	// modify the instance
+  	parent::runFile('field_instance_modify.yaml', 'Edit fields', PatternsFieldTestCase::FIELD_TESTS_DIR);
+  	_field_info_collate_fields(true);
+  	$inst=field_info_instance($entity_type, $name, $bundle_name);
+  	$field = field_info_field($name); 
+  	$this->assertNotNull($inst, t('Instance found.'));
+  	
+    $this->assertNotEqual($inst['label'], $label, t('Modify Instance pattern change label correctly.'));
+    $this->assertNotEqual($inst['required'], $require, t('Modify Instance pattern changed required correctly'));
+    $this->assertNotEqual($inst['description'], $descr, t('Modify Instance pattern changed description correctly'));
+    $this->assertNotEqual($field['cardinality'], $cardi, t('Modify Instance pattern changed cardinality correctly'));
+    $this->assertNotEqual( $inst['settings']['text_processing'], $textp, t('Modify Instance pattern changed text_processing correctly'));
+    
+  	//delete the instance
+  	parent::runFile('field_instance_delete.yaml', 'Delete fields', PatternsFieldTestCase::FIELD_TESTS_DIR);
+  	$inst=field_info_instance($entity_type, $entity_type, $bundle_name);
+  	$this->assertNull($inst, t('Delete instance successfully.'));
+  	
+    }
+
+}

@@ -77,8 +77,8 @@ define('PATTERNS_INFO', 'descr');
 
 
 // Add libraries for performing AJAX calls outside forms
-drupal_add_library('system', 'drupal.ajax'); 
-drupal_add_library('system', 'jquery.form');
+//drupal_add_library('system', 'drupal.ajax'); 
+//drupal_add_library('system', 'jquery.form');
 
 
 /**

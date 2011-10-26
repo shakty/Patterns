@@ -39,6 +39,13 @@ function system_patterns() {
   );
 
   $actions['variable'] = $actions['variables']; // Alias
+  
+ /* $actions['date'] = array('descr' => t('Create/edit/delete types of date and time'),
+  	PATTERNS_CREATE => array('system_configure_date_formats_form','system_add_date_format_type_form'), 
+    PATTERNS_MODIFY => array('system_configure_date_formats_form','system_date_time_settings'),
+    PATTERNS_DELETE => array('system_delete_date_format_type_form'),
+    PATTERNS_FILES =>$files
+  );*/
 
   return $actions;
 
@@ -52,6 +59,10 @@ function system_patterns_actions() {
         'call_php_func_form' => t('Call PHP function: Call function'),
         'variables' => t('System: Set or delete variables'),
         'variable' => t('System: Set or delete variable'),
+/*        'system_add_date_format_type_form' => t('Create a type of date and time'),
+        'system_date_time_settings' => t('Edit the types of date and time'),
+        'system_delete_date_format_type_form' => t('Delete a type of date and time'),
+        'system_configure_date_formats_form' => t('Create/edit formats of date and time'),*/
   );
 }
 
@@ -88,7 +99,25 @@ function system_patterns_prepare($action, $tag, &$data = NULL) {
       $data['delete'] = $data['disable'];
     }
     unset($data['disable']);
-  }
+  }/*elseif($tag=='date'){
+  	if(isset($data['format'])){
+			$data['date_format']=$data['format'];
+			unset($data['format']);
+		}
+		if(isset($data['type'])){
+			if(!isset($data['machine_name'])){
+				$data['machine_name']=str_replace(' ', '-', $data['type']);
+			}
+			$data['date_type']=$data['type'];
+			unset($data['type']);
+		}
+	if($action==PATTERNS_MODIFY){
+		if(isset($data['date_type'])&&isset($data['date_format'])){
+			$new='date_format_'.$data['date_type'];
+			$data[$new]=$data['date_format'];
+		}
+	}
+  }*/
   else {
     switch ($tag) {
       case 'variable':
@@ -250,8 +279,7 @@ function system_patterns_callbacks($action, $tag, &$data = NULL) {
   }
   elseif ($tag == 'variables') { // Custom functions will do the work.
     $result = array('variables_execute');
-  }
-  else { // Just regular forms.
+  }else { // Just regular forms.
     $desc = system_patterns();
     $result = $desc[$tag][$action];
   }
@@ -299,7 +327,10 @@ function system_patterns_params($action, $form_id, &$data = NULL, &$a) {
   }
   elseif ($form_id == 'call_php_func_form') {
     $result = array($data['function'], $data['type'], $data['module'], $data['name'], $data['filepath'], $data['arguments']);
-  }
+  }/*elseif($form_id=='system_delete_date_format_type_form'){
+		$data['confirm']=1;
+		$result=array($data['date_type']);
+	}*/
   // TODO: other forms
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
