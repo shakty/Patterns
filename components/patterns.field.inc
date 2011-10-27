@@ -145,6 +145,7 @@ function field_patterns_params($action, $form_id, &$data = NULL) {
     $result = array($data['entity_type'], $data['bundle']);
   }
   elseif ($form_id == 'field_ui_field_edit_form' ) {
+  	_field_info_collate_fields(true);
     $instance = field_info_instance($data['entity_type'], $data['field_name'], $data['bundle']);
     $result = array($instance);
   }
@@ -304,13 +305,13 @@ function _field_patterns_prepare_instance($action, $data) {
     if (isset($data['rows'])) {
       //$c = array('und' => array(array('value' =>$data['cardinality'],'safe_value'=>$data['cardinality'])));
       $data['instance']['widget']['settings']['rows'] = $data['rows'];
-      $date['instance']['widget']['active'] = 1;
+      $data['instance']['widget']['active'] = 1;
       unset($data['rows']);
     }
     if (isset($data['size'])) {
       //$c = array('und' => array(array('value' =>$data['cardinality'],'safe_value'=>$data['cardinality'])));
       $data['instance']['widget']['settings']['size'] = $data['size'];
-      $date['instance']['widget']['active'] = 1;
+      $data['instance']['widget']['active'] = 1;
       unset($data['size']);
     }
     //default_value
@@ -321,23 +322,39 @@ function _field_patterns_prepare_instance($action, $data) {
 
     //other special field type settings form
     if (isset($data['instance_settings'])) {
-      foreach ($data['special_settings'] as $key => $setting) {
-        $data['instance']['setting'][$key] = $setting;
+      foreach ($data['instance_settings'] as $key => $setting) {
+      	if(is_array($setting)){
+      		foreach($setting as $key1=>$set){
+      			$data['instance']['settings'][$key][$key1] = $set;
+      		}
+      	}else
+        $data['instance']['settings'][$key] = $setting;
       }
-      unset($data['settings']);
+      unset($data['instance_settings']);
     }
     if (isset($data['field_settings'])) {
       foreach ($data['field_settings'] as $key => $setting) {
-        $data['field']['setting'][$key] = $setting;
+      	if(is_array($setting)){
+      		foreach($setting as $key1=>$set){
+      			$data['field']['settings'][$key][$key1] = $set;
+      		}
+      	}else
+        $data['field']['settings'][$key] = $setting;
       }
-      unset($data['settings']);
+      unset($data['field_settings']);
     }
     if (isset($data['widget_settings'])) {
+    	
       foreach ($data['widget_settings'] as $key => $setting) {
-        $data['instance']['widget']['setting'][$key] = $setting;
+      	if(is_array($setting)){
+      		foreach($setting as $key1=>$set){
+      			$data['instance']['widget']['settings'][$key][$key1] = $set;
+      		}
+      	}else
+        $data['instance']['widget']['settings'][$key] = $setting;
       }
-      $date['instance']['widget']['active'] = 1;
-      unset($data['settings']);
+      $data['instance']['widget']['active'] = 1;
+      unset($data['widget_settings']);
     }
   }
   return $data;

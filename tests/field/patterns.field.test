@@ -2,6 +2,7 @@
 /**
  * @file
  * SimpleTests for the Field component of Patterns.
+ * 
  */
 
 class PatternsFieldTestCase extends PatternRunTestCase {
@@ -10,7 +11,7 @@ class PatternsFieldTestCase extends PatternRunTestCase {
 
   static function getInfo() {
     return array(
-      'name' => 'Field component',
+      'name' => 'Field component with date',
       'description' => 'Create/Delete a Field, Define extra settings for Instances or field',
       'group' => 'Patterns',
     );
@@ -22,7 +23,7 @@ class PatternsFieldTestCase extends PatternRunTestCase {
   }
 
 
-  public function testField() {
+/*  public function testField() {
   	 // Make sure that matches the name in the pattern file
     $entity_type = 'node';$name = 'field_first';$bundle_name = 'article';
     // create a new field
@@ -70,8 +71,55 @@ class PatternsFieldTestCase extends PatternRunTestCase {
     
   	//delete the instance
   	parent::runFile('field_instance_delete.yaml', 'Delete fields', PatternsFieldTestCase::FIELD_TESTS_DIR);
+  	_field_info_collate_fields(true);
   	$inst=field_info_instance($entity_type, $entity_type, $bundle_name);
   	$this->assertNull($inst, t('Delete instance successfully.'));
+  	
+  }*/
+    
+  public function testDate() {
+  	//make sure the date module has been downloaded.
+  	 // Make sure that matches the name in the pattern file
+    $entity_type = 'node';$name = 'field_date';$bundle_name = 'article';
+    // create a new field
+  	parent::runFile('date_field_create.yaml', 'Add date fields to NODE', PatternsFieldTestCase::FIELD_TESTS_DIR);
+  	_field_info_collate_fields(true);
+  	$inst=field_info_instance($entity_type, $name, $bundle_name);
+  	//break;
+  	
+  	$this->assertNotNull($inst, t('Date instance created.'));    
+    
+  	// modify the instance
+  	parent::runFile('date_field_modify.yaml', 'Modify date fields', PatternsFieldTestCase::FIELD_TESTS_DIR);
+  //	break;
+  	_field_info_collate_fields(true);
+  	$inst=field_info_instance($entity_type, $name, $bundle_name);
+  	$field = field_info_field($name); 
+  	$this->assertNotNull($inst, t('Instance found.'));
+
+    $this->assertEqual($field['cardinality'], '2', t('Modify Instance pattern changed cardinality correctly'));
+    $this->assertEqual($inst['settings']['default_value'], 'strtotime', t('Modify Instance pattern changed default_value correctly'));
+    $this->assertEqual($inst['settings']['default_value_code'], '-10', t('Modify Instance pattern changed default_value_code correctly'));
+    $this->assertEqual($inst['widget']['settings']['increment'], '10', t('Modify Instance pattern changed increment correctly'));
+    $this->assertEqual($inst['widget']['settings']['input_format'],'Y/m/d - H:i:s',t('Modify Instance pattern changed inputformate correctly'));
+    $this->assertEqual($inst['widget']['settings']['year_range'],'-2:+2',t('Modify Instance pattern changed years_forward correctly'));
+    $this->assertEqual($inst['widget']['settings']['label_position'],'within',t('Modify Instance pattern changed label_postion correctly'));
+    $this->assertTrue(in_array('year', $inst['widget']['settings']['text_parts']),t('Modify Instance pattern changed test parts year correctly'));
+    $this->assertTrue(in_array('month', $inst['widget']['settings']['text_parts']),t('Modify Instance pattern changed test parts month correctly'));
+    $this->assertTrue(in_array('day', $inst['widget']['settings']['text_parts']),t('Modify Instance pattern changed test parts day correctly'));
+    $this->assertTrue(in_array('hour', $inst['widget']['settings']['text_parts']),t('Modify Instance pattern changed test parts hour correctly'));
+    $this->assertTrue(in_array('minute', $inst['widget']['settings']['text_parts']),t('Modify Instance pattern changed test parts minute correctly'));
+    $this->assertTrue(in_array('second', $inst['widget']['settings']['text_parts']),t('Modify Instance pattern changed test parts second correctly'));
+    $this->assertEqual('second', $field['settings']['granularity']['second'],t('Modify Instance pattern changed granularity second correctly'));
+    $this->assertEqual('date', $field['settings']['tz_handling'],t('Modify Instance pattern changed time zone handling correctly'));
+    $this->assertEqual('optional', $field['settings']['todate'],t('Modify Instance pattern changed enddate_get correctly'));
+    
+    
+  	//delete the instance
+  	parent::runFile('date_field_delete.yaml', 'Delete date fields', PatternsFieldTestCase::FIELD_TESTS_DIR);
+  	_field_info_collate_fields(true);
+  	$inst=field_info_instance($entity_type, $entity_type, $bundle_name);
+  	$this->assertNull($inst, t('Delete date instance successfully.'));
   	
     }
 

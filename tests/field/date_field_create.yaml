@@ -1,0 +1,30 @@
+ # YAML Field Pattern
+# QScience
+
+info:
+  title: Add date fields to NODE
+  description: Add date fields to  NODE
+  author: Yanbo
+  category: Field
+  version: 1.0
+  core: 7.x
+  author_email: nbboob@gmail.com
+  author_website: http://www.qlectives.eu
+  
+  
+
+actions:
+
+ 	- create:
+      tag: modules
+      - value: date
+      
+  - create:
+      tag: instance
+      entity: node
+      bundle: article
+      name: date
+      label: date Name
+      type:datetime
+      widget:date_select
+      weight: 1

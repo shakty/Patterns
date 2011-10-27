@@ -1,0 +1,48 @@
+ # YAML Field Pattern
+# QScience
+
+info:
+  title: Modify date fields
+  description: Modify date fields
+  author: Yanbo
+  category: Field
+  version: 1.0
+  core: 7.x
+  author_email: nbboob@gmail.com
+  author_website: http://www.qlectives.eu
+  
+  
+
+actions:
+
+  - modify:
+      tag: instance
+      entity: node
+      bundle: article
+      name: date
+      cardinality:2
+      instance_settings:
+      	default_value:strtotime
+      	default_value_code:'-10'
+      widget_settings:
+      	increment:10
+      	input_format:Y/m/d - H:i:s
+      	year_range:
+      		years_back:'-2'
+      		years_forward:'+2'
+      	advanced:
+      		label_position:within
+      		text_parts:
+      			year:1
+      			month:1
+      			day:1
+      			hour:1
+      			minute:1
+      			second:1
+      field_settings:
+      	granularity:
+      		second:second
+      		hour:hour
+      	tz_handling:date
+      	enddate_get:1
+      	
