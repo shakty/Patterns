@@ -26,7 +26,7 @@ class PatternsColorTestCase extends PatternRunTestCase {
   public function testColor() {
   	 // Make sure that matches the theme in the pattern file
     $theme = 'bartik';
-
+ 	module_enable(array('color'));
   	parent::runFile('color.yaml', 'Set theme color', PatternsCOLORTestCase::COLOR_TESTS_DIR);
   	$palette=variable_get('color_' . $theme . '_palette'); 
   	
