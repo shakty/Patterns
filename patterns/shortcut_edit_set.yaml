@@ -1,0 +1,17 @@
+# YAML Shortcut Pattern
+# QScience
+
+info:
+  title: edit the shortcut set name(modify)
+  description: change the shortcut set old name to new name
+  author: Rui
+  category: Shortcut
+  version: 1.0
+  core: 7.x
+  author_email: xrfind@gmail.com
+
+actions:
+  - modify:
+      tag: shortcut_set
+      oldname: 12344
+      newname: 44321

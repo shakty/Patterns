@@ -1,0 +1,26 @@
+# YAML Toolbar Pattern
+# QScience
+# the role name should not be in both of the addroles and delroles.
+# administrator should not be in addroles and delroles.
+# if 'authenticated user' is in addroles, most of the roles will can see the toolbar.
+
+info:
+  title: Toolbarrole (modify)
+  description: deside what kind of users (roles) can see the toolbar.
+  author: Rui
+  category: Toolbar
+  version: 1.0
+  core: 7.x
+  author_email: xrfind@gmail.com
+
+actions:
+  - modify:
+      tag: toolbarrole
+      #if a role is listed in the addroles, users under the role will can see the toolbar.
+      #the list should be the names of role, if not, the name will be ignored.
+      #if the name can see the toolbar already, the patterns will give a error message.
+      addroles: anonymous user, authenticated user ,other roles
+      #if a role is listed in the delroles, users under the role will can not see the toolbar any more.
+      #the list should be the names of role, if not, the name will be ignored.
+      #if the name can not see the toolbar already, the patterns will give a error message.
+      delroles: authenticated user, anonymous user ,other roles
