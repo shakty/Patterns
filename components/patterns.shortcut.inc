@@ -37,6 +37,8 @@ function shortcut_patterns_actions() {
   return array(
     'shortcut_set_add_form' => t('Shortcut: add a new shortcut set'),
     'shortcut_set_edit_form' => t('Shortcut: change the name a shortcut set'),
+    'shortcut_set_delete_form' => t('Shortcut: delete a shortcut set'),
+    'shortcut_set_switch' => t('Shortcut: switch shortcut sets for user'),
     );
 }
 
@@ -46,11 +48,26 @@ function shortcut_patterns_actions() {
 function shortcut_patterns_prepare($action, $tag, &$data = NULL) {
   if ($tag == 'shortcut_set') {
     if ($action == PATTERNS_CREATE ) {
-      //'new' is the form's textfield.
       $data['new'] = $data['shortcut_set_name'];
     }
+    if ($action == PATTERNS_MODIFY ) {
+      $data['title'] = $data['newname'];
+      $data['searchtitle'] = $data['oldname'];
+    }
+    if ($action == PATTERNS_DELETE) {
+      $data['searchtitle'] = $data['name'];
+    }
   }
-
+  if ($tag == 'shortcut_set_user') {
+    $data['searchtitle'] = $data['name'];
+    $data['account'] = NULL;
+    if(isset($data['user'])) {
+      module_load_include('module', 'user');
+      $data['account'] = user_load_by_name( $data['user']);
+      drupal_set_message(t('the %acc is dfldjdkfdld',array('%acc' =>$data['account']->name)));
+    } 
+  }
+      
   return patterns_results();
 }
 
@@ -62,22 +79,22 @@ function shortcut_patterns_validate($action, $tag, &$data = NULL) {
   $status = PATTERNS_SUCCESS;
   $msg = '';
 
-  //for shotcut set edit (change the short set's name)
-  if ($action == PATTERNS_MODIFY && $tag == 'shortcut_set') {
-    $set = db_select('shortcut_set', 'ss')
-      ->fields('ss',array('set_name'))
-      ->condition('title', $data['oldname'])
-      ->execute()
-      ->fetchField();
-    if ($set == FALSE) {
-      $status = PATTERNS_ERR;
-      $msg = 'Shortcut Error:there is no oldname shortcut set';
-      return patterns_results($status, $msg);
-    } else {
-      //include a module file , is this all right?
-      module_load_include('module', 'shortcut');
-      $shortcutsetobj = shortcut_set_load($set);
-      $data['shortcut_set_obj'] = $shortcutsetobj;
+  $set = db_select('shortcut_set', 'ss')
+    ->fields('ss',array('set_name'))
+    ->condition('title', $data['searchtitle'])
+    ->execute()
+    ->fetchField();
+  if ($set == FALSE) {
+    $status = PATTERNS_ERR;
+    $msg = 'Shortcut Error:there is no such name shortcut set';
+    return patterns_results($status, $msg);
+  } else {
+    module_load_include('module', 'shortcut');
+    $shortcutsetobj = shortcut_set_load($set);
+    $data['shortcut_set_obj'] = $shortcutsetobj;
+    if( $tag == 'shortcut_set_user') {
+      $data['set'] = $set;
+      $data['new'] = $data['name'];
     }
   }
   
@@ -88,33 +105,11 @@ function shortcut_patterns_validate($action, $tag, &$data = NULL) {
  * hook_patterns_callbacks()
  */
 function shortcut_patterns_callbacks($action, $tag, &$data = NULL) {
-  // for shortcut set edit(change shortcut set's name) ,the callback is not in form mothod.
-  if ($tag == 'shortcut_set' && $action == PATTERNS_MODIFY ) {
-    $result = array(
-      'shortcut_set_modify'
-      );
-  } else {
-  // for others, the callback is in form mothod.
-    $allform = shortcut_patterns();
-    $result = $allform[$tag][$action];
-  }
+  $allform = shortcut_patterns();
+  $result = $allform[$tag][$action];
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful(in callbacks function)'), $result);
 }
 
-/**
- * shortcut set edit's callback function, operate on the database.
- * the funciton containing "shortcut_set_edit_form" in shortcut module have three parms:
- *     $form
- *     &$form_state
- *     $shortcut_set
- * I don't know how to manager the third parm "$shortcut_set", so I directly operate on the database.
- */
-function shortcut_set_modify($action, &$data) {
-  $data['shortcut_set_obj']->title = $data['newname'];
-  module_load_include('module', 'shortcut');
-  shortcut_set_save($data['shortcut_set_obj']);
-  drupal_set_message(t('Updated %oldname to %newname', array('%oldname' => $data['oldname'], '%newname' => $data['newname'])));
-}
 
 /**
  * hook_patterns_build()
@@ -129,7 +124,16 @@ function shortcut_patterns_build($action, $form_id, &$data = NULL, &$a) {
  * hook_patterns_params()
  */
 function shortcut_patterns_params($action, $form_id, &$data = NULL, &$a) {
-  return patterns_results();
+  switch ($form_id) {
+    case 'shortcut_set_edit_form':
+    case 'shortcut_set_delete_form':
+      $result = array( $data['shortcut_set_obj'] ); 
+      break;
+    case 'shortcut_set_switch':
+      $result = array( $data['account'] );
+      break;
+  }
+  return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
 
 /**
