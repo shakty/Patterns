@@ -13,12 +13,19 @@ window.onload = function() {
 		    }
 		  );
 		
-	  	var url = location.href.substring(0,location.href.lastIndexOf('admin/patterns') + 'admin/patterns'.length) + '/refresh';
+		var detect = 'admin/patterns';
+		var idx = -1;
+		idx = unescape(location.href).lastIndexOf(detect);
+		var url = unescape(location.href).substring(0,idx + detect.length) + '/refresh';
 		
 		var refresh = document.getElementById("refresh-all");
 		
 		if (refresh) {	
 			refresh.onclick = function() {
+				if (idx === -1) {
+					alert('Patterns could not recognize the url of the web-site. Cannot refresh');
+					return;
+				}
 				document.getElementById('all_patterns_div').innerHTML = '...refreshing...';
 				
 				jQuery.ajax({
