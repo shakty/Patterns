@@ -1,12 +1,22 @@
 jQuery('document').ready( function() {
 
 	(function(){
-		var url = location.href.substring(0,location.href.lastIndexOf('admin/patterns') + 'admin/patterns'.length) + '/validate';
 		
+		var detect = 'admin/patterns';
+		var idx = -1;
+		idx = unescape(location.href).lastIndexOf(detect);
+		
+		var url = unescape(location.href).substring(0,idx + detect.length) + '/validate';
 		var textarea = document.getElementById("edit-content");
 		
 		if (textarea) {	
 			document.getElementById('validate_pattern').onclick = function() {
+				
+				if (idx === -1) {
+					document.getElementById('validation_result').innerHTML = '<strong>Patterns could not recognize the url of the web-site. Validation is disabled.</strong>';
+					return;
+				}
+					
 				document.getElementById('validation_result').innerHTML = '...validating...';
 				
 				// CO2editor is defined by editor.js (if loaded)		
