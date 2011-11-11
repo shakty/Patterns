@@ -1,0 +1,16 @@
+# YAML Shortcut Pattern
+# QScience
+
+info:
+  title: delete a shortcut set (delete)
+  description: delete a shortcut set 
+  author: Rui
+  category: Shortcut
+  version: 1.0
+  core: 7.x
+  author_email: xrfind@gmail.com
+
+actions:
+  - delete:
+      tag: shortcut_set
+      name: huayaokaile

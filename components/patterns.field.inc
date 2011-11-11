@@ -145,7 +145,7 @@ function field_patterns_params($action, $form_id, &$data = NULL) {
     $result = array($data['entity_type'], $data['bundle']);
   }
   elseif ($form_id == 'field_ui_field_edit_form' ) {
-  	_field_info_collate_fields(true);
+  	_field_info_collate_fields(true);_field_info_collate_types(true);
     $instance = field_info_instance($data['entity_type'], $data['field_name'], $data['bundle']);
     $result = array($instance);
   }

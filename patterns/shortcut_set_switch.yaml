@@ -1,0 +1,19 @@
+# YAML Shortcut Pattern
+# QScience
+# user is optional,nouser means the administrator change its set (that's because of the user running pattens should be administrator,right? 
+# name is the shortcut set's name(title, not the set_name).
+
+info:
+  title: switch shortcut set for users (modify)
+  description: switch shortcut set for users 
+  author: Rui
+  category: Shortcut
+  version: 1.0
+  core: 7.x
+  author_email: xrfind@gmail.com
+
+actions:
+  - modify:
+      tag: shortcut_set_user
+      user: hhhfff
+      name: xrsss

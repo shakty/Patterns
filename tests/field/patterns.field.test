@@ -23,7 +23,7 @@ class PatternsFieldTestCase extends PatternRunTestCase {
   }
 
 
-/*  public function testField() {
+  public function testField() {
   	 // Make sure that matches the name in the pattern file
     $entity_type = 'node';$name = 'field_first';$bundle_name = 'article';
     // create a new field
@@ -75,24 +75,27 @@ class PatternsFieldTestCase extends PatternRunTestCase {
   	$inst=field_info_instance($entity_type, $entity_type, $bundle_name);
   	$this->assertNull($inst, t('Delete instance successfully.'));
   	
-  }*/
+  }
     
   public function testDate() {
   	//make sure the date module has been downloaded.
   	 // Make sure that matches the name in the pattern file
     $entity_type = 'node';$name = 'field_date';$bundle_name = 'article';
-    // create a new field
+    
+    module_enable(array('date'));
+    // create a new date field
   	parent::runFile('date_field_create.yaml', 'Add date fields to NODE', PatternsFieldTestCase::FIELD_TESTS_DIR);
-  	_field_info_collate_fields(true);
+  	module_load_include('inc', 'date', 'date.field');
+	_field_info_collate_fields(true);_field_info_collate_types(true);
   	$inst=field_info_instance($entity_type, $name, $bundle_name);
-  	//break;
+
   	
   	$this->assertNotNull($inst, t('Date instance created.'));    
     
   	// modify the instance
   	parent::runFile('date_field_modify.yaml', 'Modify date fields', PatternsFieldTestCase::FIELD_TESTS_DIR);
   //	break;
-  	_field_info_collate_fields(true);
+  	_field_info_collate_fields(true);_field_info_collate_types(true);
   	$inst=field_info_instance($entity_type, $name, $bundle_name);
   	$field = field_info_field($name); 
   	$this->assertNotNull($inst, t('Instance found.'));

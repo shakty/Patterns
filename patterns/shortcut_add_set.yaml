@@ -1,0 +1,17 @@
+# YAML Shortcut Pattern
+# QScience
+
+info:
+  title: add new shortcut set (create)
+  description: add a new shortcut set
+  author: Rui
+  category: Shortcut 
+  version: 1.0
+  core: 7.x
+  author_email: xrfind@gmail.com
+
+actions:
+  - create:
+      tag: shortcut_set
+      shortcut_set_name: tianyaoxiayu
+      

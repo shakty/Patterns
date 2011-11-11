@@ -15,9 +15,6 @@ info:
 
 actions:
 
- 	- create:
-      tag: modules
-      - value: date
       
   - create:
       tag: instance
