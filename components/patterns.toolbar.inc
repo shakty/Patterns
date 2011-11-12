@@ -27,40 +27,34 @@ function toolbar_patterns_actions() {
  * hook_patterns_prepart()
  */
 function toolbar_patterns_prepare($action, $tag, &$data = NULL) {
-  $rids = array();
-  $roles = array();
-  //get the rid from role's name for add 'access toolbar' to role.
-  if (isset($data['addroles'])) {
-    $p = explode(',', $data['addroles']);
-    unset($data['addroles']);
-    foreach ($p as $key => $value) {
-      $value = trim(trim($value), '\'"');
-      $rid = db_select('role', 'r')
-             ->fields('r', array('rid'))
-             ->condition('r.name',$value) 
-             ->execute()
-             ->fetchField();
-      $rids[$rid] = $rid;
-      $roles[$rid] = $value;
+
+  module_load_include('module', 'user', 'user'); 
+  $data['role_names'] = user_roles();
+  $data['role_permissions'] = user_role_permissions($data['role_names']);
+
+  //get all the module's name which inplement the hook_permission function.
+  $module_info = system_get_info('module');
+  $modules = array();
+  foreach (module_implements('permission') as $module) {
+    $modules[$module] = $module_info[$module]['name'];
+  }
+  asort($modules);
+
+  //three foreach,every module inplementing the hook_permission,every permission from module's hook_permission,every role for every permission.
+  //$data['status'] get every rid's permission. asort by module's name.
+  foreach ($modules as $module => $display_name) {
+    if ($permissions = module_invoke($module, 'permission')) {
+      foreach ($permissions as $perm => $perm_item) {
+        foreach ($data['role_names'] as $rid => $name) {
+          // Builds arrays for checked boxes for each role
+          if (isset($data['role_permissions'][$rid][$perm])) {
+            $data['status'][$rid][] = $perm;
+          }
+        }
+      }
     }
   }
-  //get the rid from role's name for delete 'access toolbar' from role.
-  if (isset($data['delroles'])) {
-    $pdel = explode(',', $data['delroles']);
-    unset($data['delroles']);
-    foreach ($pdel as $key => $value) {
-      $value = trim(trim($value), '\'"');
-      $rid = db_select('role', 'r')
-             ->fields('r', array('rid'))
-             ->condition('r.name',$value) 
-             ->execute()
-             ->fetchField();
-      $rids[$rid] = NULL;
-      $roles[$rid] = NULL;
-    }
-  }
-  $data['rid'] = $rids;
-  $data['role'] = $roles;
+
   return patterns_results();
 }
 
@@ -70,47 +64,101 @@ function toolbar_patterns_prepare($action, $tag, &$data = NULL) {
 function toolbar_patterns_validate($action, $tag, &$data = NULL) {
   $status = PATTERNS_SUCCESS;
   $msg = '';
-  if (empty($data['rid'])) {
+
+  //if both addroles and delroles is not given, there is a error.
+  if (!(isset($data['addroles'])) && !(isset($data['delroles']))) {
     $status = PATTERNS_ERR;
-    $msg = t('there is no available role.');
+    $msg = t('there is nothing to do.');
+    return patterns_results($status, $msg);
   }
-  $rid = db_select('role', 'r')
-         ->fields('r', array('rid'))
-         ->condition('r.name','administrator') 
-         ->execute()
-         ->fetchField();
-  foreach ($data['rid'] as $key => $value) {
-    if ($rid == $value) {
+
+ //if there is a same name in add and delroles, there is a error.
+  if (is_array($data['addroles']) && is_array($data['delroles'])) {
+    $a = array_intersect($data['addroles'], $data['delroles']);
+    if (count($a) != 0) {
       $status = PATTERNS_ERR;
-      $msg = t('administrator should keep static.');
+      $msg = t('same name in both addroles and delroles');
+      return patterns_results($status, $msg);
     }
   }
-  
-  foreach ($data['role'] as $key => $value) {
-    if ($value == NULL) {
-      $riddel = db_select('role_permission', 'r')
-             ->fields('r', array('rid','permission'))
-             ->condition('r.rid', $key) 
-             ->condition('r.permission', 'access toolbar')
+
+  //the process of addroles.
+  //role can not be administrator
+  //the name should exist in the role table.
+  //if the role already have the perm, there is a error.
+  if (is_array($data['addroles'])) {
+    foreach ($data['addroles'] as $key => $value) {
+      $rid = db_select('role', 'r')
+             ->fields('r', array('rid'))
+             ->condition('r.name',$value) 
              ->execute()
              ->fetchField();
-      if ($riddel == NULL) {
+      if ($rid == 3) {
         $status = PATTERNS_ERR;
-        $msg = t('delete wrong role.');
+        $msg = t('administrator should keep static.');
+        return patterns_results($status, $msg);
       }
-    } else {
-      $ridadd = db_select('role_permission', 'r')
-             ->fields('r', array('rid','permission'))
-             ->condition('r.rid', $key) 
-             ->condition('r.permission', 'access toolbar')
+      if ($rid == FALSE) {
+        $status = PATTERNS_ERR;
+        $msg = t('there is a wrong role name');
+        return patterns_results($status, $msg);
+      }
+      if (isset($data['status'][$rid])) {
+        if (in_array("access toolbar", $data['status'][$rid])) {
+          $status = PATTERNS_ERR;
+          $msg = t('the role have the toolbar permission already.');
+          return patterns_results($status, $msg);
+        }
+      }
+
+      //add the "access toolbar" perm to the $data['status']
+      $data['status'][$rid][] = "access toolbar";
+    }
+  }
+
+  //the process of delroles.
+  //role can not be administrator
+  //the name should not exist in the role table.
+  //if the role don't have the perm yet, there is a error.
+  if (is_array($data['delroles'])) {
+    foreach ($data['delroles'] as $key => $value) {
+      $rid = db_select('role', 'r')
+             ->fields('r', array('rid'))
+             ->condition('r.name',$value) 
              ->execute()
              ->fetchField();
-      if ($ridadd != NULL) {
+      if ($rid == 3) {
         $status = PATTERNS_ERR;
-        $msg = t('add wrong role.(the role has the access already.)');
+        $msg = t('administrator should keep static.');
+        return patterns_results($status, $msg);
+      }
+      if ($rid == FALSE) {
+        $status = PATTERNS_ERR;
+        $msg = t('there is a wrong role name');
+        return patterns_results($status, $msg);
+      }
+      //ensure the role have some perms.
+      if (isset($data['status'][$rid])) {
+        if (!(in_array("access toolbar", $data['status'][$rid]))) {
+          $status = PATTERNS_ERR;
+          $msg = t('the role do not have the toolbar permission yet.');
+          return patterns_results($status, $msg);
+        }
+        //delete the "access toolbar" from $data['status']
+        $data['status'][$rid] = array_diff($data['status'][$rid], array("access toolbar"));
+      } else {
+        $status = PATTERNS_ERR;
+        $msg = t('the role does not have any permissions.');
+        return patterns_results($status, $msg);
       }
     }
   }
+
+  //the $data[$rid] is the form's element.
+  foreach ($data['status'] as $rid => $value) {
+    $data[$rid] = $value;
+  }
+      
   return patterns_results($status, $msg);
 }
     
@@ -118,44 +166,29 @@ function toolbar_patterns_validate($action, $tag, &$data = NULL) {
  * hook_patterns_callbacks()
  */
 function toolbar_patterns_callbacks($action, $tag, &$data = NULL) {
-  //$result = array('user_admin_permissions');
-  $result = array('toolbar_role_modify');
+  $result = array('user_admin_permissions');
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
-}
-
-/*
- * callbacks function.
- */
-function toolbar_role_modify ($action, &$data) {
-  foreach ($data['rid'] as $key => $value) {
-    if ($value == NULL) {
-      $and = db_and()->condition('rid', $key)->condition('permission', 'access toolbar');
-      $qdel = db_delete('role_permission')
-              ->condition($and)
-              ->execute();
-    } else {
-      $query = db_insert('role_permission')
-              ->fields(array(
-                'rid' => $key,
-                'permission' => 'access toolbar',
-                'module' => 'toolbar',
-                ))
-              ->execute();
-    }
-  }
 }
 
 /**
  * the form method have some problems, so I use the callback function to operate on the database directly.
  */
-/*
 function toolbar_patterns_build($action, $form_id, &$data = NULL, &$a) {
-  foreach ($data['role'] as $key => $value) {
-    $data[$value] = 'access toolbar';
-  }
   module_load_include('inc', 'user', 'user.admin'); 
-  $data['op'] = t('Save permissions');
-  $result = $data;
-  return patterns_results($status, $msg, $result);
+  return patterns_results(PATTERNS_SUCCESS, t('Execution successful(in build function)'), $data);
 }
-*/
+
+
+/**
+ * hook_patterns_params()
+ */
+function toolbar_patterns_params($action, $form_id, &$data = NULL, &$a) {
+  return patterns_results();
+}
+
+/**
+ * hook_patterns_cleanup()
+ */
+function toolbar_patterns_cleanup($action, $tag, &$data = NULL) {
+  return patterns_results();
+}

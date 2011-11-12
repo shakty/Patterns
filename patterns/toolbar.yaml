@@ -2,7 +2,9 @@
 # QScience
 # the role name should not be in both of the addroles and delroles.
 # administrator should not be in addroles and delroles.
-# if 'authenticated user' is in addroles, most of the roles will can see the toolbar.
+# if 'authenticated user' is in addroles, most of the roles will can see the toolbar though they don't have the "access toolbar" permission themselve. 
+# if a role can see toolbar because of the 'authenticated user' has the "access toolbar" perm, del this role will give the error:" the role does not have the permission yet".
+# so using authenticated user should be careful.
 
 info:
   title: Toolbarrole (modify)
@@ -16,11 +18,11 @@ info:
 actions:
   - modify:
       tag: toolbarrole
-      #if a role is listed in the addroles, users under the role will can see the toolbar.
-      #the list should be the names of role, if not, the name will be ignored.
-      #if the name can see the toolbar already, the patterns will give a error message.
-      addroles: anonymous user, authenticated user ,other roles
-      #if a role is listed in the delroles, users under the role will can not see the toolbar any more.
-      #the list should be the names of role, if not, the name will be ignored.
-      #if the name can not see the toolbar already, the patterns will give a error message.
-      delroles: authenticated user, anonymous user ,other roles
+      addroles: 
+        #- anonymous user
+        #- authenticated user 
+        #- other roles
+      delroles: 
+        #- anonymous user
+        #- authenticated user
+        #- other roles
