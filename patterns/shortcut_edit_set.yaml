@@ -13,5 +13,5 @@ info:
 actions:
   - modify:
       tag: shortcut_set
-      oldname: tianyaoxiayu
-      newname: huayaokaile
+      oldname: new_set_fortest
+      newname: newer_set_fortest

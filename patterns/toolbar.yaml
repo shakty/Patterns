@@ -19,7 +19,7 @@ actions:
   - modify:
       tag: toolbarrole
       addroles: 
-        #- anonymous user
+        - anonymous user
         #- authenticated user 
         #- other roles
       delroles: 

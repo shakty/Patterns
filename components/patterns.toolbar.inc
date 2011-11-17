@@ -171,7 +171,7 @@ function toolbar_patterns_callbacks($action, $tag, &$data = NULL) {
 }
 
 /**
- * the form method have some problems, so I use the callback function to operate on the database directly.
+ * hook_patterns_build()
  */
 function toolbar_patterns_build($action, $form_id, &$data = NULL, &$a) {
   module_load_include('inc', 'user', 'user.admin'); 

@@ -13,4 +13,5 @@ info:
 actions:
   - delete:
       tag: shortcut_link
+      # the menu id is diffierent for everyone
       menu_link_id: 405

@@ -13,4 +13,4 @@ info:
 actions:
   - delete:
       tag: shortcut_set
-      name: huayaokaile
+      name: new_set_fortest

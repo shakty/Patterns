@@ -14,5 +14,5 @@ actions:
   - modify:
       tag: shortcut_link
       menu_link_id: 405
-      new_link_title: wobushihenhao
+      new_link_title: link_nodadd
       new_link_path: node/add

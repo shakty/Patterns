@@ -15,5 +15,5 @@ info:
 actions:
   - modify:
       tag: shortcut_set_user
-      user: hhhfff
-      name: xrsss
+      user: admin
+      name: new_set_fortest
