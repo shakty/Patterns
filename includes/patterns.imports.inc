@@ -40,7 +40,7 @@ function patterns_import_source($form, &$form_state) {
 /**
  * Display the import pattern file form
  */
-function patterns_import_file(&$form_state) {
+function patterns_import_file($form, &$form_state) {
 
   $form['#attributes']['enctype'] = 'multipart/form-data';
 
@@ -72,7 +72,7 @@ function patterns_import_file(&$form_state) {
 /**
  * Display the import pattern url form
  */
-function patterns_import_url(&$form_state) {
+function patterns_import_url($form, &$form_state) {
 
   $form['pattern_uri'] = array(
     '#type' => 'textfield',
