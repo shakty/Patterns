@@ -52,6 +52,7 @@
 
 module_load_include('inc', 'patterns', 'includes/patterns.config');
 module_load_include('inc', 'patterns', 'includes/patterns.db');
+module_load_include('inc', 'patterns', 'includes/patterns.error');
 module_load_include('inc', 'patterns', 'includes/patterns.io');
 module_load_include('inc', 'patterns', 'includes/patterns.parser');
 module_load_include('inc', 'patterns', 'includes/patterns.utils');
