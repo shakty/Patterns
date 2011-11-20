@@ -424,17 +424,8 @@ function patterns_io_save_pattern($content, $name, $format = 'yaml', $dir = NULL
   
   if (file_prepare_directory($dir, TRUE)) {
     $path =  $dir . '/' . $name . '.' . $format;
-    
-    
-   drupal_set_message(t('Pattern is going to be saved in %path.', array(
-                                                                  '%path' => $path,
-        )));
 
     if (file_unmanaged_save_data($content, $path, FILE_EXISTS_REPLACE)) {
-
-         drupal_set_message(t('Pattern is going to be saved in %path.', array(
-                                                                  '%path' => $path,
-        )));
         
       // Load and save pattern.
       $load_func = 'patterns_load_' . $format;

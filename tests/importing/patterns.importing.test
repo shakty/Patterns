@@ -22,42 +22,42 @@ class PatternsImportTestCase extends PatternRunTestCase {
     parent::setUp();
   }
 
-//  public function testImportFileFromSource() {
-//
-//    $name = 'Test_Import_From_Source';
-//    $destination = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/tests/importing/imported/';
-//    
-//    // Fill the form.
-//    $edit = array();
-//
-//    $edit['name'] = $name;
-//    $edit['content'] = $this->loadPattern('importing.yaml', self::IMPORTING_TESTS_DIR);
-//    $edit['destination'] = $destination;
-//        
-//     // Post the form.
-//    $this->drupalPost('admin/patterns/import/source', $edit, t('Import'));
-//
-//    $this->checkImportedFile($name, $destination);
-//  }
-//  
-//  public function testImportFileFromFile() {
-//
-//    $name = 'Test_Import_From_File';
-//    $destination = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/tests/importing/imported/';
-//    
-//    // Fill the form.
-//    $edit = array();
-//
-//    $edit['name'] = $name;
-//    $edit['files[pattern_uri]'] = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/' . self::IMPORTING_TESTS_DIR . 'importing.yaml';
-//    $edit['destination'] = $destination;
-//    
-//     // Post the form.
-//    $this->drupalPost('admin/patterns/import/file', $edit, t('Import'));
-//    
-//    
-//     $this->checkImportedFile($name, $destination);
-//  }
+  public function testImportFileFromSource() {
+
+    $name = 'Test_Import_From_Source';
+    $destination = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/tests/importing/imported/';
+    
+    // Fill the form.
+    $edit = array();
+
+    $edit['name'] = $name;
+    $edit['content'] = $this->loadPattern('importing.yaml', self::IMPORTING_TESTS_DIR);
+    $edit['destination'] = $destination;
+        
+     // Post the form.
+    $this->drupalPost('admin/patterns/import/source', $edit, t('Import'));
+
+    $this->checkImportedFile($name, $destination);
+  }
+  
+  public function testImportFileFromFile() {
+
+    $name = 'Test_Import_From_File';
+    $destination = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/tests/importing/imported/';
+    
+    // Fill the form.
+    $edit = array();
+
+    $edit['name'] = $name;
+    $edit['files[pattern_uri]'] = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/' . self::IMPORTING_TESTS_DIR . 'importing.yaml';
+    $edit['destination'] = $destination;
+    
+     // Post the form.
+    $this->drupalPost('admin/patterns/import/file', $edit, t('Import'));
+    
+    
+     $this->checkImportedFile($name, $destination);
+  }
   
   public function testImportFileFromURL() {
 
