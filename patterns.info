@@ -11,8 +11,8 @@ php = 5.1
 
 ; Core
 files[] = tests/patterns.test
-; Not yet
-;files[] = tests/importing/patterns.importing.test
+
+files[] = tests/importing/patterns.importing.test
 
 ; Components
 files[] = tests/taxonomy/patterns.taxonomy.test
@@ -20,3 +20,4 @@ files[] = tests/system/system.test
 files[] = tests/block/block.test
 files[] = tests/field/patterns.field.test
 files[] = tests/color/patterns.color.test
+files[] = tests/pathauto/patterns.pathauto.test

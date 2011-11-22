@@ -37,19 +37,3 @@ actions:
       verbose: 1
 #      reset:1
           
-          
-# add url aliases
-  - create:
-      tag: url_alias
-      source:admin/patterns/quickrun
-      alias:pathauto1
-      
-  - modify:
-      tag: url_alias
-      pid:7
-      source:admin/patterns/quickrun
-      alias:pathauto1
-      
-  - delete:
-      tag: url_alias
-      pid:7

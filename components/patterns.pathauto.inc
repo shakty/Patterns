@@ -75,7 +75,7 @@ function pathauto_patterns_prepare($action, $tag, &$data = NULL) {
       if (isset($data['pid'])) {
         $data['path']['pid'] = $data['pid'];
       }
-      $data['values']['confirm'] = 1;
+      $data['confirm'] = 1;
     }
   }
   return patterns_results();
@@ -129,8 +129,8 @@ function pathauto_patterns_build($action, $tag, &$data = NULL, $form_id) {
 function pathauto_patterns_params($action, $form_id, &$data = NULL, &$a) {
   if ($form_id == "path_admin_form" && $action == PATTERNS_MODIFY) {
     $pid = $data['pid'];
-    $path = db_query("SELECT * FROM {url_alias} WHERE pid = :pid", array('pid' => $data['pid']))->fetchField();
-    $result = array($path);
+    $path = db_query("SELECT * FROM {url_alias} WHERE pid = :pid", array('pid' => $data['pid']))->fetchAll();
+    $result = array((array)$path[0]);
   }
   elseif ($form_id == "path_admin_form") {
     $result = array(array(
@@ -147,7 +147,7 @@ function pathauto_patterns_params($action, $form_id, &$data = NULL, &$a) {
 }
 
 function pathauto_patterns_cleanup($action, $tag, &$data = NULL) {
-  unset($_POST['op']);
+  //unset($_POST['op']);
   return patterns_results();
 }
 
