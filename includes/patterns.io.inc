@@ -389,11 +389,14 @@ function _patterns_io_check_htaccess() {
 /**
  * Checks if the patterns directory exist and is writable.
  */
-function _patterns_io_is_patterns_dir_ready() {
+function _patterns_io_is_patterns_dir_ready($patterns_files_dir = '') {
   // TODO: keep pattern_files_dir in a separate location. Warning: defining a constant creates an error.
-  $patterns_files_dir = patterns_config_get_files_dir(); // TODO: move this out for performance
+  if (empty($patterns_files_dir)) {
+    $patterns_files_dir = patterns_config_get_files_dir(); // TODO: move this out for performance
+  }
   return (file_prepare_directory($patterns_files_dir)) ? TRUE : FALSE;
 }
+
 
 /**
  * Saves a pattern.
@@ -412,22 +415,26 @@ function _patterns_io_is_patterns_dir_ready() {
  * @TODO: Move $format as an element of pattern, a column in the DB.
  *
  */
-function patterns_io_save_pattern($content, $name, $format = 'yaml') {
+function patterns_io_save_pattern($content, $name, $format = 'yaml', $dir = NULL) {
 
-  // System Patterns directory.
-  $dir = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
-
+  if (empty($dir)) {
+    // System Patterns directory.
+    $dir = patterns_config_get_files_dir();
+  }
+  
   if (file_prepare_directory($dir, TRUE)) {
     $path =  $dir . '/' . $name . '.' . $format;
 
     if (file_unmanaged_save_data($content, $path, FILE_EXISTS_REPLACE)) {
-
+        
       // Load and save pattern.
       $load_func = 'patterns_load_' . $format;
 
       if ($pattern = $load_func($path)) {
         patterns_db_save_pattern($pattern, $path, $name);
-        drupal_set_message(t('%name was saved.', array('%name' => $name)));
+        drupal_set_message(t('Pattern %name was saved in %path.', array('%name' => $name, 
+                                                                  '%path' => $path,
+        )));
         // Not for now.
         //_patterns_clear_failed_edit();
       }
