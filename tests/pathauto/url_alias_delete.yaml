@@ -1,0 +1,20 @@
+# EPF
+# yaml pattern file
+
+info:
+  title: URLs aliases delete
+  description: setting patterns for auto URLs aliases, setting and delete aliases
+  author: yanbo
+  category: pathauto
+  version: 1.0
+  core: 7.x
+  author_email: csko@inf.u-szeged.hu
+
+#enable modules
+#Enable clean URLs
+
+actions:
+      
+  - delete:
+      tag: url_alias
+      pid:1
