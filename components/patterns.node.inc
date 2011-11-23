@@ -10,7 +10,7 @@ function node_patterns() {
   $actions['content_type'] = array('descr' => t('Create/Modify/Delete Content Types'),
     PATTERNS_CREATE => array('node_type_form'),
     PATTERNS_MODIFY => array(),
-    PATTERNS_DELETE => array(),
+    PATTERNS_DELETE => array('node_type_delete_confirm'),
     'files'  => $files,
   );
 
@@ -21,13 +21,22 @@ function node_patterns() {
 function node_patterns_actions() {
   return array(
     'node_type_form' => t('Create or Edit Content Types'),
+    'node_type_delete_confirm' => t('Delete Content Types'),
   );
 }
 
 function node_patterns_prepare($action, $tag, &$data = NULL) {
-  if ($tag == 'content') {
-    $name = $data['name'];
+  if ($tag == 'content_type') {
+  	if ($action == 'create') {
+      if ($data['node_options']) {
+    	  $data['node_options'] = array_values($data['node_options']);
+      }else{
+        $data['node_options'] = array('status', 'promote'); // TODO: proper defaults?    	
+      }
+  	}
   }
+  // TODO: check if the name and type fields are unique when creating
+  //       and existing when we are modifying or deleting
 	return patterns_results();
 }
 
@@ -37,9 +46,18 @@ function node_patterns_validate($action, $tag, &$data = NULL) {
 }
 
 function node_patterns_callbacks($action, $tag, &$data = NULL) {
-  $result = array(
-    'node_type_form',
-  );
+	if ($tag == 'content_type') {
+    if ($action == PATTERNS_CREATE) {
+      $result = array(
+        'node_type_form',
+      );	
+    }
+    else if($action == PATTERNS_DELETE) {
+      $result = array(
+        'node_type_delete_confirm',
+      );		
+	  }
+	}
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
 
@@ -99,12 +117,15 @@ function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
       $data['node_options']['overwrite'] = TRUE;
     }
     */
-    $data['node_options'] = array('status', 'promote'); // TODO
+    
 
     // TODO
     if (isset($data['has_body']) && !$data['has_body']) {
       $data['body_label'] = '';
     }
+  }else if ($form_id == 'node_type_delete_confirm') {
+  	$data['op'] = t('Delete');
+    $data['confirm'] = 1;
   }
 
   $result = $data;
