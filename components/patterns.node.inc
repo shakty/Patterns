@@ -1,25 +1,142 @@
 <?php
+/*
+ * @file
+ * Patterns component for content types.
+ */
+function node_patterns() {
 
-function content_patterns($op, $id = NULL, &$data = NULL, $a = NULL) {
-  switch ($op) {
-    // Return the valid tags that this component can prepare and process
-    case 'tags':
-      return array('content', 'field', 'display', 'group');
-    break;
+  $files = array('modules/node/content_types.inc');
 
-    // Return a list of forms/actions this component can handle
-    case 'actions':
-      return array(
-        'node_type_form' => t('CCK: Create or Edit Content Type'),
-        'node_type_delete_confirm' => t('CCK: Delete Content Type'),
-        'content_field_overview_form' => t('CCK: Add Field or Group'),
-        'content_field_remove_form' => t('CCK: Delete Field'),
-        'content_field_edit_form' => t('CCK: Update Field'),
-        'display' => t('CCK: Configure field\'s display settings'),
-        'fieldgroup_group_edit_form' => t('CCK: Edit Group'),
-        'fieldgroup_remove_group' => t('CCK: Delete Group')
-      );
-    break;
+  $actions['content_type'] = array('descr' => t('Create/Modify/Delete Content Types'),
+    PATTERNS_CREATE => array('node_type_form'),
+    PATTERNS_MODIFY => array(),
+    PATTERNS_DELETE => array(),
+    'files'  => $files,
+  );
+
+  return $actions;
+
+}
+
+function node_patterns_actions() {
+  return array(
+    'node_type_form' => t('Create or Edit Content Types'),
+  );
+}
+
+function node_patterns_prepare($action, $tag, &$data = NULL) {
+  if ($tag == 'content') {
+    $name = $data['name'];
+  }
+	return patterns_results();
+}
+
+function node_patterns_validate($action, $tag, &$data = NULL) {
+	// TODO: check required fields
+  return patterns_results();
+}
+
+function node_patterns_callbacks($action, $tag, &$data = NULL) {
+  $result = array(
+    'node_type_form',
+  );
+  return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
+}
+
+// Prepare for valid processing of this type of component
+function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
+  $status = PATTERNS_SUCCESS;
+  $msg = '';
+  $result = NULL;
+
+  //content_clear_type_cache();
+  // TODO: instead: cache_clear_all();
+  module_load_include('inc', 'content', 'includes/content.admin');
+  
+  if ($form_id == 'node_type_form') {
+
+    module_load_include('inc', 'node', 'content_types');
+
+    $type = $data['type'];
+    $name = $data['name'];
+    /*
+    $types = content_types($type); // TODO
+    
+    if (!$types['type']) {
+      // Set the name of the new content type if missing
+      if (!$data['name']) {
+        $data['name'] = $type;
+      }
+
+      $defaults = _node_type_set_defaults($data);
+      $data = array_merge($defaults, $data);
+    }
+    */
+
+    // TODO: update these
+    /*
+    if (empty($data['node_options'])) {
+      $node_options = array('status', 'promote', 'sticky', 'revision');
+      $default_options = variable_get('node_options_' . $type, NULL);
+
+      $options = array();
+      if (!empty($default_options)) {
+        $options = array_combine($default_options, $default_options);
+      }
+  
+      foreach ($data as $key => $value) {
+        if (in_array($key, $node_options)) {
+          if (!empty($value)) {
+            $options[$key] = $key;
+          }
+          else {
+            unset($options[$key]);    
+          }
+        unset($data[$key]);
+        }
+      }
+      $data['node_options'] = array_values($options);
+      $data['node_options']['overwrite'] = TRUE;
+    }
+    */
+    $data['node_options'] = array('status', 'promote'); // TODO
+
+    // TODO
+    if (isset($data['has_body']) && !$data['has_body']) {
+      $data['body_label'] = '';
+    }
+  }
+
+  $result = $data;
+  
+  return patterns_results($status, $msg, $result);
+}
+
+function node_patterns_params($action, $form_id, &$data = NULL, &$a) {
+  $status = PATTERNS_SUCCESS;
+  $msg = '';
+  $result = NULL;
+
+	if ($id == 'node_type_form') {
+    $type = (object)content_types($data['type']);
+    $result = array($type);
+  }
+  return patterns_results($status, $msg, $result);
+}
+
+// Cleanup any global settings after the action runs
+function node_patterns_cleanup($action, $tag, &$data = NULL) {
+	// TODO
+  // Make sure content info is always up-to-date
+  //cache_clear_all('content_type_info', content_cache_tablename());// TODO
+  //_content_type_info(true);
+
+	return patterns_results();
+}
+
+
+/*
+function content_patterns_old($op, $id = NULL, &$data = NULL, $a = NULL) {
 
     // Prepare the data
     case 'prepare':
@@ -538,3 +655,4 @@ function content_patterns($op, $id = NULL, &$data = NULL, $a = NULL) {
     break;
   }
 }
+*/
