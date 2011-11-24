@@ -1,0 +1,93 @@
+<?php
+/**
+ * @file
+ * SimpleTests for the menu component of Patterns.
+ * 
+ */
+
+class PatternsMenuTestCase extends PatternRunTestCase {
+
+  const MENU_TESTS_DIR = 'tests/menu/';
+
+  static function getInfo() {
+    return array(
+      'name' => 'Menu component',
+      'description' => 'Edit the menu setting of themes',
+      'group' => 'Patterns',
+    );
+  }
+  
+   public function setUp() {
+    // Enable any modules required for the tests.
+    parent::setUp();
+  }
+
+
+  public function test_menu() {
+  	module_enable(array('menu'));
+  	$name = 'footer-links';
+  	$title = 'Footer Links';
+  	$description = 'Menu description';
+  	parent::runFile('menu_create.yaml', 'Menu create', PatternsMenuTestCase::MENU_TESTS_DIR);
+  	//select db to verify the result is the same as the variable or not
+  	$this->assertResponse(200);
+  	$this->assertText($title, 'Menu footer-links was added');
+  	$result = db_query('SELECT * FROM {menu_custom} WHERE 'menu_name'= $name,'title' = $title, 'description = $description)->fetchAssoc();
+    $this->assertTrue(result,t('Menu was created correctly.'));
+	
+  	
+  	//menu modify
+  	parent::runFile('menu_modify.yaml', 'Menu modify', PatternsMenuTestCase::MENU_TESTS_DIR);
+    $nameM = 'menu-footer-links';
+    $titleM = 'Footer Links';
+    $description = 'Menu description changed';
+    
+    $this->assertText($title, 'Menu footer-links was modified');
+  	$result = db_query('SELECT * FROM {menu_custom} WHERE 'menu_name'= $nameM,'title' = $titleM, 'description = $descriptionM)->fetchAssoc();
+    $this->assertTrue(result,t('Menu was modified correctly.'));
+   
+    
+    //Menu delete use nameM to delete verfication
+    parent::runFile('menu_delete.yaml', 'Menu delete', PatternsMenuTestCase::MENU_TESTS_DIR);
+    $this->assertText($title, 'Menu menu_footer-links was deleted');
+  	$result = db_query('SELECT * FROM {menu_custom} WHERE 'menu_name'= $nameM,'title' = $titleM, 'description = $descriptionM)->fetchAssoc();
+    $this->assertFalse(result, 'Menu link was deleted correctly');
+	
+  }
+    
+    
+ public function test_menu_item() {
+  	module_enable(array('menu_item'));
+  	$menu_name = 'menu-footer-links';
+  	$link_path = 'http://123.com';
+  	$link_title = 'menu link title';
+  	//$disable = 1;
+  	parent::runFile('menu_item_create.yaml', 'Menu item create', PatternsMenuTestCase::MENU_TESTS_DIR);
+  	//select db to verify the result is the same as the variable or not
+  	$this->assertResponse(200);
+  	$this->assertText($link_title, 'Menu-footer-links was added');
+  	$result = db_query('SELECT * FROM {menu_links} WHERE 'menu_name'= $menu_name, 'link_path' = $link_path, 'link_title' = $link_title )->fetchAssoc();
+    $this->assertTrue(result,t('Menu_item was created correctly.'));
+  	
+  	
+  	//menu modify
+  	parent::runFile('menu_item_modify.yaml', 'Menu item modify', PatternsMenuTestCase::MENU_TESTS_DIR);
+    $mlid = 361;
+    $menu_nameM = 'menu-footer-links';
+  	$link_pathM = 'http://123.com';
+  	$link_titleM = 'menu link title changed';
+  	//$disable = 1;
+  	$this->assertText($link_titleM, 'Menu-footer-links was modified');
+  	$result = db_query('SELECT * FROM {menu_links} WHERE 'menu_name'= $menu_nameM, 'link_path' = $link_pathM, 'link_title' = $link_titleM)->fetchAssoc();
+    $this->assertTrue(result,t('Menu_item was modified correctly.'));
+    
+    
+    //Menu delete use mlid 361 to delete verfication
+    parent::runFile('menu_item_delete.yaml', 'Menu item delete', PatternsMenuTestCase::MENU_TESTS_DIR);
+	$this->assertText($title, 'menu_footer-links was deleted');
+  	$result = db_query('SELECT * FROM {menu_links} WHERE 'menu_name'= $menu_nameM, 'link_path' = $link_pathM, 'link_title' = $link_titleM)->fetchAssoc();
+    $this->assertFalse($result, 'Menu_item was deleted correctly');
+       
+  	
+  }
+}

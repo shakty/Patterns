@@ -21,3 +21,4 @@ files[] = tests/block/block.test
 files[] = tests/field/patterns.field.test
 files[] = tests/color/patterns.color.test
 files[] = tests/pathauto/patterns.pathauto.test
+files[] = tests/menu/patterns.menu.test
