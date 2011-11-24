@@ -33,7 +33,7 @@ class PatternsMenuTestCase extends PatternRunTestCase {
   	$this->assertResponse(200);
   	$this->assertText($title, 'Menu footer-links was added');
   	$result = db_query('SELECT * FROM {menu_custom} WHERE 'menu_name'= $name,'title' = $title, 'description = $description)->fetchAssoc();
-    $this->assertTrue(result,t('Menu was created correctly.'));
+    $this->assertTrue($result,t('Menu was created correctly.'));
 	
   	
   	//menu modify
@@ -44,14 +44,14 @@ class PatternsMenuTestCase extends PatternRunTestCase {
     
     $this->assertText($title, 'Menu footer-links was modified');
   	$result = db_query('SELECT * FROM {menu_custom} WHERE 'menu_name'= $nameM,'title' = $titleM, 'description = $descriptionM)->fetchAssoc();
-    $this->assertTrue(result,t('Menu was modified correctly.'));
+    $this->assertTrue($result,t('Menu was modified correctly.'));
    
     
     //Menu delete use nameM to delete verfication
     parent::runFile('menu_delete.yaml', 'Menu delete', PatternsMenuTestCase::MENU_TESTS_DIR);
     $this->assertText($title, 'Menu menu_footer-links was deleted');
   	$result = db_query('SELECT * FROM {menu_custom} WHERE 'menu_name'= $nameM,'title' = $titleM, 'description = $descriptionM)->fetchAssoc();
-    $this->assertFalse(result, 'Menu link was deleted correctly');
+    $this->assertFalse($result, 'Menu link was deleted correctly');
 	
   }
     
@@ -67,7 +67,7 @@ class PatternsMenuTestCase extends PatternRunTestCase {
   	$this->assertResponse(200);
   	$this->assertText($link_title, 'Menu-footer-links was added');
   	$result = db_query('SELECT * FROM {menu_links} WHERE 'menu_name'= $menu_name, 'link_path' = $link_path, 'link_title' = $link_title )->fetchAssoc();
-    $this->assertTrue(result,t('Menu_item was created correctly.'));
+    $this->assertTrue($result,t('Menu_item was created correctly.'));
   	
   	parent::runFile('menu_item_modify.yaml', 'menu item modify', PatternsMenuTestCase::MENU_TESTS_DIR);
     $mlid = 361;
@@ -77,7 +77,7 @@ class PatternsMenuTestCase extends PatternRunTestCase {
   	//$disable = 1;
   	$this->assertText($link_titleM, 'Menu-footer-links was modified');
   	$result = db_query('SELECT * FROM {menu_links} WHERE 'menu_name'= $menu_nameM, 'link_path' = $link_pathM, 'link_title' = $link_titleM)->fetchAssoc();
-    $this->assertTrue(result,t('Menu_item was modified correctly.'));
+    $this->assertTrue($result,t('Menu_item was modified correctly.'));
     
     
     //Menu delete use mlid 361 to delete verfication
