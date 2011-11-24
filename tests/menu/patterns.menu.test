@@ -40,7 +40,7 @@ class PatternsMenuTestCase extends PatternRunTestCase {
   	parent::runFile('menu_modify.yaml', 'Menu modify', PatternsMenuTestCase::MENU_TESTS_DIR);
     $nameM = 'menu-footer-links';
     $titleM = 'Footer Links';
-    $description = 'Menu description changed';
+    $descriptionM = 'Menu description changed';
     
     $this->assertText($title, 'Menu footer-links was modified');
   	$result = db_query('SELECT * FROM {menu_custom} WHERE 'menu_name'= $nameM,'title' = $titleM, 'description = $descriptionM)->fetchAssoc();
@@ -69,9 +69,7 @@ class PatternsMenuTestCase extends PatternRunTestCase {
   	$result = db_query('SELECT * FROM {menu_links} WHERE 'menu_name'= $menu_name, 'link_path' = $link_path, 'link_title' = $link_title )->fetchAssoc();
     $this->assertTrue(result,t('Menu_item was created correctly.'));
   	
-  	
-  	//menu modify
-  	parent::runFile('menu_item_modify.yaml', 'Menu item modify', PatternsMenuTestCase::MENU_TESTS_DIR);
+  	parent::runFile('menu_item_modify.yaml', 'menu item modify', PatternsMenuTestCase::MENU_TESTS_DIR);
     $mlid = 361;
     $menu_nameM = 'menu-footer-links';
   	$link_pathM = 'http://123.com';
@@ -90,4 +88,5 @@ class PatternsMenuTestCase extends PatternRunTestCase {
        
   	
   }
+
 }
