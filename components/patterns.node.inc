@@ -27,37 +27,37 @@ function node_patterns_actions() {
 
 function node_patterns_prepare($action, $tag, &$data = NULL) {
   if ($tag == 'content_type') {
-  	if ($action == 'create') {
+    if ($action === PATTERNS_CREATE) {
       if ($data['node_options']) {
-    	  $data['node_options'] = array_values($data['node_options']);
-      }else{
+        $data['node_options'] = array_values($data['node_options']);
+      } else {
         $data['node_options'] = array('status', 'promote'); // TODO: proper defaults?    	
       }
-  	}
+    }
   }
   // TODO: check if the name and type fields are unique when creating
   //       and existing when we are modifying or deleting
-	return patterns_results();
+  return patterns_results();
 }
 
 function node_patterns_validate($action, $tag, &$data = NULL) {
-	// TODO: check required fields
+  // TODO: check required fields
   return patterns_results();
 }
 
 function node_patterns_callbacks($action, $tag, &$data = NULL) {
-	if ($tag == 'content_type') {
-    if ($action == PATTERNS_CREATE) {
+  if ($tag == 'content_type') {
+    if ($action === PATTERNS_CREATE) {
       $result = array(
         'node_type_form',
-      );	
+      );
     }
-    else if($action == PATTERNS_DELETE) {
+    else if($action === PATTERNS_DELETE) {
       $result = array(
         'node_type_delete_confirm',
-      );		
-	  }
-	}
+      );
+    }
+  }
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
 
@@ -124,12 +124,12 @@ function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
       $data['body_label'] = '';
     }
   }else if ($form_id == 'node_type_delete_confirm') {
-  	$data['op'] = t('Delete');
+    $data['op'] = t('Delete');
     $data['confirm'] = 1;
   }
 
   $result = $data;
-  
+
   return patterns_results($status, $msg, $result);
 }
 
@@ -138,16 +138,23 @@ function node_patterns_params($action, $form_id, &$data = NULL, &$a) {
   $msg = '';
   $result = NULL;
 
-	if ($id == 'node_type_form') {
-    $type = (object)content_types($data['type']);
+  if ($form_id == 'node_type_form') {
+// TODO
+//    $type = (object)content_types($data['type']);
+//    $result = array($type);
+  } else if($form_id == 'node_type_delete_confirm') {
+    $type = new stdClass;
+    $type->name = $data['name'];
+    $type->type = $data['type'];
     $result = array($type);
   }
+
   return patterns_results($status, $msg, $result);
 }
 
 // Cleanup any global settings after the action runs
 function node_patterns_cleanup($action, $tag, &$data = NULL) {
-	// TODO
+  // TODO
   // Make sure content info is always up-to-date
   //cache_clear_all('content_type_info', content_cache_tablename());// TODO
   //_content_type_info(true);

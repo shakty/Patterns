@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * SimpleTests for the System component of Patterns.
+ * SimpleTests for the Block component of Patterns.
  */
 
 class PatternsBlockTestCase extends PatternRunTestCase {
