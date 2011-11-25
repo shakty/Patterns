@@ -9,7 +9,7 @@ function node_patterns() {
 
   $actions['content_type'] = array('descr' => t('Create/Modify/Delete Content Types'),
     PATTERNS_CREATE => array('node_type_form'),
-    PATTERNS_MODIFY => array(),
+    PATTERNS_MODIFY => array('node_type_form'),
     PATTERNS_DELETE => array('node_type_delete_confirm'),
     'files'  => $files,
   );
@@ -27,11 +27,11 @@ function node_patterns_actions() {
 
 function node_patterns_prepare($action, $tag, &$data = NULL) {
   if ($tag == 'content_type') {
-    if ($action === PATTERNS_CREATE) {
+    if ($action === PATTERNS_CREATE or $action === PATTERNS_MODIFY) {
       if ($data['node_options']) {
         $data['node_options'] = array_values($data['node_options']);
       } else {
-        $data['node_options'] = array('status', 'promote'); // TODO: proper defaults?    	
+        $data['node_options'] = array('status', 'promote'); // TODO: proper defaults?
       }
     }
   }
@@ -47,7 +47,7 @@ function node_patterns_validate($action, $tag, &$data = NULL) {
 
 function node_patterns_callbacks($action, $tag, &$data = NULL) {
   if ($tag == 'content_type') {
-    if ($action === PATTERNS_CREATE) {
+    if ($action === PATTERNS_CREATE or $action === PATTERNS_MODIFY) {
       $result = array(
         'node_type_form',
       );
@@ -78,9 +78,9 @@ function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
     $type = $data['type'];
     $name = $data['name'];
     /*
-    $types = content_types($type); // TODO
-    
-    if (!$types['type']) {
+    $types = node_type_get_names();
+
+    if (!isset($types[$type])) {
       // Set the name of the new content type if missing
       if (!$data['name']) {
         $data['name'] = $type;
@@ -108,7 +108,7 @@ function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
             $options[$key] = $key;
           }
           else {
-            unset($options[$key]);    
+            unset($options[$key]);
           }
         unset($data[$key]);
         }
@@ -117,7 +117,7 @@ function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
       $data['node_options']['overwrite'] = TRUE;
     }
     */
-    
+
 
     // TODO
     if (isset($data['has_body']) && !$data['has_body']) {
@@ -138,14 +138,10 @@ function node_patterns_params($action, $form_id, &$data = NULL, &$a) {
   $msg = '';
   $result = NULL;
 
-  if ($form_id == 'node_type_form') {
-// TODO
-//    $type = (object)content_types($data['type']);
-//    $result = array($type);
-  } else if($form_id == 'node_type_delete_confirm') {
-    $type = new stdClass;
-    $type->name = $data['name'];
-    $type->type = $data['type'];
+  if (($action === PATTERNS_MODIFY and $form_id == 'node_type_form') or
+      $form_id == 'node_type_delete_confirm') {
+    $types = (object)_node_types_build();
+    $type = $types->types[$data['type']];
     $result = array($type);
   }
 
@@ -157,9 +153,9 @@ function node_patterns_cleanup($action, $tag, &$data = NULL) {
   // TODO
   // Make sure content info is always up-to-date
   //cache_clear_all('content_type_info', content_cache_tablename());// TODO
-  //_content_type_info(true);
+  _field_info_collate_types(true);
 
-	return patterns_results();
+  return patterns_results();
 }
 
 

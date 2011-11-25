@@ -18,7 +18,7 @@ actions:
      description: Test Content Type Long Description
      title_label: Title of Test Content Type
      node_preview: 1
-     help:
+     help: help text
      node_options:
       - status
       - promote
