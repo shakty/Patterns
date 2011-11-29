@@ -2,8 +2,8 @@
 # QScience
 
 info:
-  title: Content Type (create)
-  description: Creates a Content Type
+  title: Content Type (modify)
+  description: Modifies a Content Type
   author: QScience
   category: Content
   version: 1.0
@@ -11,18 +11,18 @@ info:
 
 actions:
 
-  - create:
+  - modify:
      tag: content_type
-     name: Test Content Type
+     name: Test Content Type2
      type: test_content_type # machine readable name
-     description: Test Content Type Long Description
-     title_label: Title of Test Content Type
-     node_preview: 1
-     help: help text
+     description: Test Content Type Long Description2
+     title_label: Title of Test Content Type2
+     node_preview: 2
+     help: help text2
      node_options:
-      - status
       - promote
       - sticky
+      - revision
 
 #     node_submitted: # TODO
 #     comment*: # TODO

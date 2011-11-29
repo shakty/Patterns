@@ -1,0 +1,17 @@
+# YAML Content Pattern
+# QScience
+
+info:
+  title: Content Type (delete)
+  description: Deletes a Content Type
+  author: QScience
+  category: Content
+  version: 1.0
+  core: 7.x
+
+actions:
+
+  - delete:
+     tag: content_type
+     name: Test Content Type
+     type: test_content_type # machine readable name
