@@ -20,6 +20,8 @@ class PatternsMenuTestCase extends PatternRunTestCase {
    public function setUp() {
     // Enable any modules required for the tests.
     parent::setUp();
+  	$this->pat_user = $this->drupalCreateUser(array('administer patterns','administer menu'));
+	$this->drupalLogin($this->pat_user);
   }
 
 
@@ -30,27 +32,37 @@ class PatternsMenuTestCase extends PatternRunTestCase {
   	$description = 'Menu description';
   	parent::runFile('menu_create.yaml', 'Menu create', PatternsMenuTestCase::MENU_TESTS_DIR);
   	//select db to verify the result is the same as the variable or not
-  	$this->assertResponse(200);
-  	$this->assertText($title, 'Menu footer-links was added');
-  	$result = db_query('SELECT * FROM {menu_custom} WHERE 'menu_name'= $name,'title' = $title, 'description = $description)->fetchAssoc();
+  	$result = db_select('menu_custom','m')
+	->fields('m',array('menu_name','title','description'))
+  	->condition('m.menu_name',$name)
+  	->condition('m.title',$title)
+  	->condition('m.description',$description)
+	->countQuery()->execute()->fetchField();
     $this->assertTrue($result,t('Menu was created correctly.'));
 	
   	
   	//menu modify
   	parent::runFile('menu_modify.yaml', 'Menu modify', PatternsMenuTestCase::MENU_TESTS_DIR);
-    $nameM = 'menu-footer-links';
+   	$nameM = 'menu-footer-links';
     $titleM = 'Footer Links';
     $descriptionM = 'Menu description changed';
-    
-    $this->assertText($title, 'Menu footer-links was modified');
-  	$result = db_query('SELECT * FROM {menu_custom} WHERE 'menu_name'= $nameM,'title' = $titleM, 'description = $descriptionM)->fetchAssoc();
+    $result = db_select('menu_custom','m')
+	->fields('m',array('menu_name','title','description'))
+  	->condition('m.menu_name',$nameM)
+  	->condition('m.title',$titleM)
+  	->condition('m.description',$descriptionM)
+  	->execute()->fetchAll();
     $this->assertTrue($result,t('Menu was modified correctly.'));
    
     
     //Menu delete use nameM to delete verfication
     parent::runFile('menu_delete.yaml', 'Menu delete', PatternsMenuTestCase::MENU_TESTS_DIR);
-    $this->assertText($title, 'Menu menu_footer-links was deleted');
-  	$result = db_query('SELECT * FROM {menu_custom} WHERE 'menu_name'= $nameM,'title' = $titleM, 'description = $descriptionM)->fetchAssoc();
+  	$result = db_select('menu_custom','m')
+	->fields('m',array('menu_name','title','description'))
+  	->condition('m.menu_name',$nameM)
+  	->condition('m.title',$titleM)
+  	->condition('m.description',$descriptionM)
+  	->countQuery()->execute()->fetchField();
     $this->assertFalse($result, 'Menu link was deleted correctly');
 	
   }
@@ -64,9 +76,12 @@ class PatternsMenuTestCase extends PatternRunTestCase {
   	//$disable = 1;
   	parent::runFile('menu_item_create.yaml', 'Menu item create', PatternsMenuTestCase::MENU_TESTS_DIR);
   	//select db to verify the result is the same as the variable or not
-  	$this->assertResponse(200);
-  	$this->assertText($link_title, 'Menu-footer-links was added');
-  	$result = db_query('SELECT * FROM {menu_links} WHERE 'menu_name'= $menu_name, 'link_path' = $link_path, 'link_title' = $link_title )->fetchAssoc();
+  	$result = db_select('menu_links','m')
+	->fields('m',array('menu_name','link_path','link_title'))
+  	->condition('m.menu_name',$menu_name)
+  	->condition('m.link_path',$link_path)
+  	->condition('m.link_title',$link_title)
+  	->execute()->fetchAssoc();
     $this->assertTrue($result,t('Menu_item was created correctly.'));
   	
   	parent::runFile('menu_item_modify.yaml', 'menu item modify', PatternsMenuTestCase::MENU_TESTS_DIR);
@@ -75,16 +90,24 @@ class PatternsMenuTestCase extends PatternRunTestCase {
   	$link_pathM = 'http://123.com';
   	$link_titleM = 'menu link title changed';
   	//$disable = 1;
-  	$this->assertText($link_titleM, 'Menu-footer-links was modified');
-  	$result = db_query('SELECT * FROM {menu_links} WHERE 'menu_name'= $menu_nameM, 'link_path' = $link_pathM, 'link_title' = $link_titleM)->fetchAssoc();
-    $this->assertTrue($result,t('Menu_item was modified correctly.'));
+  	$result = db_select('menu_links','m')
+	->fields('m',array('menu_name','link_path','link_title'))
+  	->condition('m.menu_name',$menu_nameM)
+  	->condition('m.link_path',$link_pathM)
+  	->condition('m.link_title',$link_titleM)
+  	->execute()->fetchAssoc();
+  	$this->assertTrue($result,t('Menu_item was modified correctly.'));
     
     
     //Menu delete use mlid 361 to delete verfication
     parent::runFile('menu_item_delete.yaml', 'Menu item delete', PatternsMenuTestCase::MENU_TESTS_DIR);
-	$this->assertText($title, 'menu_footer-links was deleted');
-  	$result = db_query('SELECT * FROM {menu_links} WHERE 'menu_name'= $menu_nameM, 'link_path' = $link_pathM, 'link_title' = $link_titleM)->fetchAssoc();
-    $this->assertFalse($result, 'Menu_item was deleted correctly');
+	$result = db_select('menu_links','m')
+	->fields('m',array('menu_name','link_path','link_title'))
+	->condition('m.menu_name',$menu_nameM)
+	->condition('m.link_path',$link_pathM)
+	->condition('m.link_title',$link_titleM)
+	->execute()->fetchAssoc();
+  	$this->assertFalse($result, 'Menu_item was deleted correctly');
        
   	
   }
