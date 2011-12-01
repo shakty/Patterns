@@ -30,7 +30,7 @@ class PatternsMenuTestCase extends PatternRunTestCase {
   	$name = 'footer-links';
   	$title = 'Footer Links';
   	$description = 'Menu description';
-  	parent::runFile('menu_create.yaml', 'Menu create', PatternsMenuTestCase::MENU_TESTS_DIR);
+  	parent::runFile('menu_create.yaml', 'Create a menu', PatternsMenuTestCase::MENU_TESTS_DIR);
   	//select db to verify the result is the same as the variable or not
   	$result = db_select('menu_custom','m')
 	->fields('m',array('menu_name','title','description'))
@@ -42,7 +42,7 @@ class PatternsMenuTestCase extends PatternRunTestCase {
 	
   	
   	//menu modify
-  	parent::runFile('menu_modify.yaml', 'Menu modify', PatternsMenuTestCase::MENU_TESTS_DIR);
+  	parent::runFile('menu_modify.yaml', 'Edit a menu', PatternsMenuTestCase::MENU_TESTS_DIR);
    	$nameM = 'menu-footer-links';
     $titleM = 'Footer Links';
     $descriptionM = 'Menu description changed';
@@ -56,7 +56,7 @@ class PatternsMenuTestCase extends PatternRunTestCase {
    
     
     //Menu delete use nameM to delete verfication
-    parent::runFile('menu_delete.yaml', 'Menu delete', PatternsMenuTestCase::MENU_TESTS_DIR);
+    parent::runFile('menu_delete.yaml', 'Delete a menu', PatternsMenuTestCase::MENU_TESTS_DIR);
   	$result = db_select('menu_custom','m')
 	->fields('m',array('menu_name','title','description'))
   	->condition('m.menu_name',$nameM)
@@ -74,7 +74,7 @@ class PatternsMenuTestCase extends PatternRunTestCase {
   	$link_path = 'http://123.com';
   	$link_title = 'menu link title';
   	//$disable = 1;
-  	parent::runFile('menu_item_create.yaml', 'Menu item create', PatternsMenuTestCase::MENU_TESTS_DIR);
+  	parent::runFile('menu_item_create.yaml', 'Create menu items', PatternsMenuTestCase::MENU_TESTS_DIR);
   	//select db to verify the result is the same as the variable or not
   	$result = db_select('menu_links','m')
 	->fields('m',array('menu_name','link_path','link_title'))
@@ -84,7 +84,7 @@ class PatternsMenuTestCase extends PatternRunTestCase {
   	->execute()->fetchAssoc();
     $this->assertTrue($result,t('Menu_item was created correctly.'));
   	
-  	parent::runFile('menu_item_modify.yaml', 'menu item modify', PatternsMenuTestCase::MENU_TESTS_DIR);
+  	parent::runFile('menu_item_modify.yaml', 'Edit menu items', PatternsMenuTestCase::MENU_TESTS_DIR);
     $mlid = 361;
     $menu_nameM = 'menu-footer-links';
   	$link_pathM = 'http://123.com';
@@ -100,7 +100,7 @@ class PatternsMenuTestCase extends PatternRunTestCase {
     
     
     //Menu delete use mlid 361 to delete verfication
-    parent::runFile('menu_item_delete.yaml', 'Menu item delete', PatternsMenuTestCase::MENU_TESTS_DIR);
+    parent::runFile('menu_item_delete.yaml', 'Delete menu items', PatternsMenuTestCase::MENU_TESTS_DIR);
 	$result = db_select('menu_links','m')
 	->fields('m',array('menu_name','link_path','link_title'))
 	->condition('m.menu_name',$menu_nameM)
