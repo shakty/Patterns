@@ -20,16 +20,17 @@ class PatternsMenuTestCase extends PatternRunTestCase {
    public function setUp() {
     // Enable any modules required for the tests.
     parent::setUp();
-  	$this->pat_user = $this->drupalCreateUser(array('administer patterns','administer menu'));
-	$this->drupalLogin($this->pat_user);
+  	$this->big_user = $this->drupalCreateUser(array('access administration pages','administer patterns','administer blocks', 'administer menu', 'create article content'));
+    $this->std_user = $this->drupalCreateUser(array());
+  $this->drupalLogin($this->big_user);
   }
 
 
   public function test_menu() {
   	module_enable(array('menu'));
-  	$name = 'footer-links';
+  	$name = 'menu-footer-links';
   	$title = 'Footer Links';
-  	$description = 'Menu description';
+  	$description = 'Menu description.';
   	parent::runFile('menu_create.yaml', 'Create a menu', PatternsMenuTestCase::MENU_TESTS_DIR);
   	//select db to verify the result is the same as the variable or not
   	$result = db_select('menu_custom','m')
@@ -38,14 +39,14 @@ class PatternsMenuTestCase extends PatternRunTestCase {
   	->condition('m.title',$title)
   	->condition('m.description',$description)
 	->countQuery()->execute()->fetchField();
-    $this->assertTrue($result,t('Menu was created correctly.'));
+	$this->assertTrue($result,t('Menu was created correctly.'));
 	
   	
   	//menu modify
   	parent::runFile('menu_modify.yaml', 'Edit a menu', PatternsMenuTestCase::MENU_TESTS_DIR);
    	$nameM = 'menu-footer-links';
     $titleM = 'Footer Links';
-    $descriptionM = 'Menu description changed';
+    $descriptionM = 'Menu description changed.';
     $result = db_select('menu_custom','m')
 	->fields('m',array('menu_name','title','description'))
   	->condition('m.menu_name',$nameM)
@@ -69,8 +70,8 @@ class PatternsMenuTestCase extends PatternRunTestCase {
     
     
  public function test_menu_item() {
-  	module_enable(array('menu_item'));
-  	$menu_name = 'menu-footer-links';
+   	module_enable(array('menu'));
+	$menu_name = 'menu-footer-links';
   	$link_path = 'http://123.com';
   	$link_title = 'menu link title';
   	//$disable = 1;
@@ -81,7 +82,7 @@ class PatternsMenuTestCase extends PatternRunTestCase {
   	->condition('m.menu_name',$menu_name)
   	->condition('m.link_path',$link_path)
   	->condition('m.link_title',$link_title)
-  	->execute()->fetchAssoc();
+    ->countQuery()->execute()->fetchField();
     $this->assertTrue($result,t('Menu_item was created correctly.'));
   	
   	parent::runFile('menu_item_modify.yaml', 'Edit menu items', PatternsMenuTestCase::MENU_TESTS_DIR);
@@ -95,7 +96,7 @@ class PatternsMenuTestCase extends PatternRunTestCase {
   	->condition('m.menu_name',$menu_nameM)
   	->condition('m.link_path',$link_pathM)
   	->condition('m.link_title',$link_titleM)
-  	->execute()->fetchAssoc();
+    ->execute()->fetchAll();
   	$this->assertTrue($result,t('Menu_item was modified correctly.'));
     
     
@@ -106,8 +107,8 @@ class PatternsMenuTestCase extends PatternRunTestCase {
 	->condition('m.menu_name',$menu_nameM)
 	->condition('m.link_path',$link_pathM)
 	->condition('m.link_title',$link_titleM)
-	->execute()->fetchAssoc();
-  	$this->assertFalse($result, 'Menu_item was deleted correctly');
+	->countQuery()->execute()->fetchField();
+	$this->assertFalse($result, 'Menu_item was deleted correctly');
        
   	
   }
