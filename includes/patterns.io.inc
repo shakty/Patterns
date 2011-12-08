@@ -417,6 +417,11 @@ function _patterns_io_is_patterns_dir_ready($patterns_files_dir = '') {
  */
 function patterns_io_save_pattern($content, $name, $format = 'yaml', $dir = NULL) {
 
+  if (!patterns_validate_pattern($content)) {
+    drupal_set_message(t("Pattern '%name' could not be saved. Make sure edited code is well-formed.", array('%name' => $name)), 'error');
+    return FALSE;
+  }
+  
   if (empty($dir)) {
     // System Patterns directory.
     $dir = patterns_config_get_files_dir();
@@ -429,11 +434,11 @@ function patterns_io_save_pattern($content, $name, $format = 'yaml', $dir = NULL
         
       // Load and save pattern.
       $load_func = 'patterns_load_' . $format;
-
+      
       if ($pattern = $load_func($path)) {
         patterns_db_save_pattern($pattern, $path, $name);
         drupal_set_message(t('Pattern %name was saved in %path.', array('%name' => $name, 
-                                                                  '%path' => $path,
+                                                                        '%path' => $path,
         )));
         // Not for now.
         //_patterns_clear_failed_edit();

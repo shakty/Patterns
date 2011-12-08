@@ -88,6 +88,12 @@ define('PATTERNS_FILES', 'files');
 define('PATTERNS_INFO', 'descr');
 
 
+define('PATTERNS_STATUS_OK', 0); // installed, not enabled
+define('PATTERNS_STATUS_ENABLED', 1); // installed, enabled
+define('PATTERNS_STATUS_INVALID', -1); // invalid
+define('PATTERNS_STATUS_REMOVED', -5); // removed
+
+
 // Add libraries for performing AJAX calls outside forms
 //drupal_add_library('system', 'drupal.ajax'); 
 //drupal_add_library('system', 'jquery.form');

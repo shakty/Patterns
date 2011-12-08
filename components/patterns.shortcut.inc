@@ -3,7 +3,8 @@
  * @file
  * Patterns component for shortcut.
  *
- * there are seven form in the shortcut moudle.they can be seprated in three kinds:set, link, switch for user.
+ * there are seven form in the shortcut module. They can be separeted in three 
+ * kinds: set, link, switch for user.
  * 
  * set(three form):
  *     add a shortcut set:just give a name for the new shortcut set.
