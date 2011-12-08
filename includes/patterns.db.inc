@@ -5,29 +5,6 @@
  */
 
 
-/*
- * Valid pattern installed in the db, ready to be enabled 
- */
-define('PATTERNS_DB_STATUS_READY', 0);
-
-/*
- * Pattern enabled
- */
-define('PATTERNS_DB_STATUS_ENABLED', 1);
-
-/*
- * Pattern installed in the db, but it is invalid
- */
-define('PATTERNS_DB_STATUS_INVALID', -5);
-
-/*
- * Pattern marked as trashed in the db, ready to be permanently deleted
- */
-define('PATTERNS_DB_STATUS_TRASHED', -10);
-
-
-
-
 /**
  * Mark that pattern status as trashed in the database.
  *
@@ -38,7 +15,7 @@ define('PATTERNS_DB_STATUS_TRASHED', -10);
  */
 function patterns_db_trash_pattern($pid) {
   $trashed = db_update('patterns')
-    ->fields(array('status' => PATTERNS_DB_STATUS_TRASHED))
+    ->fields(array('status' => PATTERNS_STATUS_REMOVED))
     ->condition('pid', $pid)
     ->execute();
 
@@ -101,19 +78,26 @@ function patterns_db_save_pattern($pattern, $path, $name) {
   }
   else {
     $status = PATTERNS_STATUS_INVALID;
-  }
-
-  
+  }   
   
   $pattern_data = db_select('patterns', 'p')
-                    ->fields('p', array('pid', 'file', 'updated'))
+                    ->fields('p', array('pid', 'file', 'updated','status'))
                     ->condition('p.name', $name)
                     ->execute()
                     ->fetchAssoc();
 
+                  
+                 
+                    
   // Pattern already in the DB, data needs to be updated.
   if (!empty($pattern_data)) {
 
+    if ($pattern_data['status'] == PATTERNS_STATUS_REMOVED) {
+      $status = PATTERNS_STATUS_REMOVED;
+    }
+    
+    //print_r($pattern_data);
+    
     $pid = $pattern_data['pid'];
     // $updated = (db_query("SELECT updated FROM {patterns} WHERE pid = :d", array('d' => $pid))->fetchField());
     $updated = $pattern_data['updated'];

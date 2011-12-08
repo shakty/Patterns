@@ -168,21 +168,21 @@ function patterns_menu() {
     'type' => MENU_CALLBACK
   );
 
-//  $items['admin/patterns/trash'] = array(
-//    'title' => 'Move Pattern to Recycle Bin',
-//    'page callback' => 'drupal_get_form',
-//    'page arguments' => array('patterns_trash_pattern'),
-//    'access arguments' => array('administer patterns'),
-//    'type' => MENU_CALLBACK
-//  );
-  
-  $items['admin/patterns/trash/%'] = array(
+  $items['admin/patterns/trash'] = array(
     'title' => 'Move Pattern to Recycle Bin',
-    'page callback' => 'patterns_trash_pattern',
-    'page arguments' => array(3),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('patterns_trash_pattern'),
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
+  
+//  $items['admin/patterns/trash/%'] = array(
+//    'title' => 'Move Pattern to Recycle Bin',
+//    'page callback' => 'patterns_db_trash_pattern',
+//    'page arguments' => array(3),
+//    'access arguments' => array('administer patterns'),
+//    'type' => MENU_CALLBACK
+//  );
   
   $items['admin/patterns/remove'] = array(
     'title' => 'Remove Pattern',
@@ -389,7 +389,7 @@ function patterns_list() {
   // Load the patterns from database.
   $patterns = patterns_get_patterns();
 
-  $output .= theme('patterns_list', array('patterns' => $patterns, 'invalid' => array()));
+  $output .= theme('patterns_list', $patterns);
 
   return $output;
 }
@@ -513,19 +513,22 @@ function patterns_enable_pattern_submit($form, &$form_state) {
 function patterns_trash_pattern($form, &$form_state, $pid = NULL) {
 
   $pattern = patterns_get_pattern($pid);
-
   if (empty($pattern)) {
     drupal_set_message(t('Pattern could not be moved into the trash bin.'), 'error');
     $form_state['redirect'] = 'admin/patterns';
     return $form;
   }
-
+  
   $form['pid'] = array(
     '#type' => 'value',
     '#value' => $pid,
   );
   
-  return $form;
+   
+  $disclaimer = t('Trashed patterns can be repristinated later on.');
+
+  return confirm_form($form, t('Proceed with removing pattern %pattern?', array('%pattern' => $pattern->title)), 'admin/patterns', $disclaimer);
+ 
 }
 
 /**
@@ -533,8 +536,9 @@ function patterns_trash_pattern($form, &$form_state, $pid = NULL) {
  *
  * @see patterns_db_trash_pattern()
  */
-function patterns_trash_pattern_submit($form, &$form_state, $pid = NULL) {
-  
+function patterns_trash_pattern_submit($form, &$form_state) {
+  $pid = $form_state['values']['pid'];
+  print_r($form_state['values']);
   $result = patterns_db_trash_pattern($pid);
 
   if (!$result) {
@@ -545,7 +549,7 @@ function patterns_trash_pattern_submit($form, &$form_state, $pid = NULL) {
   }
   
   $form_state['redirect'] = 'admin/patterns';
-}
+ }
 
 /**
  * Form constructor for the Patterns removing form.

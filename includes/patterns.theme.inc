@@ -76,46 +76,85 @@ function theme_patterns_form_helper($form_id, $values) {
  */
 function theme_patterns_list($args) {
   
-  $patterns = $args['patterns'];
-  $invalid = $args['invalid'];
+//  print_r($args);
+//  exit;
+//  
+  $patterns = $args[PATTERNS_STATUS_OK];
+  $removed = $args[PATTERNS_STATUS_REMOVED];
   
-  if (empty($patterns)) {
-    return t('No patterns available.');
-  }
-  
-  $output = '';
   
   $form['patterns'] = array(
-    '#prefix' => '<div id="all_patterns_div">',
+    '#prefix' => '<div id="all_patterns_div"><h3>Available Patterns</h3>',
     '#suffix' => ' </div>',
     '#tree' => TRUE,
   );
-
-  foreach ($patterns as $pid => $pattern) {
-    
-     $category = $pattern->info['category'] ? $pattern->info['category'] : t('Other');
-     
-     $form['patterns'][$category][] = _patterns_pattern_build_row($pid, $pattern);
-     $form['patterns'][$category] += array(
-      '#type' => 'fieldset',
-      '#title' => t($category),
-      '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
-      '#theme' => 'patterns_patterns_fieldset',
-      '#header' => array(
-        array('data' => t('Enabled'), 'class' => array('checkbox')),
-        t('Name'),
-        t('Version'),
-        t('Description'),
-        array('data' => t('Operations'), 'colspan' => 4),
-      ),
-      // Ensure that the "Core" package fieldset comes first.
-      //'#weight' => $package == 'Core' ? -10 : NULL,
-    );
+  
+  
+  if (empty($patterns)) {
+   $form['patterns']['#markup'] =  t('No patterns available.');
   }
-  $output .= drupal_render($form);
+  else {
 
-  return $output;
+    foreach ($patterns as $pid => $pattern) {
+      
+       $category = $pattern->info['category'] ? $pattern->info['category'] : t('Other');
+       
+       $form['patterns'][$category][] = _patterns_pattern_build_row($pid, $pattern);
+       $form['patterns'][$category] += array(
+        '#type' => 'fieldset',
+        '#title' => t($category),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+        '#theme' => 'patterns_patterns_fieldset',
+        '#header' => array(
+          array('data' => t('Enabled'), 'class' => array('checkbox')),
+          t('Name'),
+          t('Version'),
+          t('Description'),
+          array('data' => t('Operations'), 'colspan' => 4),
+        ),
+        // Ensure that the "Core" package fieldset comes first.
+        //'#weight' => $package == 'Core' ? -10 : NULL,
+      );
+    }
+  }
+  
+  
+  $form['removed'] = array(
+    '#prefix' => '<div id="removed_patterns_div"><h3>Removed Patterns</h3>',
+    '#suffix' => ' </div>',
+    '#tree' => TRUE,
+  );
+  
+  if (empty($removed)) {
+    $form['removed']['#markup'] = t('No patterns in the recycle bin.');
+  }
+  else {  
+    foreach ($removed as $pid => $pattern) {
+      
+       $category = $pattern->info['category'] ? $pattern->info['category'] : t('Other');
+       
+       $form['removed'][$category][] = _patterns_pattern_build_row($pid, $pattern);
+       $form['removed'][$category] += array(
+        '#type' => 'fieldset',
+        '#title' => t($category),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+        '#theme' => 'patterns_patterns_fieldset',
+        '#header' => array(
+          array('data' => t('Enabled'), 'class' => array('checkbox')),
+          t('Name'),
+          t('Version'),
+          t('Description'),
+          array('data' => t('Operations'), 'colspan' => 4),
+        ),
+        // Ensure that the "Core" package fieldset comes first.
+        //'#weight' => $package == 'Core' ? -10 : NULL,
+      );
+    }
+  }
+
+  return drupal_render($form);
 }
 
 
@@ -212,13 +251,12 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
 
     // Remove Link
     //$actions['remove'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax')))); 
-
-    // Remove Link
-    $actions['remove'] = l(t('Remove'), 'admin/patterns/remove/' . $pid); 
-    
+ 
     // Remove Link
     $actions['trash'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax')))); 
     
+     // Remove Link
+    $actions['remove'] = l(t('Remove'), 'admin/patterns/remove/' . $pid); 
     
     
     // Not yet ready
