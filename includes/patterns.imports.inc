@@ -354,7 +354,8 @@ function patterns_import_module($form, &$form_state) {
       foreach($entry as $action => $forms) { 
         if($action != PATTERNS_INFO && $action != PATTERNS_FILES) {
           foreach($forms as $my_form) {
-            $options = array_merge($options, array($counter => $tag . ": " . $descr . " '" . $action . "': " . $my_form));
+            $key = "o".$counter;
+            $options = array_merge($options, array($key => $tag . ": " . $descr . " '" . $action . "': " . $my_form));
             $counter++;
           }
         } 
@@ -372,24 +373,26 @@ function patterns_import_module($form, &$form_state) {
      '#disabled' => $step < 3 ? FALSE : TRUE,
     );
  }
+
  if( $step == 3 && !isset($form_state['values']['content'])) {    
     // get macros of chosen forms
-    // same loop as above for creating the checkboxes
     $yaml_content = array();
     $yaml_content[PATTERNS_CREATE] = '';
     $yaml_content[PATTERNS_MODIFY] = '';
     $yaml_content[PATTERNS_DELETE] = '';
     $previous_macro_enabled = variable_get('macro_enabled', FALSE);
     variable_set('macro_enabled', TRUE);
-    variable_set('macro_submissions', array());
-    $counter = 0;
+    variable_set('macro_submissions', array());  
     $chosen_forms = $form_state['values']['module_forms'];
+    // same loop as above for creating the checkboxes
+    $counter = 0;
     foreach($actions as $tag => $entry) {
       $descr = $entry[PATTERNS_INFO];
       foreach($entry as $action => $forms) { 
         if($action != PATTERNS_INFO && $action != PATTERNS_FILES) {
           foreach($forms as $my_form) {
-            if($chosen_forms[$counter] == '' . $counter .'') {
+            $key = "o".$counter;
+            if($chosen_forms[$key]) {
               // submit and save output
               $module_form_state = array();
               $module_form_state['values'] = array();
@@ -403,24 +406,33 @@ function patterns_import_module($form, &$form_state) {
               drupal_form_submit($my_form, $module_form_state);
               $my_macro = macro_get_macro();
               $my_macro = substr($my_macro, 4, strlen($my_macro)-8);
+              $my_macro = "      " . str_replace("\n","\n      ", $my_macro);
               $yaml_content[$action] .= "  - " . $action .":\n" .
-                                   "    tag: ". $tag ."\n" .
-                                   $my_macro . "\n\n";
+                                        "      tag: ". $tag ."\n" .
+                                        $my_macro . "\n\n";
+                                        print var_dump($my_macro);
+                                        print "<br>";
             }
             $counter++;
           }
         } 
       }
     }
+   variable_set('macro_enabled', $previous_macro_enabled);
    
      // creating info section of yaml pattern file
-   $yaml = "# YAML <module> Pattern\n" .
+   $yaml = "# YAML ". $modules_with_components[$form_state['values']['module']] ." Pattern\n" .
          "\n" .
          "info:\n" .
          "  title: \n" .
-         "  description: \n" .
+         "  description: " . 
+              "automatically generated Pattern file from following forms"; #: ";
+   //foreach($options as $option)
+   // $yaml .= $option . ", ";
+   //$yaml = substr($yaml, 0, strlen($yaml)-3);
+   $yaml .= "\n" .
          "  author: \n" .
-         "  category: \n" .
+         "  category: ". $modules_with_components[$form_state['values']['module']] ."\n" .
          "  version: 1.0\n" .
          "  core: 7.x\n" .
          "  author_email: \n" .
@@ -432,12 +444,12 @@ function patterns_import_module($form, &$form_state) {
    $yaml .= $yaml_content[PATTERNS_CREATE];
    $yaml .= $yaml_content[PATTERNS_MODIFY];
    $yaml .= $yaml_content[PATTERNS_DELETE];
-  
-       
  }
  
+ // show pattern import form
  if($step > 2) {
     $def_dir = patterns_config_get_files_dir();
+    
     if(!isset($yaml))
       $yaml = $form_state['values']['content'];
     $form['name'] = array(
@@ -451,7 +463,7 @@ function patterns_import_module($form, &$form_state) {
       '#type' => 'textarea',
       '#rows' => 25,
       '#title' => t('Enter Pattern Source Code'),
-      '#value' => $yaml,
+      '#default_value' => $yaml,
       '#description' => t('Imported patterns are not executed until you run them manually.'),
     );
     
@@ -487,13 +499,25 @@ function patterns_import_module($form, &$form_state) {
 }
 
 /**
+ * Implementation of hook_form_alter().
+ */
+function patterns_form_alter(&$form, $form_state, $form_id) {
+      // Add the record callback on submit and delete all others
+      if ($form_id != 'macro_import_macro' && variable_get('macro_enabled', FALSE)) {
+        $form['#submit'] = array();
+        $form['#submit'][] = 'macro_record_macro';
+      }
+
+}
+
+/**
  * validation function for import_module_form
  * checks in which step we are and puts the step counter up and sets the rebuild flag
  */
 function patterns_import_module_validate($form, &$form_state) {
  $form_state['rebuild'] = TRUE;
  $form_state['values']['step'] = $form_state['values']['step']+1;
- #$form_state['values']['module'] = $form_state['values']['module'];
+
  return TRUE;
 }
 /**
