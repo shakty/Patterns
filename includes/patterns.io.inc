@@ -274,7 +274,7 @@ function patterns_load_components() {
  *
  * @return array The array of found patterns.
  */
-function patterns_io_scan_directories () {
+function patterns_io_scan_directories() {
   
     // Get a listing of enabled patterns.
     $enabled = array();
@@ -316,7 +316,7 @@ function patterns_io_scan_directories () {
     }
     
   if (!empty($errors)) {
-    drupal_set_message(t('Invalid patterns files found') .':<br/>' . implode('<br/>', $errors) . '<br/>' . t('Make sure that above file(s) are readable and contain valid data.'), 'warning');
+    drupal_set_message(t('Invalid patterns files found') . ':<br/>' . implode('<br/>', $errors) . '<br/>' . t('Make sure that above file(s) are readable and contain valid data.'), 'warning');
   }
 
     variable_set('patterns_loaded', time());
@@ -357,7 +357,7 @@ function patterns_get_patterns($reset = TRUE) {
 //    }
 
     $status = $pattern->status;
-    if (in_array($status, array(PATTERNS_STATUS_OK,PATTERNS_STATUS_ENABLED,PATTERNS_STATUS_INVALID))) {
+    if (in_array($status, array(PATTERNS_STATUS_OK, PATTERNS_STATUS_ENABLED, PATTERNS_STATUS_INVALID))) {
       $status = PATTERNS_STATUS_OK;
     }
     else {

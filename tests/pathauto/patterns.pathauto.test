@@ -2,7 +2,7 @@
 /**
  * @file
  * SimpleTests for the Field component of Patterns.
- * 
+ *
  */
 
 class PatternsPathautoTestCase extends PatternRunTestCase {
@@ -11,88 +11,88 @@ class PatternsPathautoTestCase extends PatternRunTestCase {
 
   static function getInfo() {
     return array(
-      'name' => 'pathauto component',
+      'name' => 'Pathauto component',
       'description' => 'Edit the pathauto setting of themes',
       'group' => 'Patterns',
     );
   }
-  
-   public function setUp() {
+
+  public function setUp() {
     // Enable any modules required for the tests.
     parent::setUp();
-    $this->pat_user = $this->drupalCreateUser(array('administer patterns','administer url aliases'));
+    $this->pat_user = $this->drupalCreateUser(array('administer patterns', 'administer url aliases'));
     // Login the patterns administrator.
     $this->drupalLogin($this->pat_user);
   }
 
 
   public function testUrlalias() {
-  	 // Make sure that matches the info in the pattern file
-    $source="admin/patterns/quickrun";
-    $alias="pathauto1";
- 	module_enable(array('pathauto'));
- 	//create url aliase
-  	parent::runFile('url_alias_created.yaml', 'URLs aliases create', PatternsPathautoTestCase::PATHAUTO_TESTS_DIR);
-  	 $result = db_select('url_alias', 'u')
+    // Make sure that matches the info in the pattern file
+    $source = "admin/patterns/quickrun";
+    $alias = "pathauto1";
+    module_enable(array('pathauto'));
+    //create url aliase
+    parent::runFile('url_alias_created.yaml', 'URLs aliases create', PatternsPathautoTestCase::PATHAUTO_TESTS_DIR);
+    $result = db_select('url_alias', 'u')
       ->fields('u', array('pid'))
       ->condition('source', $source)
       ->condition('alias', $alias)
       ->countQuery()->execute()->fetchField();
-  	$this->assertTrue($result, t('Create URL alias correctly'));
-  	
-  	//modify url alias
-  	parent::runFile('url_alias_modify.yaml', 'URLs aliases modify', PatternsPathautoTestCase::PATHAUTO_TESTS_DIR);
-  	$sourceM='admin/patterns/quickrun';
-  	$aliasM='pathauto';
-  	// Confirm that the alias works.
+    $this->assertTrue($result, t('Create URL alias correctly'));
+
+    //modify url alias
+    parent::runFile('url_alias_modify.yaml', 'URLs aliases modify', PatternsPathautoTestCase::PATHAUTO_TESTS_DIR);
+    $sourceM = 'admin/patterns/quickrun';
+    $aliasM = 'pathauto';
+    // Confirm that the alias works.
     $result = db_select('url_alias', 'u')
-      ->fields('u', array('source','alias'))
+      ->fields('u', array('source', 'alias'))
       ->condition('pid', 1)
       ->execute()->fetchAll();
     $this->assertEqual($result[0]->source, $sourceM, t('Modify alias source correctly.'));
     $this->assertEqual($result[0]->alias, $aliasM, t('Modify alias correctly.'));
-    
-      	//delete url alias
-  	parent::runFile('url_alias_delete.yaml', 'URLs aliases delete', PatternsPathautoTestCase::PATHAUTO_TESTS_DIR);
-  	//break;
-  	// Confirm that the alias works.
+
+    //delete url alias
+    parent::runFile('url_alias_delete.yaml', 'URLs aliases delete', PatternsPathautoTestCase::PATHAUTO_TESTS_DIR);
+    //break;
+    // Confirm that the alias works.
     $result = db_select('url_alias', 'u')
-      ->fields('u', array('source','alias'))
+      ->fields('u', array('source', 'alias'))
       ->condition('pid', 1)
       ->countQuery()->execute()->fetchField();
-    
+
     $this->assertFalse($result, t('delete alias correctly.'));
 
   }
-  
+
   public function testPathauto() {
-  	 // Make sure that matches the theme in the pattern file
- 	module_enable(array('pathauto'));
-  	parent::runFile('path_auto.yaml', 'pathauto setting', PatternsPathautoTestCase::PATHAUTO_TESTS_DIR);
-  	
-  	//test pathauto setting
-  	$case=variable_get('pathauto_case');
-  	$Clength=variable_get('pathauto_max_component_length');
-  	$length=variable_get('pathauto_max_length');
-  	$punctuation_ampersand=variable_get('pathauto_punctuation_ampersand');
-  	$reduce_ascii=variable_get('pathauto_reduce_ascii');
-  	$separator=variable_get('pathauto_separator');
-  	$update_action=variable_get('pathauto_update_action');
-  	$verbose=variable_get('pathauto_verbose');
-  	
-  	 $this->assertEqual($case, 1, t('Character case set correctly.'));
-  	 $this->assertEqual($Clength, 50, t('Maximum component length set correctly.'));
-  	 $this->assertEqual($length, 50, t('Maximum alias length set correctly.'));
-  	 $this->assertEqual($punctuation_ampersand, 1, t('Punctuation ampersand set correctly.'));
-  	 $this->assertEqual($reduce_ascii, 1, t('Reduce strings to letters and numbers set correctly.'));
-  	 $this->assertEqual($separator, '-', t('Separator set correctly.'));
-  	 $this->assertEqual($update_action, 2, t('Update action set correctly.'));
-  	 $this->assertEqual($verbose, 1, t('Verbose set correctly.'));
-  	
-  	//test pattens setting
-  	
-  	//
-  	$tests = array(
+    // Make sure that matches the theme in the pattern file
+    module_enable(array('pathauto'));
+    parent::runFile('path_auto.yaml', 'pathauto setting', PatternsPathautoTestCase::PATHAUTO_TESTS_DIR);
+
+    //test pathauto setting
+    $case = variable_get('pathauto_case');
+    $Clength = variable_get('pathauto_max_component_length');
+    $length = variable_get('pathauto_max_length');
+    $punctuation_ampersand = variable_get('pathauto_punctuation_ampersand');
+    $reduce_ascii = variable_get('pathauto_reduce_ascii');
+    $separator = variable_get('pathauto_separator');
+    $update_action = variable_get('pathauto_update_action');
+    $verbose = variable_get('pathauto_verbose');
+
+    $this->assertEqual($case, 1, t('Character case set correctly.'));
+    $this->assertEqual($Clength, 50, t('Maximum component length set correctly.'));
+    $this->assertEqual($length, 50, t('Maximum alias length set correctly.'));
+    $this->assertEqual($punctuation_ampersand, 1, t('Punctuation ampersand set correctly.'));
+    $this->assertEqual($reduce_ascii, 1, t('Reduce strings to letters and numbers set correctly.'));
+    $this->assertEqual($separator, '-', t('Separator set correctly.'));
+    $this->assertEqual($update_action, 2, t('Update action set correctly.'));
+    $this->assertEqual($verbose, 1, t('Verbose set correctly.'));
+
+    //test pattens setting
+
+    //
+    $tests = array(
       array('entity' => 'node', 'bundle' => 'page', 'language' => LANGUAGE_NONE, 'expected' => 'contentnode/[node:title]'),
       array('entity' => 'user', 'bundle' => 'user', 'language' => 'en', 'expected' => 'users/[user:name]'),
       array('entity' => 'user', 'bundle' => 'user', 'language' => LANGUAGE_NONE, 'expected' => 'users/[user:name]'),
@@ -103,5 +103,5 @@ class PatternsPathautoTestCase extends PatternRunTestCase {
       $this->assertIdentical($actual, $test['expected'], t("pathauto_pattern_load_by_entity('@entity', '@bundle', '@language') returned '@actual', expected '@expected'", array('@entity' => $test['entity'], '@bundle' => $test['bundle'], '@language' => $test['language'], '@actual' => $actual, '@expected' => $test['expected'])));
     }
   }
-    
+
 }

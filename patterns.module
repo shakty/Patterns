@@ -95,7 +95,7 @@ define('PATTERNS_STATUS_REMOVED', -5); // removed
 
 
 // Add libraries for performing AJAX calls outside forms
-//drupal_add_library('system', 'drupal.ajax'); 
+//drupal_add_library('system', 'drupal.ajax');
 //drupal_add_library('system', 'jquery.form');
 
 
@@ -175,7 +175,7 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
-  
+
 //  $items['admin/patterns/trash/%'] = array(
 //    'title' => 'Move Pattern to Recycle Bin',
 //    'page callback' => 'patterns_db_trash_pattern',
@@ -183,7 +183,7 @@ function patterns_menu() {
 //    'access arguments' => array('administer patterns'),
 //    'type' => MENU_CALLBACK
 //  );
-  
+
   $items['admin/patterns/remove'] = array(
     'title' => 'Remove Pattern',
     'page callback' => 'drupal_get_form',
@@ -191,7 +191,7 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
-  
+
     $items['admin/patterns/refresh'] = array(
     'title' => 'Refresh Patterns',
     'page callback' => 'patterns_io_get_patterns_service',
@@ -518,17 +518,17 @@ function patterns_trash_pattern($form, &$form_state, $pid = NULL) {
     $form_state['redirect'] = 'admin/patterns';
     return $form;
   }
-  
+
   $form['pid'] = array(
     '#type' => 'value',
     '#value' => $pid,
   );
-  
-   
-  $disclaimer = t('Trashed patterns can be repristinated later on.');
+
+
+  $disclaimer = t('Trashed patterns can be restored later on.');
 
   return confirm_form($form, t('Proceed with removing pattern %pattern?', array('%pattern' => $pattern->title)), 'admin/patterns', $disclaimer);
- 
+
 }
 
 /**
@@ -547,7 +547,7 @@ function patterns_trash_pattern_submit($form, &$form_state) {
   else {
     drupal_set_message(t('Pattern succesfully moved into the trash bin.'), 'status');
   }
-  
+
   $form_state['redirect'] = 'admin/patterns';
  }
 

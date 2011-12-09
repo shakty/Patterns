@@ -81,7 +81,7 @@ function patterns_db_save_pattern($pattern, $path, $name) {
   }   
   
   $pattern_data = db_select('patterns', 'p')
-                    ->fields('p', array('pid', 'file', 'updated','status'))
+                    ->fields('p', array('pid', 'file', 'updated', 'status'))
                     ->condition('p.name', $name)
                     ->execute()
                     ->fetchAssoc();

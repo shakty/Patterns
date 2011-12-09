@@ -24,9 +24,9 @@ function color_patterns_actions() {
 
 // Prepare data for processing
 function color_patterns_prepare($action, $tag, &$data = NULL) {
-	if(!isset($data['scheme'])){
-		$data['scheme']='';
-	}
+  if (!isset($data['scheme'])) {
+    $data['scheme'] = '';
+  }
   return patterns_results();
 }
 
@@ -36,7 +36,7 @@ function color_patterns_validate($action, $tag, &$data = NULL) {
   $msg = '';
   foreach ($data['palette'] as $key => $color) {
     if (!preg_match('/^#([a-f0-9]{3}){1,2}$/iD', $color)) {
-      $msg=t('%name must be a valid hexadecimal CSS color value.', array('%name' => $data['palette'][$key]));
+      $msg = t('%name must be a valid hexadecimal CSS color value.', array('%name' => $data['palette'][$key]));
       break;
     }
   }
@@ -46,7 +46,7 @@ function color_patterns_validate($action, $tag, &$data = NULL) {
 // Prepare for valid processing of this type of component
 function color_patterns_build($action, $tag, &$data = NULL, $form_id) {
 
-  return patterns_results(PATTERNS_SUCCESS,   t('Execution successful'), $data);
+  return patterns_results(PATTERNS_SUCCESS,    t('Execution successful'), $data);
 }
 
 // Build a patterns actions and parameters

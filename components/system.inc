@@ -279,7 +279,8 @@ function system_patterns_callbacks($action, $tag, &$data = NULL) {
   }
   elseif ($tag == 'variables') { // Custom functions will do the work.
     $result = array('variables_execute');
-  }else { // Just regular forms.
+  }
+  else { // Just regular forms.
     $desc = system_patterns();
     $result = $desc[$tag][$action];
   }

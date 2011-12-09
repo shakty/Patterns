@@ -90,7 +90,7 @@ function toolbar_patterns_validate($action, $tag, &$data = NULL) {
     foreach ($data['addroles'] as $key => $value) {
       $rid = db_select('role', 'r')
              ->fields('r', array('rid'))
-             ->condition('r.name',$value) 
+             ->condition('r.name', $value)
              ->execute()
              ->fetchField();
       if ($rid == 3) {
@@ -124,7 +124,7 @@ function toolbar_patterns_validate($action, $tag, &$data = NULL) {
     foreach ($data['delroles'] as $key => $value) {
       $rid = db_select('role', 'r')
              ->fields('r', array('rid'))
-             ->condition('r.name',$value) 
+             ->condition('r.name', $value)
              ->execute()
              ->fetchField();
       if ($rid == 3) {
@@ -146,7 +146,8 @@ function toolbar_patterns_validate($action, $tag, &$data = NULL) {
         }
         //delete the "access toolbar" from $data['status']
         $data['status'][$rid] = array_diff($data['status'][$rid], array("access toolbar"));
-      } else {
+      }
+      else {
         $status = PATTERNS_ERR;
         $msg = t('the role does not have any permissions.');
         return patterns_results($status, $msg);
