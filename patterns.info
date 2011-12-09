@@ -23,3 +23,4 @@ files[] = tests/color/patterns.color.test
 files[] = tests/pathauto/patterns.pathauto.test
 files[] = tests/menu/patterns.menu.test
 files[] = tests/node/content.test
+files[] = tests/toolbar/patterns.toolbar.test
