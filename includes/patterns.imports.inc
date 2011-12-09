@@ -385,40 +385,77 @@ function patterns_import_module($form, &$form_state) {
     variable_set('macro_submissions', array());  
     $chosen_forms = $form_state['values']['module_forms'];
     // same loop as above for creating the checkboxes
-    $counter = 0;
-    foreach($actions as $tag => $entry) {
-      $descr = $entry[PATTERNS_INFO];
-      foreach($entry as $action => $forms) { 
-        if($action != PATTERNS_INFO && $action != PATTERNS_FILES) {
-          foreach($forms as $my_form) {
-            $key = "o".$counter;
-            if($chosen_forms[$key]) {
-              // submit and save output
-              $module_form_state = array();
-              $module_form_state['values'] = array();
-              variable_set('macro_submissions', array());
-              // include needed files
-              if(isset($entry[PATTERNS_FILES])) {
-               foreach($entry[PATTERNS_FILES] as $file) {
-                 include_once  $file;
-               }
+    $i=0;
+    
+    // for measuring the perfomance / time, k-best
+    $measure = FALSE;
+    if($measure) {
+     $runs = 10;
+     $k = 3;
+     $start = microtime(TRUE);
+     $j = 0;
+     $min = 10000000;
+    }
+    else {
+      $runs = 1;
+      $k = 1;
+      $j = 0;
+    }
+    
+    while($j<$k) {
+     $j = $j+1;
+     while($i<$runs) {
+      $i = $i+1;
+  
+      $counter = 0;
+      foreach($actions as $tag => $entry) {
+        $descr = $entry[PATTERNS_INFO];
+        foreach($entry as $action => $forms) { 
+          if($action != PATTERNS_INFO && $action != PATTERNS_FILES) {
+            foreach($forms as $my_form) {
+              $key = "o".$counter;
+              if($chosen_forms[$key]) {
+                // submit and save output
+                $module_form_state = array();
+                $module_form_state['values'] = array();
+                variable_set('macro_submissions', array());
+                // include needed files
+                if(isset($entry[PATTERNS_FILES])) {
+                 foreach($entry[PATTERNS_FILES] as $file) {
+                   include_once  $file;
+                 }
+                }
+                $data = array();
+              // call_user_func_array($module_name . "_patterns_prepare", array($action, $tag, &$data));
+              // print var_dump($data);
+              // drupal_set_message($data);
+                drupal_form_submit($my_form, $module_form_state);
+                $my_macro = macro_get_macro();
+                $my_macro = substr($my_macro, 4, strlen($my_macro)-8);
+                $my_macro = "      " . str_replace("\n","\n      ", $my_macro);
+                $yaml_content[$action] .= "  - " . $action .":\n" .
+                                          "      tag: ". $tag ."\n" .
+                                          $my_macro . "\n\n";
+                                         # print var_dump($my_macro);
+                                         # print "<br>";
+
               }
-              drupal_form_submit($my_form, $module_form_state);
-              $my_macro = macro_get_macro();
-              $my_macro = substr($my_macro, 4, strlen($my_macro)-8);
-              $my_macro = "      " . str_replace("\n","\n      ", $my_macro);
-              $yaml_content[$action] .= "  - " . $action .":\n" .
-                                        "      tag: ". $tag ."\n" .
-                                        $my_macro . "\n\n";
-                                        print var_dump($my_macro);
-                                        print "<br>";
+              $counter++;
             }
-            $counter++;
-          }
-        } 
+          } 
+        }
+      }
+  
+     }
+      variable_set('macro_enabled', $previous_macro_enabled);
+      if($measure) {
+       $time = (microtime(TRUE) - $start);
+       $min = $time < $min ? $time : $min;
+       drupal_set_message("testing with " . $runs . " runs, k = ". $j . ", time is: ". $time);
       }
     }
-   variable_set('macro_enabled', $previous_macro_enabled);
+    if($measure) 
+      drupal_set_message("k-best: ". $min);
    
      // creating info section of yaml pattern file
    $yaml = "# YAML ". $modules_with_components[$form_state['values']['module']] ." Pattern\n" .
