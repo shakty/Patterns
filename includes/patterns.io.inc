@@ -20,13 +20,7 @@ function patterns_load_yaml($path, $local = TRUE) {
   }
 
   include_once libraries_get_path('spyc') . '/spyc.php';
-  $pattern = Spyc::YAMLLoad($path);
-
-  if (!patterns_validate_pattern($pattern)) {
-    return FALSE;
-  }
-
-  return $pattern;
+  return Spyc::YAMLLoad($path);
 }
 
 //function patterns_load_string_yaml($source) {
@@ -68,13 +62,13 @@ function patterns_load_xml($path, $local = TRUE) {
 function patterns_load_string_xml($source) {
   $pattern = patterns_from_source($source);
   if (empty($pattern) || $pattern['tag'] != 'pattern') {
+    // TODO: Error reporting.
     return FALSE;
   }
 
   // Rearrange the data in a nice way for each component.
   // Make sure actions are processed differently so order is preserved.
   $pattern = patterns_rearrange_data($pattern);
-
   foreach ($pattern as $key => $values) {
     $pattern[$values['tag']] = $values;
     unset($pattern[$values['tag']]['tag']);
@@ -129,6 +123,7 @@ function patterns_from_source($xml) {
   xml_parser_set_option($parse, XML_OPTION_CASE_FOLDING, 0);
 
   if (!xml_parse_into_struct($parse, $xml, $vals, $index)) {
+    // TODO: Report parsing or other error.
     return FALSE;
   }
 
@@ -147,6 +142,24 @@ function patterns_rearrange_data($pattern) {
       if ($value['tag'] == 'actions') {
         $pattern[$key] = patterns_rearrange_data($value);
         $pattern[$key]['tag'] = 'actions';
+
+        // The refactored version, introduced in 7.x.
+        // TODO: change _patterns_rearrange_data instead.
+        // TODO: this does not actually work yet.
+        $p = &$pattern[$key];
+        foreach ($p as $k => $v) {
+          if (is_string($k)) {
+            continue;
+          }
+          $tag = $v['tag'];
+          if (in_array($tag, array('create', 'modify', 'delete'))){
+            unset($p[$k]['tag']);
+            $p[$k] = array($tag => $p);
+          }
+          else {
+            // TODO: Error reporting: invalid tag, none of {create, modify, delete}.
+          }
+        }
       }
       else {
         $pattern[$key] = _patterns_rearrange_data($value);
@@ -275,7 +288,7 @@ function patterns_load_components() {
  * @return array The array of found patterns.
  */
 function patterns_io_scan_directories() {
-  
+
     // Get a listing of enabled patterns.
     $enabled = array();
 
@@ -306,7 +319,12 @@ function patterns_io_scan_directories() {
 
         // Load and save pattern.
         if ($pattern = $func($file->uri)) {
-          patterns_db_save_pattern($pattern, $file->uri, $file->name);
+          if (patterns_validate_pattern($pattern)) {
+            patterns_db_save_pattern($pattern, $file->uri, $file->name);
+          }
+          else{
+            $errors[] = $file->filename;
+          }
         }
         // @TODO: what to do with this branch?
         else {
@@ -314,7 +332,7 @@ function patterns_io_scan_directories() {
         }
       }
     }
-    
+
   if (!empty($errors)) {
     drupal_set_message(t('Invalid patterns files found') . ':<br/>' . implode('<br/>', $errors) . '<br/>' . t('Make sure that above file(s) are readable and contain valid data.'), 'warning');
   }

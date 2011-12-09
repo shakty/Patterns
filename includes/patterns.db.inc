@@ -51,6 +51,8 @@ function patterns_db_remove_pattern($pid) {
  */
 function patterns_db_save_pattern($pattern, $path, $name) {
 
+  // TODO: title, description, etc. are actually mandatory fields
+  //       in the database, so handle them accordingly.
   // Try to parse the array in two different formats.
   if (isset($pattern['info'])) {
     $title = $pattern['info']['title'];
