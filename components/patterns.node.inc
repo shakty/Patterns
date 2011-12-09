@@ -30,7 +30,8 @@ function node_patterns_prepare($action, $tag, &$data = NULL) {
     if ($action === PATTERNS_CREATE or $action === PATTERNS_MODIFY) {
       if ($data['node_options']) {
         $data['node_options'] = array_values($data['node_options']);
-      } else {
+      }
+      else {
         $data['node_options'] = array('status', 'promote'); // TODO: proper defaults?
       }
     }
@@ -52,7 +53,7 @@ function node_patterns_callbacks($action, $tag, &$data = NULL) {
         'node_type_form',
       );
     }
-    else if($action === PATTERNS_DELETE) {
+    elseif ($action === PATTERNS_DELETE) {
       $result = array(
         'node_type_delete_confirm',
       );
@@ -123,7 +124,8 @@ function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
     if (isset($data['has_body']) && !$data['has_body']) {
       $data['body_label'] = '';
     }
-  }else if ($form_id == 'node_type_delete_confirm') {
+  }
+  elseif ($form_id == 'node_type_delete_confirm') {
     $data['op'] = t('Delete');
     $data['confirm'] = 1;
   }

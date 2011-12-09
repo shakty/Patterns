@@ -16,7 +16,7 @@ actions:
   - create:      
       tag: menu_item
       menu_name: menu-footer-links
-      link_path:http://123.com
+      link_path: http://123.com
       link_title: menu link title
       disable:1
     

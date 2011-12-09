@@ -316,50 +316,55 @@ function _patterns_scan_pattern($pattern) {
         $result['include']++;
       }
       else {
-
-        $resultactions = array();
-        $newactions = array();
-        $section_info[PATTERNS_CREATE] = 0;
-        $section_info[PATTERNS_MODIFY] = 0;
-        $section_info[PATTERNS_DELETE] = 0;
-        foreach ($value as $action => &$data) {
-
-          // Make sure there is only one valid action in each array element.
-          // NOTE: Having additional valid actions will work, but is discouraged,
-          // and therefore undocumented.
-          $found = FALSE;          
-          foreach ($data as $akey => $avalue) {
-            if (!array_key_exists($akey, $valid_actions)) {
-              $result['invalid_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
+        if (!is_array($value)) {
+          $result['empties'][] = ($key === 0) ? 'undefined' : $key; // If the YAML is not loaded correctly you get 0.
+        }
+        else {
+          $resultactions = array();
+          $newactions = array();
+          $section_info[PATTERNS_CREATE] = 0;
+          $section_info[PATTERNS_MODIFY] = 0;
+          $section_info[PATTERNS_DELETE] = 0;
+          foreach ($value as $action => &$data) {
+  
+            if (empty($data)) {
+              $result['empties'][] = $action;
             }
-            else{
-              // Update count;
-              $section_info[$akey] = $section_info[$akey]+1;
-              
-              // Report additional valid actions.
-              if ($found) {
-                $result['extra_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
+            else {
+              // Make sure there is only one valid action in each array element.
+              // NOTE: Having additional valid actions will work, but is discouraged,
+              // and therefore undocumented.
+              $found = FALSE;          
+              foreach ($data as $akey => $avalue) {
+                if (!array_key_exists($akey, $valid_actions)) {
+                  $result['invalid_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
+                }
+                else{
+                  // Update count;
+                  $section_info[$akey] = $section_info[$akey]+1;
+                  
+                  // Report additional valid actions.
+                  if ($found) {
+                    $result['extra_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
+                  }
+                  // Check if 'tag' is present.
+                  if (!isset($avalue['tag']) or !is_string($avalue['tag'])) {
+                    $result['missing_tag'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
+                  }
+                  else {
+                    $newactions[] = array('action' => $akey, 'data' => $avalue);
+                  }
+                  $found = TRUE;
+                }
               }
-              // Check if 'tag' is present.
-              if (!isset($avalue['tag']) or !is_string($avalue['tag'])) {
-                $result['missing_tag'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
-              }
-              else {
-                $newactions[] = array('action' => $akey, 'data' => $avalue);
-              }
-              $found = TRUE;
             }
           }
+          $value = $newactions;
+  
+          $result['other_sections'][$key] =  '(' . PATTERNS_CREATE . ':' . $section_info[PATTERNS_CREATE] . ', ' .
+                                             PATTERNS_MODIFY . ':' . $section_info[PATTERNS_MODIFY] . ', ' .
+                                             PATTERNS_DELETE . ':' . $section_info[PATTERNS_DELETE] . ')';
         }
-        $value = $newactions;
-
-        $result['other_sections'][$key] =  '(' . PATTERNS_CREATE . ':' . $section_info[PATTERNS_CREATE] . ', ' .
-                                           PATTERNS_MODIFY . ':' . $section_info[PATTERNS_MODIFY] . ', ' .
-                                           PATTERNS_DELETE . ':' . $section_info[PATTERNS_DELETE] . ')';
-      }
-
-      if (empty($value)) {
-        $result['empties'][] = ($key === 0) ? 'undefined' : $key; // If the YAML is not loaded correctly you get 0.
       }
     }
   }
