@@ -273,6 +273,13 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_LOCAL_TASK
   );
+  $items['admin/patterns/import/module'] = array(
+    'title' => 'Import from module (experimental)',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('patterns_import_module'),
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_LOCAL_TASK
+  );
 
   // Disable for Now.
   // TODO Check publish/unpublish

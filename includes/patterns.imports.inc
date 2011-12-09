@@ -289,6 +289,281 @@ function patterns_import_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/patterns';
 }
 
+
+/**
+ * Forms to create a yaml file based on a module
+ * longer description:
+ * Displays forms to choose a module (which implements the pattern hooks) and 
+ * the forms which we get from module_patterns,
+ * then submits the forms and captures the form submissions with the Macro module.
+ * From this, yaml file gets generated
+ */
+
+function patterns_import_module($form, &$form_state) {
+ // check if 'step' is undefined and show current step
+ if(!isset($form_state['values']['step']))
+   $form_state['values']['step'] = 1;
+ $step = $form_state['values']['step'];
+ $name = isset($form_state['values']['name']) ?  $form_state['values']['name'] : 'name not set';
+ $form['step'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Pattern Identifier'),
+    '#description' => t('step'),
+    '#value' => t($step),
+    '#disabled' => TRUE,
+ );
+
+ // for all modules, check if hook_patterns() is defined and let the user choose
+ // a module from a radio button form
+ // TODO get all modules instead of only the active if even possible (probably not)
+ $enabled_modules = module_list(); 
+ $modules_with_components = array();
+ // need to load components to be able to check
+ patterns_load_components();
+ foreach ( module_implements('patterns') as $module)
+    array_push($modules_with_components, $module);
+ 
+ // show all modules that implement the hook
+ $form['module'] = array(
+   '#type' => 'radios',
+   '#title' => t('Choose a module to extract the pattern'),
+   //'#default_value' => -1,
+   '#options' => $modules_with_components,
+   '#default_value' => isset($form_state['values']['module']) ? $form_state['values']['module'] : '0',
+   '#disabled' => $step < 2 ? FALSE : TRUE, // disable when chosen
+ );
+ 
+ if($step > 1)  {
+    // now get the forms and save them into $actions
+    $module_name = $modules_with_components[$form_state['values']['module']];
+    $actions = call_user_func($module_name . "_patterns");
+    
+    // get all the forms
+    $module_form_ids = array();
+    $files = array();
+    foreach($actions as $entry) {
+        $files = array_merge(isset($entry[PATTERNS_FILES]) ?  $entry[PATTERNS_FILES] : array(), $files);
+    }
+    
+    // build array of forms for showing as checkboxes
+    // current output per form: <tag> : <descr> '<action>' : <myform>
+    $options = array();
+    $counter = 0;
+    foreach($actions as $tag => $entry) {
+      $descr = $entry[PATTERNS_INFO];
+      foreach($entry as $action => $forms) { 
+        if($action != PATTERNS_INFO && $action != PATTERNS_FILES) {
+          foreach($forms as $my_form) {
+            $key = "o".$counter;
+            $options = array_merge($options, array($key => $tag . ": " . $descr . " '" . $action . "': " . $my_form));
+            $counter++;
+          }
+        } 
+      }
+    }
+
+    // show all forms as checkboxes
+    $form['module_forms'] = array(
+     '#type' => 'checkboxes',
+     '#multiple' => TRUE,
+     '#options' => $options,      
+     '#size' => count($options, COUNT_RECURSIVE), 
+     '#title' => t('Which forms should be inspected?'),
+     '#default_value' => isset($form_state['values']['module_forms']) ? $form_state['values']['module_forms'] : array(),
+     '#disabled' => $step < 3 ? FALSE : TRUE,
+    );
+ }
+
+ if( $step == 3 && !isset($form_state['values']['content'])) {    
+    // get macros of chosen forms
+    $yaml_content = array();
+    $yaml_content[PATTERNS_CREATE] = '';
+    $yaml_content[PATTERNS_MODIFY] = '';
+    $yaml_content[PATTERNS_DELETE] = '';
+    $previous_macro_enabled = variable_get('macro_enabled', FALSE);
+    variable_set('macro_enabled', TRUE);
+    variable_set('macro_submissions', array());  
+    $chosen_forms = $form_state['values']['module_forms'];
+    // same loop as above for creating the checkboxes
+    $i=0;
+    
+    // for measuring the perfomance / time, k-best
+    $measure = FALSE;
+    if($measure) {
+     $runs = 10;
+     $k = 3;
+     $start = microtime(TRUE);
+     $j = 0;
+     $min = 10000000;
+    }
+    else {
+      $runs = 1;
+      $k = 1;
+      $j = 0;
+    }
+    
+    while($j<$k) {
+     $j = $j+1;
+     while($i<$runs) {
+      $i = $i+1;
+  
+      $counter = 0;
+      foreach($actions as $tag => $entry) {
+        $descr = $entry[PATTERNS_INFO];
+        foreach($entry as $action => $forms) { 
+          if($action != PATTERNS_INFO && $action != PATTERNS_FILES) {
+            foreach($forms as $my_form) {
+              $key = "o".$counter;
+              if($chosen_forms[$key]) {
+                // submit and save output
+                $module_form_state = array();
+                $module_form_state['values'] = array();
+                variable_set('macro_submissions', array());
+                // include needed files
+                if(isset($entry[PATTERNS_FILES])) {
+                 foreach($entry[PATTERNS_FILES] as $file) {
+                   include_once  $file;
+                 }
+                }
+                $data = array();
+              // call_user_func_array($module_name . "_patterns_prepare", array($action, $tag, &$data));
+              // print var_dump($data);
+              // drupal_set_message($data);
+                drupal_form_submit($my_form, $module_form_state);
+                $my_macro = macro_get_macro();
+                $my_macro = substr($my_macro, 4, strlen($my_macro)-8);
+                $my_macro = "      " . str_replace("\n","\n      ", $my_macro);
+                $yaml_content[$action] .= "  - " . $action .":\n" .
+                                          "      tag: ". $tag ."\n" .
+                                          $my_macro . "\n\n";
+                                         # print var_dump($my_macro);
+                                         # print "<br>";
+
+              }
+              $counter++;
+            }
+          } 
+        }
+      }
+  
+     }
+      variable_set('macro_enabled', $previous_macro_enabled);
+      if($measure) {
+       $time = (microtime(TRUE) - $start);
+       $min = $time < $min ? $time : $min;
+       drupal_set_message("testing with " . $runs . " runs, k = ". $j . ", time is: ". $time);
+      }
+    }
+    if($measure) 
+      drupal_set_message("k-best: ". $min);
+   
+     // creating info section of yaml pattern file
+   $yaml = "# YAML ". $modules_with_components[$form_state['values']['module']] ." Pattern\n" .
+         "\n" .
+         "info:\n" .
+         "  title: \n" .
+         "  description: " . 
+              "automatically generated Pattern file from following forms"; #: ";
+   //foreach($options as $option)
+   // $yaml .= $option . ", ";
+   //$yaml = substr($yaml, 0, strlen($yaml)-3);
+   $yaml .= "\n" .
+         "  author: \n" .
+         "  category: ". $modules_with_components[$form_state['values']['module']] ."\n" .
+         "  version: 1.0\n" .
+         "  core: 7.x\n" .
+         "  author_email: \n" .
+         "  author_website: \n" .
+         "\n" .
+         "actions:\n" .
+         "";
+   // concatenating the actions
+   $yaml .= $yaml_content[PATTERNS_CREATE];
+   $yaml .= $yaml_content[PATTERNS_MODIFY];
+   $yaml .= $yaml_content[PATTERNS_DELETE];
+ }
+ 
+ // show pattern import form
+ if($step > 2) {
+    $def_dir = patterns_config_get_files_dir();
+    
+    if(!isset($yaml))
+      $yaml = $form_state['values']['content'];
+    $form['name'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Pattern Identifier'),
+      '#description' => t('Machine readable name for the pattern. The actual title should be included in the pattern itself.'),
+      '#required' => TRUE,
+    );
+    
+    $form['content'] = array(
+      '#type' => 'textarea',
+      '#rows' => 25,
+      '#title' => t('Enter Pattern Source Code'),
+      '#default_value' => $yaml,
+      '#description' => t('Imported patterns are not executed until you run them manually.'),
+    );
+    
+    // TODO: transform in a FILE form
+    $form['destination'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Destination'),
+      '#description' => t('Pattern will be saved in this directory. Must be writable. Default dir: @dir', array('@dir' => $def_dir)),
+      '#default_value' => $def_dir,
+      '#required' => TRUE,
+    );
+ }
+ 
+ 
+ if($step <= 2) {
+   $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Next Step'),
+   );
+   $form['#validate'][] = 'patterns_import_module_validate';
+   $form['#submit'][] = 'patterns_import_module_submit';
+ }
+ else if($step > 2)  { // form elements needed to import yaml file    
+   $form['submit'] = array(
+     '#type' => 'submit',
+     '#value' => t('Import')
+   );
+   $form['#validate'][] = 'patterns_import_validate';
+   $form['#submit'][] = 'patterns_import_submit';
+ }
+
+ return $form;
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function patterns_form_alter(&$form, $form_state, $form_id) {
+      // Add the record callback on submit and delete all others
+      if ($form_id != 'macro_import_macro' && variable_get('macro_enabled', FALSE)) {
+        $form['#submit'] = array();
+        $form['#submit'][] = 'macro_record_macro';
+      }
+
+}
+
+/**
+ * validation function for import_module_form
+ * checks in which step we are and puts the step counter up and sets the rebuild flag
+ */
+function patterns_import_module_validate($form, &$form_state) {
+ $form_state['rebuild'] = TRUE;
+ $form_state['values']['step'] = $form_state['values']['step']+1;
+
+ return TRUE;
+}
+/**
+ * Extracts all possible patterns from the given module
+ */
+function patterns_import_module_submit($form, &$form_state) {
+
+}
+
 /**
  * Helper function to be called in one of the import validation handlers.
  */
