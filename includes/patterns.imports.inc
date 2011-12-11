@@ -303,9 +303,9 @@ function patterns_import_module($form, &$form_state) {
  // check if 'step' is undefined and show current step
  if(!isset($form_state['values']['step']))
    $form_state['values']['step'] = 1;
- $step = $form_state['values']['step'];
- $name = isset($form_state['values']['name']) ?  $form_state['values']['name'] : 'name not set';
- $form['step'] = array(
+   $step = $form_state['values']['step'];
+   $name = isset($form_state['values']['name']) ?  $form_state['values']['name'] : 'name not set';
+   $form['step'] = array(
     '#type' => 'textfield',
     '#title' => t('Pattern Identifier'),
     '#description' => t('step'),
@@ -315,7 +315,6 @@ function patterns_import_module($form, &$form_state) {
 
  // for all modules, check if hook_patterns() is defined and let the user choose
  // a module from a radio button form
- // TODO get all modules instead of only the active if even possible (probably not)
  $enabled_modules = module_list(); 
  $modules_with_components = array();
  // need to load components to be able to check
@@ -352,7 +351,7 @@ function patterns_import_module($form, &$form_state) {
     foreach($actions as $tag => $entry) {
       $descr = $entry[PATTERNS_INFO];
       foreach($entry as $action => $forms) { 
-        if($action != PATTERNS_INFO && $action != PATTERNS_FILES) {
+        if($action != PATTERNS_INFO && $action != PATTERNS_FILES && $action != PATTERNS_CREATE && $action != PATTERNS_DELETE) {
           foreach($forms as $my_form) {
             $key = "o".$counter;
             $options = array_merge($options, array($key => $tag . ": " . $descr . " '" . $action . "': " . $my_form));
@@ -385,7 +384,6 @@ function patterns_import_module($form, &$form_state) {
     variable_set('macro_submissions', array());  
     $chosen_forms = $form_state['values']['module_forms'];
     // same loop as above for creating the checkboxes
-    $i=0;
     
     // for measuring the perfomance / time, k-best
     $measure = FALSE;
@@ -402,6 +400,7 @@ function patterns_import_module($form, &$form_state) {
       $j = 0;
     }
     
+    $i=0;    
     while($j<$k) {
      $j = $j+1;
      while($i<$runs) {
@@ -411,34 +410,41 @@ function patterns_import_module($form, &$form_state) {
       foreach($actions as $tag => $entry) {
         $descr = $entry[PATTERNS_INFO];
         foreach($entry as $action => $forms) { 
-          if($action != PATTERNS_INFO && $action != PATTERNS_FILES) {
+          if($action != PATTERNS_INFO && $action != PATTERNS_FILES && $action != PATTERNS_CREATE && $action != PATTERNS_DELETE) {
             foreach($forms as $my_form) {
               $key = "o".$counter;
               if($chosen_forms[$key]) {
-                // submit and save output
-                $module_form_state = array();
-                $module_form_state['values'] = array();
-                variable_set('macro_submissions', array());
                 // include needed files
                 if(isset($entry[PATTERNS_FILES])) {
                  foreach($entry[PATTERNS_FILES] as $file) {
                    include_once  $file;
                  }
                 }
-                $data = array();
-              // call_user_func_array($module_name . "_patterns_prepare", array($action, $tag, &$data));
-              // print var_dump($data);
-              // drupal_set_message($data);
-                drupal_form_submit($my_form, $module_form_state);
-                $my_macro = macro_get_macro();
-                $my_macro = substr($my_macro, 4, strlen($my_macro)-8);
-                $my_macro = "      " . str_replace("\n","\n      ", $my_macro);
-                $yaml_content[$action] .= "  - " . $action .":\n" .
-                                          "      tag: ". $tag ."\n" .
-                                          $my_macro . "\n\n";
-                                         # print var_dump($my_macro);
-                                         # print "<br>";
+                // check if we get arguments for several runs
+                $loop = FALSE;
+                if(function_exists($module_name . "_patterns_get_arguments"))
+                    $arguments = call_user_func_array($module_name . "_patterns_get_arguments", array($action, $tag, $my_form,&$loop));
+                if(!$loop) {
+                  $arguments = array($arguments);
+                }
+                  
+                foreach($arguments as $arguments_element) {
+                 // submit and save output
+                 $module_form_state = array();
+                 $module_form_state['values'] = array();
+                 variable_set('macro_submissions', array());
+                 
+                 $module_form_state['build_info']['args'] = $arguments_element;
+                 drupal_form_submit($my_form, $module_form_state);
 
+                 $my_macro = macro_get_macro();
+                 
+                 $my_macro = substr($my_macro, 4, strlen($my_macro)-8);
+                 $my_macro = "      " . str_replace("\n","\n      ", $my_macro);
+                 $yaml_content[$action] .= "  - " . $action .":\n" .
+                                           "      tag: ". $tag ."\n" .
+                                           $my_macro . "\n\n";
+                }
               }
               $counter++;
             }
@@ -544,7 +550,6 @@ function patterns_form_alter(&$form, $form_state, $form_id) {
         $form['#submit'] = array();
         $form['#submit'][] = 'macro_record_macro';
       }
-
 }
 
 /**
