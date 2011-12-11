@@ -193,7 +193,7 @@ function _patterns_analyze_patternscan($patternscan) {
   $msgs = array();
 
   if ($patternscan['info'] == 0) {
-    $msgs[] = t('Info section is missing.');
+    $msgs[] = t('The info section is missing.');
   }
 
   if ($patternscan['info'] > 1) {
