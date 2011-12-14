@@ -73,7 +73,7 @@ function menu_patterns_prepare($action, $tag, &$data = NULL) {
         elseif (is_numeric($data['parent'])   && db_query("SELECT mlid FROM {menu_links} WHERE menu_name = :menu AND mlid = :mlid", array('menu' => $data['menu_name'], 'mlid' => $data['parent']))->fetchField()) {
           $data['parent'] = $data['menu_name'] . ':' . $data['parent'];
         }
-        // @TODO this may not work if there is more then one menu item with the same title within the same menu
+        // @TODO this may not work if there is more than one menu item with the same title within the same menu
         elseif (is_string($data['parent']) && $plid = db_query("SELECT mlid FROM {menu_links} WHERE menu_name = :menu AND link_title = :title", array('menu' => $data['menu_name'], 'title' => $data['parent']))->fetchField()) {
           $data['parent'] = $data['menu_name'] . ':' . $plid;
         }
@@ -134,8 +134,21 @@ function menu_patterns_validate($action, $tag, &$data = NULL) {
 
   }
   elseif ($tag == "menu_item") {
-
-    if ($action == PATTERNS_CREATE) {
+   if($action == PATTERNS_MODIFY && !isset($data['mlid'])){
+   	if (empty($data['menu_name_old'])) {
+        $status = PATTERNS_ERR;
+        $msg =  t('"menu_name_old" or "mlid" is required.');
+      }
+      elseif (empty($data['link_path_old'])) {
+        $status = PATTERNS_ERR;
+        $msg =  t('"link_path_old" or "mlid" is required.');
+      }
+      elseif (empty($data['link_title_old'])) {
+        $status = PATTERNS_ERR;
+        $msg =  t('"link_title_old" or "mlid" is required.');
+      }
+   }
+   if($action !== PATTERNS_DELETE || ($action == PATTERNS_DELETE && !isset($data['mlid']))){
       if (empty($data['menu_name'])) {
         $status = PATTERNS_ERR;
         $msg =  t('"menu_name" is required.');
@@ -148,13 +161,7 @@ function menu_patterns_validate($action, $tag, &$data = NULL) {
         $status = PATTERNS_ERR;
         $msg =  t('"title" is required.');
       }
-    }
-    elseif ($action == PATTERNS_MODIFY || $action == PATTERNS_DELETE) {
-      if (empty($data['mlid'])) {
-        $status = PATTERNS_ERR;
-        $msg = t('"menu link id" is required.');
-      }
-    }
+   }
     if (!empty($data['parent']) && $action !== PATTERNS_DELETE) {
       list($menu_name, $mlid) = explode(':', $data['parent']);
       if ($mlid != 0 && !db_query("SELECT count(*) FROM {menu_links} WHERE menu_name = :menu AND mlid = :mlid", array('menu' => $menu_name, 'mlid' => $mlid))->fetchField()) {
@@ -193,11 +200,17 @@ function menu_patterns_params($action, $form_id, &$data = NULL, &$a) {
         $result = array('add', NULL, menu_load($data['menu_name']));
       }
       elseif ($action == PATTERNS_MODIFY) {
-        $result = array('edit', menu_link_load($data['mlid']), NULL);
+      	if(!isset($data['mlid'])){
+      		$mlid= db_query("SELECT mlid FROM {menu_links} WHERE menu_name = :menu and link_path=:path and link_title=:title", array('menu' => $data['menu_name_old'],'path' => $data['link_path_old'],'title' => $data['link_title_old']))->fetchField();
+      	}
+      	 $result = array('edit', menu_link_load($mlid), NULL);
       }
       break;
     case 'menu_item_delete_form':
-      $result = array(menu_link_load($data['mlid']));
+    if(!isset($data['mlid'])){
+      		$mlid= db_query("SELECT mlid FROM {menu_links} WHERE menu_name = :menu and link_path=:path and link_title=:title", array('menu' => $data['menu_name'],'path' => $data['link_path'],'title' => $data['link_title']))->fetchField();
+    	}
+    	$result = array(menu_link_load($mlid));
       break;
   }
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);

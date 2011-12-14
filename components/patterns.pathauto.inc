@@ -3,8 +3,9 @@
  * @file
  * Patterns component for pathauto.
  */
-function pathauto_patterns() {
+function path_patterns() {
   $files = array('sites/all/modules/pathauto/pathauto.admin.inc');
+  $filespath = array('modules/path/path.admin.inc');
 
   $actions['pathauto'] = array(
     'descr' => t('Setting pathauto'),
@@ -16,7 +17,7 @@ function pathauto_patterns() {
     PATTERNS_CREATE => array('path_admin_form'),
     PATTERNS_MODIFY => array('path_admin_form'),
     PATTERNS_DELETE => array('path_admin_delete_confirm'),
-    PATTERNS_FILES => $files,
+    PATTERNS_FILES => $filespath,
   );
   $actions['pathauto_patterns'] = array(
     'descr' => t('setting patterns for auto URLs aliases'),
@@ -28,7 +29,7 @@ function pathauto_patterns() {
 
 }
 
-function pathauto_patterns_actions() {
+function path_patterns_actions() {
   return array(
     'pathauto_admin_form' => t('Pathauto: Create/edit url aliases'),
     'path_admin_delete_confirm' => t('Pathauto: Delit url aliases'),
@@ -39,7 +40,7 @@ function pathauto_patterns_actions() {
 }
 
 // Prepare data for processing
-function pathauto_patterns_prepare($action, $tag, &$data = NULL) {
+function path_patterns_prepare($action, $tag, &$data = NULL) {
   $datacopy = $data;
   if ($tag == "pathauto_patterns" || $tag == "pathauto") {
     foreach ($datacopy as $key => $value) {
@@ -82,7 +83,7 @@ function pathauto_patterns_prepare($action, $tag, &$data = NULL) {
 }
 
 // Validate the values for an action before running the pattern
-function pathauto_patterns_validate($action, $tag, &$data = NULL) {
+function path_patterns_validate($action, $tag, &$data = NULL) {
   $status = PATTERNS_SUCCESS;
   $msg = '';
   if ($tag == 'url_alias' && ( $action == PATTERNS_MODIFY || $action == PATTERNS_DELETE)) {
@@ -110,7 +111,7 @@ function pathauto_patterns_validate($action, $tag, &$data = NULL) {
 }
 
 // Prepare for valid processing of this type of component
-function pathauto_patterns_build($action, $tag, &$data = NULL, $form_id) {
+function path_patterns_build($action, $tag, &$data = NULL, $form_id) {
   if ($data['pathauto_reset']) {
     $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'pathauto_%'");
     while ($var = db_fetch_array($result)) {
@@ -119,14 +120,16 @@ function pathauto_patterns_build($action, $tag, &$data = NULL, $form_id) {
     cache_clear_all('variables', 'cache');
     return;
   }
-
-  module_load_include('inc', 'pathauto', 'pathauto.admin');
+if($tag != 'url_alias'){
+	module_load_include('inc', 'pathauto', 'pathauto.admin');
+}
+  
   module_load_include('inc', 'path', 'path.admin');
   return patterns_results(PATTERNS_SUCCESS,   t('Execution successful'), $data);
 }
 
 // Build a patterns actions and parameters
-function pathauto_patterns_params($action, $form_id, &$data = NULL, &$a) {
+function path_patterns_params($action, $form_id, &$data = NULL, &$a) {
   if ($form_id == "path_admin_form" && $action == PATTERNS_MODIFY) {
     $pid = $data['pid'];
     $path = db_query("SELECT * FROM {url_alias} WHERE pid = :pid", array('pid' => $data['pid']))->fetchAll();
@@ -146,14 +149,14 @@ function pathauto_patterns_params($action, $form_id, &$data = NULL, &$a) {
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
 
-function pathauto_patterns_cleanup($action, $tag, &$data = NULL) {
+function path_patterns_cleanup($action, $tag, &$data = NULL) {
   //unset($_POST['op']);
   return patterns_results();
 }
 
 // Return which callback functions to actually use.
-function pathauto_patterns_callbacks($action, $tag, &$data = NULL) {
-  $desc = pathauto_patterns();
+function path_patterns_callbacks($action, $tag, &$data = NULL) {
+  $desc = path_patterns();
   $result = $desc[$tag][$action];
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }

@@ -15,5 +15,7 @@ actions:
 
   - delete:      
       tag: menu_item
-      mlid:361
+      menu_name: menu-footer-links
+      link_path:http://123.com
+      link_title: menu link title changed
     

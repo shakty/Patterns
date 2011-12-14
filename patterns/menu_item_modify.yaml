@@ -15,7 +15,9 @@ actions:
 
   - modify:      
       tag: menu_item
-      mlid:361
+      menu_name_old: menu-footer-links
+      link_path_old:http://123.com
+      link_title_old:menu link title
       menu_name: menu-footer-links
       link_path:http://123.com
       link_title: menu link title changed
