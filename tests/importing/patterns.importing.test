@@ -8,7 +8,7 @@ class PatternsImportTestCase extends PatternRunTestCase {
 
   const IMPORTING_TESTS_DIR     = 'tests/importing/';
   const REMOTE_URL_IMPORT       = 'http://www.shakty.org/patterns/importing.yaml';
-  
+
   public static function getInfo() {
     return array(
       'name' => 'Importing files',
@@ -26,81 +26,81 @@ class PatternsImportTestCase extends PatternRunTestCase {
 
     $name = 'Test_Import_From_Source';
     $destination = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/tests/importing/imported/';
-    
+
     // Fill the form.
     $edit = array();
 
     $edit['name'] = $name;
     $edit['content'] = $this->loadPattern('importing.yaml', self::IMPORTING_TESTS_DIR);
     $edit['destination'] = $destination;
-        
-     // Post the form.
+
+    // Post the form.
     $this->drupalPost('admin/patterns/import/source', $edit, t('Import'));
 
     $this->checkImportedFile($name, $destination);
   }
-  
+
   public function testImportFileFromFile() {
 
     $name = 'Test_Import_From_File';
     $destination = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/tests/importing/imported/';
-    
+
     // Fill the form.
     $edit = array();
 
     $edit['name'] = $name;
     $edit['files[pattern_uri]'] = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/' . self::IMPORTING_TESTS_DIR . 'importing.yaml';
     $edit['destination'] = $destination;
-    
-     // Post the form.
+
+    // Post the form.
     $this->drupalPost('admin/patterns/import/file', $edit, t('Import'));
-    
-    
-     $this->checkImportedFile($name, $destination);
+
+
+    $this->checkImportedFile($name, $destination);
   }
-  
+
   public function testImportFileFromURL() {
 
     $name = 'Test_Import_From_URL';
     $destination = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/tests/importing/imported/';
-    
+
     // Fill the form.
     $edit = array();
 
     $edit['name'] = $name;
     $edit['pattern_uri'] = self::REMOTE_URL_IMPORT;
     $edit['destination'] = $destination;
-    
-     // Post the form.
+
+    // Post the form.
     $this->drupalPost('admin/patterns/import/url', $edit, t('Import'));
-    
+
     $this->checkImportedFile($name, $destination);
-    
+
   }
 
   private function checkImportedFile($name, $destination) {
-    $this->assertNoText('Errors on the name of the pattern','Errors in the name of the patterns found');
+    $this->assertNoText('Errors on the name of the pattern', 'Errors in the name of the patterns found');
     $this->assertNoText('Destination folder does not exist or is not writable', 'Destination folder exists: ' . $destination);
-    
+
     //$p = patterns_db_load_pattern_from_name($name);
-    
+
     $ps = db_select('patterns', 'p')
                     ->fields('p')
                     ->condition('p.name', $name)
                     ->execute()
                     ->fetchAll(); // return array of Std objs
-  
-    
-    $this->assertEqual(count($ps), 1, t('One imported pattern found'));                 
-    $p = $ps[0];                
-                    
-    $this->assertNotNull($p,'Imported pattern found in the db');
+
+
+    $this->assertEqual(count($ps), 1, t('One imported pattern found'));
+    $p = $ps[0];
+
+    $this->assertNotNull($p, 'Imported pattern found in the db');
     $this->assertEqual($p->name, $name, 'Imported pattern has the correct name');
-    
-    
+
+
     // CleanUp
-    $deleted = file_unmanaged_delete($destination.$name.'.yaml');
-    $this->assertTrue($deleted,'Test files deleted');
+    $deleted = file_unmanaged_delete($destination . $name . '.yaml');
+    $this->assertTrue($deleted, 'Test files deleted');
   }
-  
+
 } // Class

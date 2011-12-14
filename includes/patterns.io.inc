@@ -20,13 +20,7 @@ function patterns_load_yaml($path, $local = TRUE) {
   }
 
   include_once libraries_get_path('spyc') . '/spyc.php';
-  $pattern = Spyc::YAMLLoad($path);
-
-  if (!patterns_validate_pattern($pattern)) {
-    return FALSE;
-  }
-
-  return $pattern;
+  return Spyc::YAMLLoad($path);
 }
 
 //function patterns_load_string_yaml($source) {
@@ -68,13 +62,13 @@ function patterns_load_xml($path, $local = TRUE) {
 function patterns_load_string_xml($source) {
   $pattern = patterns_from_source($source);
   if (empty($pattern) || $pattern['tag'] != 'pattern') {
+    // TODO: Error reporting.
     return FALSE;
   }
 
   // Rearrange the data in a nice way for each component.
   // Make sure actions are processed differently so order is preserved.
   $pattern = patterns_rearrange_data($pattern);
-
   foreach ($pattern as $key => $values) {
     $pattern[$values['tag']] = $values;
     unset($pattern[$values['tag']]['tag']);
@@ -129,6 +123,7 @@ function patterns_from_source($xml) {
   xml_parser_set_option($parse, XML_OPTION_CASE_FOLDING, 0);
 
   if (!xml_parse_into_struct($parse, $xml, $vals, $index)) {
+    // TODO: Report parsing or other error.
     return FALSE;
   }
 
@@ -147,6 +142,24 @@ function patterns_rearrange_data($pattern) {
       if ($value['tag'] == 'actions') {
         $pattern[$key] = patterns_rearrange_data($value);
         $pattern[$key]['tag'] = 'actions';
+
+        // The refactored version, introduced in 7.x.
+        // TODO: change _patterns_rearrange_data instead.
+        // TODO: this does not actually work yet.
+        $p = &$pattern[$key];
+        foreach ($p as $k => $v) {
+          if (is_string($k)) {
+            continue;
+          }
+          $tag = $v['tag'];
+          if (in_array($tag, array('create', 'modify', 'delete'))){
+            unset($p[$k]['tag']);
+            $p[$k] = array($tag => $p);
+          }
+          else {
+            // TODO: Error reporting: invalid tag, none of {create, modify, delete}.
+          }
+        }
       }
       else {
         $pattern[$key] = _patterns_rearrange_data($value);
@@ -267,19 +280,15 @@ function patterns_load_components() {
 }
 
 /**
- * Loads the available patterns.
+ * Scan the directories looking for patterns files.
  *
  * Checks inside the directories defined by patterns_config_get_paths().
  * @see patterns_config_get_paths
  *
- * @param $reset
- *
- * @return array The array of available patterns.
+ * @return array The array of found patterns.
  */
-function patterns_get_patterns($reset = TRUE) {
-  patterns_load_components();
+function patterns_io_scan_directories() {
 
-  if ($reset || !variable_get('patterns_loaded', FALSE)) {
     // Get a listing of enabled patterns.
     $enabled = array();
 
@@ -310,24 +319,49 @@ function patterns_get_patterns($reset = TRUE) {
 
         // Load and save pattern.
         if ($pattern = $func($file->uri)) {
-          patterns_db_save_pattern($pattern, $file->uri, $file->name);
+          if (patterns_validate_pattern($pattern)) {
+            patterns_db_save_pattern($pattern, $file->uri, $file->name);
+          }
+          else{
+            $errors[] = $file->filename;
+          }
         }
+        // @TODO: what to do with this branch?
         else {
           $errors[] = $file->filename;
         }
       }
     }
 
-    variable_set('patterns_loaded', time());
+  if (!empty($errors)) {
+    drupal_set_message(t('Invalid patterns files found') . ':<br/>' . implode('<br/>', $errors) . '<br/>' . t('Make sure that above file(s) are readable and contain valid data.'), 'warning');
   }
 
+    variable_set('patterns_loaded', time());
+}
 
-  $result = db_query('SELECT * FROM {patterns}');
+/**
+ * Loads all the available patterns from the database.
+ *
+ * @param $reset
+ *
+ * @return array The array of available patterns.
+ */
+function patterns_get_patterns($reset = TRUE) {
+  patterns_load_components();
 
+  if ($reset || !variable_get('patterns_loaded', FALSE)) {
+    patterns_io_scan_directories();
+  }
+
+  $result = db_query('SELECT * FROM {patterns} ORDER BY status');
 
   $messages = array();
   $patterns = array();
-
+  $patterns[PATTERNS_STATUS_OK] = array();
+  $patterns[PATTERNS_STATUS_REMOVED] = array();
+  
+  
   foreach ($result as $pattern) {
     // Skip pattern if its file is missing.
     if (!is_file($pattern->file)) {
@@ -335,22 +369,31 @@ function patterns_get_patterns($reset = TRUE) {
     }
 
     // Skip pattern if loading failed and report that to the user.
-    if (in_array($pattern->file, $errors)) {
-      $messages[] = t("Pattern couldn't be loaded from the file '%file'", array('%file' => $pattern->file));
-      continue;
+//    if (in_array($pattern->file, $errors)) {
+//      $messages[] = t("Pattern couldn't be loaded from the file '%file'", array('%file' => $pattern->file));
+//      continue;
+//    }
+
+    $status = $pattern->status;
+    if (in_array($status, array(PATTERNS_STATUS_OK, PATTERNS_STATUS_ENABLED, PATTERNS_STATUS_INVALID))) {
+      $status = PATTERNS_STATUS_OK;
     }
-
-    $patterns[$pattern->pid] = $pattern;
+    else {
+       $status = PATTERNS_STATUS_REMOVED;
+    }
+    
+    $patterns[$status][$pattern->pid] = $pattern;
     $data = unserialize($pattern->pattern);
-    $patterns[$pattern->pid]->pattern = $data;
-    $patterns[$pattern->pid]->info = $data['info'];
+    $patterns[$status][$pattern->pid]->pattern = $data;
+    $patterns[$status][$pattern->pid]->info = $data['info'];
+
   }
 
-  if (!empty($messages)) {
-    drupal_set_message(implode('<br/>', $messages) . '<br/>' . t('Make sure that above file(s) are readable and contain valid data.'), 'error');
-  }
-
-  return $patterns;
+//  if (!empty($messages)) {
+//    drupal_set_message(implode('<br/>', $messages) . '<br/>' . t('Make sure that above file(s) are readable and contain valid data.'), 'error');
+//  }
+    
+   return $patterns;
 }
 
 /**
@@ -361,7 +404,7 @@ function patterns_io_get_patterns_service($type = 'ajax') {
   if ($type == 'ajax') {
     $patterns = patterns_get_patterns();
     $output = '<div id="all_patterns_div"><strong>last update: </strong>' . date(DATE_RFC822);
-    $output .= theme('patterns_list', array('patterns' => $patterns, 'invalid' => array()));
+    $output .= theme('patterns_list', $patterns);
     $output .= '</div>';
 
     print $output;
@@ -417,6 +460,11 @@ function _patterns_io_is_patterns_dir_ready($patterns_files_dir = '') {
  */
 function patterns_io_save_pattern($content, $name, $format = 'yaml', $dir = NULL) {
 
+  if (!patterns_validate_pattern($content)) {
+    drupal_set_message(t("Pattern '%name' could not be saved. Make sure edited code is well-formed.", array('%name' => $name)), 'error');
+    return FALSE;
+  }
+  
   if (empty($dir)) {
     // System Patterns directory.
     $dir = patterns_config_get_files_dir();
@@ -429,11 +477,11 @@ function patterns_io_save_pattern($content, $name, $format = 'yaml', $dir = NULL
         
       // Load and save pattern.
       $load_func = 'patterns_load_' . $format;
-
+      
       if ($pattern = $load_func($path)) {
         patterns_db_save_pattern($pattern, $path, $name);
         drupal_set_message(t('Pattern %name was saved in %path.', array('%name' => $name, 
-                                                                  '%path' => $path,
+                                                                        '%path' => $path,
         )));
         // Not for now.
         //_patterns_clear_failed_edit();

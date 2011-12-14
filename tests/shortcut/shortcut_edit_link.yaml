@@ -1,0 +1,18 @@
+# YAML Shortcut Pattern
+# QScience
+
+info:
+  title: edit a shortcut link (modify)
+  description: change the shortcut link
+  author: Rui
+  category: Shortcut
+  version: 1.0
+  core: 7.x
+  author_email: xrfind@gmail.com
+
+actions:
+  - modify:
+      tag: shortcut_link
+      menu_link_id: 405
+      new_link_title: link_nodadd
+      new_link_path: node/add

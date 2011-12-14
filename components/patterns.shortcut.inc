@@ -84,12 +84,6 @@ function shortcut_patterns_prepare($action, $tag, &$data = NULL) {
   if ($tag == 'shortcut_set_user') {
     $data['searchtitle'] = $data['name'];
     $data['account'] = NULL;
-    //this form have the third parm:$account, follow code provide it.
-    if(isset($data['user'])) {
-      module_load_include('module', 'user');
-      $data['account'] = user_load_by_name( $data['user']);
-      //drupal_set_message(t('the %acc is dfldjdkfdld',array('%acc' =>$data['account']->name)));
-    } 
   }
 
   // for link
@@ -152,7 +146,19 @@ function shortcut_patterns_validate($action, $tag, &$data = NULL) {
         $data['set'] = $set;
         $data['new'] = $data['name'];
       }
+    } 
+    if ($tag =='shortcut_set_user') {
+      //this form have the third parm:$account, follow code provide it.
+      if(isset($data['user'])) {
+        module_load_include('module', 'user');
+        if(($data['account'] = user_load_by_name( $data['user'])) == FALSE) {
+          $status = PATTERNS_ERR;
+          $msg = 'Shortcut Error:there is no such a user.';
+          return patterns_results($status, $msg);
+        }
+      }
     }
+
   }
     
   return patterns_results($status, $msg);

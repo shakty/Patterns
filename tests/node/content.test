@@ -88,7 +88,7 @@ class PatternsNodeTestCase extends PatternRunTestCase {
     parent::runFile('content_modify.yaml', 'Content Type (modify)', PatternsNodeTestCase::NODE_TESTS_DIR);
 
     // Expected messages.
-    $this->assertUniqueText(t('The content type Test Content Type has been updated.'));
+    $this->assertUniqueText(t('The content type Test Content Type2 has been updated.'));
 
     // The content type should exist with the right values.
     $node_type = db_select('node_type', 'n')

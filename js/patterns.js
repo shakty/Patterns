@@ -23,7 +23,7 @@ window.onload = function() {
 		if (refresh) {	
 			refresh.onclick = function() {
 				if (idx === -1) {
-					alert('Patterns could not recognize the url of the web-site. Cannot refresh');
+					alert(Drupal.t('Patterns could not recognize the url of the website. Cannot refresh.'));
 					return;
 				}
 				document.getElementById('all_patterns_div').innerHTML = '...refreshing...';

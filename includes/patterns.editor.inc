@@ -214,6 +214,19 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
     $extension = pathinfo($pattern->file, PATHINFO_EXTENSION);
   }
 
+  if ($pattern->status >= 0) {
+    $validation = 'This is a valid pattern';
+  }
+  elseif ($pattern->status === PATTERNS_STATUS_INVALID) {
+    $validation = 'This pattern is marked as NOT valid';
+  }
+  elseif ($pattern->status === PATTERNS_STATUS_REMOVED) {
+    $validation = 'This pattern is marked as REMOVED.';
+  }
+  else {
+    $validation = 'This pattern has not been validated yet.';
+  }
+  
   $form['name'] = array(
     '#type' => 'value',
     '#value' => $pattern->name,
@@ -225,7 +238,7 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
   );
 
   $form['validation_result'] = array(
-    '#markup' => 'This pattern has not been validated yet.',
+    '#markup' => '<strong>' . $validation . '</strong>',
     '#prefix' => '<div id="validation_result">',
     '#suffix' => '</div>',
   );

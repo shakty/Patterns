@@ -13,7 +13,7 @@ function taxonomy_patterns() {
   $actions['vocabulary'] = array(
     PATTERNS_INFO => t('Create/Modify/Delete Taxonomy Vocabularies'),
     PATTERNS_CREATE => array('taxonomy_form_vocabulary'),
-    PATTERNS_MODIFY => array('taxonomy_form_vocabulary'),
+    PATTERNS_MODIFY => array('taxonomy_form_vocabulary','taxonomy_form_vocabulary'),
     PATTERNS_DELETE => array('taxonomy_vocabulary_confirm_delete'),
     PATTERNS_FILES => array('modules/taxonomy/taxonomy.admin.inc'),
   );
@@ -23,6 +23,12 @@ function taxonomy_patterns() {
     PATTERNS_CREATE => array('taxonomy_form_term'),
     PATTERNS_MODIFY => array('taxonomy_form_term'),
     PATTERNS_DELETE => array('taxonomy_term_confirm_delete'),
+    PATTERNS_FILES => array('modules/taxonomy/taxonomy.admin.inc'),
+  );
+  
+  $actions['vocabulary_extract_all']  = array(
+    PATTERNS_INFO => t('Create/Modify/Delete Taxonomy Vocabularies'),
+    PATTERNS_MODIFY => array('taxonomy_form_vocabulary'),
     PATTERNS_FILES => array('modules/taxonomy/taxonomy.admin.inc'),
   );
 
@@ -37,6 +43,30 @@ function taxonomy_patterns_actions() {
     'taxonomy_form_term' => t('Taxonomy: Add or edit a term to a vocabulary'),
     'taxonomy_vocabulary_confirm_delete' => t('Taxonomy: Delete a vocabulary'),
   );
+}
+
+// returns arguments needed for the forms when processing automatically
+// $loop is set if we want to extract all values
+function taxonomy_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
+  static $i = -1;
+  $i++;
+  $vocabulary = taxonomy_get_vocabularies();
+ 
+  if($tag == 'vocabulary') {
+    if($action == PATTERNS_MODIFY) {
+      if($form_id == 'taxonomy_form_vocabulary') {
+        return array(array_pop($vocabulary));
+      }
+    }
+  }
+  else if($tag == 'vocabulary_extract_all') {
+    $loop = TRUE;
+    $return = array();
+    foreach($vocabulary as $voc) {
+      array_push($return, array($voc));
+    }
+    return $return;
+  }
 }
 
 // Prepare data for processing

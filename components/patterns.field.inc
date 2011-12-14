@@ -5,7 +5,7 @@
  */
 function field_patterns() {
 
-  $files = array('modules/field_ui/field_ui.admin.inc','modules/field/field.info.inc');
+  $files = array('modules/field_ui/field_ui.admin.inc', 'modules/field/field.info.inc');
   $actions['field'] = array(
     'descr' => t('Create/Modify/Delete field'),
     PATTERNS_MODIFY => array('field_ui_field_settings_form'),
@@ -136,7 +136,7 @@ function field_patterns_callbacks($action, $tag, &$data = NULL) {
 function field_patterns_build($action, $tag, &$data = NULL, $form_id) {
   //content_clear_type_cache();
   module_load_include('inc', 'field_ui', 'field_ui.admin');
-  return patterns_results(PATTERNS_SUCCESS,   t('Execution successful'), $data);
+  return patterns_results(PATTERNS_SUCCESS,    t('Execution successful'), $data);
 }
 
 // Build a patterns actions and parameters
@@ -145,7 +145,8 @@ function field_patterns_params($action, $form_id, &$data = NULL) {
     $result = array($data['entity_type'], $data['bundle']);
   }
   elseif ($form_id == 'field_ui_field_edit_form' ) {
-  	_field_info_collate_fields(true);_field_info_collate_types(true);
+    _field_info_collate_fields(true);
+    _field_info_collate_types(true);
     $instance = field_info_instance($data['entity_type'], $data['field_name'], $data['bundle']);
     $result = array($instance);
   }
@@ -323,35 +324,41 @@ function _field_patterns_prepare_instance($action, $data) {
     //other special field type settings form
     if (isset($data['instance_settings'])) {
       foreach ($data['instance_settings'] as $key => $setting) {
-      	if(is_array($setting)){
-      		foreach($setting as $key1=>$set){
-      			$data['instance']['settings'][$key][$key1] = $set;
-      		}
-      	}else
-        $data['instance']['settings'][$key] = $setting;
+        if (is_array($setting)) {
+          foreach ($setting as $key1 => $set) {
+            $data['instance']['settings'][$key][$key1] = $set;
+          }
+        }
+        else {
+          $data['instance']['settings'][$key] = $setting;
+        }
       }
       unset($data['instance_settings']);
     }
     if (isset($data['field_settings'])) {
       foreach ($data['field_settings'] as $key => $setting) {
-      	if(is_array($setting)){
-      		foreach($setting as $key1=>$set){
-      			$data['field']['settings'][$key][$key1] = $set;
-      		}
-      	}else
-        $data['field']['settings'][$key] = $setting;
+        if (is_array($setting)) {
+          foreach ($setting as $key1 => $set) {
+            $data['field']['settings'][$key][$key1] = $set;
+          }
+        }
+        else {
+          $data['field']['settings'][$key] = $setting;
+        }
       }
       unset($data['field_settings']);
     }
     if (isset($data['widget_settings'])) {
-    	
+
       foreach ($data['widget_settings'] as $key => $setting) {
-      	if(is_array($setting)){
-      		foreach($setting as $key1=>$set){
-      			$data['instance']['widget']['settings'][$key][$key1] = $set;
-      		}
-      	}else
-        $data['instance']['widget']['settings'][$key] = $setting;
+        if (is_array($setting)) {
+          foreach ($setting as $key1 => $set) {
+            $data['instance']['widget']['settings'][$key][$key1] = $set;
+          }
+        }
+        else {
+          $data['instance']['widget']['settings'][$key] = $setting;
+        }
       }
       $data['instance']['widget']['active'] = 1;
       unset($data['widget_settings']);
@@ -622,7 +629,7 @@ function field_patterns_old($op, $id = NULL, &$data = NULL, $a = NULL) {
 
       // Validate the values for an action before running the pattern
     case 'pre-validate':
-//
+      //
 //     if ($id == 'field') {
 //        if (empty($data['type_name'])) {
 //          return t('&lt;type&gt; tag is missing.');
