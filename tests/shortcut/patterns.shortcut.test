@@ -19,6 +19,8 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
 
   public function setUp() {
     parent::setUp();
+    $this->admin_user = $this->drupalCreateUser(array('administer site configuration', 'access administration pages', 'administer patterns', 'administer shortcuts', 'switch shortcut sets', 'customize shortcut links')); 
+    $this->drupalLogin($this->admin_user);
   }
 
   /**
@@ -30,7 +32,7 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
   *    * TODO delete the link, which just edit
   *    * change the set "new_set_fortest" name to "newer_set_fortest"
   *    * delete the set "newer_set_fortest"
-  *
+  *    * TODO switch set for user
   */
 
   public function test_shortcut() {
@@ -65,6 +67,24 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
       $this->assert('pass', $value);
     }
 
+    //for switch user's shortcut set
+    //TODO the user'name is diffierernt from each test.
+    /*
+    parent::runFile('shortcut_set_switch.yaml', 'switch shortcut set for users (modify)', PatternsShortcutTestCase::SHORTCUT_TESTS_DIR);
+    $query = db_select('shortcut_set_users', 'ssu')
+            ->fields('ssu', array('set_name', 'uid'))
+            ->condition('ssu.uid', 1)
+            ->condition('ssu.set_name', $query_add_set['set_name'])
+            ->execute()
+            ->fetchAssoc();  
+    $this->assertTrue($query, t('Switch user\'s shortcut set works fine'));
+    $num = count($query);
+    $this->assert('pass',$num);
+    foreach ( $query as $key => $value) {
+      $this->assert('pass', $value);
+    }
+    */
+
     //for edit the link, which add before
     //TODO the link's Id is diffierent from each PC.
     //for delete the link, which just edit
@@ -96,5 +116,6 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
     $this->assertFalse($query, t('delete set works fine'));
     $num = count($query);
     $this->assert('pass',$num);
+
  }
 }
