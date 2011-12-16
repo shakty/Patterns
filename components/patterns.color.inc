@@ -4,7 +4,7 @@
  * Patterns component for pathauto.
  */
 function color_patterns() {
-  $files = array('modules/system/system.module');
+  $files = array('modules/system/system.module','modules/system/system.admin.inc');
 
   $actions['color'] = array(
     'descr' => t('Setting color'),

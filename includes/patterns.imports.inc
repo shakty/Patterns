@@ -379,7 +379,8 @@ function patterns_import_module($form, &$form_state) {
     $yaml_content[PATTERNS_CREATE] = '';
     $yaml_content[PATTERNS_MODIFY] = '';
     $yaml_content[PATTERNS_DELETE] = '';
-    $previous_macro_enabled = variable_get('macro_enabled', FALSE);
+
+    variable_set('patterns_import_module', TRUE);
     variable_set('macro_enabled', TRUE);
     variable_set('macro_submissions', array());  
     $chosen_forms = $form_state['values']['module_forms'];
@@ -407,28 +408,31 @@ function patterns_import_module($form, &$form_state) {
       $i = $i+1;
   
       $counter = 0;
-      foreach($actions as $tag => $entry) {
+      foreach ($actions as $tag => $entry) {
         $descr = $entry[PATTERNS_INFO];
-        foreach($entry as $action => $forms) { 
-          if($action != PATTERNS_INFO && $action != PATTERNS_FILES && $action != PATTERNS_CREATE && $action != PATTERNS_DELETE) {
-            foreach($forms as $my_form) {
+        foreach ($entry as $action => $forms) { 
+          if ($action != PATTERNS_INFO && $action != PATTERNS_FILES && $action != PATTERNS_CREATE && $action != PATTERNS_DELETE) {
+            foreach ($forms as $my_form) {
               $key = "o".$counter;
-              if($chosen_forms[$key]) {
+              if ($chosen_forms[$key]) {
                 // include needed files
-                if(isset($entry[PATTERNS_FILES])) {
+                if (isset($entry[PATTERNS_FILES])) {
                  foreach($entry[PATTERNS_FILES] as $file) {
                    include_once  $file;
                  }
                 }
                 // check if we get arguments for several runs
                 $loop = FALSE;
-                if(function_exists($module_name . "_patterns_get_arguments"))
+                if (function_exists($module_name . "_patterns_get_arguments"))
                     $arguments = call_user_func_array($module_name . "_patterns_get_arguments", array($action, $tag, $my_form,&$loop));
-                if(!$loop) {
+                else {
+                    $arguments = array("");
+                }
+                if (!$loop) {
                   $arguments = array($arguments);
                 }
                   
-                foreach($arguments as $arguments_element) {
+                foreach ($arguments as $arguments_element) {
                  // submit and save output
                  $module_form_state = array();
                  $module_form_state['values'] = array();
@@ -453,7 +457,7 @@ function patterns_import_module($form, &$form_state) {
       }
   
      }
-      variable_set('macro_enabled', $previous_macro_enabled);
+
       if($measure) {
        $time = (microtime(TRUE) - $start);
        $min = $time < $min ? $time : $min;
@@ -462,24 +466,26 @@ function patterns_import_module($form, &$form_state) {
     }
     if($measure) 
       drupal_set_message("k-best: ". $min);
-   
+         variable_set('macro_enabled', FALSE);
+      variable_set('patterns_import_module', FALSE);
      // creating info section of yaml pattern file
    $yaml = "# YAML ". $modules_with_components[$form_state['values']['module']] ." Pattern\n" .
          "\n" .
          "info:\n" .
-         "  title: \n" .
+         "  title: #please add a title\n" .
          "  description: " . 
-              "automatically generated Pattern file from following forms"; #: ";
-   //foreach($options as $option)
-   // $yaml .= $option . ", ";
-   //$yaml = substr($yaml, 0, strlen($yaml)-3);
+              "automatically generated Pattern file";
+   
+   global $user;
+   global $base_root;
+   
    $yaml .= "\n" .
-         "  author: \n" .
+         "  author: ". $user->name ."\n" .
          "  category: ". $modules_with_components[$form_state['values']['module']] ."\n" .
          "  version: 1.0\n" .
-         "  core: 7.x\n" .
-         "  author_email: \n" .
-         "  author_website: \n" .
+         "  core: x.y\n" .
+         "  author_email: ". $user->mail ."\n" .
+         "  author_website: ". $base_root ."\n" .
          "\n" .
          "actions:\n" .
          "";
@@ -546,7 +552,7 @@ function patterns_import_module($form, &$form_state) {
  */
 function patterns_form_alter(&$form, $form_state, $form_id) {
       // Add the record callback on submit and delete all others
-      if ($form_id != 'macro_import_macro' && variable_get('macro_enabled', FALSE)) {
+      if ($form_id != 'macro_import_macro' && variable_get('macro_enabled', FALSE) && variable_get('patterns_import_module', FALSE)) {
         $form['#submit'] = array();
         $form['#submit'][] = 'macro_record_macro';
       }
