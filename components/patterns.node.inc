@@ -11,7 +11,7 @@ function node_patterns() {
     PATTERNS_CREATE => array('node_type_form'),
     PATTERNS_MODIFY => array('node_type_form'),
     PATTERNS_DELETE => array('node_type_delete_confirm'),
-    'files'  => $files,
+    PATTERNS_FILES  => $files,
   );
 
   return $actions;
@@ -71,6 +71,7 @@ function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
   //content_clear_type_cache();
   // TODO: instead: cache_clear_all();
   module_load_include('inc', 'content', 'includes/content.admin');
+  module_load_include('inc', 'node', 'content_types'); // TODO: Isn't this already loaded?
   
   if ($form_id == 'node_type_form') {
 
@@ -142,9 +143,9 @@ function node_patterns_params($action, $form_id, &$data = NULL, &$a) {
 
   if (($action === PATTERNS_MODIFY and $form_id == 'node_type_form') or
       $form_id == 'node_type_delete_confirm') {
-    $types = (object)_node_types_build();
-    $type = $types->types[$data['type']];
-    $result = array($type);
+      $types = (object)_node_types_build();
+      $type = $types->types[$data['type']];
+      $result = array($type);
   }
 
   return patterns_results($status, $msg, $result);
