@@ -37,6 +37,47 @@ function field_patterns_actions() {
   );
 }
 
+// returns arguments needed for the forms when processing automatically
+// $loop is set if we want to extract all values
+function field_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
+	 _field_info_collate_fields(true);
+    _field_info_collate_types(true);
+    $return = array();
+	if($form_id=='field_ui_field_settings_form'){
+	
+    	$loop = TRUE;
+    	$instances = field_read_instances();
+    	foreach($instances as $voc) {
+    	  array_push($return, array($voc));
+    	}
+	}else if($form_id=='field_ui_field_edit_form'){
+		$loop = TRUE;
+    	$instances = field_read_instances();
+    	foreach($instances as $voc) {
+    	  array_push($return, array(field_info_instance($voc['entity_type'], $voc['field_name'], $voc['bundle'])));
+    	}
+	}
+	else if($form_id=='field_ui_field_overview_form'){
+		$loop = TRUE;
+    	$instances = field_read_instances();
+    	foreach($instances as $voc) {
+    		$result=array('entity_type'=>$voc['entity_type'],'bundle'=>$voc['bundle']);
+    		$j=0;
+    		foreach ($return as $v){
+    			if($v['entity_type']==$voc['entity_type']&&$v['bundle']==$voc['bundle']){
+    				$j=1;
+    				break;
+    			}
+    		}
+    		if($j==0){
+    			 array_push($return, $result);
+    		}    	 
+    	}
+	}
+   
+  return $return;
+}
+
 // Prepare data for processing
 function field_patterns_prepare($action, $tag, &$data = NULL) {
   // @TODO: remove unnecessary stuff from $data array;
