@@ -483,8 +483,10 @@ function patterns_import_module($form, &$form_state) {
            // and then indent correctly
            $my_macro = substr($my_macro, 4, strlen($my_macro)-8);
            $my_macro = "      " . str_replace("\n", "\n      ", $my_macro);
+           $clean_tag = str_replace("_extract_all" , "", $tag);
+           $clean_tag = str_replace("_extract", "", $clean_tag);
            $yaml_content[$action] .= "  - " . $action . ":\n" .
-                                            "      tag: " . $tag . "\n" .
+                                            "      tag: " . $clean_tag . "\n" .
            $my_macro . "\n\n";
           }
          }
