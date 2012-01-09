@@ -51,7 +51,7 @@ function taxonomy_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE
   static $i = -1;
   $i++;
   $vocabulary = taxonomy_get_vocabularies();
- 
+
   if($tag == 'vocabulary') {
     if($action == PATTERNS_MODIFY) {
       if($form_id == 'taxonomy_form_vocabulary') {

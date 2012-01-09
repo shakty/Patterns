@@ -21,6 +21,23 @@ function color_patterns_actions() {
     'system_theme_settings' => t('color: Edit scheme color settings'),
   );
 }
+// returns arguments needed for the forms when processing automatically
+// $loop is set if we want to extract all values
+function color_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
+   $return = array();
+  $themes= system_rebuild_theme_data();
+  $loop=TRUE;
+  foreach($themes as $voc) {
+  	  if (!empty($theme->info['hidden'])) {
+      	continue;
+    	}
+    	if(color_get_info($voc->name)){
+    		array_push($return, array($voc->name));
+    	}
+   }
+   
+  return $return;
+}
 
 // Prepare data for processing
 function color_patterns_prepare($action, $tag, &$data = NULL) {
