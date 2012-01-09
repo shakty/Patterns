@@ -302,7 +302,7 @@ function patterns_import_submit($form, &$form_state) {
 function patterns_import_module($form, &$form_state) {
   // check if 'step' is undefined and show current step
   if (!isset($form_state['values']['step']))
-  $form_state['values']['step'] = 1;
+    $form_state['values']['step'] = 1;
   $step = $form_state['values']['step'];
   $name = isset($form_state['values']['name']) ?  $form_state['values']['name'] : 'name not set';
   $form['step'] = array(

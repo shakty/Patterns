@@ -154,7 +154,8 @@ function patterns_menu() {
   );
   $items['admin/patterns/export'] = array(
     'title' => 'Export',
-    'page callback' => 'patterns_export',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('patterns_export'),
     'access arguments' => array('administer patterns'),
     'type' => MENU_LOCAL_TASK
   );
