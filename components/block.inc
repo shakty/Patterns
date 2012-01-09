@@ -11,11 +11,18 @@ function block_patterns() {
 
   $files = array('modules/block/block.admin.inc');
 
-  $actions['block'] = array('descr' => t('Create/Modify/Delete Blocks'),
+  $actions['block'] = array(
+    PATTERNS_INFO => t('Create/Modify/Delete Blocks'),
     PATTERNS_CREATE => array('block_admin_display_form', 'block_admin_configure', 'block_add_block_form'),
     PATTERNS_MODIFY => array('block_admin_display_form', 'block_admin_configure'),
     PATTERNS_DELETE => array('block_custom_block_delete'),
-    'files'  => $files,
+    PATTERNS_FILES  => $files,
+  );
+
+  $actions['block_extract_all'] = array(
+    PATTERNS_INFO => t('Create/Modify/Delete Blocks'),
+    PATTERNS_MODIFY => array('block_admin_display_form', 'block_admin_configure'),
+    PATTERNS_FILES  => $files,
   );
 
   return $actions;
@@ -29,6 +36,40 @@ function block_patterns_actions() {
     'block_add_block_form' => t('Block: Add block'),
     'block_custom_block_delete' => t('Block: Delete custom block')
   );
+}
+
+// returns arguments needed for the forms when processing automatically
+// $loop is set if we want to extract all values
+function block_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
+  if($tag == 'block') {
+    if($action == PATTERNS_MODIFY) {
+      if($form_id == 'block_admin_display_form' or $form_id == 'block_admin_configure') {
+        return array(); // ???
+      }
+    }
+  }
+  else if($tag == 'block_extract_all') {
+    $loop = TRUE;
+    $block_list = _block_rehash();
+    $return = array();
+
+    if ($form_id == 'block_admin_display_form') {
+      $blocks = array();
+      foreach ($block_list as $key => $block) {
+        array_push($blocks, $block);
+      }
+      foreach (array_keys(list_themes()) as $theme) {
+        array_push($return, array($blocks, $theme));
+      }
+    }
+    else if ($form_id == 'block_admin_configure') {
+      foreach ($block_list as $key => $block) {
+        array_push($return, array($block['module'], $block['delta']));
+      }
+    }
+
+    return $return;
+  }
 }
 
 // Prepare data for processing
@@ -214,4 +255,3 @@ function block_patterns_params($action, $form_id, &$data = NULL, &$a) {
 function block_patterns_cleanup($action, $tag, &$data = NULL) {
   return patterns_results();
 }
-
