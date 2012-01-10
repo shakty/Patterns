@@ -7,10 +7,17 @@ function node_patterns() {
 
   $files = array('modules/node/content_types.inc');
 
-  $actions['content_type'] = array('descr' => t('Create/Modify/Delete Content Types'),
+  $actions['content_type'] = array(
+    PATTERNS_INFO => t('Create/Modify/Delete Content Types'),
     PATTERNS_CREATE => array('node_type_form'),
     PATTERNS_MODIFY => array('node_type_form'),
     PATTERNS_DELETE => array('node_type_delete_confirm'),
+    PATTERNS_FILES  => $files,
+  );
+
+  $actions['content_type_extract_all'] = array(
+    PATTERNS_INFO => t('Create/Modify/Delete Content Types'),
+    PATTERNS_MODIFY => array('node_type_form'),
     PATTERNS_FILES  => $files,
   );
 
@@ -24,6 +31,30 @@ function node_patterns_actions() {
     'node_type_delete_confirm' => t('Delete Content Types'),
   );
 }
+
+// returns arguments needed for the forms when processing automatically
+// $loop is set if we want to extract all values
+function node_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
+  if($tag == 'content_type') {
+    if($action == PATTERNS_MODIFY) {
+      if($form_id == 'node_type_form') {
+        return array(); // ???
+      }
+    }
+  }
+  else if($tag == 'content_type_extract_all') {
+    $loop = TRUE;
+    if ($form_id == 'node_type_form') {
+      $types = (object) _node_types_build();
+      $return = array();
+      foreach (array_values($types->types) as $type) {
+        array_push($return, array($type));
+      }
+      return $return;
+    }
+  }
+}
+
 
 function node_patterns_prepare($action, $tag, &$data = NULL) {
   if ($tag == 'content_type') {
