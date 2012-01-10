@@ -9,7 +9,7 @@
  */
 function user_patterns() {
 
-  $files = array('modules/user/user.admin.inc');
+  $files = array('modules/user/user.admin.inc','modules/user/user.pages.inc');
 
   $actions['user'] = array('descr' => t('Create/Modify/Delete Users'),
     PATTERNS_CREATE => array('user_register_form'),
@@ -48,6 +48,39 @@ function user_patterns_actions() {
       );
 }
 
+// returns arguments needed for the forms when processing automatically
+// $loop is set if we want to extract all values
+function user_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
+	$return = array();$loop = TRUE;
+	if ($form_id == 'user_profile_form') {
+		 $query = db_select('users', 'u');
+  		$query->condition('u.uid', 0, '<>');
+		$query = $query->extend('PagerDefault')->extend('TableSort');
+  		$query->fields('u', array('uid'));
+  		$result = $query->execute()->fetchAll();
+  		foreach($result as $account) {
+  			$user=user_load($account->uid);
+    	  	array_push($return,array($user));
+     	}
+	}else if ($form_id == 'user_admin_role') {
+  	 	$roles = user_roles();
+  	 	foreach($roles as $rid => $name) {
+  	 		if(!($rid == DRUPAL_ANONYMOUS_RID || $rid == DRUPAL_AUTHENTICATED_RID)){
+  	 			array_push($return, array((object) array('rid'=>$rid,'name'=>$name,'weight'=>0)));
+  	 		}    	  
+     	}
+ 	}
+  	elseif ($form_id == 'user_admin_permissions') {
+    	$roles = user_roles();
+  	 	foreach($roles as $rid => $name) {
+  	 		if(!($rid == DRUPAL_ANONYMOUS_RID || $rid == DRUPAL_AUTHENTICATED_RID)){
+  	 			array_push($return, array($rid));
+  	 		}    	  
+     	}
+  	}   
+  //	print_r($return);
+  	return $return;
+}
 /**
  * Implements hook_patterns_prepare() for the user module.
  */
@@ -411,10 +444,10 @@ function user_patterns_build($action, $form_id, &$data = NULL, &$a) {
 }
 // Build a patterns actions and parameters
 function user_patterns_params($action, $form_id, &$data = NULL, &$a) {
-  if ($form_id == 'user_cancel_confirm_form') {
+  if ($form_id == 'user_cancel_confirm_form' && $form_id == 'user_profile_form') {
     $result = array(user_load($data['uid']));
   }
-  elseif ($form_id == 'user_admin_role_delete_confirm' || $form_id = 'user_admin_role') {
+  elseif ($form_id == 'user_admin_role_delete_confirm' || $form_id == 'user_admin_role') {
     $result = (object) $data; // TODO: array?
   }
   elseif ($form_id == 'user_admin_permissions') {
