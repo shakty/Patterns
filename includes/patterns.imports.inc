@@ -478,7 +478,7 @@ function patterns_import_module($form, &$form_state) {
            $module_form_state['build_info']['args'] = $arguments_element;
            drupal_form_submit($my_form, $module_form_state);
  
-           $my_macro = macro_get_macro();
+           $my_macro = macro_get_macro_yaml();
            // format output: trim --- and whitespaces at the beginning and end
            // and then indent correctly
            $my_macro = substr($my_macro, 4, strlen($my_macro)-8);
