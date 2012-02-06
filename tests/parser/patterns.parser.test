@@ -1,0 +1,49 @@
+<?php
+/**
+ * @file
+ * SimpleTests for the Taxonomy component of Patterns.
+ */
+
+class PatternsParserTestCase extends PatternRunTestCase {
+
+  const PARSER_TESTS_DIR = 'tests/parser/';
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Parser',
+      'description' => 'Tests the validation algorithm against valid and invalid patterns.',
+      'group' => 'Patterns',
+    );
+  }
+
+  public function setUp() {
+    // Enable any modules required for the tests.
+    parent::setUp();
+  }
+
+  public function testValidP() {
+    $this->runPatternsFromDir(self::PARSER_TESTS_DIR . 'valid/', array(&$this, 'check_valid'));
+  }
+
+  public function testInvalidP() {
+    $this->runPatternsFromDir(self::PARSER_TESTS_DIR . 'invalid/', array(&$this, 'check_invalid'));
+  }
+  
+  private function basic_checks($pattern) {
+    $scan = _patterns_scan_pattern($pattern);   
+    $this->assertNotNull($scan, t('Pattern file loaded and scanned.'));
+    $analysis = _patterns_analyze_patternscan($scan);
+    $this->assertNotNull($analysis, t('Pattern-scan was analysed successfully.'));     
+    return $analysis;
+  }
+  
+  public function check_valid($pattern) {
+    $analysis = $this->basic_checks($valid_f); 
+    $this->assertEqual(count($analysis), 0, t('No error message generated'));
+  }
+  
+  public function check_invalid($pattern) {
+    $analysis = $this->basic_checks($valid_f); 
+    $this->assertNotEqual(count($analysis), 0, t('Error messages generated'));
+  }
+}

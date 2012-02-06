@@ -1,6 +1,13 @@
+7012:
+
+  -
+
+
 7011:
 
 	- Added Changelog
 	- Files in the PATTERNS_FILES array are automatically loaded
+	- PHP 5.2 as requisite
+	- Patterns.test: can run automatically a callback on yaml files loaded from a dir
 
 
