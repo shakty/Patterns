@@ -1,0 +1,6 @@
+7011:
+
+	- Added Changelog
+	- Files in the PATTERNS_FILES array are automatically loaded
+
+
