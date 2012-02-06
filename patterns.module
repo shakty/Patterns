@@ -413,7 +413,7 @@ function patterns_list() {
   $patterns = patterns_get_patterns();
 
   $output .= theme('patterns_list', $patterns);
-
+  
   return $output;
 }
 

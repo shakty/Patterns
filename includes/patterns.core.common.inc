@@ -29,7 +29,8 @@ function patterns_prepare_actions(&$actions, $actions_map) {
 
   // Keep a list of which modules handle what tags
   $tag_modules = patterns_get_tagmodules_index();
-
+  //debug($tag_modules);
+  
   $errors = array();
 
   /////////////////////////////////////////////
@@ -160,6 +161,15 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
         return $results;
       }
 
+      
+      // Auto include FILES
+      if (!empty($tag_info[PATTERNS_FILES])) {
+        foreach ($tag_info[PATTERNS_FILES] as $file) {
+          include_once($file);
+        }
+      }
+      
+      
       $form_obj = $results['result'];
 
       // We check for the 'storage' and 'submitted' values in the object to see
