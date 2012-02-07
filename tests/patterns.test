@@ -217,12 +217,12 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
       while (false !== ($entry = readdir($handle))) {
         $path_parts = pathinfo($entry);
         if ($path_parts['extension'] === 'yaml') {
-          $file = file_get_contents($dir);
+          $file = file_get_contents($dir.$entry);
           if (empty($file)) {
-            $this->error('Error while loading ' + $path_parts['filename']);
+            $this->fail('Error while loading ' . $path_parts['filename']);
             continue;
           }
-          call_user_func($callback($file));
+          call_user_func($callback, $file);
         }
       }
       closedir($handle);

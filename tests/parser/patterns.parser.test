@@ -38,12 +38,12 @@ class PatternsParserTestCase extends PatternRunTestCase {
   }
   
   public function check_valid($pattern) {
-    $analysis = $this->basic_checks($valid_f); 
-    $this->assertEqual(count($analysis), 0, t('No error message generated'));
+    $analysis = $this->basic_checks($pattern); 
+    $this->assertEqual(count($analysis), 0, t('No error message generated parsing valid pattern'));
   }
   
   public function check_invalid($pattern) {
-    $analysis = $this->basic_checks($valid_f); 
-    $this->assertNotEqual(count($analysis), 0, t('Error messages generated'));
+    $analysis = $this->basic_checks($pattern); 
+    $this->assertNotEqual(count($analysis), 0, t('Error messages generated parsing invalid pattern'));
   }
 }
