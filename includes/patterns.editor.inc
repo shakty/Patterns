@@ -446,7 +446,7 @@ function patterns_edit_submit($form, &$form_state) {
 function patterns_load_co2() {
   // Load the CodeMirror Editor if installed in the libraries folder
   $co2_path = libraries_get_path('codemirror2');
-  if (!empty($co2_path)) {
+  if (!empty($co2_path) && file_exists($co2_path)) {
     $co2_js = $co2_path . '/lib/codemirror.js';
     $co2_css = $co2_path . '/lib/codemirror.css';
     $co2_mode_yaml = $co2_path . '/mode/yaml/yaml.js';
