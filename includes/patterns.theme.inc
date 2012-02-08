@@ -82,9 +82,15 @@ function theme_patterns_list($args) {
   $patterns = $args[PATTERNS_STATUS_OK];
   $removed = $args[PATTERNS_STATUS_REMOVED];
   
+  $patterns_title = '<div id="all_patterns_div"><h3>Available Patterns</h3>';
+  
+  if (!file_exists(libraries_get_path('spyc') . '/spyc.php')) {
+  	$spyc = l(t('Spyc'), 'http://code.google.com/p/spyc/');
+   	$patterns_title .= t('!Spyc was not found. Please install the library in \'sites\all\libraries\spyc\' in order read YAML patterns.', array( '!Spyc' => $spyc ));
+  }
   
   $form['patterns'] = array(
-    '#prefix' => '<div id="all_patterns_div"><h3>Available Patterns</h3>',
+    '#prefix' => $patterns_title,
     '#suffix' => ' </div>',
     '#tree' => TRUE,
   );

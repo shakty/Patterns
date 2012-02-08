@@ -7,7 +7,7 @@ core = 7.x
 version = 7.x-1.x-dev
 build = 7011
 package = Site Setup
-php = 5.1
+php = 5.2
 
 ; Test Files
 
