@@ -490,6 +490,7 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
     '#description' => t("Decide when to run sub-patterns that are called by the currently run pattern. If unsure, stick to recommended setting. Note that your choice won't have any effect if your pattern doesn't contain sub-patterns or if this setting has been defined within the pattern file itself."),
     '#options' => $options,
     '#default_value' => 'first-update',
+    '#disabled' => 'true',
   );
 
   $disclaimer = t('Please be sure to backup your site before running a pattern. Patterns are not guaranteed to be reversable in case they do not execute well or if unforseen side effects occur.');

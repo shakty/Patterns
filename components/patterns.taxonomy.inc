@@ -233,6 +233,12 @@ function _taxonomy_patterns_prepare_term($action, $data, $vid = NULL) {
       }
     }
   }
+  
+  if (isset($data['parent'])) {
+   $data['parent'] = _taxonomy_patterns_prepare_parent_terms($data['parent']);
+  }
+  
+  
   //return 'taxonomy_form_term';
 
 
@@ -269,6 +275,48 @@ function _taxonomy_patterns_prepare_term($action, $data, $vid = NULL) {
   // End Not Delete
 
   return $data;
+}
+
+/**
+ * Checks if the provided array of potential parents is valid, and
+ * in case try to correct it.
+ * 
+ * 
+ * @param $parents mixed The potential array of parents.
+ */
+function _taxonomy_patterns_prepare_parent_terms($parents) {
+  if (!isset($parents)) return FALSE;
+  if (!is_array($parents)) {
+    $parents = array($parents);
+  }
+  $err = FALSE;
+  $out = array();
+  // Terms can have multiple parents
+  foreach ($parents as $p) {
+    if (!is_numeric($p)) {
+      // Try to find out if a term with exists with the given name
+      $ps = taxonomy_get_term_by_name($p);
+      if (count($ps) !== 1) {
+        $err = TRUE;
+        continue;
+      }  
+      $parent = array_pop($ps);
+    }
+    else {
+       $parent = taxonomy_term_load($p);
+       if (!$parent) {
+         $err = TRUE;
+         continue;
+       }
+    }
+    $out[] = $parent->tid;
+  }
+  
+  if ($err) {
+    drupal_set_message(t('One or more error occurred while detecting parent terms.'), 'warning');
+  }    
+  
+  return $out;
 }
 
 function _taxonomy_patterns_prepare_vocabulary($action, $data) {
