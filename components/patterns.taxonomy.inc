@@ -8,7 +8,7 @@
 
 // Return an error string only in case of error, otherwise modify $data
 
-function taxonomy_patterns() {
+function taxonomy_patterns($data) {
 
   $actions['vocabulary'] = array(
     PATTERNS_INFO => t('Create/Modify/Delete Taxonomy Vocabularies'),
@@ -25,7 +25,7 @@ function taxonomy_patterns() {
     PATTERNS_DELETE => array('taxonomy_term_confirm_delete'),
     PATTERNS_FILES => array('modules/taxonomy/taxonomy.admin.inc'),
   );
-  
+
   $actions['vocabulary_extract_all']  = array(
     PATTERNS_INFO => t('Create/Modify/Delete Taxonomy Vocabularies'),
     PATTERNS_MODIFY => array('taxonomy_form_vocabulary'),
@@ -37,7 +37,7 @@ function taxonomy_patterns() {
 }
 
 // Return a list of forms/actions this component can handle
-function taxonomy_patterns_actions() {
+function taxonomy_patterns_actions($data) {
   return array(
     'taxonomy_form_vocabulary' => t('Taxonomy: Add or edit vocabulary'),
     'taxonomy_form_term' => t('Taxonomy: Add or edit a term to a vocabulary'),
@@ -70,7 +70,7 @@ function taxonomy_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE
 }
 
 // Prepare data for processing
-function taxonomy_patterns_prepare($action, $tag, &$data = NULL) {
+function taxonomy_patterns_prepare($action, $tag, &$data) {
 
   // VOCABULARY
   if ($tag == 'vocabulary') {
@@ -110,7 +110,7 @@ function taxonomy_patterns_prepare($action, $tag, &$data = NULL) {
 }
 
 // Validate the values for an action before running the pattern
-function taxonomy_patterns_validate($action, $tag, &$data = NULL) {
+function taxonomy_patterns_validate($action, $tag, &$data) {
 
   $status = PATTERNS_SUCCESS;
   $msg = '';
@@ -138,7 +138,7 @@ function taxonomy_patterns_validate($action, $tag, &$data = NULL) {
 }
 
 // Return which callback functions to actually use.
-function taxonomy_patterns_callbacks($action, $tag, &$data = NULL) {
+function taxonomy_patterns_callbacks($action, $tag, &$data) {
   // Just return the form ids specified above. No custom functions used here.
   $desc = taxonomy_patterns();
   $result = $desc[$tag][$action];
@@ -183,7 +183,7 @@ function taxonomy_patterns_params($action, $form_id, &$data = NULL, &$a) {
 }
 
 // Cleanup any global settings after the action runs
-function taxonomy_patterns_cleanup($action, $tag, &$data = NULL) {
+function taxonomy_patterns_cleanup($action, $tag, &$data) {
   unset($_POST['op']);
   return patterns_results();
 }

@@ -3,7 +3,7 @@
  * @file
  * Patterns component for content types.
  */
-function node_patterns() {
+function node_patterns($data) {
 
   $files = array('modules/node/content_types.inc');
 
@@ -25,7 +25,7 @@ function node_patterns() {
 
 }
 
-function node_patterns_actions() {
+function node_patterns_actions($data) {
   return array(
     'node_type_form' => t('Create or Edit Content Types'),
     'node_type_delete_confirm' => t('Delete Content Types'),
@@ -56,7 +56,7 @@ function node_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
 }
 
 
-function node_patterns_prepare($action, $tag, &$data = NULL) {
+function node_patterns_prepare($action, $tag, &$data) {
   if ($tag == 'content_type') {
     if ($action === PATTERNS_CREATE or $action === PATTERNS_MODIFY) {
       if ($data['node_options']) {
@@ -72,12 +72,12 @@ function node_patterns_prepare($action, $tag, &$data = NULL) {
   return patterns_results();
 }
 
-function node_patterns_validate($action, $tag, &$data = NULL) {
+function node_patterns_validate($action, $tag, &$data) {
   // TODO: check required fields
   return patterns_results();
 }
 
-function node_patterns_callbacks($action, $tag, &$data = NULL) {
+function node_patterns_callbacks($action, $tag, &$data) {
   if ($tag == 'content_type') {
     if ($action === PATTERNS_CREATE or $action === PATTERNS_MODIFY) {
       $result = array(
@@ -183,7 +183,7 @@ function node_patterns_params($action, $form_id, &$data = NULL, &$a) {
 }
 
 // Cleanup any global settings after the action runs
-function node_patterns_cleanup($action, $tag, &$data = NULL) {
+function node_patterns_cleanup($action, $tag, &$data) {
   // TODO
   // Make sure content info is always up-to-date
   //cache_clear_all('content_type_info', content_cache_tablename());// TODO

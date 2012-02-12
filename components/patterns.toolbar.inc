@@ -7,7 +7,7 @@
 /**
  * hook_patterns()
  */
-function toolbar_patterns() {
+function toolbar_patterns($data) {
   $files = array('modules/user/user.admin.inc');
   $actions['toolbarrole'] = array(
     PATTERNS_INFO => t('deside who can see the toolbar'),
@@ -17,16 +17,16 @@ function toolbar_patterns() {
   return $actions;
 }
 
-function toolbar_patterns_actions() {
+function toolbar_patterns_actions($data) {
   return array(
     'user_admin_permissions' => t('deside who can use toolbar'),
     );
 }
 
 /**
- * hook_patterns_prepart()
+ * hook_patterns_prepare()
  */
-function toolbar_patterns_prepare($action, $tag, &$data = NULL) {
+function toolbar_patterns_prepare($action, $tag, &$data) {
 
   module_load_include('module', 'user', 'user'); 
   $data['role_names'] = user_roles();
@@ -61,7 +61,7 @@ function toolbar_patterns_prepare($action, $tag, &$data = NULL) {
 /**
  * hook_patterns_validate()
  */
-function toolbar_patterns_validate($action, $tag, &$data = NULL) {
+function toolbar_patterns_validate($action, $tag, &$data) {
   $status = PATTERNS_SUCCESS;
   $msg = '';
 
@@ -166,7 +166,7 @@ function toolbar_patterns_validate($action, $tag, &$data = NULL) {
 /**
  * hook_patterns_callbacks()
  */
-function toolbar_patterns_callbacks($action, $tag, &$data = NULL) {
+function toolbar_patterns_callbacks($action, $tag, &$data) {
   $result = array('user_admin_permissions');
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
@@ -190,6 +190,6 @@ function toolbar_patterns_params($action, $form_id, &$data = NULL, &$a) {
 /**
  * hook_patterns_cleanup()
  */
-function toolbar_patterns_cleanup($action, $tag, &$data = NULL) {
+function toolbar_patterns_cleanup($action, $tag, &$data) {
   return patterns_results();
 }

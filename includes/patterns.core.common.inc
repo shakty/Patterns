@@ -27,9 +27,8 @@ function patterns_prepare_actions(&$actions, $actions_map) {
 
   patterns_load_components();
 
-  // Keep a list of which modules handle what tags
+  // Keep a list of which modules handle what tags.
   $tag_modules = patterns_get_tagmodules_index();
-  //debug($tag_modules);
   
   $errors = array();
 
@@ -60,7 +59,8 @@ function patterns_prepare_actions(&$actions, $actions_map) {
 
     if (!array_key_exists($data['tag'], $tag_modules)) {
       // TODO: Use $index when there are multiple patterns again.
-      $errors[] = t('Action #%num (%tag) in pattern %title: <%tag> is not a valid tag', array('%num' => $index + 1, '%tag' => $data['tag'], '%title' => $pattern_title));
+      // $errors[] = t('Action #%num (%tag) in pattern %title: <%tag> is not a valid tag', array('%num' => $index + 1, '%tag' => $data['tag'], '%title' => $pattern_title));
+      $errors[] = t('Pattern %title: <%tag> is not a valid tag', array('%tag' => $data['tag'], '%title' => $pattern_title));
     }
     else {
       //////////////////////////////////////////////////
@@ -70,7 +70,8 @@ function patterns_prepare_actions(&$actions, $actions_map) {
 
       if (!patterns_error_check_results($results)) {
         // TODO: Use $index when there are multiple patterns again.
-        $errors[] = t('Action #%num (%tag) in pattern %title: !msg', array('!msg' => $error, '%num' => $index + 1, '%tag' => $data['tag'], '%title' => $pattern_title));
+        // $errors[] = t('Action #%num (%tag) in pattern %title: !msg', array('!msg' => $error, '%num' => $index + 1, '%tag' => $data['tag'], '%title' => $pattern_title));
+        $errors[] = t('pattern %title: !msg', array('!msg' => $error, '%tag' => $data['tag'], '%title' => $pattern_title));
       }
     }
   }
@@ -102,7 +103,8 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
   $status = PATTERNS_SUCCESS;
   $msg = '';
 
-  $tag_info = patterns_get_tagmodules_index($data['tag']);
+  // Refresh the list of forms based on the data we have.
+  $tag_info = patterns_get_tagmodules_index($data['tag'], $data);
   $form_ids = $tag_info[$action];
 
   /*

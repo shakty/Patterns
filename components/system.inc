@@ -8,20 +8,20 @@
  * @file
  * Patterns component for system related operations.
  */
-function system_patterns() {
+function system_patterns($data) {
 
   $files = array('modules/system/system.admin.inc');
 
   $actions['modules'] = array('descr' => t('Enable/Disable Modules'),
     PATTERNS_CREATE => array(),
     PATTERNS_DELETE => array(),
-    'files'  => $files,
+    PATTERNS_FILES  => $files,
   );
 
   $actions['theme'] = array('descr' => t('Enable (and set default)/Disable Themes'), 
     PATTERNS_CREATE => array('set_active_theme'),
     PATTERNS_DELETE => array('set_active_theme'),
-    'files'  => $files,
+    PATTERNS_FILES  => $files,
   ); // TODO: Don't run through form.
 
   $actions['form'] = array('descr' => t('Submit Custom Forms'),
@@ -51,7 +51,7 @@ function system_patterns() {
 
 }
 
-function system_patterns_actions() {
+function system_patterns_actions($data) {
   return array(
         'system_modules' => t('System: Enable or disable module'),
         'set_active_theme' => t('System: Set active theme'), // Drupal7.x changed the theme setting form, so we use a custom one
@@ -67,7 +67,7 @@ function system_patterns_actions() {
 }
 
 // Prepare data for processing
-function system_patterns_prepare($action, $tag, &$data = NULL) {
+function system_patterns_prepare($action, $tag, &$data) {
   if ($tag == 'theme') {
     if ($data['value']) {
       $data['theme_default'] = $data['value'];
@@ -163,7 +163,7 @@ function system_patterns_prepare($action, $tag, &$data = NULL) {
 }
 
 // Validate the values for an action before running the pattern.
-function system_patterns_validate($action, $tag, &$data = NULL) {
+function system_patterns_validate($action, $tag, &$data) {
   $status = PATTERNS_SUCCESS;
   $msg = '';
 
@@ -273,7 +273,7 @@ function system_patterns_validate($action, $tag, &$data = NULL) {
 }
 
 // Return which callback functions to actually use.
-function system_patterns_callbacks($action, $tag, &$data = NULL) {
+function system_patterns_callbacks($action, $tag, &$data) {
   if ($tag == 'modules') { // Custom functions will do the work.
     $result = array('modules_execute');
   }
@@ -337,7 +337,7 @@ function system_patterns_params($action, $form_id, &$data = NULL, &$a) {
 }
 
 // Cleanup any global settings after the action runs
-function system_patterns_cleanup($action, $tag, &$data = NULL) {
+function system_patterns_cleanup($action, $tag, &$data) {
   if ($tag == 'modules') {
     menu_rebuild(); // TODO: only do this if there has been a module enabled/disabled
   }

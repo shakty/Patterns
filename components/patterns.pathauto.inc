@@ -3,24 +3,24 @@
  * @file
  * Patterns component for pathauto.
  */
-function path_patterns() {
+function path_patterns($data) {
   $files = array('sites/all/modules/pathauto/pathauto.admin.inc');
   $filespath = array('modules/path/path.admin.inc');
 
   $actions['pathauto'] = array(
-    'descr' => t('Setting pathauto'),
+    PATTERNS_INFO => t('Setting pathauto'),
     PATTERNS_MODIFY => array('pathauto_settings_form'),
     PATTERNS_FILES => $files,
   );
   $actions['url_alias'] = array(
-    'descr' => t('create/edit/delit url aliases'),
+    PATTERNS_INFO => t('create/edit/delit url aliases'),
     PATTERNS_CREATE => array('path_admin_form'),
     PATTERNS_MODIFY => array('path_admin_form'),
     PATTERNS_DELETE => array('path_admin_delete_confirm'),
     PATTERNS_FILES => $filespath,
   );
   $actions['pathauto_patterns'] = array(
-    'descr' => t('setting patterns for auto URLs aliases'),
+    PATTERNS_INFO => t('setting patterns for auto URLs aliases'),
     PATTERNS_MODIFY => array('pathauto_patterns_form', 'pathauto_bulk_update_form'),
     PATTERNS_FILES => $files,
   );
@@ -29,7 +29,7 @@ function path_patterns() {
 
 }
 
-function path_patterns_actions() {
+function path_patterns_actions($data) {
   return array(
     'pathauto_admin_form' => t('Pathauto: Create/edit url aliases'),
     'path_admin_delete_confirm' => t('Pathauto: Delit url aliases'),
@@ -40,7 +40,7 @@ function path_patterns_actions() {
 }
 
 // Prepare data for processing
-function path_patterns_prepare($action, $tag, &$data = NULL) {
+function path_patterns_prepare($action, $tag, &$data) {
   $datacopy = $data;
   if ($tag == "pathauto_patterns" || $tag == "pathauto") {
     foreach ($datacopy as $key => $value) {
@@ -83,7 +83,7 @@ function path_patterns_prepare($action, $tag, &$data = NULL) {
 }
 
 // Validate the values for an action before running the pattern
-function path_patterns_validate($action, $tag, &$data = NULL) {
+function path_patterns_validate($action, $tag, &$data) {
   $status = PATTERNS_SUCCESS;
   $msg = '';
   if ($tag == 'url_alias' && ( $action == PATTERNS_MODIFY || $action == PATTERNS_DELETE)) {
@@ -149,13 +149,13 @@ function path_patterns_params($action, $form_id, &$data = NULL, &$a) {
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
 
-function path_patterns_cleanup($action, $tag, &$data = NULL) {
+function path_patterns_cleanup($action, $tag, &$data) {
   //unset($_POST['op']);
   return patterns_results();
 }
 
 // Return which callback functions to actually use.
-function path_patterns_callbacks($action, $tag, &$data = NULL) {
+function path_patterns_callbacks($action, $tag, &$data) {
   $desc = path_patterns();
   $result = $desc[$tag][$action];
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
@@ -163,7 +163,7 @@ function path_patterns_callbacks($action, $tag, &$data = NULL) {
 
 
 
-/*function pathauto_patterns($op, $id = NULL, &$data = NULL) {
+/*function pathauto_patterns($op, $id = NULL, &$data) {
  switch ($op) {
  // Return the valid tags that this component can prepare and process
  case 'tags':

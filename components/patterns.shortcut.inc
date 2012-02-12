@@ -24,9 +24,9 @@
 /**
  * hook_patterns()
  */
-function shortcut_patterns() {
+function shortcut_patterns($data) {
   $files = array('modules/shortcut/shortcut.admin.inc');
-  
+
   $actions['shortcut_set'] = array(
     PATTERNS_INFO => t('create/delete/modify shortcut set'),
     PATTERNS_CREATE => array('shortcut_set_add_form'),
@@ -46,11 +46,11 @@ function shortcut_patterns() {
     PATTERNS_MODIFY => array('shortcut_set_switch'),
     PATTERNS_FILES => $files,
     );
-  
+
   return $actions;
 }
 
-function shortcut_patterns_actions() {
+function shortcut_patterns_actions($data) {
   return array(
     'shortcut_set_add_form' => t('Shortcut: add a new shortcut set'),
     'shortcut_set_edit_form' => t('Shortcut: change the name a shortcut set'),
@@ -65,7 +65,7 @@ function shortcut_patterns_actions() {
 /**
  * hook_patterns_prepare()
  */
-function shortcut_patterns_prepare($action, $tag, &$data = NULL) {
+function shortcut_patterns_prepare($action, $tag, &$data) {
   // for set.
   if ($tag == 'shortcut_set') {
     if ($action == PATTERNS_CREATE ) {
@@ -105,7 +105,7 @@ function shortcut_patterns_prepare($action, $tag, &$data = NULL) {
 /**
  * hook_patterns_validate()
  */
-function shortcut_patterns_validate($action, $tag, &$data = NULL) {
+function shortcut_patterns_validate($action, $tag, &$data) {
 
   $status = PATTERNS_SUCCESS;
   $msg = '';
@@ -167,7 +167,7 @@ function shortcut_patterns_validate($action, $tag, &$data = NULL) {
 /**
  * hook_patterns_callbacks()
  */
-function shortcut_patterns_callbacks($action, $tag, &$data = NULL) {
+function shortcut_patterns_callbacks($action, $tag, &$data) {
   $allform = shortcut_patterns();
   $result = $allform[$tag][$action];
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful(in callbacks function)'), $result);
@@ -207,6 +207,6 @@ function shortcut_patterns_params($action, $form_id, &$data = NULL, &$a) {
 /**
  * hook_patterns_cleanup()
  */
-function shortcut_patterns_cleanup($action, $tag, &$data = NULL) {
+function shortcut_patterns_cleanup($action, $tag, &$data) {
   return patterns_results();
 }

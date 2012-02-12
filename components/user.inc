@@ -7,7 +7,7 @@
 /**
  * Implements hook_patterns() for the user module.
  */
-function user_patterns() {
+function user_patterns($data) {
 
   $files = array('modules/user/user.admin.inc','modules/user/user.pages.inc');
 
@@ -15,28 +15,28 @@ function user_patterns() {
     PATTERNS_CREATE => array('user_register_form'),
     PATTERNS_MODIFY => array('user_profile_form'),
     PATTERNS_DELETE => array('user_cancel_confirm_form'),
-    'files'  => $files,
+    PATTERNS_FILES  => $files,
   );
 
   $actions['role'] = array('descr' => t('Create/Modify/Delete Roles'),
     PATTERNS_CREATE => array('user_admin_roles'),
     PATTERNS_MODIFY => array('user_admin_role'),
     PATTERNS_DELETE => array('user_admin_role_delete_confirm'),
-    'files'  => $files,
+    PATTERNS_FILES  => $files,
   );
 
   $actions['permission'] = array('descr' => t('Create/Modify/Delete Permissions'), 
     PATTERNS_CREATE => array('user_admin_permissions'),
     PATTERNS_MODIFY => array('user_admin_permissions'),
     PATTERNS_DELETE => array('user_admin_permissions'),
-    'files'  => $files,
+    PATTERNS_FILES  => $files,
   );
 
   return $actions;
 
 }
 
-function user_patterns_actions() {
+function user_patterns_actions($data) {
   return array(
         'user_register_form' => t('User: Add user with the Register Form'),
         'user_profile_form' => t('User: Edit user'),
@@ -84,7 +84,7 @@ function user_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
 /**
  * Implements hook_patterns_prepare() for the user module.
  */
-function user_patterns_prepare($action, $tag, &$data = NULL) {
+function user_patterns_prepare($action, $tag, &$data) {
   if ($tag == 'user') {
     // Check with isset first, otherwise we get a notice
     if (!isset($data['name'])) {
@@ -165,7 +165,7 @@ function user_patterns_prepare($action, $tag, &$data = NULL) {
 }
 
 // Validate the values for an action before running the pattern
-function user_patterns_validate($action, $tag, &$data = NULL) {
+function user_patterns_validate($action, $tag, &$data) {
   $status = PATTERNS_SUCCESS;
   $msg = '';
 
@@ -245,7 +245,7 @@ function user_patterns_validate($action, $tag, &$data = NULL) {
 }
 
 // Return which callback functions to actually use.
-function user_patterns_callbacks($action, $tag, &$data = NULL) {
+function user_patterns_callbacks($action, $tag, &$data) {
 
   if ($tag == 'user') {
     // Check if the user needs updating.
@@ -457,6 +457,6 @@ function user_patterns_params($action, $form_id, &$data = NULL, &$a) {
 }
 
 // Cleanup any global settings after the action runs
-function user_patterns_cleanup($action, $tag, &$data = NULL) {
+function user_patterns_cleanup($action, $tag, &$data) {
   return patterns_results();
 }

@@ -799,10 +799,15 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
 
 /**
  * Creates the list of modules implementing the pattern hook. Additional
- * information is provided such as the files or the forms needed by the tag.
+ * information is provided such as the files or the forms needed by the tag. It 
+ * uses caching, unless a specific tag is being looked up.
  *
  * @param string $tag_name
- *   (optional) If set, only information about this specific tag is returned. Defaults to NULL.
+ *   (optional) If set, only information about this specific tag is returned 
+ *   and the cache will be refreshed. Defaults to NULL.
+ * @param array $data
+ *   (optional) The data of the pattern. If $tag_name was set, $data must be 
+ *   set as well. Defaults to NULL.
  * @param integer $id
  *   (optional) If set, only this particular bit of information is returned. Defaults to NULL.
  *   Allowed values for $id are: 'descr', PATTERNS_CREATE, PATTERNS_MODIFY,
@@ -813,22 +818,22 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
  *
  * @return array $tag_modules The tag_modules index built according to the parameters.
  */
-function patterns_get_tagmodules_index($tag_name = NULL, $id = NULL) {
+function patterns_get_tagmodules_index($tag_name = NULL, $data = NULL, $id = NULL) {
   static $tag_modules;
 
-  // Index not yet built.
-  if (!is_array($tag_modules)) {
+  // Index not yet built or $tag_name is set.
+ if (!is_array($tag_modules) || $tag_name != NULL) {
     $tag_modules = array();
     // Get a list of tags and their modules.
+    // TODO: Optimize: if $tag_name is set, and $tag_modules is not empty, look 
+    // for only the modules that we have seen before implement the tag.
     foreach (module_implements('patterns') as $module) {
-      $tags = module_invoke($module, 'patterns'); // Removed third parameter tags. Should be no longer necessary.
-      if (!empty($tags)) {
-        foreach ($tags as $tag => $value) {
-          // Add the reference to the module within the information which each
-          // module is already returning
-          $value['module'] = $module;
-          $tag_modules[$tag] = $value;
-        }
+      $tags = module_invoke($module, 'patterns', $data);
+      foreach ($tags as $tag => $value) {
+        // Add the reference to the module within the information which each
+        // module is already returning
+        $value['module'] = $module;
+        $tag_modules[$tag] = $value;
       }
     }
   }

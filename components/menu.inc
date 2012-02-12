@@ -4,18 +4,18 @@
  * Patterns component for the menu system.
  */
 
-function menu_patterns() {
+function menu_patterns($data) {
   $files = array('modules/menu/menu.admin.inc');
 
   $actions['menu'] = array(
-    'descr' => t('Create/Modify/Delete menu'),
+    PATTERNS_INFO => t('Create/Modify/Delete menu'),
     PATTERNS_CREATE => array('menu_edit_menu'),
     PATTERNS_MODIFY => array('menu_edit_menu'),
     PATTERNS_DELETE => array('menu_delete_menu_confirm'),
     PATTERNS_FILES => $files,
   );
   $actions['menu_item'] = array(
-    'descr' => t('Create/Modify/Delete menu item'),
+    PATTERNS_INFO => t('Create/Modify/Delete menu item'),
     PATTERNS_CREATE => array('menu_edit_item'),
     PATTERNS_MODIFY => array('menu_edit_item'),
     PATTERNS_DELETE => array('menu_item_delete_form'),
@@ -26,7 +26,7 @@ function menu_patterns() {
 
 }
 
-function menu_patterns_actions() {
+function menu_patterns_actions($data) {
   return array(
     'menu_edit_menu' => t('Menu: Add or edit menu'),
     'menu_delete_menu_confirm' => t('Menu: Delete menu'),
@@ -36,7 +36,7 @@ function menu_patterns_actions() {
 }
 
 // Prepare data for processing
-function menu_patterns_prepare($action, $tag, &$data = NULL) {
+function menu_patterns_prepare($action, $tag, &$data) {
   if ($action == PATTERNS_DELETE) {
     $data['confirm'] = 1;
   }
@@ -101,7 +101,7 @@ function menu_patterns_prepare($action, $tag, &$data = NULL) {
 }
 
 // Validate the values for an action before running the pattern
-function menu_patterns_validate($action, $tag, &$data = NULL) {
+function menu_patterns_validate($action, $tag, &$data) {
   $status = PATTERNS_SUCCESS;
   $msg = '';
 
@@ -174,13 +174,13 @@ function menu_patterns_validate($action, $tag, &$data = NULL) {
 }
 
 // Prepare for valid processing of this type of component
-function menu_patterns_build($action, $tag, &$data = NULL, $form_id) {
+function menu_patterns_build($action, $tag, &$data, $form_id) {
   module_load_include('inc', 'menu', 'menu.admin');
   return patterns_results(PATTERNS_SUCCESS,   t('Execution successful'), $data);
 }
 
 // Build a patterns actions and parameters
-function menu_patterns_params($action, $form_id, &$data = NULL, &$a) {
+function menu_patterns_params($action, $form_id, &$data, &$a) {
   switch ($form_id) {
     case 'menu_edit_menu':
 
@@ -216,12 +216,12 @@ function menu_patterns_params($action, $form_id, &$data = NULL, &$a) {
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
 
-function menu_patterns_cleanup($action, $tag, &$data = NULL) {
+function menu_patterns_cleanup($action, $tag, &$data) {
   return patterns_results();
 }
 
 // Return which callback functions to actually use.
-function menu_patterns_callbacks($action, $tag, &$data = NULL) {
+function menu_patterns_callbacks($action, $tag, &$data) {
   $desc = menu_patterns();
   $result = $desc[$tag][$action];
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);

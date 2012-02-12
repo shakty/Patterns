@@ -3,11 +3,11 @@
  * @file
  * Patterns component for pathauto.
  */
-function color_patterns() {
+function color_patterns($data) {
   $files = array('modules/system/system.module','modules/system/system.admin.inc');
 
   $actions['color'] = array(
-    'descr' => t('Setting color'),
+    PATTERNS_INFO => t('Setting color'),
     PATTERNS_MODIFY => array('system_theme_settings'),
     PATTERNS_FILES => $files,
   );
@@ -16,7 +16,7 @@ function color_patterns() {
 
 }
 
-function color_patterns_actions() {
+function color_patterns_actions($data) {
   return array(
     'system_theme_settings' => t('color: Edit scheme color settings'),
   );
@@ -40,7 +40,7 @@ function color_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
 }
 
 // Prepare data for processing
-function color_patterns_prepare($action, $tag, &$data = NULL) {
+function color_patterns_prepare($action, $tag, &$data) {
   if (!isset($data['scheme'])) {
     $data['scheme'] = '';
   }
@@ -48,7 +48,7 @@ function color_patterns_prepare($action, $tag, &$data = NULL) {
 }
 
 // Validate the values for an action before running the pattern
-function color_patterns_validate($action, $tag, &$data = NULL) {
+function color_patterns_validate($action, $tag, &$data) {
   $status = PATTERNS_SUCCESS;
   $msg = '';
   foreach ($data['palette'] as $key => $color) {
@@ -61,24 +61,24 @@ function color_patterns_validate($action, $tag, &$data = NULL) {
 }
 
 // Prepare for valid processing of this type of component
-function color_patterns_build($action, $tag, &$data = NULL, $form_id) {
+function color_patterns_build($action, $tag, &$data, $form_id) {
 
-  return patterns_results(PATTERNS_SUCCESS,    t('Execution successful'), $data);
+  return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $data);
 }
 
 // Build a patterns actions and parameters
-function color_patterns_params($action, $form_id, &$data = NULL, &$a) {
+function color_patterns_params($action, $form_id, &$data, &$a) {
   $result = array($data['theme']);
 
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
 
-function color_patterns_cleanup($action, $tag, &$data = NULL) {
+function color_patterns_cleanup($action, $tag, &$data) {
   return patterns_results();
 }
 
 // Return which callback functions to actually use.
-function color_patterns_callbacks($action, $tag, &$data = NULL) {
+function color_patterns_callbacks($action, $tag, &$data) {
   $desc = color_patterns();
   $result = $desc[$tag][$action];
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);

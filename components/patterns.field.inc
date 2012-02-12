@@ -3,23 +3,23 @@
  * @file
  * Patterns component for Fields.
  */
-function field_patterns() {
+function field_patterns($data) {
 
   $files = array('modules/field_ui/field_ui.admin.inc', 'modules/field/field.info.inc');
   $actions['field'] = array(
-    'descr' => t('Create/Modify/Delete field'),
+    PATTERNS_INFO => t('Create/Modify/Delete field'),
     PATTERNS_MODIFY => array('field_ui_field_settings_form'),
     PATTERNS_FILES => $files,
   );
   $actions['instance'] = array(
-    'descr' => t('Create/Modify/Delete field'),
+    PATTERNS_INFO => t('Create/Modify/Delete field'),
     PATTERNS_CREATE => array('field_ui_field_overview_form'),
     PATTERNS_MODIFY => array('field_ui_field_edit_form'),
     PATTERNS_DELETE => array('field_ui_field_delete_form'),
     PATTERNS_FILES => $files,
   );
   $actions['field_weight'] = array(
-    'descr' => t('Order the fields'),
+    PATTERNS_INFO => t('Order the fields'),
     PATTERNS_MODIFY => array('field_ui_field_overview_form'),
     PATTERNS_FILES => $files,
   );
@@ -28,7 +28,7 @@ function field_patterns() {
 
 }
 
-function field_patterns_actions() {
+function field_patterns_actions($data) {
   return array(
     'field_ui_field_overview_form' => t('Add/Create a Field'),
     'field_ui_field_delete_form' => t('Delete a Field/Istance'),
@@ -115,7 +115,7 @@ function field_patterns_prepare($action, $tag, &$data = NULL) {
 }
 
 // Validate the values for an action before running the pattern
-function field_patterns_validate($action, $tag, &$data = NULL) {
+function field_patterns_validate($action, $tag, &$data) {
   $status = PATTERNS_SUCCESS;
   $msg = '';
   if ($tag == 'field_weight') {
@@ -167,7 +167,7 @@ function field_patterns_validate($action, $tag, &$data = NULL) {
 }
 
 // Return which callback functions to actually use.
-function field_patterns_callbacks($action, $tag, &$data = NULL) {
+function field_patterns_callbacks($action, $tag, &$data) {
   $desc = field_patterns();
   $result = $desc[$tag][$action];
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
@@ -181,7 +181,7 @@ function field_patterns_build($action, $tag, &$data = NULL, $form_id) {
 }
 
 // Build a patterns actions and parameters
-function field_patterns_params($action, $form_id, &$data = NULL) {
+function field_patterns_params($action, $form_id, &$data) {
   if ($form_id == 'field_ui_field_overview_form') {
     $result = array($data['entity_type'], $data['bundle']);
   }
@@ -214,7 +214,7 @@ function field_patterns_params($action, $form_id, &$data = NULL) {
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
 
-function field_patterns_cleanup($action, $tag, &$data = NULL) {
+function field_patterns_cleanup($action, $tag, &$data) {
   return patterns_results();
 }
 
