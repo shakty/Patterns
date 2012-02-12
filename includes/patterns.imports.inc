@@ -317,13 +317,14 @@ function patterns_import_module($form, &$form_state) {
   $enabled_modules = module_list();
   $modules_with_components = array();
   // the string for the 'import from all' checkbox
-  $imort_from_all_string = "import from all";
-  array_push($modules_with_components, $imort_from_all_string);
+  $import_from_all_string = t('Import from every module');
+  array_push($modules_with_components, $import_from_all_string);
  
   // need to load components to be able to check
+  // TODO: refactor: this does something very similar to patterns_get_tagmodules_index
   patterns_load_components();
   foreach ( module_implements('patterns') as $module)
-  array_push($modules_with_components, $module);
+    array_push($modules_with_components, $module);
  
   // show all modules that implement the hook
   $form['module'] = array(
@@ -338,14 +339,14 @@ function patterns_import_module($form, &$form_state) {
    // now get the forms and save them into $actions
    $module_name = $modules_with_components[$form_state['values']['module']];
    // first check if user might want to import from all
-   if ($module_name != $imort_from_all_string) {
-    $actions = call_user_func($module_name . "_patterns");
+   if ($module_name != $import_from_all_string) {
+    $actions = call_user_func($module_name . "_patterns", NULL);
    }
    else {
     $actions = array();
     foreach ($modules_with_components as $module) {
-     if ($module == $imort_from_all_string) continue;
-     $actions = array_merge($actions, call_user_func($module . "_patterns"));
+     if ($module == $import_from_all_string) continue;
+     $actions = array_merge($actions, call_user_func($module . "_patterns", NULL));
     }
  
    }
