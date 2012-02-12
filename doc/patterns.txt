@@ -136,15 +136,12 @@ reside in *+patterns/components/+*, although modules can use the *+hook_patterns
 to expand the set of supported components.
 
 You need to implement at most 7 pattern hooks, as here explained in the same
-order as they are being called by Patterns module. For examples, see the *+block.inc+*, *+system.inc+*, *+taxonomy.inc+*.
+order as they are being called by Patterns module. For examples, see *+block.inc+*, *+system.inc+*, *+taxonomy.inc+*.
 
 *******************************************************************
 * *+hook_patterns($data)+*: declares that the module is able to handle
   pattern configurations, and specifies which tags and forms are
   supported. The form mappings might depend on the Pattern data.
-
-* *+hook_patterns_actions($data)+*: a short description of what each form will be doing.
-  The form mappings might depend on the Pattern data.
 
 * *+hook_patterns_prepare($action, $tag, &$data)+*: checks the input and adds default
  values. Eventually, it can raise errors which halt further execution
