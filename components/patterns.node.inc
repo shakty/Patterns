@@ -1,24 +1,33 @@
 <?php
 /*
  * @file
- * Patterns component for content types.
+ * Patterns component for content types and nodes.
  */
 function node_patterns($data) {
 
-  $files = array('modules/node/content_types.inc');
+  $files_ct = array('modules/node/content_types.inc');
+  $files_n = array('modules/node/node.pages.inc');
+
+  $actions['node'] = array(
+    PATTERNS_INFO => t('Create/Modify/Delete Nodes'),
+    PATTERNS_CREATE => array(), // TODO: $data['type'] .'_node_form'
+    PATTERNS_MODIFY => array(), // TODO: $data['type'] .'_node_form'
+    PATTERNS_DELETE => array('node_delete_confirm'),
+    PATTERNS_FILES  => $files_n,
+  );
 
   $actions['content_type'] = array(
     PATTERNS_INFO => t('Create/Modify/Delete Content Types'),
     PATTERNS_CREATE => array('node_type_form'),
     PATTERNS_MODIFY => array('node_type_form'),
     PATTERNS_DELETE => array('node_type_delete_confirm'),
-    PATTERNS_FILES  => $files,
+    PATTERNS_FILES  => $files_ct,
   );
 
   $actions['content_type_extract_all'] = array(
     PATTERNS_INFO => t('Create/Modify/Delete Content Types'),
     PATTERNS_MODIFY => array('node_type_form'),
-    PATTERNS_FILES  => $files,
+    PATTERNS_FILES  => $files_ct,
   );
 
   return $actions;
@@ -27,6 +36,7 @@ function node_patterns($data) {
 
 function node_patterns_actions($data) {
   return array(
+    'node_delete_confirm' => t('Delete Nodes'),
     'node_type_form' => t('Create or Edit Content Types'),
     'node_type_delete_confirm' => t('Delete Content Types'),
   );
@@ -35,6 +45,7 @@ function node_patterns_actions($data) {
 // returns arguments needed for the forms when processing automatically
 // $loop is set if we want to extract all values
 function node_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
+  // TODO: node
   if($tag == 'content_type') {
     if($action == PATTERNS_MODIFY) {
       if($form_id == 'node_type_form') {
@@ -57,6 +68,7 @@ function node_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
 
 
 function node_patterns_prepare($action, $tag, &$data) {
+  
   if ($tag == 'content_type') {
     if ($action === PATTERNS_CREATE or $action === PATTERNS_MODIFY) {
       if ($data['node_options']) {
@@ -66,19 +78,83 @@ function node_patterns_prepare($action, $tag, &$data) {
         $data['node_options'] = array('status', 'promote'); // TODO: proper defaults?
       }
     }
-  }
   // TODO: check if the name and type fields are unique when creating
   //       and existing when we are modifying or deleting
+  }
+  else if ($tag == 'node') {
+    global $user;
+
+    // Use 'nid' instead of 'id'.
+    if (empty($data['nid']) && !empty($data['id'])) {
+      $data['nid'] = $data['id'];
+    }
+    unset($data['id']);
+
+    // TODO: are these needed?
+    if (empty($data['name']) && !empty($data['author'])) {
+      $data['name'] = $data['author'];
+    }
+    unset($data['author']);
+
+    if (empty($data['uid'])) $data['uid'] = $user->uid;
+    if (empty($data['name'])) $data['name'] = $user->name;
+
+    if($action == PATTERNS_CREATE){
+      unset($data['nid']);
+      unset($data['vid']);
+      $data['update'] = FALSE;
+    }else if($action == PATTERNS_MODIFY){
+      $data['update'] = TRUE;
+    }else if($action == PATTERNS_DELETE){
+      $data['update'] = FALSE;
+    }
+  }
   return patterns_results();
 }
 
 function node_patterns_validate($action, $tag, &$data) {
-  // TODO: check required fields
-  return patterns_results();
+  $status = PATTERNS_SUCCESS;
+  $msg = '';
+  $result = NULL;
+
+  if($tag == 'node'){
+    if (empty($data['type']) && $action === PATTERNS_CREATE) {
+      $status = PATTERNS_ERR;
+      $msg = t('"type" field is required.');
+    }
+    else if ($action === PATTERNS_DELETE && empty($data['nid'])) {
+      $status = PATTERNS_ERR;
+      $msg = t('"id" field is required.');
+    }
+    else if ($action === PATTERNS_MODIFY && $data['type'] != $data['node']->type){
+      $status = PATTERNS_ERR;
+      $msg = t("You can't change content type for already existing node.");
+    }
+    else if ($action !== PATTERNS_CREATE) {
+      $data['node'] = (object) node_load($data['nid']);
+      if (!$data['node']){
+        $status = PATTERNS_ERR;
+        $msg = t('Cannot modify or delete a nonexsitent Node.');
+      }
+    }
+    // TODO: validate name field - should be valid/existing username
+  }
+  else if($tag == 'content_type'){
+    // TODO: check required fields for content types
+  }
+  return patterns_results($status, $msg, $result);
 }
 
 function node_patterns_callbacks($action, $tag, &$data) {
-  if ($tag == 'content_type') {
+  if ($tag == 'node'){
+      if($action === PATTERNS_CREATE or $action === PATTERNS_MODIFY){
+        // TODO
+      }
+      else {
+        $result = array('node_delete_confirm');
+      }
+  }
+  else if ($tag == 'content_type') {
     if ($action === PATTERNS_CREATE or $action === PATTERNS_MODIFY) {
       $result = array(
         'node_type_form',
@@ -103,7 +179,9 @@ function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
   // TODO: instead: cache_clear_all();
   module_load_include('inc', 'content', 'includes/content.admin');
   module_load_include('inc', 'node', 'content_types'); // TODO: Isn't this already loaded?
-  
+  if ($form_id == 'node_delete_confirm'){
+    $data['confirm'] = 1;
+  }
   if ($form_id == 'node_type_form') {
 
     module_load_include('inc', 'node', 'content_types');
@@ -161,6 +239,8 @@ function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
     $data['op'] = t('Delete');
     $data['confirm'] = 1;
   }
+  else { // TODO: $type_node_form
+  }
 
   $result = $data;
 
@@ -172,11 +252,17 @@ function node_patterns_params($action, $form_id, &$data = NULL, &$a) {
   $msg = '';
   $result = NULL;
 
-  if (($action === PATTERNS_MODIFY and $form_id == 'node_type_form') or
+  if ($form_id == 'node_delete_confirm') {
+    $result = array((object) $data);
+  }
+  else if (($action === PATTERNS_MODIFY and $form_id == 'node_type_form') or
       $form_id == 'node_type_delete_confirm') {
-      $types = (object)_node_types_build();
-      $type = $types->types[$data['type']];
-      $result = array($type);
+    $types = (object)_node_types_build();
+    $type = $types->types[$data['type']];
+    $result = array($type);
+  }
+  else { // TODO: other cases, Node create&modify
+
   }
 
   return patterns_results($status, $msg, $result);
@@ -714,3 +800,4 @@ function content_patterns_old($op, $id = NULL, &$data = NULL, $a = NULL) {
   }
 }
 */
+
