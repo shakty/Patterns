@@ -4,7 +4,6 @@
  *       the form submitting way does not work for some reason
  * TODO: Only set a theme default if 'default' is 1.
  * TODO: Handle administration themes separately.
- * TODO: Do the refactoring necessary for forms.
  * @file
  * Patterns component for system related operations.
  */
@@ -18,14 +17,24 @@ function system_patterns($data) {
     PATTERNS_FILES  => $files,
   );
 
+  // Drupal7.x changed the theme setting form, so we use a custom one
   $actions['theme'] = array('descr' => t('Enable (and set default)/Disable Themes'), 
     PATTERNS_CREATE => array('set_active_theme'),
     PATTERNS_DELETE => array('set_active_theme'),
     PATTERNS_FILES  => $files,
   ); // TODO: Don't run through form.
 
+  // Determine necessary forms for action 'form' based on the data.
+  $forms = array();
+  if($data){
+    if($data['tag'] == 'form' && isset($data['form_id'])){
+      $forms[] = $data['form_id'];
+    } 
+  }
+
   $actions['form'] = array('descr' => t('Submit Custom Forms'),
-    PATTERNS_CREATE => array(), // TODO: Cannot specify forms at this time.
+    PATTERNS_CREATE => $forms,
+    PATTERNS_FILES  => $files,
   );
 
   $actions['call_php_func'] = array('descr' => t('Call PHP Functions'),
@@ -54,7 +63,7 @@ function system_patterns($data) {
 function system_patterns_actions($data) {
   return array(
         'system_modules' => t('System: Enable or disable module'),
-        'set_active_theme' => t('System: Set active theme'), // Drupal7.x changed the theme setting form, so we use a custom one
+        'set_active_theme' => t('System: Set active theme'),
         'form' => t('System: Execute form'),
         'call_php_func_form' => t('Call PHP function: Call function'),
         'variables' => t('System: Set or delete variables'),
@@ -118,6 +127,8 @@ function system_patterns_prepare($action, $tag, &$data) {
 		}
 	}
   }*/
+  else if ($tag == 'form'){
+  }
   else {
     switch ($tag) {
       case 'variable':
@@ -267,6 +278,44 @@ function system_patterns_validate($action, $tag, &$data) {
       $msg = t('The file that you specified does not exist: %file', array('%file' => $data['filepath']));
     }
   }
+  else if ($tag == 'form') {
+    if (!isset($data['form_id'])) {
+      $status = PATTERNS_ERR;
+      $msg = t('"form_id" is missing.');
+    }
+    // Attempt to load required include file from menu.
+    list($menu, $masks) = menu_router_build();
+    foreach ($menu as $item) {
+      if (isset($item['page arguments'][0]) && $item['page arguments'][0] == $data['form_id']
+          && !empty($item['include file'])) {
+        $data['include'] = $item['include file'];
+        break;
+      }
+    }
+
+    if (!empty($data['include']) && is_file($data['include'])) {
+      require_once $data['include'];
+    }
+    elseif (is_array($data['include'])) {
+      $data['include'] = drupal_get_path('module', $data['include']['module']) . '/' . $data['include']['file'];
+    }
+
+    if (!function_exists($data['form_id'])) {
+      if (!empty($data['module']) && is_string($data['module'])) {
+        $modules = module_list();
+        if (in_array($data['module'], $modules)) {
+          // try most common include file names
+          module_load_include('inc', $data['module']);
+          module_load_include('inc', $data['module'], $data['module'] . '.admin');
+          module_load_include('inc', $data['module'], $data['module'] . '.page');
+        }
+      }
+    }
+    if (!function_exists($data['form_id'])) {
+      $status = PATTERNS_ERR;
+      $msg = t("Couldn't load the form %form. Check if all required modules are enabled and try to define 'include' or 'module' for this action.", array('%form' => $data['form_id']));
+    }
+  }
   // TODO: other tags
 
   return patterns_results($status, $msg);
@@ -316,23 +365,44 @@ function system_patterns_build($action, $form_id, &$data = NULL, &$a) {
       $msg = t('The given function %func is not callable', array('%func' => $data['function']));
     }
     // $result = $data;
+  } // TODO: other forms?
+  else { // Running a user-provided form through tag 'form'.
+    $form_state = $data['form_state_extras'];
+    unset($data['form_state_extras']);
+    unset($data['include']);
+    $form_state['values'] = $data;
+    $form_state['submitted'] = FALSE;
+    if (!isset($form_state['storage'])) {
+      $form_state['storage'] = NULL;
+    }
+    $result = $form_state;
   }
-  // TODO: other forms
   return patterns_results($status, $msg, $result);
 }
 
 // Build a patterns actions and parameters
 function system_patterns_params($action, $form_id, &$data = NULL, &$a) {
+  $result = NULL;
+
   if ($form_id == 'set_active_theme') {
     $result = array($data['theme_default']);
   }
   elseif ($form_id == 'call_php_func_form') {
     $result = array($data['function'], $data['type'], $data['module'], $data['name'], $data['filepath'], $data['arguments']);
-  }/*elseif($form_id=='system_delete_date_format_type_form'){
+  }
+  // TODO: other forms?
+
+  /*elseif($form_id=='system_delete_date_format_type_form'){
 		$data['confirm']=1;
 		$result=array($data['date_type']);
 	}*/
-  // TODO: other forms
+  else { // Running a user-provided form through tag 'form'.
+    if (isset($data['args'])) {
+      $params = $data['args'];
+      unset($data['args']);
+      $result = params;
+    }
+  } 
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
 

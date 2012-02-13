@@ -2,28 +2,28 @@
 # QScience
 
 info:
-  title: fill in values for forms
+  title: Fill in values for forms
   description: Based on http://drupal.org/node/516332
   author: QScience
-  category: QScience
+  category: System
   version: 1.0
   core: 7.x
-  author_email: sbalietti@ethz.ch
-  author_website: qscience.csko.hu
 
 modules:
   - system
 
 actions: 
-  - tag: form
-    form_id: system_performance_settings
-    cache: 1
-    page_compression: 1
-    block_cache: 1
-    preprocess_css:NULL
-	  
-  - tag: form
-    form_id: user_admin_settings
-    anonymous: Anonymous
+  - create:
+      tag: form
+      form_id: system_performance_settings
+      cache: 1
+      page_compression: 1
+      block_cache: 1
+      preprocess_css: NULL
+      include: "modules/system/system.admin.inc"
 
-      
+  - create:
+      tag: form
+      form_id: user_admin_settings
+      anonymous: Anonymous
+

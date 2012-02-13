@@ -70,8 +70,8 @@ function patterns_prepare_actions(&$actions, $actions_map) {
 
       if (!patterns_error_check_results($results)) {
         // TODO: Use $index when there are multiple patterns again.
-        // $errors[] = t('Action #%num (%tag) in pattern %title: !msg', array('!msg' => $error, '%num' => $index + 1, '%tag' => $data['tag'], '%title' => $pattern_title));
-        $errors[] = t('pattern %title: !msg', array('!msg' => $error, '%tag' => $data['tag'], '%title' => $pattern_title));
+        // $errors[] = t('Action #%num (%tag) in pattern %title: !msg', array('!msg' => $results['msg'], '%num' => $index + 1, '%tag' => $data['tag'], '%title' => $pattern_title));
+        $errors[] = t('pattern %title: !msg', array('!msg' => $results['msg'], '%tag' => $data['tag'], '%title' => $pattern_title));
       }
     }
   }
