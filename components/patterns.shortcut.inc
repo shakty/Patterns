@@ -3,19 +3,20 @@
  * @file
  * Patterns component for shortcut.
  *
- * there are seven form in the shortcut moudle.they can be seprated in three kinds:set, link, switch for user.
- * 
- * set(three form):
- *     add a shortcut set:just give a name for the new shortcut set.
- *     delete a shortcut set:just supply a shortcut set's name.
- *     rename a shortcut set:need two name, one is used to define tht shortcut set which will be modified, the other is the new name.
- * 
- * link(three form):
+ * There are seven forms in the shortcut module. They can be separated into three kinds:
+ * set, link, switch for user.
+ *
+ * set(three forms):
+ *     add a shortcut set: just give a name for the new shortcut set.
+ *     delete a shortcut set: just supply a shortcut set's name.
+ *     rename a shortcut set: need two name, one is used to define tht shortcut set which will be modified, the other is the new name.
+ *
+ * link(three forms):
  *     add a shortcut link: supply the name of a shortcut set which the new link will be in,supply the link's title and path.
  *     delete a shortcut link: just give the link's id, the id is in the menu_links table of the database.
  *     edit a shortcut link: need the link's id, need the link's new title or/and new path.
  *
- * switch for user(one form);
+ * switch for user(one forms);
  *     need a user's name
  *     need a shortcut set'name
  *     the user will use the shortcut set.
@@ -24,9 +25,9 @@
 /**
  * hook_patterns()
  */
-function shortcut_patterns() {
+function shortcut_patterns($data) {
   $files = array('modules/shortcut/shortcut.admin.inc');
-  
+
   $actions['shortcut_set'] = array(
     PATTERNS_INFO => t('create/delete/modify shortcut set'),
     PATTERNS_CREATE => array('shortcut_set_add_form'),
@@ -46,11 +47,11 @@ function shortcut_patterns() {
     PATTERNS_MODIFY => array('shortcut_set_switch'),
     PATTERNS_FILES => $files,
     );
-  
+
   return $actions;
 }
 
-function shortcut_patterns_actions() {
+function shortcut_patterns_actions($data) {
   return array(
     'shortcut_set_add_form' => t('Shortcut: add a new shortcut set'),
     'shortcut_set_edit_form' => t('Shortcut: change the name a shortcut set'),
@@ -65,7 +66,7 @@ function shortcut_patterns_actions() {
 /**
  * hook_patterns_prepare()
  */
-function shortcut_patterns_prepare($action, $tag, &$data = NULL) {
+function shortcut_patterns_prepare($action, $tag, &$data) {
   // for set.
   if ($tag == 'shortcut_set') {
     if ($action == PATTERNS_CREATE ) {
@@ -88,33 +89,33 @@ function shortcut_patterns_prepare($action, $tag, &$data = NULL) {
 
   // for link
   if ($tag == 'shortcut_link' ) {
-    if( $action == PATTERNS_CREATE) {
+    if ($action == PATTERNS_CREATE) {
       $data['searchtitle'] = $data['shortcut_set_name'];
       $data['shortcut_link']['link_title'] = $data['shortcut_link_title'];
       $data['shortcut_link']['link_path'] = $data['shortcut_link_path'];
     }
-    if( $action == PATTERNS_MODIFY) {
+    if ($action == PATTERNS_MODIFY) {
       $data['shortcut_link']['link_title'] = $data['new_link_title'];
       $data['shortcut_link']['link_path'] = $data['new_link_path'];
     }
   }
-      
+
   return patterns_results();
 }
 
 /**
  * hook_patterns_validate()
  */
-function shortcut_patterns_validate($action, $tag, &$data = NULL) {
+function shortcut_patterns_validate($action, $tag, &$data) {
 
   $status = PATTERNS_SUCCESS;
   $msg = '';
 
   //for link's edit and delete.
   //these two form have the third parm:$shortcut_link, follow code provide the parm.
-  if( $tag == 'shortcut_link' ) {
-    if( $action == PATTERNS_MODIFY || $action == PATTERNS_DELETE ) {
-      $shortcutlink = db_select('menu_links','ml')
+  if ($tag == 'shortcut_link') {
+    if ($action == PATTERNS_MODIFY || $action == PATTERNS_DELETE) {
+      $shortcutlink = db_select('menu_links', 'ml')
         //->fields('ml', array('menu_name','link_title', 'link_path', 'mlid'))
         ->fields('ml')
         ->condition('mlid', $data['menu_link_id'])
@@ -125,12 +126,12 @@ function shortcut_patterns_validate($action, $tag, &$data = NULL) {
       $data['shortcut_link_parm'] = $shortcutlink;
     }
   }
-    
+
   //for set's edit&delete and link's add and switch user.
   //these three form(switch user just use the $set) have the third parm:$shortcut_set, follow code provide the parm.
-  if(( $tag == 'shortcut_set' && $action != PATTERNS_CREATE ) || ($tag == 'shortcut_link' && $action == PATTERNS_CREATE) || ($tag == 'shortcut_set_user')) {
+  if (($tag == 'shortcut_set' && $action != PATTERNS_CREATE) || ($tag == 'shortcut_link' && $action == PATTERNS_CREATE) || ($tag == 'shortcut_set_user')) {
     $set = db_select('shortcut_set', 'ss')
-      ->fields('ss',array('set_name'))
+      ->fields('ss', array('set_name'))
       ->condition('title', $data['searchtitle'])
       ->execute()
       ->fetchField();
@@ -138,20 +139,21 @@ function shortcut_patterns_validate($action, $tag, &$data = NULL) {
       $status = PATTERNS_ERR;
       $msg = 'Shortcut Error:there is no such name shortcut set';
       return patterns_results($status, $msg);
-    } else {
+    }
+    else {
       module_load_include('module', 'shortcut');
       $shortcutsetobj = shortcut_set_load($set);
       $data['shortcut_set_obj'] = $shortcutsetobj;
-      if( $tag == 'shortcut_set_user') {
+      if ($tag == 'shortcut_set_user') {
         $data['set'] = $set;
         $data['new'] = $data['name'];
       }
-    } 
+    }
     if ($tag =='shortcut_set_user') {
-      //this form have the third parm:$account, follow code provide it.
-      if(isset($data['user'])) {
+      // This form has the third parm: $account, the following code provides it.
+      if (isset($data['user'])) {
         module_load_include('module', 'user');
-        if(($data['account'] = user_load_by_name( $data['user'])) == FALSE) {
+        if (($data['account'] = user_load_by_name( $data['user'])) == FALSE) {
           $status = PATTERNS_ERR;
           $msg = 'Shortcut Error:there is no such a user.';
           return patterns_results($status, $msg);
@@ -160,14 +162,14 @@ function shortcut_patterns_validate($action, $tag, &$data = NULL) {
     }
 
   }
-    
+
   return patterns_results($status, $msg);
 }
 
 /**
  * hook_patterns_callbacks()
  */
-function shortcut_patterns_callbacks($action, $tag, &$data = NULL) {
+function shortcut_patterns_callbacks($action, $tag, &$data) {
   $allform = shortcut_patterns();
   $result = $allform[$tag][$action];
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful(in callbacks function)'), $result);
@@ -191,7 +193,7 @@ function shortcut_patterns_params($action, $form_id, &$data = NULL, &$a) {
     case 'shortcut_set_edit_form':
     case 'shortcut_set_delete_form':
     case 'shortcut_link_add':
-      $result = array( $data['shortcut_set_obj'] ); 
+      $result = array( $data['shortcut_set_obj'] );
       break;
     case 'shortcut_set_switch':
       $result = array( $data['account'] );
@@ -207,6 +209,6 @@ function shortcut_patterns_params($action, $form_id, &$data = NULL, &$a) {
 /**
  * hook_patterns_cleanup()
  */
-function shortcut_patterns_cleanup($action, $tag, &$data = NULL) {
+function shortcut_patterns_cleanup($action, $tag, &$data) {
   return patterns_results();
 }

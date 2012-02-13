@@ -111,7 +111,7 @@ class PatternsPrivilegesTestCase extends DrupalWebTestCase {
     if ($response == 200) {
       //$this->assertTitle('Edit Pattern');
       // TODO: Get path.
-      // $filepath = 
+      // $filepath =
       // $this->assertRaw(t('Path') . ':</td><td>' . $filepath);
       $this->assertRaw('<td>' . t('Enabled') . ':</td><td>' . t('No') . t('</td>'));
       // TODO: Why can't I use PatternRunTestCase::loadPattern('variables.yaml') ? Maybe because the class is abstract?
@@ -190,6 +190,47 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
 
   }
 
+  /**
+   * Load all pattern files (only YAML for now) from a directory
+   * and execute the callback on each of those.
+   * The directory must be inside the pattern module root.
+   *
+   */
+  function runPatternsFromDir($dir, $callback) {
+
+    if (empty($callback)) {
+      $this->error(t('No callback passed to runPatternsFromDir.'));
+      return FALSE;
+    }
+    if (!is_callable($callback, TRUE)) {
+      $this->error(t('Callback to runPatternsFromDir is not callable.'));
+      return FALSE;
+    }
+    $dir = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/' . $dir;
+    if (!file_exists($dir)) {
+      $this->error(t('Directory not found: ' . $dir));
+      return FALSE;
+    }
+
+
+    if ($handle = opendir($dir)) {
+      while (false !== ($entry = readdir($handle))) {
+        $path_parts = pathinfo($entry);
+        if ($path_parts['extension'] === 'yaml') {
+          $file = file_get_contents($dir . $entry);
+          if (empty($file)) {
+            $this->fail('Error while loading ' . $path_parts['filename']);
+            continue;
+          }
+          call_user_func($callback, $file);
+        }
+      }
+      closedir($handle);
+    }
+    else {
+      $this->error('Error opening directory ' + $dir);
+    }
+  }
   /**
    * Loads a pattern text file from a directory contained in the Patterns module.
    *

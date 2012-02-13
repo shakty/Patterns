@@ -4,7 +4,7 @@
  * Configuration file.
  *
  * Permissions, Help, Requirements. Settings form. Path to directories.
- * 
+ *
  */
 
 /**
@@ -71,7 +71,7 @@ function patterns_patterns_components() {
  * executed ones).
  */
 function patterns_config_get_files_dir() {
-  return drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns') . '/'; 
+  return drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns') . '/';
 }
 
 /**

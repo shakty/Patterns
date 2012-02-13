@@ -53,6 +53,7 @@
 module_load_include('inc', 'patterns', 'includes/patterns.config');
 module_load_include('inc', 'patterns', 'includes/patterns.db');
 module_load_include('inc', 'patterns', 'includes/patterns.error');
+module_load_include('inc', 'patterns', 'includes/patterns.export');
 module_load_include('inc', 'patterns', 'includes/patterns.io');
 module_load_include('inc', 'patterns', 'includes/patterns.parser');
 module_load_include('inc', 'patterns', 'includes/patterns.utils');
@@ -148,6 +149,13 @@ function patterns_menu() {
     'title' => 'Quick Run',
     'page callback' => 'patterns_editor',
     'page arguments' => array('patterns_quickrun'),
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_LOCAL_TASK
+  );
+  $items['admin/patterns/export'] = array(
+    'title' => 'Export',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('patterns_export'),
     'access arguments' => array('administer patterns'),
     'type' => MENU_LOCAL_TASK
   );
@@ -258,7 +266,7 @@ function patterns_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10
   );
-  
+
   $items['admin/patterns/import/file'] = array(
     'title' => 'Import File',
     'page callback' => 'drupal_get_form',
@@ -387,6 +395,14 @@ function patterns_list() {
     '#suffix' => '</a>',
   );
 
+  $form['commands']['export'] = array(
+    '#type' => 'button',
+    '#value' => 'Export',
+    '#attributes' => array('style' => 'float:right'),
+    '#prefix' => '<a href="' . url('admin/patterns/export') . '">',
+    '#suffix' => '</a>',
+  );
+
   $output = drupal_render($form);
 
   // Load the the pattern handlers from compontents directory
@@ -474,6 +490,7 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
     '#description' => t("Decide when to run sub-patterns that are called by the currently run pattern. If unsure, stick to recommended setting. Note that your choice won't have any effect if your pattern doesn't contain sub-patterns or if this setting has been defined within the pattern file itself."),
     '#options' => $options,
     '#default_value' => 'first-update',
+    '#disabled' => 'true',
   );
 
   $disclaimer = t('Please be sure to backup your site before running a pattern. Patterns are not guaranteed to be reversable in case they do not execute well or if unforseen side effects occur.');
@@ -782,10 +799,15 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
 
 /**
  * Creates the list of modules implementing the pattern hook. Additional
- * information is provided such as the files or the forms needed by the tag.
+ * information is provided such as the files or the forms needed by the tag. It
+ * uses caching, unless a specific tag is being looked up.
  *
  * @param string $tag_name
- *   (optional) If set, only information about this specific tag is returned. Defaults to NULL.
+ *   (optional) If set, only information about this specific tag is returned
+ *   and the cache will be refreshed. Defaults to NULL.
+ * @param array $data
+ *   (optional) The data of the pattern. If $tag_name was set, $data must be
+ *   set as well. Defaults to NULL.
  * @param integer $id
  *   (optional) If set, only this particular bit of information is returned. Defaults to NULL.
  *   Allowed values for $id are: 'descr', PATTERNS_CREATE, PATTERNS_MODIFY,
@@ -796,22 +818,22 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
  *
  * @return array $tag_modules The tag_modules index built according to the parameters.
  */
-function patterns_get_tagmodules_index($tag_name = NULL, $id = NULL) {
+function patterns_get_tagmodules_index($tag_name = NULL, $data = NULL, $id = NULL) {
   static $tag_modules;
 
-  // Index not yet built.
-  if (!is_array($tag_modules)) {
+  // Index not yet built or $tag_name is set.
+ if (!is_array($tag_modules) || $tag_name != NULL) {
     $tag_modules = array();
     // Get a list of tags and their modules.
+    // TODO: Optimize: if $tag_name is set, and $tag_modules is not empty, look
+    // for only the modules that we have seen before implement the tag.
     foreach (module_implements('patterns') as $module) {
-      $tags = module_invoke($module, 'patterns'); // Removed third parameter tags. Should be no longer necessary.
-      if (!empty($tags)) {
-        foreach ($tags as $tag => $value) {
-          // Add the reference to the module within the information which each
-          // module is already returning
-          $value['module'] = $module;
-          $tag_modules[$tag] = $value;
-        }
+      $tags = module_invoke($module, 'patterns', $data);
+      foreach ($tags as $tag => $value) {
+        // Add the reference to the module within the information which each
+        // module is already returning
+        $value['module'] = $module;
+        $tag_modules[$tag] = $value;
       }
     }
   }

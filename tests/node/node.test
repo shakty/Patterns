@@ -1,0 +1,54 @@
+<?php
+/**
+ * @file
+ * SimpleTests for the Node component of Patterns (Node).
+ */
+
+class PatternsNodeTestCase extends PatternRunTestCase {
+
+  const NODE_TESTS_DIR = 'tests/node/';
+
+  static function getInfo() {
+    return array(
+      'name' => 'Node component (Nodes)',
+      'description' => 'Creates, modifies, and deletes Nodes.',
+      'group' => 'Patterns',
+    );
+  }
+
+  private function testCreate() { // TODO
+    // The node should not exist at this point.
+    // Run the pattern.
+    // Expected messages.
+    // The node should exist with the right values.
+  }
+
+  private function testDelete() {
+    // TODO
+    // First, create the node.
+    // The node should exist at this point.
+    $this->assertIdentical($node_count, '1', t('The node should exist at this point.'));
+
+    // Run the pattern.
+    parent::runFile('node_delete.yaml', 'Node (delete)', PatternsNodeTestCase::NODE_TESTS_DIR);
+
+    // Expected messages.
+    // TODO
+    $this->assertUniqueText(t('The Article XY has been removed.'));
+
+    // The node should not exist at this point.
+    $this->assertIdentical($node_count, '0', t('The node should not exist at this point.'));
+
+  }
+
+  private function testModify() {
+    // First, create the node.
+    // The node should exist at this point.
+    $this->assertIdentical($node_count, '1', t('The node should exist at this point.'));
+
+    // Run the pattern.
+    // Expected messages.
+    // The node should exist with the right values.
+  }
+
+}

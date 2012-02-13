@@ -1,0 +1,15 @@
+# YAML Taxonomies Pattern
+# QScience
+
+info:
+  title: Invalid Pattern test
+  description: Missing section actions
+  author: QScience
+  category: Taxonomy
+  version: 1.0
+  core: 7.x  
+
+ - modify:
+        tag: vocabulary
+        machine_name: anothervoc
+        name: Yet Another Vocabulary

@@ -16,9 +16,9 @@ function patterns_theme() {
       'forms' => NULL
     ),
     'patterns_list' => array(
-      'variables' => array( 
-                      'patterns' => array(),
-                      'invalid' => array(),
+      'variables' => array(
+                     'patterns' => array(),
+                     'invalid' => array(),
                      ),
     ),
     'patterns_patterns_fieldset' => array(
@@ -29,7 +29,7 @@ function patterns_theme() {
 
 /**
  * @TODO Doc.
- * 
+ *
  * @param $forms
  * @ingroup themeable
  */
@@ -47,7 +47,7 @@ function theme_patterns_form_helper_menu($forms) {
 
 /**
  * @TODO Doc.
- * 
+ *
  * @param unknown_type $form_id
  * @param unknown_type $values
  * @ingroup themeable
@@ -70,37 +70,43 @@ function theme_patterns_form_helper($form_id, $values) {
 
 /**
  * Theme a list of patterns into separated fieldset ordered by category
- * 
+ *
  * @param array $args An associative array containing: containing key 'patterns'
  * @ingroup themeable
  */
 function theme_patterns_list($args) {
-  
+
 //  print_r($args);
 //  exit;
-//  
+//
   $patterns = $args[PATTERNS_STATUS_OK];
   $removed = $args[PATTERNS_STATUS_REMOVED];
-  
-  
+
+  $patterns_title = '<div id="all_patterns_div"><h3>Available Patterns</h3>';
+
+  if (!file_exists(libraries_get_path('spyc') . '/spyc.php')) {
+    $spyc = l(t('Spyc'), 'http://code.google.com/p/spyc/');
+    $patterns_title .= t('!Spyc was not found. Please install the library in \'sites\all\libraries\spyc\' in order read YAML patterns.', array( '!Spyc' => $spyc ));
+  }
+
   $form['patterns'] = array(
-    '#prefix' => '<div id="all_patterns_div"><h3>Available Patterns</h3>',
+    '#prefix' => $patterns_title,
     '#suffix' => ' </div>',
     '#tree' => TRUE,
   );
-  
-  
+
+
   if (empty($patterns)) {
-   $form['patterns']['#markup'] =  t('No patterns available.');
+    $form['patterns']['#markup'] =  t('No patterns available.');
   }
   else {
 
     foreach ($patterns as $pid => $pattern) {
-      
-       $category = $pattern->info['category'] ? $pattern->info['category'] : t('Other');
-       
-       $form['patterns'][$category][] = _patterns_pattern_build_row($pid, $pattern);
-       $form['patterns'][$category] += array(
+
+      $category = $pattern->info['category'] ? $pattern->info['category'] : t('Other');
+
+      $form['patterns'][$category][] = _patterns_pattern_build_row($pid, $pattern);
+      $form['patterns'][$category] += array(
         '#type' => 'fieldset',
         '#title' => t($category),
         '#collapsible' => TRUE,
@@ -108,9 +114,9 @@ function theme_patterns_list($args) {
         '#theme' => 'patterns_patterns_fieldset',
         '#header' => array(
           array('data' => t('Enabled'), 'class' => array('checkbox')),
-          t('Name'),
-          t('Version'),
-          t('Description'),
+            t('Name'),
+            t('Version'),
+            t('Description'),
           array('data' => t('Operations'), 'colspan' => 4),
         ),
         // Ensure that the "Core" package fieldset comes first.
@@ -118,24 +124,24 @@ function theme_patterns_list($args) {
       );
     }
   }
-  
-  
+
+
   $form['removed'] = array(
     '#prefix' => '<div id="removed_patterns_div"><h3>Removed Patterns</h3>',
     '#suffix' => ' </div>',
     '#tree' => TRUE,
   );
-  
+
   if (empty($removed)) {
     $form['removed']['#markup'] = t('No patterns in the recycle bin.');
   }
-  else {  
+  else {
     foreach ($removed as $pid => $pattern) {
-      
-       $category = $pattern->info['category'] ? $pattern->info['category'] : t('Other');
-       
-       $form['removed'][$category][] = _patterns_pattern_build_row($pid, $pattern);
-       $form['removed'][$category] += array(
+
+      $category = $pattern->info['category'] ? $pattern->info['category'] : t('Other');
+
+      $form['removed'][$category][] = _patterns_pattern_build_row($pid, $pattern);
+      $form['removed'][$category] += array(
         '#type' => 'fieldset',
         '#title' => t($category),
         '#collapsible' => TRUE,
@@ -143,9 +149,9 @@ function theme_patterns_list($args) {
         '#theme' => 'patterns_patterns_fieldset',
         '#header' => array(
           array('data' => t('Enabled'), 'class' => array('checkbox')),
-          t('Name'),
-          t('Version'),
-          t('Description'),
+            t('Name'),
+            t('Version'),
+            t('Description'),
           array('data' => t('Operations'), 'colspan' => 4),
         ),
         // Ensure that the "Core" package fieldset comes first.
@@ -209,7 +215,7 @@ function theme_patterns_patterns_fieldset($variables) {
       $row[] = array('data' => $value);
     }
 
-    $rows[] = $row;   
+    $rows[] = $row;
   }
 
   return theme('table', array('header' => $form['#header'], 'rows' => $rows));
@@ -218,7 +224,7 @@ function theme_patterns_patterns_fieldset($variables) {
 
 /**
  * Build a table row for the tables in the pattern list page.
- * 
+ *
  * @param mixed $pid the numeric id of the pattern as in the database
  * @param StdClass $pattern A pattern object as loaded from database
  * @param array $extra associative array of extra parameters. Not used now.
@@ -250,15 +256,15 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
     $actions['edit'] = l(t('Edit'), 'admin/patterns/edit/' . $pid);
 
     // Remove Link
-    //$actions['remove'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax')))); 
- 
+    //$actions['remove'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax'))));
+
     // Remove Link
-    $actions['trash'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax')))); 
-    
+    $actions['trash'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax'))));
+
      // Remove Link
-    $actions['remove'] = l(t('Remove'), 'admin/patterns/remove/' . $pid); 
-    
-    
+    $actions['remove'] = l(t('Remove'), 'admin/patterns/remove/' . $pid);
+
+
     // Not yet ready
     //Publish/Unpublish link
     //if (variable_get('patterns_allow_publish', FALSE)) {
@@ -302,7 +308,7 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
 
   //@TODO: do some checking about pattern compatibility
   $compatible = TRUE;
-  
+
   // If this module is compatible, present a checkbox indicating
   // this module may be installed. Otherwise, show a big red X.
   if ($compatible) {

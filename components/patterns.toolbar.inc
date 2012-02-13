@@ -7,7 +7,7 @@
 /**
  * hook_patterns()
  */
-function toolbar_patterns() {
+function toolbar_patterns($data) {
   $files = array('modules/user/user.admin.inc');
   $actions['toolbarrole'] = array(
     PATTERNS_INFO => t('deside who can see the toolbar'),
@@ -17,18 +17,18 @@ function toolbar_patterns() {
   return $actions;
 }
 
-function toolbar_patterns_actions() {
+function toolbar_patterns_actions($data) {
   return array(
     'user_admin_permissions' => t('deside who can use toolbar'),
     );
 }
 
 /**
- * hook_patterns_prepart()
+ * hook_patterns_prepare()
  */
-function toolbar_patterns_prepare($action, $tag, &$data = NULL) {
+function toolbar_patterns_prepare($action, $tag, &$data) {
 
-  module_load_include('module', 'user', 'user'); 
+  module_load_include('module', 'user', 'user');
   $data['role_names'] = user_roles();
   $data['role_permissions'] = user_role_permissions($data['role_names']);
 
@@ -61,7 +61,7 @@ function toolbar_patterns_prepare($action, $tag, &$data = NULL) {
 /**
  * hook_patterns_validate()
  */
-function toolbar_patterns_validate($action, $tag, &$data = NULL) {
+function toolbar_patterns_validate($action, $tag, &$data) {
   $status = PATTERNS_SUCCESS;
   $msg = '';
 
@@ -89,10 +89,10 @@ function toolbar_patterns_validate($action, $tag, &$data = NULL) {
   if (is_array($data['addroles'])) {
     foreach ($data['addroles'] as $key => $value) {
       $rid = db_select('role', 'r')
-             ->fields('r', array('rid'))
-             ->condition('r.name', $value)
-             ->execute()
-             ->fetchField();
+               ->fields('r', array('rid'))
+               ->condition('r.name', $value)
+               ->execute()
+               ->fetchField();
       if ($rid == 3) {
         $status = PATTERNS_ERR;
         $msg = t('administrator should keep static.');
@@ -123,10 +123,10 @@ function toolbar_patterns_validate($action, $tag, &$data = NULL) {
   if (is_array($data['delroles'])) {
     foreach ($data['delroles'] as $key => $value) {
       $rid = db_select('role', 'r')
-             ->fields('r', array('rid'))
-             ->condition('r.name', $value)
-             ->execute()
-             ->fetchField();
+               ->fields('r', array('rid'))
+               ->condition('r.name', $value)
+               ->execute()
+               ->fetchField();
       if ($rid == 3) {
         $status = PATTERNS_ERR;
         $msg = t('administrator should keep static.');
@@ -159,14 +159,14 @@ function toolbar_patterns_validate($action, $tag, &$data = NULL) {
   foreach ($data['status'] as $rid => $value) {
     $data[$rid] = $value;
   }
-      
+
   return patterns_results($status, $msg);
 }
-    
+
 /**
  * hook_patterns_callbacks()
  */
-function toolbar_patterns_callbacks($action, $tag, &$data = NULL) {
+function toolbar_patterns_callbacks($action, $tag, &$data) {
   $result = array('user_admin_permissions');
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
@@ -175,7 +175,7 @@ function toolbar_patterns_callbacks($action, $tag, &$data = NULL) {
  * hook_patterns_build()
  */
 function toolbar_patterns_build($action, $form_id, &$data = NULL, &$a) {
-  module_load_include('inc', 'user', 'user.admin'); 
+  module_load_include('inc', 'user', 'user.admin');
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful(in build function)'), $data);
 }
 
@@ -190,6 +190,6 @@ function toolbar_patterns_params($action, $form_id, &$data = NULL, &$a) {
 /**
  * hook_patterns_cleanup()
  */
-function toolbar_patterns_cleanup($action, $tag, &$data = NULL) {
+function toolbar_patterns_cleanup($action, $tag, &$data) {
   return patterns_results();
 }

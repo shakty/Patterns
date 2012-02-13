@@ -2,16 +2,18 @@ name = Patterns
 description = Enables extremely simple adding/removing features to your site with minimal to no configuration.
 dependencies[] = token
 dependencies[] = libraries
+dependencies[] = macro
 core = 7.x
 version = 7.x-1.x-dev
+build = 7012
 package = Site Setup
-php = 5.1
+php = 5.2
 
 ; Test Files
 
 ; Core
 files[] = tests/patterns.test
-
+files[] = tests/parser/patterns.parser.test
 files[] = tests/importing/patterns.importing.test
 
 ; Components
@@ -23,5 +25,6 @@ files[] = tests/color/patterns.color.test
 files[] = tests/pathauto/patterns.pathauto.test
 files[] = tests/menu/patterns.menu.test
 files[] = tests/node/content.test
+files[] = tests/node/node.test
 files[] = tests/toolbar/patterns.toolbar.test
 files[] = tests/shortcut/patterns.shortcut.test

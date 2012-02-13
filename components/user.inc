@@ -7,51 +7,89 @@
 /**
  * Implements hook_patterns() for the user module.
  */
-function user_patterns() {
+function user_patterns($data) {
 
-  $files = array('modules/user/user.admin.inc');
+  $files = array('modules/user/user.admin.inc', 'modules/user/user.pages.inc');
 
-  $actions['user'] = array('descr' => t('Create/Modify/Delete Users'),
+  $actions['user'] = array(
+    PATTERNS_INFO => t('Create/Modify/Delete Users'),
     PATTERNS_CREATE => array('user_register_form'),
     PATTERNS_MODIFY => array('user_profile_form'),
     PATTERNS_DELETE => array('user_cancel_confirm_form'),
-    'files'  => $files,
+    PATTERNS_FILES => $files,
   );
 
-  $actions['role'] = array('descr' => t('Create/Modify/Delete Roles'),
+  $actions['role'] = array(
+    PATTERNS_INFO => t('Create/Modify/Delete Roles'),
     PATTERNS_CREATE => array('user_admin_roles'),
     PATTERNS_MODIFY => array('user_admin_role'),
     PATTERNS_DELETE => array('user_admin_role_delete_confirm'),
-    'files'  => $files,
+    PATTERNS_FILES => $files,
   );
 
-  $actions['permission'] = array('descr' => t('Create/Modify/Delete Permissions'), 
+  $actions['permission'] = array(
+    PATTERNS_INFO => t('Create/Modify/Delete Permissions'),
     PATTERNS_CREATE => array('user_admin_permissions'),
     PATTERNS_MODIFY => array('user_admin_permissions'),
     PATTERNS_DELETE => array('user_admin_permissions'),
-    'files'  => $files,
+    PATTERNS_FILES => $files,
   );
 
   return $actions;
 
 }
 
-function user_patterns_actions() {
+function user_patterns_actions($data) {
   return array(
-        'user_register_form' => t('User: Add user with the Register Form'),
-        'user_profile_form' => t('User: Edit user'),
-        'user_cancel_confirm_form' => t('User: Delete user'),
-        'user_admin_roles' => t('User: Add role'),
-        'user_admin_role' => t('User: Edit role'),
-        'user_admin_role_delete_confirm' => t('User: Delete role'),
-        'user_admin_permissions' => t('User: Configure permissions'),
-      );
+    'user_register_form' => t('User: Add user with the Register Form'),
+    'user_profile_form' => t('User: Edit user'),
+    'user_cancel_confirm_form' => t('User: Delete user'),
+    'user_admin_roles' => t('User: Add role'),
+    'user_admin_role' => t('User: Edit role'),
+    'user_admin_role_delete_confirm' => t('User: Delete role'),
+    'user_admin_permissions' => t('User: Configure permissions'),
+  );
 }
 
+// returns arguments needed for the forms when processing automatically
+// $loop is set if we want to extract all values
+function user_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
+  $return = array();
+  $loop = TRUE;
+  if ($form_id == 'user_profile_form') {
+    $query = db_select('users', 'u');
+    $query->condition('u.uid', 0, '<>');
+    $query = $query->extend('PagerDefault')->extend('TableSort');
+    $query->fields('u', array('uid'));
+    $result = $query->execute()->fetchAll();
+    foreach ($result as $account) {
+      $user = user_load($account->uid);
+      array_push($return, array($user));
+    }
+  }
+  elseif ($form_id == 'user_admin_role') {
+    $roles = user_roles();
+    foreach ($roles as $rid => $name) {
+      if (!($rid == DRUPAL_ANONYMOUS_RID || $rid == DRUPAL_AUTHENTICATED_RID)) {
+        array_push($return, array((object) array('rid' => $rid, 'name' => $name, 'weight' => 0)));
+      }
+    }
+  }
+  elseif ($form_id == 'user_admin_permissions') {
+    $roles = user_roles();
+    foreach ($roles as $rid => $name) {
+      if (!($rid == DRUPAL_ANONYMOUS_RID || $rid == DRUPAL_AUTHENTICATED_RID)) {
+        array_push($return, array($rid));
+      }
+    }
+  }
+  //	print_r($return);
+  return $return;
+}
 /**
  * Implements hook_patterns_prepare() for the user module.
  */
-function user_patterns_prepare($action, $tag, &$data = NULL) {
+function user_patterns_prepare($action, $tag, &$data) {
   if ($tag == 'user') {
     // Check with isset first, otherwise we get a notice
     if (!isset($data['name'])) {
@@ -79,7 +117,10 @@ function user_patterns_prepare($action, $tag, &$data = NULL) {
 
     // @TODO: Check if we are overriding the password
     if (isset($data['password'])) {
-      $data['pass'] = array('pass1' => $data['password'], 'pass2' => $data['password']);
+      $data['pass'] = array(
+        'pass1' => $data['password'],
+        'pass2' => $data['password'],
+      );
       unset($data['password']);
     }
 
@@ -132,7 +173,7 @@ function user_patterns_prepare($action, $tag, &$data = NULL) {
 }
 
 // Validate the values for an action before running the pattern
-function user_patterns_validate($action, $tag, &$data = NULL) {
+function user_patterns_validate($action, $tag, &$data) {
   $status = PATTERNS_SUCCESS;
   $msg = '';
 
@@ -212,7 +253,7 @@ function user_patterns_validate($action, $tag, &$data = NULL) {
 }
 
 // Return which callback functions to actually use.
-function user_patterns_callbacks($action, $tag, &$data = NULL) {
+function user_patterns_callbacks($action, $tag, &$data) {
 
   if ($tag == 'user') {
     // Check if the user needs updating.
@@ -411,10 +452,10 @@ function user_patterns_build($action, $form_id, &$data = NULL, &$a) {
 }
 // Build a patterns actions and parameters
 function user_patterns_params($action, $form_id, &$data = NULL, &$a) {
-  if ($form_id == 'user_cancel_confirm_form') {
+  if ($form_id == 'user_cancel_confirm_form' && $form_id == 'user_profile_form') {
     $result = array(user_load($data['uid']));
   }
-  elseif ($form_id == 'user_admin_role_delete_confirm' || $form_id = 'user_admin_role') {
+  elseif ($form_id == 'user_admin_role_delete_confirm' || $form_id == 'user_admin_role') {
     $result = (object) $data; // TODO: array?
   }
   elseif ($form_id == 'user_admin_permissions') {
@@ -424,6 +465,6 @@ function user_patterns_params($action, $form_id, &$data = NULL, &$a) {
 }
 
 // Cleanup any global settings after the action runs
-function user_patterns_cleanup($action, $tag, &$data = NULL) {
+function user_patterns_cleanup($action, $tag, &$data) {
   return patterns_results();
 }

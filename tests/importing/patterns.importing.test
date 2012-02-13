@@ -79,8 +79,8 @@ class PatternsImportTestCase extends PatternRunTestCase {
   }
 
   private function checkImportedFile($name, $destination) {
-    $this->assertNoText('Errors on the name of the pattern', 'Errors in the name of the patterns found');
-    $this->assertNoText('Destination folder does not exist or is not writable', 'Destination folder exists: ' . $destination);
+    $this->assertNoText('Errors in the name of the pattern', 'Errors in the name of the patterns found.');
+    $this->assertNoText('Destination folder does not exist or is not writable', 'Destination folder exists and is writable: ' . $destination);
 
     //$p = patterns_db_load_pattern_from_name($name);
 

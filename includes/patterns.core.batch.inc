@@ -2,7 +2,7 @@
 /**
  * @file
  * Running patterns using Drupal's batch API.
-*/
+ */
 
 /**
  * Starts preliminary operations for pattern execution.

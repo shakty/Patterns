@@ -4,18 +4,18 @@
  * Patterns component for the menu system.
  */
 
-function menu_patterns() {
+function menu_patterns($data) {
   $files = array('modules/menu/menu.admin.inc');
 
   $actions['menu'] = array(
-    'descr' => t('Create/Modify/Delete menu'),
+    PATTERNS_INFO => t('Create/Modify/Delete menu'),
     PATTERNS_CREATE => array('menu_edit_menu'),
     PATTERNS_MODIFY => array('menu_edit_menu'),
     PATTERNS_DELETE => array('menu_delete_menu_confirm'),
     PATTERNS_FILES => $files,
   );
   $actions['menu_item'] = array(
-    'descr' => t('Create/Modify/Delete menu item'),
+    PATTERNS_INFO => t('Create/Modify/Delete menu item'),
     PATTERNS_CREATE => array('menu_edit_item'),
     PATTERNS_MODIFY => array('menu_edit_item'),
     PATTERNS_DELETE => array('menu_item_delete_form'),
@@ -26,7 +26,7 @@ function menu_patterns() {
 
 }
 
-function menu_patterns_actions() {
+function menu_patterns_actions($data) {
   return array(
     'menu_edit_menu' => t('Menu: Add or edit menu'),
     'menu_delete_menu_confirm' => t('Menu: Delete menu'),
@@ -36,7 +36,7 @@ function menu_patterns_actions() {
 }
 
 // Prepare data for processing
-function menu_patterns_prepare($action, $tag, &$data = NULL) {
+function menu_patterns_prepare($action, $tag, &$data) {
   if ($action == PATTERNS_DELETE) {
     $data['confirm'] = 1;
   }
@@ -70,7 +70,7 @@ function menu_patterns_prepare($action, $tag, &$data = NULL) {
         if (!isset($data['parent'] ) || $data['parent'] == '0') {
           $data['parent'] = $data['menu_name'] . ':0';
         }
-        elseif (is_numeric($data['parent'])   && db_query("SELECT mlid FROM {menu_links} WHERE menu_name = :menu AND mlid = :mlid", array('menu' => $data['menu_name'], 'mlid' => $data['parent']))->fetchField()) {
+        elseif (is_numeric($data['parent'])    && db_query("SELECT mlid FROM {menu_links} WHERE menu_name = :menu AND mlid = :mlid", array('menu' => $data['menu_name'], 'mlid' => $data['parent']))->fetchField()) {
           $data['parent'] = $data['menu_name'] . ':' . $data['parent'];
         }
         // @TODO this may not work if there is more than one menu item with the same title within the same menu
@@ -101,7 +101,7 @@ function menu_patterns_prepare($action, $tag, &$data = NULL) {
 }
 
 // Validate the values for an action before running the pattern
-function menu_patterns_validate($action, $tag, &$data = NULL) {
+function menu_patterns_validate($action, $tag, &$data) {
   $status = PATTERNS_SUCCESS;
   $msg = '';
 
@@ -134,8 +134,8 @@ function menu_patterns_validate($action, $tag, &$data = NULL) {
 
   }
   elseif ($tag == "menu_item") {
-   if($action == PATTERNS_MODIFY && !isset($data['mlid'])){
-   	if (empty($data['menu_name_old'])) {
+    if ($action == PATTERNS_MODIFY && !isset($data['mlid'])) {
+      if (empty($data['menu_name_old'])) {
         $status = PATTERNS_ERR;
         $msg =  t('"menu_name_old" or "mlid" is required.');
       }
@@ -147,8 +147,8 @@ function menu_patterns_validate($action, $tag, &$data = NULL) {
         $status = PATTERNS_ERR;
         $msg =  t('"link_title_old" or "mlid" is required.');
       }
-   }
-   if($action !== PATTERNS_DELETE || ($action == PATTERNS_DELETE && !isset($data['mlid']))){
+    }
+    if ($action !== PATTERNS_DELETE || ($action == PATTERNS_DELETE && !isset($data['mlid']))) {
       if (empty($data['menu_name'])) {
         $status = PATTERNS_ERR;
         $msg =  t('"menu_name" is required.');
@@ -161,7 +161,7 @@ function menu_patterns_validate($action, $tag, &$data = NULL) {
         $status = PATTERNS_ERR;
         $msg =  t('"title" is required.');
       }
-   }
+    }
     if (!empty($data['parent']) && $action !== PATTERNS_DELETE) {
       list($menu_name, $mlid) = explode(':', $data['parent']);
       if ($mlid != 0 && !db_query("SELECT count(*) FROM {menu_links} WHERE menu_name = :menu AND mlid = :mlid", array('menu' => $menu_name, 'mlid' => $mlid))->fetchField()) {
@@ -174,13 +174,13 @@ function menu_patterns_validate($action, $tag, &$data = NULL) {
 }
 
 // Prepare for valid processing of this type of component
-function menu_patterns_build($action, $tag, &$data = NULL, $form_id) {
+function menu_patterns_build($action, $tag, &$data, $form_id) {
   module_load_include('inc', 'menu', 'menu.admin');
-  return patterns_results(PATTERNS_SUCCESS,   t('Execution successful'), $data);
+  return patterns_results(PATTERNS_SUCCESS,    t('Execution successful'), $data);
 }
 
 // Build a patterns actions and parameters
-function menu_patterns_params($action, $form_id, &$data = NULL, &$a) {
+function menu_patterns_params($action, $form_id, &$data, &$a) {
   switch ($form_id) {
     case 'menu_edit_menu':
 
@@ -200,28 +200,28 @@ function menu_patterns_params($action, $form_id, &$data = NULL, &$a) {
         $result = array('add', NULL, menu_load($data['menu_name']));
       }
       elseif ($action == PATTERNS_MODIFY) {
-      	if(!isset($data['mlid'])){
-      		$mlid= db_query("SELECT mlid FROM {menu_links} WHERE menu_name = :menu and link_path=:path and link_title=:title", array('menu' => $data['menu_name_old'],'path' => $data['link_path_old'],'title' => $data['link_title_old']))->fetchField();
-      	}
-      	 $result = array('edit', menu_link_load($mlid), NULL);
+        if (!isset($data['mlid'])) {
+          $mlid = db_query("SELECT mlid FROM {menu_links} WHERE menu_name = :menu and link_path=:path and link_title=:title", array('menu' => $data['menu_name_old'], 'path' => $data['link_path_old'], 'title' => $data['link_title_old']))->fetchField();
+        }
+        $result = array('edit', menu_link_load($mlid), NULL);
       }
       break;
     case 'menu_item_delete_form':
-    if(!isset($data['mlid'])){
-      		$mlid= db_query("SELECT mlid FROM {menu_links} WHERE menu_name = :menu and link_path=:path and link_title=:title", array('menu' => $data['menu_name'],'path' => $data['link_path'],'title' => $data['link_title']))->fetchField();
-    	}
-    	$result = array(menu_link_load($mlid));
+      if (!isset($data['mlid'])) {
+        $mlid = db_query("SELECT mlid FROM {menu_links} WHERE menu_name = :menu and link_path=:path and link_title=:title", array('menu' => $data['menu_name'], 'path' => $data['link_path'], 'title' => $data['link_title']))->fetchField();
+      }
+      $result = array(menu_link_load($mlid));
       break;
   }
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
 
-function menu_patterns_cleanup($action, $tag, &$data = NULL) {
+function menu_patterns_cleanup($action, $tag, &$data) {
   return patterns_results();
 }
 
 // Return which callback functions to actually use.
-function menu_patterns_callbacks($action, $tag, &$data = NULL) {
+function menu_patterns_callbacks($action, $tag, &$data) {
   $desc = menu_patterns();
   $result = $desc[$tag][$action];
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);

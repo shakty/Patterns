@@ -1,0 +1,17 @@
+# YAML Content Pattern
+# QScience
+
+info:
+  title: Node (delete)
+  description: Deletes a Node by ID
+  author: QScience
+  category: Content
+  version: 1.0
+  core: 7.x
+
+actions:
+
+  - delete:
+     tag: node
+     nid: 1
+     type: article

@@ -1,0 +1,17 @@
+# YAML Taxonomies Pattern
+# QScience
+
+info:
+  title: Invalid Pattern test
+  description: Misspelled Tag
+  author: QScience
+  category: Taxonomy
+  version: 1.0
+  core: 7.x  
+  
+ actions:
+
+ - modify:
+        tog: vocabulary
+        machine_name: anothervoc
+        name: Yet Another Vocabulary

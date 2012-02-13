@@ -7,22 +7,29 @@
  * @file
  * Patterns component for blocks.
  */
-function block_patterns() {
+function block_patterns($data) {
 
   $files = array('modules/block/block.admin.inc');
 
-  $actions['block'] = array('descr' => t('Create/Modify/Delete Blocks'),
+  $actions['block'] = array(
+    PATTERNS_INFO => t('Create/Modify/Delete Blocks'),
     PATTERNS_CREATE => array('block_admin_display_form', 'block_admin_configure', 'block_add_block_form'),
     PATTERNS_MODIFY => array('block_admin_display_form', 'block_admin_configure'),
     PATTERNS_DELETE => array('block_custom_block_delete'),
-    'files'  => $files,
+    PATTERNS_FILES  => $files,
+  );
+
+  $actions['block_extract_all'] = array(
+    PATTERNS_INFO => t('Create/Modify/Delete Blocks'),
+    PATTERNS_MODIFY => array('block_admin_display_form', 'block_admin_configure'),
+    PATTERNS_FILES  => $files,
   );
 
   return $actions;
 
 }
 
-function block_patterns_actions() {
+function block_patterns_actions($data) {
   return array(
     'block_admin_display_form' => t('Block: Change the region or order of a block'),
     'block_admin_configure' => t('Block: Configure block'),
@@ -31,8 +38,42 @@ function block_patterns_actions() {
   );
 }
 
+// returns arguments needed for the forms when processing automatically
+// $loop is set if we want to extract all values
+function block_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
+  if ($tag == 'block') {
+    if ($action == PATTERNS_MODIFY) {
+      if ($form_id == 'block_admin_display_form' or $form_id == 'block_admin_configure') {
+        return array(); // ???
+      }
+    }
+  }
+  elseif ($tag == 'block_extract_all') {
+    $loop = TRUE;
+    $block_list = _block_rehash();
+    $return = array();
+
+    if ($form_id == 'block_admin_display_form') {
+      $blocks = array();
+      foreach ($block_list as $key => $block) {
+        array_push($blocks, $block);
+      }
+      foreach (array_keys(list_themes()) as $theme) {
+        array_push($return, array($blocks, $theme));
+      }
+    }
+    elseif ($form_id == 'block_admin_configure') {
+      foreach ($block_list as $key => $block) {
+        array_push($return, array($block['module'], $block['delta']));
+      }
+    }
+
+    return $return;
+  }
+}
+
 // Prepare data for processing
-function block_patterns_prepare($action, $tag, &$data = NULL) {
+function block_patterns_prepare($action, $tag, &$data) {
   $defaults = array(
     'id'          => NULL, // May be a combo of module+delta
     'module'      => NULL,
@@ -101,7 +142,7 @@ function block_patterns_prepare($action, $tag, &$data = NULL) {
 }
 
 // Validate the values for an action before running the pattern
-function block_patterns_validate($action, $tag, &$data = NULL) {
+function block_patterns_validate($action, $tag, &$data) {
   $status = PATTERNS_SUCCESS;
   $msg = '';
 
@@ -119,7 +160,7 @@ function block_patterns_validate($action, $tag, &$data = NULL) {
   return patterns_results($status, $msg);
 }
 // Return which callback functions to actually use.
-function block_patterns_callbacks($action, $tag, &$data = NULL) {
+function block_patterns_callbacks($action, $tag, &$data) {
   if ($tag == 'block') {
     $keys = array('module', 'delta', 'theme', 'weight', 'region', 'status');
     $diff = array_diff($data, $keys);
@@ -154,7 +195,7 @@ function block_patterns_callbacks($action, $tag, &$data = NULL) {
 }
 
 // Prepare for valid processing of this type of component
-function block_patterns_build($action, $form_id, &$data = NULL, &$a) {
+function block_patterns_build($action, $form_id, &$data, &$a) {
   $status = PATTERNS_SUCCESS;
   $msg = '';
   $result = NULL;
@@ -187,7 +228,7 @@ function block_patterns_build($action, $form_id, &$data = NULL, &$a) {
   return patterns_results($status, $msg, $result);
 }
 // Build a patterns actions and parameters
-function block_patterns_params($action, $form_id, &$data = NULL, &$a) {
+function block_patterns_params($action, $form_id, &$data, &$a) {
   if ($form_id == 'block_admin_configure') {
     $result = array($data['module'], $data['delta']);
   }
@@ -211,7 +252,6 @@ function block_patterns_params($action, $form_id, &$data = NULL, &$a) {
 }
 
 // Cleanup any global settings after the action runs
-function block_patterns_cleanup($action, $tag, &$data = NULL) {
+function block_patterns_cleanup($action, $tag, &$data) {
   return patterns_results();
 }
-

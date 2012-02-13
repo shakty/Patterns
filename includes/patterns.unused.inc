@@ -37,10 +37,10 @@ function _patterns_process_form($form_id, &$form, &$form_state) {
     // Ste: was
     //form_clean_id(NULL, TRUE);
     drupal_clean_css_identifier(NULL);
-    
+
     //Ste: was
     //if ((!empty($form_state['submitted'])) && !form_get_errors() && empty($form_state['rebuild'])) {
-    if (TRUE) { 
+    if (TRUE) {
       $form_state['redirect'] = NULL;
       form_execute_handlers('submit', $form, $form_state);
 
@@ -112,14 +112,14 @@ function _patterns_validate_form($form_id, $form, &$form_state) {
  */
 function patterns_sync_form_values($args) {
   $form_id = $args[0];
-  
-  // this functionality is not working well with 
+
+  // this functionality is not working well with
   // node forms (create/update node)
-  // so skip them until this issue is fixed 
+  // so skip them until this issue is fixed
   if (strpos($form_id, 'node_form') !== FALSE) {
     return;
   }
-    
+
   // References inside the form_state can cause potential problems,
   // so we'll ensure no references to outside data exists
   $form_state = unserialize(serialize($args[1]));
@@ -218,7 +218,7 @@ function patterns_sync_form_values($args) {
           $delete = TRUE;
           unset($match['delete']);
         }
-        
+
         // If overwriting, start the values array with all the
         // possible values but empty. We will possibly fill them
         // in with default values on update actions. Select types

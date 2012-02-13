@@ -41,7 +41,7 @@ class PatternsToolbarTestCase extends PatternRunTestCase {
             ->execute()
             ->fetchAssoc();
     $this->assertTrue($query, t('add \'access toolbar\' works fine'));
-    
+
     //for delete 'access toolbar' permission from the 'anonymous user' role
     parent::runFile('toolbar_delete.yaml', 'Toolbarrole (delete)', PatternsToolbarTestCase::TOOLBAR_TESTS_DIR);
     $query = db_select('role_permission', 'rp')
@@ -51,5 +51,5 @@ class PatternsToolbarTestCase extends PatternRunTestCase {
           ->execute()
           ->fetchAssoc();
     $this->assertFalse($query, t('delete \'access toolbar\' works fine'));
- }
+  }
 }

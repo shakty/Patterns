@@ -19,7 +19,7 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
 
   public function setUp() {
     parent::setUp();
-    $this->admin_user = $this->drupalCreateUser(array('administer site configuration', 'access administration pages', 'administer patterns', 'administer shortcuts', 'switch shortcut sets', 'customize shortcut links')); 
+    $this->admin_user = $this->drupalCreateUser(array('administer site configuration', 'access administration pages', 'administer patterns', 'administer shortcuts', 'switch shortcut sets', 'customize shortcut links'));
     $this->drupalLogin($this->admin_user);
   }
 
@@ -28,7 +28,7 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
   *
   *    * add a new set 'new_set_fortest'
   *    * add a new shortcut link to the new set 'new_set_fortest'  which add before
-  *    * TODO edit the link, which add before 
+  *    * TODO edit the link, which add before
   *    * TODO delete the link, which just edit
   *    * change the set "new_set_fortest" name to "newer_set_fortest"
   *    * delete the set "newer_set_fortest"
@@ -43,11 +43,11 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
             ->fields('ss', array('set_name', 'title'))
             ->condition('ss.title', 'new_set_fortest')
             ->execute()
-            ->fetchAssoc();  
+            ->fetchAssoc();
     $this->assertTrue($query_add_set, t('add a new set \'new_set_fortest\' works fine'));
     $num = count($query_add_set);
-    $this->assert('pass',$num);
-    foreach ( $query_add_set as $key => $value) {
+    $this->assert('pass', $num);
+    foreach ($query_add_set as $key => $value) {
       $this->assert('pass', $value);
     }
 
@@ -59,10 +59,10 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
             ->condition('ml.link_title', 'link_admcont')
             ->condition('ml.link_path', 'admin/content')
             ->execute()
-            ->fetchAssoc();  
+            ->fetchAssoc();
     $this->assertTrue($query, t('add shorcut link works fine'));
     $num = count($query);
-    $this->assert('pass',$num);
+    $this->assert('pass', $num);
     foreach ( $query as $key => $value) {
       $this->assert('pass', $value);
     }
@@ -76,7 +76,7 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
             ->condition('ssu.uid', 1)
             ->condition('ssu.set_name', $query_add_set['set_name'])
             ->execute()
-            ->fetchAssoc();  
+            ->fetchAssoc();
     $this->assertTrue($query, t('Switch user\'s shortcut set works fine'));
     $num = count($query);
     $this->assert('pass',$num);
@@ -89,7 +89,7 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
     //TODO the link's Id is diffierent from each PC.
     //for delete the link, which just edit
     //TODO the link's Id is diffierent from each PC.
-       
+
     //for change the set "new_set_fortest" name to "newer_set_fortest"
     parent::runFile('shortcut_edit_set.yaml', 'edit the shortcut set name(modify)', PatternsShortcutTestCase::SHORTCUT_TESTS_DIR);
     $query = db_select('shortcut_set', 'ss')
@@ -97,14 +97,14 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
             ->condition('ss.title', 'newer_set_fortest')
             ->condition('ss.set_name', $query_add_set['set_name'])
             ->execute()
-            ->fetchAssoc();  
+            ->fetchAssoc();
     $this->assertTrue($query, t('edit set works fine'));
     $num = count($query);
-    $this->assert('pass',$num);
+    $this->assert('pass', $num);
     foreach ( $query as $key => $value) {
       $this->assert('pass', $value);
     }
-            
+
     //for delete the set, which add before
     parent::runFile('shortcut_delete_set.yaml', 'delete a shortcut set (delete)', PatternsShortcutTestCase::SHORTCUT_TESTS_DIR);
     $query = db_select('shortcut_set', 'ss')
@@ -112,10 +112,10 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
             ->condition('ss.title', 'newer_set_fortest')
             ->condition('ss.set_name', $query_add_set['set_name'])
             ->execute()
-            ->fetchAssoc();  
+            ->fetchAssoc();
     $this->assertFalse($query, t('delete set works fine'));
     $num = count($query);
-    $this->assert('pass',$num);
+    $this->assert('pass', $num);
 
- }
+}
 }

@@ -53,7 +53,8 @@ and a sequence of _action_s of the type *+create+*, *+modify+*, or *+delete+* gr
 categories (sections). The 'tag:' expression tells Patterns which component to use.
 Every component defines a list of tags it can handle, see <<callbacks,later>>. After choosing the 'tag',
 the pattern file has to supply every required data for the particular action.
-In this example: 'name', 'machine_name', 'description', 'hierarchy' are some of the data keys used, and all of them have values assigned.
+In this example: 'name', 'machine_name', 'description', 'hierarchy' are some of the datakeys used,
+and all of them have values assigned.
 The data is passed to the pattern component as an associative array, most often referred to as *+$data+*.
 Some actions have alternative or optional parameter requirements.
 
@@ -135,12 +136,12 @@ reside in *+patterns/components/+*, although modules can use the *+hook_patterns
 to expand the set of supported components.
 
 You need to implement at most 7 pattern hooks, as here explained in the same
-order as they are being called by Patterns module. For examples, see the *+block.inc+*, *+system.inc+*, *+taxonomy.inc+*.
+order as they are being called by Patterns module. For examples, see *+block.inc+*, *+system.inc+*, *+taxonomy.inc+*.
 
 *******************************************************************
-* *+hook_patterns()+*: declares that the module is able to handle
+* *+hook_patterns($data)+*: declares that the module is able to handle
   pattern configurations, and specifies which tags and forms are
-  supported.
+  supported. The form mappings might depend on the Pattern data.
 
 * *+hook_patterns_prepare($action, $tag, &$data)+*: checks the input and adds default
  values. Eventually, it can raise errors which halt further execution
