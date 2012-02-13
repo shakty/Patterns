@@ -1,19 +1,19 @@
 <?php
 /**
  * @file
- * Patterns component for taxonomy: vocabularies and terms.
+ * Patterns component for taxonomy vocabularies and terms.
  */
 //@TODO: handle the case of multiple vocabulary with the same machine name
 
 
-// Return an error string only in case of error, otherwise modify $data.
+// Return an error string only in case of error, otherwise modify $data
 
-function taxonomy_patterns() {
+function taxonomy_patterns($data) {
 
   $actions['vocabulary'] = array(
     PATTERNS_INFO => t('Create/Modify/Delete Taxonomy Vocabularies'),
     PATTERNS_CREATE => array('taxonomy_form_vocabulary'),
-    PATTERNS_MODIFY => array('taxonomy_form_vocabulary'),
+    PATTERNS_MODIFY => array('taxonomy_form_vocabulary', 'taxonomy_form_vocabulary'),
     PATTERNS_DELETE => array('taxonomy_vocabulary_confirm_delete'),
     PATTERNS_FILES => array('modules/taxonomy/taxonomy.admin.inc'),
   );
@@ -26,12 +26,18 @@ function taxonomy_patterns() {
     PATTERNS_FILES => array('modules/taxonomy/taxonomy.admin.inc'),
   );
 
+  $actions['vocabulary_extract_all']  = array(
+    PATTERNS_INFO => t('Create/Modify/Delete Taxonomy Vocabularies'),
+    PATTERNS_MODIFY => array('taxonomy_form_vocabulary'),
+    PATTERNS_FILES => array('modules/taxonomy/taxonomy.admin.inc'),
+  );
+
   return $actions;
 
 }
 
 // Return a list of forms/actions this component can handle
-function taxonomy_patterns_actions() {
+function taxonomy_patterns_actions($data) {
   return array(
     'taxonomy_form_vocabulary' => t('Taxonomy: Add or edit vocabulary'),
     'taxonomy_form_term' => t('Taxonomy: Add or edit a term to a vocabulary'),
@@ -39,8 +45,32 @@ function taxonomy_patterns_actions() {
   );
 }
 
+// returns arguments needed for the forms when processing automatically
+// $loop is set if we want to extract all values
+function taxonomy_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
+  static $i = -1;
+  $i++;
+  $vocabulary = taxonomy_get_vocabularies();
+
+  if ($tag == 'vocabulary') {
+    if ($action == PATTERNS_MODIFY) {
+      if ($form_id == 'taxonomy_form_vocabulary') {
+        return array(array_pop($vocabulary));
+      }
+    }
+  }
+  elseif ($tag == 'vocabulary_extract_all') {
+    $loop = TRUE;
+    $return = array();
+    foreach ($vocabulary as $voc) {
+      array_push($return, array($voc));
+    }
+    return $return;
+  }
+}
+
 // Prepare data for processing
-function taxonomy_patterns_prepare($action, $tag, &$data = NULL) {
+function taxonomy_patterns_prepare($action, $tag, &$data) {
 
   // VOCABULARY
   if ($tag == 'vocabulary') {
@@ -80,7 +110,7 @@ function taxonomy_patterns_prepare($action, $tag, &$data = NULL) {
 }
 
 // Validate the values for an action before running the pattern
-function taxonomy_patterns_validate($action, $tag, &$data = NULL) {
+function taxonomy_patterns_validate($action, $tag, &$data) {
 
   $status = PATTERNS_SUCCESS;
   $msg = '';
@@ -108,7 +138,7 @@ function taxonomy_patterns_validate($action, $tag, &$data = NULL) {
 }
 
 // Return which callback functions to actually use.
-function taxonomy_patterns_callbacks($action, $tag, &$data = NULL) {
+function taxonomy_patterns_callbacks($action, $tag, &$data) {
   // Just return the form ids specified above. No custom functions used here.
   $desc = taxonomy_patterns();
   $result = $desc[$tag][$action];
@@ -117,7 +147,7 @@ function taxonomy_patterns_callbacks($action, $tag, &$data = NULL) {
 
 // Prepare for valid processing of this type of component
 function taxonomy_patterns_build($action, $form_id, &$data = NULL, &$a) {
-  module_load_include('inc', 'taxonomy', 'taxonomy.admin'); // TODO: Isn't this already loaded?
+  //module_load_include('inc', 'taxonomy', 'taxonomy.admin'); // TODO: Isn't this already loaded?
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $data);
 }
 
@@ -153,7 +183,7 @@ function taxonomy_patterns_params($action, $form_id, &$data = NULL, &$a) {
 }
 
 // Cleanup any global settings after the action runs
-function taxonomy_patterns_cleanup($action, $tag, &$data = NULL) {
+function taxonomy_patterns_cleanup($action, $tag, &$data) {
   unset($_POST['op']);
   return patterns_results();
 }
@@ -203,6 +233,12 @@ function _taxonomy_patterns_prepare_term($action, $data, $vid = NULL) {
       }
     }
   }
+
+  if (isset($data['parent'])) {
+    $data['parent'] = _taxonomy_patterns_prepare_parent_terms($data['parent']);
+  }
+
+
   //return 'taxonomy_form_term';
 
 
@@ -239,6 +275,48 @@ function _taxonomy_patterns_prepare_term($action, $data, $vid = NULL) {
   // End Not Delete
 
   return $data;
+}
+
+/**
+ * Checks if the provided array of potential parents is valid, and
+ * in case try to correct it.
+ *
+ *
+ * @param $parents mixed The potential array of parents.
+ */
+function _taxonomy_patterns_prepare_parent_terms($parents) {
+  if (!isset($parents)) return FALSE;
+  if (!is_array($parents)) {
+    $parents = array($parents);
+  }
+  $err = FALSE;
+  $out = array();
+  // Terms can have multiple parents
+  foreach ($parents as $p) {
+    if (!is_numeric($p)) {
+      // Try to find out if a term with exists with the given name
+      $ps = taxonomy_get_term_by_name($p);
+      if (count($ps) !== 1) {
+        $err = TRUE;
+        continue;
+      }
+      $parent = array_pop($ps);
+    }
+    else {
+      $parent = taxonomy_term_load($p);
+      if (!$parent) {
+        $err = TRUE;
+        continue;
+      }
+    }
+    $out[] = $parent->tid;
+  }
+
+  if ($err) {
+    drupal_set_message(t('One or more error occurred while detecting parent terms.'), 'warning');
+  }
+
+  return $out;
 }
 
 function _taxonomy_patterns_prepare_vocabulary($action, $data) {

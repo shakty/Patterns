@@ -12,7 +12,7 @@ function user_patterns($data) {
   $files = array('modules/user/user.admin.inc', 'modules/user/user.pages.inc');
 
   $actions['user'] = array(
-    'descr' => t('Create/Modify/Delete Users'),
+    PATTERNS_INFO => t('Create/Modify/Delete Users'),
     PATTERNS_CREATE => array('user_register_form'),
     PATTERNS_MODIFY => array('user_profile_form'),
     PATTERNS_DELETE => array('user_cancel_confirm_form'),
@@ -20,7 +20,7 @@ function user_patterns($data) {
   );
 
   $actions['role'] = array(
-    'descr' => t('Create/Modify/Delete Roles'),
+    PATTERNS_INFO => t('Create/Modify/Delete Roles'),
     PATTERNS_CREATE => array('user_admin_roles'),
     PATTERNS_MODIFY => array('user_admin_role'),
     PATTERNS_DELETE => array('user_admin_role_delete_confirm'),
@@ -28,7 +28,7 @@ function user_patterns($data) {
   );
 
   $actions['permission'] = array(
-    'descr' => t('Create/Modify/Delete Permissions'),
+    PATTERNS_INFO => t('Create/Modify/Delete Permissions'),
     PATTERNS_CREATE => array('user_admin_permissions'),
     PATTERNS_MODIFY => array('user_admin_permissions'),
     PATTERNS_DELETE => array('user_admin_permissions'),
