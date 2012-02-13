@@ -13,10 +13,10 @@
  */
 function patterns_import_server($form, &$form_state) {
   if (empty($form_state['storage'])) {
-    
+
     // real_path(public) returns the path to the files dir.
     $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
-  
+
     // Ste: was
     //if (!file_check_directory($path, true)) {
     if (!file_prepare_directory($path)) {
@@ -116,7 +116,7 @@ function patterns_import_server_validate($form, &$form_state) {
  * Form validation handler for patterns_import_server().
  *
  * @see patterns_import_server_submit()
-*/
+ */
 function patterns_import_server_submit($form, &$form_state) {
 
   if ($form_state['storage']['step'] == 'get url') {

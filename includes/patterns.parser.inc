@@ -173,7 +173,7 @@ function patterns_locate_action($key, $actions_map) {
  * Check if pattern array or content from a file is valid.
  *
  * @param mixed $pattern Pattern array or content of a pattern file.
- * 
+ *
  * @return bool TRUE if valid, FALSE otherwise.
  */
 function patterns_validate_pattern($pattern) {
@@ -326,7 +326,7 @@ function _patterns_scan_pattern($pattern) {
           $section_info[PATTERNS_MODIFY] = 0;
           $section_info[PATTERNS_DELETE] = 0;
           foreach ($value as $action => &$data) {
-  
+
             if (empty($data)) {
               $result['empties'][] = $action;
             }
@@ -334,7 +334,7 @@ function _patterns_scan_pattern($pattern) {
               // Make sure there is only one valid action in each array element.
               // NOTE: Having additional valid actions will work, but is discouraged,
               // and therefore undocumented.
-              $found = FALSE;          
+              $found = FALSE;
               foreach ($data as $akey => $avalue) {
                 if (!array_key_exists($akey, $valid_actions)) {
                   $result['invalid_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
@@ -342,7 +342,7 @@ function _patterns_scan_pattern($pattern) {
                 else{
                   // Update count;
                   $section_info[$akey] = $section_info[$akey]+1;
-                  
+
                   // Report additional valid actions.
                   if ($found) {
                     $result['extra_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
@@ -360,7 +360,7 @@ function _patterns_scan_pattern($pattern) {
             }
           }
           $value = $newactions;
-  
+
           $result['other_sections'][$key] =  '(' . PATTERNS_CREATE . ':' . $section_info[PATTERNS_CREATE] . ', ' .
                                              PATTERNS_MODIFY . ':' . $section_info[PATTERNS_MODIFY] . ', ' .
                                              PATTERNS_DELETE . ':' . $section_info[PATTERNS_DELETE] . ')';

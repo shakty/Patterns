@@ -351,7 +351,7 @@ function patterns_check_module_dependencies(&$modules, $update_list = FALSE) {
 // Tokens
 
 /**
- * Implements hook_token_values()
+ * Implements hook_token_values().
  *
  * @TODO If these get implementated directly into token.module, this should be removed.
  */
@@ -495,14 +495,14 @@ function _patterns_is_patterns_results($results) {
  */
 function patterns_actions() {
   return array(PATTERNS_CREATE => PATTERNS_CREATE,
-                PATTERNS_MODIFY => PATTERNS_MODIFY,
-                PATTERNS_DELETE => PATTERNS_DELETE,
+               PATTERNS_MODIFY => PATTERNS_MODIFY,
+               PATTERNS_DELETE => PATTERNS_DELETE,
                );
 }
 
 /**
  * Group the action and the data fields.
- * 
+ *
  * @param array $actions The array of actions.
  */
 function patterns_reformat(&$actions) {

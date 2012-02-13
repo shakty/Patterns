@@ -152,7 +152,7 @@ function patterns_rearrange_data($pattern) {
             continue;
           }
           $tag = $v['tag'];
-          if (in_array($tag, array('create', 'modify', 'delete'))){
+          if (in_array($tag, array('create', 'modify', 'delete'))) {
             unset($p[$k]['tag']);
             $p[$k] = array($tag => $p);
           }
@@ -283,7 +283,7 @@ function patterns_load_components() {
  * Scan the directories looking for patterns files.
  *
  * Checks inside the directories defined by patterns_config_get_paths().
- * @see patterns_config_get_paths
+ * @see patterns_config_get_paths()
  *
  * @return array The array of found patterns.
  */
@@ -360,8 +360,8 @@ function patterns_get_patterns($reset = TRUE) {
   $patterns = array();
   $patterns[PATTERNS_STATUS_OK] = array();
   $patterns[PATTERNS_STATUS_REMOVED] = array();
-  
-  
+
+
   foreach ($result as $pattern) {
     // Skip pattern if its file is missing.
     if (!is_file($pattern->file)) {
@@ -379,9 +379,9 @@ function patterns_get_patterns($reset = TRUE) {
       $status = PATTERNS_STATUS_OK;
     }
     else {
-       $status = PATTERNS_STATUS_REMOVED;
+      $status = PATTERNS_STATUS_REMOVED;
     }
-    
+
     $patterns[$status][$pattern->pid] = $pattern;
     $data = unserialize($pattern->pattern);
     $patterns[$status][$pattern->pid]->pattern = $data;
@@ -392,8 +392,8 @@ function patterns_get_patterns($reset = TRUE) {
 //  if (!empty($messages)) {
 //    drupal_set_message(implode('<br/>', $messages) . '<br/>' . t('Make sure that above file(s) are readable and contain valid data.'), 'error');
 //  }
-    
-   return $patterns;
+
+  return $patterns;
 }
 
 /**
@@ -464,23 +464,23 @@ function patterns_io_save_pattern($content, $name, $format = 'yaml', $dir = NULL
     drupal_set_message(t("Pattern '%name' could not be saved. Make sure edited code is well-formed.", array('%name' => $name)), 'error');
     return FALSE;
   }
-  
+
   if (empty($dir)) {
     // System Patterns directory.
     $dir = patterns_config_get_files_dir();
   }
-  
+
   if (file_prepare_directory($dir, TRUE)) {
     $path =  $dir . '/' . $name . '.' . $format;
 
     if (file_unmanaged_save_data($content, $path, FILE_EXISTS_REPLACE)) {
-        
+
       // Load and save pattern.
       $load_func = 'patterns_load_' . $format;
-      
+
       if ($pattern = $load_func($path)) {
         patterns_db_save_pattern($pattern, $path, $name);
-        drupal_set_message(t('Pattern %name was saved in %path.', array('%name' => $name, 
+        drupal_set_message(t('Pattern %name was saved in %path.', array('%name' => $name,
                                                                         '%path' => $path,
         )));
         // Not for now.

@@ -117,8 +117,8 @@ function patterns_quickrun($form, &$form_state) {
  * Form submission handler for patterns_quickrun().
  *
  * @see patterns_quickrun()
-*/
-    
+ */
+
 function patterns_quickrun_submit($form, $form_state) {
 
   // Parse the content of the textarea
@@ -226,7 +226,7 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
   else {
     $validation = 'This pattern has not been validated yet.';
   }
-  
+
   $form['name'] = array(
     '#type' => 'value',
     '#value' => $pattern->name,
@@ -333,7 +333,7 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
  * @todo Do this properly.
  *
  * @see patterns_edit_submit()
-*/
+ */
 function patterns_edit_validate($form, &$form_state) {
 
   // real_path(public) returns the path to the files dir
@@ -349,7 +349,7 @@ function patterns_edit_validate($form, &$form_state) {
  * Form submission handler for patterns_edit_form().
  *
  * @see patterns_edit_validate()
-*/
+ */
 function patterns_edit_submit($form, &$form_state) {
   $name = $form_state['values']['name'];
   $content = $form_state['values']['content'];

@@ -5,12 +5,12 @@
  */
 
 function patterns_export($form, &$form_state) {
- // stub
- $form = array();
- $form['container'] = array(
+  // stub
+  $form = array();
+  $form['container'] = array(
     '#type' => 'fieldset',
     '#title' => t('stub Form'),
     '#description' => t('stub form')
- )  ;
- return $form;
+  )  ;
+  return $form;
 }

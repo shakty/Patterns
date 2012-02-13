@@ -266,7 +266,7 @@ function patterns_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10
   );
-  
+
   $items['admin/patterns/import/file'] = array(
     'title' => 'Import File',
     'page callback' => 'drupal_get_form',
@@ -394,7 +394,7 @@ function patterns_list() {
     '#prefix' => '<a href="' . url('admin/patterns/import') . '">',
     '#suffix' => '</a>',
   );
-  
+
   $form['commands']['export'] = array(
     '#type' => 'button',
     '#value' => 'Export',
@@ -413,7 +413,7 @@ function patterns_list() {
   $patterns = patterns_get_patterns();
 
   $output .= theme('patterns_list', $patterns);
-  
+
   return $output;
 }
 
@@ -799,14 +799,14 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
 
 /**
  * Creates the list of modules implementing the pattern hook. Additional
- * information is provided such as the files or the forms needed by the tag. It 
+ * information is provided such as the files or the forms needed by the tag. It
  * uses caching, unless a specific tag is being looked up.
  *
  * @param string $tag_name
- *   (optional) If set, only information about this specific tag is returned 
+ *   (optional) If set, only information about this specific tag is returned
  *   and the cache will be refreshed. Defaults to NULL.
  * @param array $data
- *   (optional) The data of the pattern. If $tag_name was set, $data must be 
+ *   (optional) The data of the pattern. If $tag_name was set, $data must be
  *   set as well. Defaults to NULL.
  * @param integer $id
  *   (optional) If set, only this particular bit of information is returned. Defaults to NULL.
@@ -825,7 +825,7 @@ function patterns_get_tagmodules_index($tag_name = NULL, $data = NULL, $id = NUL
  if (!is_array($tag_modules) || $tag_name != NULL) {
     $tag_modules = array();
     // Get a list of tags and their modules.
-    // TODO: Optimize: if $tag_name is set, and $tag_modules is not empty, look 
+    // TODO: Optimize: if $tag_name is set, and $tag_modules is not empty, look
     // for only the modules that we have seen before implement the tag.
     foreach (module_implements('patterns') as $module) {
       $tags = module_invoke($module, 'patterns', $data);

@@ -39,13 +39,13 @@ function patterns_schema() {
         'default' => '',
         'description' => 'Machine readable name of this pattern.',
       ),
-      
+
       /*
-       * STATUSES: 
-       * 
+       * STATUSES:
+       *
        *    0: installed, not enabled
        *    1: installed, enabled
-       *    
+       *
        *    -1: invalid
        *    -5: removed
        */

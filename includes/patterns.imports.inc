@@ -13,41 +13,41 @@
  */
 function patterns_import_source($form, &$form_state) {
 
- $def_dir = patterns_config_get_files_dir();
+  $def_dir = patterns_config_get_files_dir();
 
- $form['name'] = array(
+  $form['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Pattern Identifier'),
     '#description' => t('Machine readable name for the pattern. The actual title should be included in the pattern itself.'),
     '#required' => TRUE,
- );
+  );
 
- $form['content'] = array(
+  $form['content'] = array(
     '#type' => 'textarea',
     '#rows' => 25,
     '#title' => t('Enter Pattern Source Code'),
     '#description' => t('Imported patterns are not executed until you run them manually.'),
- );
+  );
 
- // TODO: transform in a FILE form
- $form['destination'] = array(
+  // TODO: transform in a FILE form
+  $form['destination'] = array(
     '#type' => 'textfield',
     '#title' => t('Destination'),
     '#description' => t('Pattern will be saved in this directory. Must be writable. Default dir: @dir', array('@dir' => $def_dir)),
     '#default_value' => $def_dir,
     '#required' => TRUE,
- );
+  );
 
- $form['submit'] = array(
+  $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Import')
- );
+  );
 
- // ? Double array ?
- $form['#validate'][] = 'patterns_import_validate';
- $form['#submit'][] = 'patterns_import_submit';
+  // ? Double array ?
+  $form['#validate'][] = 'patterns_import_validate';
+  $form['#submit'][] = 'patterns_import_submit';
 
- return $form;
+  return $form;
 }
 
 /**
@@ -55,42 +55,42 @@ function patterns_import_source($form, &$form_state) {
  */
 function patterns_import_file($form, &$form_state) {
 
- $def_dir = patterns_config_get_files_dir();
+  $def_dir = patterns_config_get_files_dir();
 
- $form['#attributes']['enctype'] = 'multipart/form-data';
+  $form['#attributes']['enctype'] = 'multipart/form-data';
 
- $form['pattern_uri'] = array(
+  $form['pattern_uri'] = array(
     '#type' => 'file',
     '#title' => t('Upload Pattern File'),
     '#description' => t('Imported patterns are not executed until you run them manually.'),
     '#size' => 48
- );
+  );
 
- $form['name'] = array(
+  $form['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Pattern Identifier'),
     '#description' => t('Machine readable name for the pattern. The actual title should be included in the pattern itself.'),
     '#required' => TRUE
- );
+  );
 
- // TODO: transform in a FILE form
- $form['destination'] = array(
+  // TODO: transform in a FILE form
+  $form['destination'] = array(
     '#type' => 'textfield',
     '#title' => t('Destination'),
     '#description' => t('Pattern will be saved in this directory. Must be writable. Default dir: @dir', array('@dir' => $def_dir)),
     '#default_value' => $def_dir,
     '#required' => TRUE,
- );
+  );
 
- $form['submit'] = array(
+  $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Import')
- );
+  );
 
- //$form['#validate'][] = 'patterns_import_validate';
- $form['#submit'][] = 'patterns_import_submit';
+  //$form['#validate'][] = 'patterns_import_validate';
+  $form['#submit'][] = 'patterns_import_submit';
 
- return $form;
+  return $form;
 }
 
 /**
@@ -98,40 +98,40 @@ function patterns_import_file($form, &$form_state) {
  */
 function patterns_import_url($form, &$form_state) {
 
- $def_dir = patterns_config_get_files_dir();
+  $def_dir = patterns_config_get_files_dir();
 
- $form['pattern_uri'] = array(
+  $form['pattern_uri'] = array(
     '#type' => 'textfield',
     '#title' => t('Specify an URI'),
     '#description' => t('Import a pattern from a remote URL. Imported patterns are not executed until you run them manually.'),
     '#size' => 48
- );
+  );
 
- $form['name'] = array(
+  $form['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Pattern Identifier'),
     '#description' => t('Machine readable name for the pattern. The actual title should be included in the pattern itself.'),
     '#required' => TRUE
- );
+  );
 
- $form['destination'] = array(
+  $form['destination'] = array(
     '#type' => 'textfield',
     '#title' => t('Destination'),
     '#description' => t('Pattern will be saved in this directory. Must be writable. Default dir: @dir', array('@dir' => $def_dir)),
     '#default_value' => $def_dir,
     '#required' => TRUE,
- );
+  );
 
- $form['submit'] = array(
+  $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Import')
- );
+  );
 
- // Now it has his own
- $form['#validate'][] = 'patterns_import_validate';
- $form['#submit'][] = 'patterns_import_submit';
+  // Now it has his own
+  $form['#validate'][] = 'patterns_import_validate';
+  $form['#submit'][] = 'patterns_import_submit';
 
- return $form;
+  return $form;
 }
 
 

@@ -28,7 +28,7 @@ function toolbar_patterns_actions($data) {
  */
 function toolbar_patterns_prepare($action, $tag, &$data) {
 
-  module_load_include('module', 'user', 'user'); 
+  module_load_include('module', 'user', 'user');
   $data['role_names'] = user_roles();
   $data['role_permissions'] = user_role_permissions($data['role_names']);
 
@@ -89,10 +89,10 @@ function toolbar_patterns_validate($action, $tag, &$data) {
   if (is_array($data['addroles'])) {
     foreach ($data['addroles'] as $key => $value) {
       $rid = db_select('role', 'r')
-             ->fields('r', array('rid'))
-             ->condition('r.name', $value)
-             ->execute()
-             ->fetchField();
+               ->fields('r', array('rid'))
+               ->condition('r.name', $value)
+               ->execute()
+               ->fetchField();
       if ($rid == 3) {
         $status = PATTERNS_ERR;
         $msg = t('administrator should keep static.');
@@ -123,10 +123,10 @@ function toolbar_patterns_validate($action, $tag, &$data) {
   if (is_array($data['delroles'])) {
     foreach ($data['delroles'] as $key => $value) {
       $rid = db_select('role', 'r')
-             ->fields('r', array('rid'))
-             ->condition('r.name', $value)
-             ->execute()
-             ->fetchField();
+               ->fields('r', array('rid'))
+               ->condition('r.name', $value)
+               ->execute()
+               ->fetchField();
       if ($rid == 3) {
         $status = PATTERNS_ERR;
         $msg = t('administrator should keep static.');
@@ -159,10 +159,10 @@ function toolbar_patterns_validate($action, $tag, &$data) {
   foreach ($data['status'] as $rid => $value) {
     $data[$rid] = $value;
   }
-      
+
   return patterns_results($status, $msg);
 }
-    
+
 /**
  * hook_patterns_callbacks()
  */
@@ -175,7 +175,7 @@ function toolbar_patterns_callbacks($action, $tag, &$data) {
  * hook_patterns_build()
  */
 function toolbar_patterns_build($action, $form_id, &$data = NULL, &$a) {
-  module_load_include('inc', 'user', 'user.admin'); 
+  module_load_include('inc', 'user', 'user.admin');
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful(in build function)'), $data);
 }
 

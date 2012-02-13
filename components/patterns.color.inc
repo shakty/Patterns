@@ -4,7 +4,7 @@
  * Patterns component for pathauto.
  */
 function color_patterns($data) {
-  $files = array('modules/system/system.module','modules/system/system.admin.inc');
+  $files = array('modules/system/system.module', 'modules/system/system.admin.inc');
 
   $actions['color'] = array(
     PATTERNS_INFO => t('Setting color'),
@@ -24,18 +24,18 @@ function color_patterns_actions($data) {
 // returns arguments needed for the forms when processing automatically
 // $loop is set if we want to extract all values
 function color_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
-   $return = array();
-  $themes= system_rebuild_theme_data();
-  $loop=TRUE;
-  foreach($themes as $voc) {
-  	  if (!empty($theme->info['hidden'])) {
-      	continue;
-    	}
-    	if(color_get_info($voc->name)){
-    		array_push($return, array($voc->name));
-    	}
-   }
-   
+  $return = array();
+  $themes = system_rebuild_theme_data();
+  $loop = TRUE;
+  foreach ($themes as $voc) {
+    if (!empty($theme->info['hidden'])) {
+      continue;
+    }
+    if (color_get_info($voc->name)) {
+      array_push($return, array($voc->name));
+    }
+  }
+
   return $return;
 }
 

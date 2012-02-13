@@ -28,22 +28,22 @@ class PatternsParserTestCase extends PatternRunTestCase {
   public function testInvalidP() {
     $this->runPatternsFromDir(self::PARSER_TESTS_DIR . 'invalid/', array(&$this, 'check_invalid'));
   }
-  
+
   private function basic_checks($pattern) {
-    $scan = _patterns_scan_pattern($pattern);   
+    $scan = _patterns_scan_pattern($pattern);
     $this->assertNotNull($scan, t('Pattern file loaded and scanned.'));
     $analysis = _patterns_analyze_patternscan($scan);
-    $this->assertNotNull($analysis, t('Pattern-scan was analysed successfully.'));     
+    $this->assertNotNull($analysis, t('Pattern-scan was analysed successfully.'));
     return $analysis;
   }
-  
+
   public function check_valid($pattern) {
-    $analysis = $this->basic_checks($pattern); 
+    $analysis = $this->basic_checks($pattern);
     $this->assertEqual(count($analysis), 0, t('No error message generated parsing valid pattern'));
   }
-  
+
   public function check_invalid($pattern) {
-    $analysis = $this->basic_checks($pattern); 
+    $analysis = $this->basic_checks($pattern);
     $this->assertNotEqual(count($analysis), 0, t('Error messages generated parsing invalid pattern'));
   }
 }

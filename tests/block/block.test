@@ -110,7 +110,7 @@ class PatternsBlockTestCase extends PatternRunTestCase {
     $block->join('block_custom', 'bc', 'b.delta = bc.bid');
     $block_count = $block->fields('bc')->execute()->fetchAll();
     debug($block_count);
-    
+
     // The custom block should exist at this point.
     $block = db_select('block', 'b')
       ->fields('b')
@@ -135,7 +135,7 @@ class PatternsBlockTestCase extends PatternRunTestCase {
     $this->assertText(t('The block settings have been updated.'));
     $this->assertText(t('The block configuration has been saved.'));
 
-    // The user block should be set up. 
+    // The user block should be set up.
     // TODO
 
     // The custom block should exist with the right values for the bartik and seven themes.

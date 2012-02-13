@@ -73,33 +73,33 @@ function patterns_db_save_pattern($pattern, $path, $name) {
       $author = $pattern['author'];
     }
   }
-  
+
   // Check if it is valid pattern
   if (patterns_validate_pattern($pattern)) {
     $status = PATTERNS_STATUS_OK;
   }
   else {
     $status = PATTERNS_STATUS_INVALID;
-  }   
-  
+  }
+
   $pattern_data = db_select('patterns', 'p')
                     ->fields('p', array('pid', 'file', 'updated', 'status'))
                     ->condition('p.name', $name)
                     ->execute()
                     ->fetchAssoc();
 
-                  
-                 
-                    
+
+
+
   // Pattern already in the DB, data needs to be updated.
   if (!empty($pattern_data)) {
 
     if ($pattern_data['status'] == PATTERNS_STATUS_REMOVED) {
       $status = PATTERNS_STATUS_REMOVED;
     }
-    
+
     //print_r($pattern_data);
-    
+
     $pid = $pattern_data['pid'];
     // $updated = (db_query("SELECT updated FROM {patterns} WHERE pid = :d", array('d' => $pid))->fetchField());
     $updated = $pattern_data['updated'];
@@ -112,21 +112,21 @@ function patterns_db_save_pattern($pattern, $path, $name) {
     }
 
     if (($new_updated = filemtime($path)) > $updated) {
-      $query_params = array('pattern' => serialize($pattern), 
-                            'title' => $title, 
-                            'file' => $path, 
-                            'updated' => $new_updated, 
-                            'descr' => $description, 
-                            'pid' => $pid, 
+      $query_params = array('pattern' => serialize($pattern),
+                            'title' => $title,
+                            'file' => $path,
+                            'updated' => $new_updated,
+                            'descr' => $description,
+                            'pid' => $pid,
                             'status' => $status,
       );
       db_query("UPDATE {patterns} SET pattern = :pattern, title = :title, file = :file, updated = :updated, status = :status, description = :descr WHERE pid = :pid", $query_params);
     }
     else {
-      $query_params = array('pattern' => serialize($pattern), 
-                            'title' => $title, 'file' => $path, 
-                            'descr' => $description, 
-                            'pid' => $pid, 
+      $query_params = array('pattern' => serialize($pattern),
+                            'title' => $title, 'file' => $path,
+                            'descr' => $description,
+                            'pid' => $pid,
                             'status' => $status,
       );
       db_query("UPDATE {patterns} SET pattern = :pattern, title = :title, file = :file, status = :status, description = :descr WHERE pid = :pid", $query_params);
@@ -136,12 +136,12 @@ function patterns_db_save_pattern($pattern, $path, $name) {
   // It is a new Pattern.
   else {
     // Note: time() != REQUEST_TIME since it's a long process.
-    $query_params = array( 'name' => $name, 
-                           'pattern' => serialize($pattern), 
-                           'title' => $title, 
-                           'file' => $path, 
-                           'descr' => $description, 
-                           'time' => time(), 
+    $query_params = array( 'name' => $name,
+                           'pattern' => serialize($pattern),
+                           'title' => $title,
+                           'file' => $path,
+                           'descr' => $description,
+                           'time' => time(),
                            'status' => $status,
     );
     db_query("INSERT INTO {patterns} (name, status, file, updated, enabled, title, description, pattern) VALUES ( :name, :status, :file, :time, 0, :title, :descr, :pattern)", $query_params);

@@ -20,7 +20,7 @@ class PatternsMenuTestCase extends PatternRunTestCase {
   public function setUp() {
     // Enable any modules required for the tests.
     parent::setUp();
-  	$this->big_user = $this->drupalCreateUser(array('administer patterns', 'administer menu','administer url aliases'));
+    $this->big_user = $this->drupalCreateUser(array('administer patterns', 'administer menu', 'administer url aliases'));
     $this->drupalLogin($this->big_user);
   }
 
@@ -31,7 +31,7 @@ class PatternsMenuTestCase extends PatternRunTestCase {
     $title = 'Footer Links';
     $description = 'Menu description.';
     parent::runFile('menu_create.yaml', 'Create a menu', PatternsMenuTestCase::MENU_TESTS_DIR);
-  
+
     //select db to verify the result is the same as the variable or not
     $result = db_select('menu_custom', 'm')
               ->fields('m', array('menu_name', 'title', 'description'))
@@ -91,22 +91,22 @@ class PatternsMenuTestCase extends PatternRunTestCase {
     $menu_nameM = 'menu-footer-links';
     $link_pathM = 'http://123.com';
     $link_titleM = 'menu link title changed';
-    $result = db_select('menu_links','m')
-              ->fields('m',array('menu_name','link_path','link_title'))
-              ->condition('m.menu_name',$menu_nameM)
-              ->condition('m.link_path',$link_pathM)
-              ->condition('m.link_title',$link_titleM)
+    $result = db_select('menu_links', 'm')
+              ->fields('m', array('menu_name', 'link_path', 'link_title'))
+              ->condition('m.menu_name', $menu_nameM)
+              ->condition('m.link_path', $link_pathM)
+              ->condition('m.link_title', $link_titleM)
               ->execute()->fetchAll();
-    $this->assertTrue($result,t('Menu_item was modified correctly.'));
+    $this->assertTrue($result, t('Menu_item was modified correctly.'));
 
  //Menu delete use others to delete verfication
    parent::runFile('menu_item_delete.yaml', 'Delete menu items', PatternsMenuTestCase::MENU_TESTS_DIR);
-   $result = db_select('menu_links','m')
-             ->fields('m',array('menu_name','link_path','link_title'))
-             ->condition('m.menu_name',$menu_nameM)
-             ->condition('m.link_path',$link_pathM)
-             ->condition('m.link_title',$link_titleM)
-        	  ->countQuery()->execute()->fetchField();
+   $result = db_select('menu_links', 'm')
+             ->fields('m', array('menu_name', 'link_path', 'link_title'))
+             ->condition('m.menu_name', $menu_nameM)
+             ->condition('m.link_path', $link_pathM)
+             ->condition('m.link_title', $link_titleM)
+             ->countQuery()->execute()->fetchField();
   $this->assertEqual($result, 0, 'Menu_item was deleted correctly');
 
   }
