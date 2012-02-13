@@ -106,7 +106,7 @@ class PatternsMenuTestCase extends PatternRunTestCase {
              ->condition('m.menu_name',$menu_nameM)
              ->condition('m.link_path',$link_pathM)
              ->condition('m.link_title',$link_titleM)
-        	  ->countQuery()->execute()->fetchField();
+        	 ->countQuery()->execute()->fetchField();
   $this->assertEqual($result, 0, 'Menu_item was deleted correctly');
 
   }
