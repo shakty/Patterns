@@ -99,23 +99,14 @@ class PatternsMenuTestCase extends PatternRunTestCase {
               ->execute()->fetchAll();
     $this->assertTrue($result, t('Menu_item was modified correctly.'));
 
- //Menu delete use others to delete verfication
-   parent::runFile('menu_item_delete.yaml', 'Delete menu items', PatternsMenuTestCase::MENU_TESTS_DIR);
-<<<<<<< HEAD
-   $result = db_select('menu_links','m')
-             ->fields('m',array('menu_name','link_path','link_title'))
-             ->condition('m.menu_name',$menu_nameM)
-             ->condition('m.link_path',$link_pathM)
-             ->condition('m.link_title',$link_titleM)
-        	 ->countQuery()->execute()->fetchField();
-=======
-   $result = db_select('menu_links', 'm')
-             ->fields('m', array('menu_name', 'link_path', 'link_title'))
-             ->condition('m.menu_name', $menu_nameM)
-             ->condition('m.link_path', $link_pathM)
-             ->condition('m.link_title', $link_titleM)
-             ->countQuery()->execute()->fetchField();
->>>>>>> df7ca45d29570344771f65e19f36dde10bb19e9c
+  //Menu delete use others to delete verfication
+  parent::runFile('menu_item_delete.yaml', 'Delete menu items', PatternsMenuTestCase::MENU_TESTS_DIR);
+  $result = db_select('menu_links', 'm')
+              ->fields('m', array('menu_name', 'link_path', 'link_title'))
+              ->condition('m.menu_name', $menu_nameM)
+              ->condition('m.link_path', $link_pathM)
+              ->condition('m.link_title', $link_titleM)
+              ->countQuery()->execute()->fetchField();
   $this->assertEqual($result, 0, 'Menu_item was deleted correctly');
 
   }
