@@ -1,17 +1,25 @@
 <?php
 /*
  * @file
- * Patterns component for content types and nodes.
+ * Patterns component for Content Types and Nodes.
  */
 function node_patterns($data) {
 
   $files_ct = array('modules/node/content_types.inc');
   $files_n = array('modules/node/node.pages.inc');
 
+  // Determine necessary forms for action 'node' based on the data.
+  $forms = array();
+  if ($data) {
+    if ($data['tag'] == 'node' && isset($data['type'])) {
+      $forms[] = $data['type'] . '_node_form';
+    }
+  }
+
   $actions['node'] = array(
     PATTERNS_INFO => t('Create/Modify/Delete Nodes'),
-    PATTERNS_CREATE => array(), // TODO: $data['type'] .'_node_form'
-    PATTERNS_MODIFY => array(), // TODO: $data['type'] .'_node_form'
+    PATTERNS_CREATE => $forms,
+    PATTERNS_MODIFY => $forms,
     PATTERNS_DELETE => array('node_delete_confirm'),
     PATTERNS_FILES  => $files_n,
   );
@@ -150,7 +158,7 @@ function node_patterns_validate($action, $tag, &$data) {
 function node_patterns_callbacks($action, $tag, &$data) {
   if ($tag == 'node') {
       if ($action === PATTERNS_CREATE or $action === PATTERNS_MODIFY) {
-        // TODO
+        $result = array($data['type'] . '_node_form');
       }
       else {
         $result = array('node_delete_confirm');
@@ -184,7 +192,7 @@ function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
   if ($form_id == 'node_delete_confirm') {
     $data['confirm'] = 1;
   }
-  if ($form_id == 'node_type_form') {
+  elseif ($form_id == 'node_type_form') {
 
     module_load_include('inc', 'node', 'content_types');
 
@@ -241,7 +249,10 @@ function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
     $data['op'] = t('Delete');
     $data['confirm'] = 1;
   }
-  else { // TODO: $type_node_form
+  else { // $data['type'] . '_node_form'
+    $data['changed'] = time();
+    $data['op'] = t('Save');
+    
   }
 
   $result = $data;

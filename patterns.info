@@ -5,7 +5,7 @@ dependencies[] = libraries
 dependencies[] = macro
 core = 7.x
 version = 7.x-1.x-dev
-build = 7011
+build = 7012
 package = Site Setup
 php = 5.2
 
