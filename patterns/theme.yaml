@@ -16,4 +16,11 @@ actions:
     - create:
         tag: theme
         value: garland
+        default: true
+
+    - create:
+        tag: theme
+        value: bartik
+        default: true
+        admin: true
 
