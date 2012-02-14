@@ -88,9 +88,6 @@ function patterns_db_save_pattern($pattern, $path, $name) {
                     ->execute()
                     ->fetchAssoc();
 
-
-
-
   // Pattern already in the DB, data needs to be updated.
   if (!empty($pattern_data)) {
 

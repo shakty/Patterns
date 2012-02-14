@@ -297,7 +297,7 @@ function patterns_io_scan_directories() {
 
     // Get list of directories to scan for patterns.
     $patterns_paths = patterns_config_get_paths();
-
+    
     // Get valid file extensions.
     $mask = '/.\.(' . implode('|', patterns_config_get_file_types()) . ')$/';
 
@@ -306,9 +306,11 @@ function patterns_io_scan_directories() {
     $no_mask = array('.', '..', 'CVS', '.svn', '.git', '.bzr', 'enabled');
 
     foreach ($patterns_paths as $path) {
+      //debug($path);
       foreach (file_scan_directory($path, $mask, $no_mask) as $file) {
         // Can't update existing patterns that are enabled.
         if (in_array($file->filename, $enabled) || in_array($file->name, $priority)) {
+          //debug('Skip ' . $file->filename);
           continue;
         }
 

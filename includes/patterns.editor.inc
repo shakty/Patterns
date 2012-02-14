@@ -107,7 +107,7 @@ function patterns_quickrun($form, &$form_state) {
   );
 
   $form['cancel'] = array(
-    '#markup' => l(t('Cancel'), 'admin/patterns'),
+    '#markup' => l(t('Back'), 'admin/patterns'),
   );
 
   return $form;
@@ -275,7 +275,7 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
   );
 
   $form['cancel'] = array(
-    '#markup' => l(t('Cancel'), 'admin/patterns'),
+    '#markup' => l(t('Back'), 'admin/patterns'),
   );
 
   //$content = variable_get(PATTERNS_FAILED_EDIT,file_get_contents($pattern->file));
