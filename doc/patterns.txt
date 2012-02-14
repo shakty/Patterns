@@ -290,3 +290,25 @@ conventions] the Patterns module uses the following naming conventions :
 - *AJAX call*: methods which are called during AJAX operations, and
    print directly their output instead of returning it should end with
    the suffix *+_service+*. E.g. : *+patterns_parser_validate_service()+*;
+
+
+How Patterns files are saved and loaded
+---------------------------------------
+
+By default, the Patterns module hierarchically looks for patterns
+files in the following locations:
+
+1. the Drupal public files folder (usually *+/sites/default/files/patterns/*+);
+2. a user defined folder (default: *+/sites/all/patterns/+*);
+3. the Patterns module patterns directory (usually *+/sites/all/modules/patterns/patterns/+*);
+4. any installation profile directory (e.g. *+/profiles/standard/patterns+*).
+
+Patterns are files uniquely identified by the title in their info
+section. If two or more patterns have the same title, only the first
+one - according to the order defined above - is loaded.
+
+When a file is modified through the web interface of Patterns, a new
+pattern file is saved in the directory at the topmost of the hierarchy
+defined above (1.) and the changes are stored in the database. The
+original file remain untouched.
+
