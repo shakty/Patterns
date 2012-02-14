@@ -63,9 +63,9 @@ class PatternsSystemTestCase extends PatternRunTestCase {
         ->execute()
         ->fetchAll());
     */
-    $this->assertNotEqual(variable_get('user_pictures', NULL), NULL, t('user_pictures variable should be set.'));
-    $this->assertEqual(variable_get('votingapi_anonymous_window', NULL), NULL, t('votingapi_anonymous_window variable should not be set.'));
-    $this->assertEqual(variable_get('fivestar_widget', NULL), NULL, t('fivestar_widget variable should not be set.'));
+    $this->assertNotIdentical(variable_get('user_pictures', NULL), NULL, t('user_pictures variable should be set.'));
+    $this->assertIdentical(variable_get('votingapi_anonymous_window', NULL), NULL, t('votingapi_anonymous_window variable should not be set.'));
+    $this->assertIdentical(variable_get('fivestar_widget', NULL), NULL, t('fivestar_widget variable should not be set.'));
 
     // Run the pattern.
     parent::runFile('variables.yaml', 'Create and delete variables', PatternsSystemTestCase::SYSTEM_TESTS_DIR);
@@ -75,7 +75,7 @@ class PatternsSystemTestCase extends PatternRunTestCase {
 
 
     // Check for variables after running the pattern.
-    $this->assertEqual(variable_get('user_pictures', NULL), NULL, t('user_pictures variable should not be set.'));
+    $this->assertIdentical(variable_get('user_pictures', NULL), NULL, t('user_pictures variable should not be set.'));
     $this->assertIdentical(variable_get('votingapi_anonymous_window', NULL), 3600, t('votingapi_anonymous_window variable should be set properly.'));
     $this->assertIdentical(variable_get('fivestar_widget', NULL), 'sites/all/modules/fivestar/widgets/craft/craft.css', t('fivestar_widget variable should be set properly.'));
     /* debug(db_select('variable', 'v')
@@ -85,15 +85,52 @@ class PatternsSystemTestCase extends PatternRunTestCase {
     */
     }
 
+  public function testForms() {
+    // Check for variables before running the pattern.
+    /*
+    debug(db_select('variable', 'v')
+        ->fields('v', array('name'))
+        ->execute()
+        ->fetchAll());
+    */
+
+    $this->assertIdentical(variable_get('cache', NULL), NULL, t('cache variable should not be set.'));
+
+    $this->assertIdentical(variable_get('anonymous', NULL), NULL, t("anonymous variable should not be set."));
+
+    // Run the pattern.
+    parent::runFile('fill_forms.yaml', 'Fill in values for forms', PatternsSystemTestCase::SYSTEM_TESTS_DIR);
+
+    // Expected messages.
+    $this->assertText(t('The configuration options have been saved.'), t('The forms have been submitted.'));
+
+    // Check for variables after running the pattern.
+    $this->assertIdentical(variable_get('cache', NULL), 1, t('cache variable should be 1.'));
+
+    $this->assertIdentical(variable_get('anonymous', NULL), 'Anonymous2', t("Anonymous variable should be 'Anonymous2'."));
+
+    /*
+    debug(db_select('variable', 'v')
+        ->fields('v', array('name'))
+        ->execute()
+        ->fetchAll());
+    */
+
+    }
+
   public function testTheme() {
+    // TODO: test when 'default' is not set
     // Check for the current theme.
-    $this->assertEqual(variable_get('theme_default', NULL), 'bartik', t('The default theme is bartik.'));
+    $this->assertIdentical(variable_get('theme_default', NULL), 'bartik', t('The default theme is bartik.'));
+    $this->assertIdentical(variable_get('admin_theme', NULL), 'seven', t('The default admin theme is seven.'));
 
     // Run the pattern.
     parent::runFile('theme.yaml', 'Set theme', PatternsSystemTestCase::SYSTEM_TESTS_DIR);
 
     // Check for the current theme after running the pattern.
-    $this->assertEqual(variable_get('theme_default', NULL), 'garland', t('The default theme is garland.'));
+    $this->assertIdentical(variable_get('theme_default', NULL), 'garland', t('The default theme is garland.'));
+    $this->assertIdentical(variable_get('admin_theme', NULL), 'bartik', t('The default admin theme is bartik.'));
+
   }
 
 }

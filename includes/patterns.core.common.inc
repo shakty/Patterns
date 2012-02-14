@@ -111,8 +111,8 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
    * form_ids is used differently now.
    // If prepare removed the data, don't continue with this action.
    if (empty($form_ids)) {
-   drupal_set_message(t('No Form ID to execute was found'), 'error');
-   return patterns_results(PATTERNS_ERR, t('No Form ID to execute was found'));
+     drupal_set_message(t('No Form ID to execute was found'), 'error');
+     return patterns_results(PATTERNS_ERR, t('No Form ID to execute was found'));
    }
    */
 

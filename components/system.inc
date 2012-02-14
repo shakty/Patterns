@@ -3,7 +3,6 @@
  * TODO: Module enabling/disabling is done using a workaround because
  *       the form submitting way does not work for some reason
  * TODO: Only set a theme default if 'default' is 1.
- * TODO: Handle administration themes separately.
  * @file
  * Patterns component for system related operations.
  */
@@ -331,7 +330,9 @@ function system_patterns_callbacks($action, $tag, &$data) {
     $result = array('variables_execute');
   }
   else { // Just regular forms.
-    $desc = system_patterns();
+    $data['tag'] = 'form';
+    $desc = system_patterns($data);
+    unset($data['tag']);
     $result = $desc[$tag][$action];
   }
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
@@ -386,7 +387,8 @@ function system_patterns_params($action, $form_id, &$data = NULL, &$a) {
   $result = NULL;
 
   if ($form_id == 'set_active_theme') {
-    $result = array($data['theme_default']);
+    $result = array($data['theme_default'], isset($data['default']) ? TRUE : FALSE,
+      isset($data['admin']) ? TRUE : FALSE);
   }
   elseif ($form_id == 'call_php_func_form') {
     $result = array($data['function'], $data['type'], $data['module'], $data['name'], $data['filepath'], $data['arguments']);
@@ -465,10 +467,12 @@ function variables_execute($action, &$data) {
   return patterns_results(PATTERNS_SUCCESS, $msg);
 }
 
-function set_active_theme($form, $form_state, $theme_default) {
+function set_active_theme($form, $form_state, $theme_default, $default, $admin) {
   return array(
     '#theme' => array(
-      'theme_default' => $theme_default
+      'theme_default' => $theme_default,
+      'default' => $default,
+      'admin' => $admin
     ),
   );
 }
@@ -476,11 +480,13 @@ function set_active_theme($form, $form_state, $theme_default) {
 function set_active_theme_submit($form, &$form_state) {
   $values = $form['#theme'];
   $theme = $values['theme_default'];
-  patterns_system_theme_default($theme);
+  $default = $values['default'];
+  $admin = $values['admin'];
+  patterns_system_theme_default($theme, $default, $admin);
 
 }
 // Modified version of system_theme_default
-function patterns_system_theme_default($theme) {
+function patterns_system_theme_default($theme, $default, $admin) {
   // Get current list of themes.
   $themes = list_themes();
 
@@ -491,8 +497,16 @@ function patterns_system_theme_default($theme) {
       // NOTE: this assumes sites/default/css exists.
       theme_enable(array($theme));
     }
-    // Set the default theme.
-    variable_set('theme_default', $theme);
+    if ($default) {
+      if ($admin) {
+        // Set the admin theme.
+        variable_set('admin_theme', $theme);
+      }
+      else {
+        // Set the default theme.
+        variable_set('theme_default', $theme);
+      }
+    }
 
     // Rebuild the menu. This duplicates the menu_rebuild() in theme_enable().
     // However, modules must know the current default theme in order to use

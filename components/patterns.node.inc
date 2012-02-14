@@ -252,7 +252,7 @@ function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
   else { // $data['type'] . '_node_form'
     $data['changed'] = time();
     $data['op'] = t('Save');
-    
+
   }
 
   $result = $data;
