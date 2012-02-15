@@ -80,14 +80,17 @@ function patterns_export_submit($form, &$form_state) {
   
   $file = "";  
   $filename = "patterns_export.yaml";
-  $zip_Flag = $form_state['values']['zip'];
+  
+  if(isset($form_state['values']['zip']) && !empty($form_state['values']['zip'] ))    
+    $zip_flag = $form_state['values']['zip'];
+  else
+    $zip_flag = false;
   
   // check if we want to zip he files
-  if ($zip_Flag) {
+  if ($zip_flag) {
     $zip = new ZipArchive();
     // TODO: check if path ok; get better path if possible
     $zip_filename = "./patterns" . strval(time()) . ".zip"; 
-   // $zip_filename = './yay.zip';
     if ($zip->open($zip_filename, ZIPARCHIVE::CREATE)!=TRUE) {
       exit("Cannot locally create zip-archive. Ask your administrator for help.");
     }
@@ -106,19 +109,23 @@ function patterns_export_submit($form, &$form_state) {
   foreach ($form_state['values']['patterns_table'] as $pid) {
     if(!is_int($pid)) {
       $pattern = patterns_get_pattern($pid);
+      
+      if(substr($pattern->file, -4) != "yaml")
+        continue;
       //if(!$pattern->public)
       //  continue;
-      if ($zip_Flag) {
+      if ($zip_flag) {
         $zip->addFromString($pattern->name . '.yaml', file_get_contents($pattern->file));
       }
       else {
+        $file .= "---\n";
         $file .=  file_get_contents($pattern->file);
         $file .= "\n";
       }
     }
   }
 
-  if ($zip_Flag) {
+  if ($zip_flag) {
     $zip->close();
     $h = readfile($zip_filename);
     unlink($zip_filename);   

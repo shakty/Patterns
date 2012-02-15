@@ -1,3 +1,7 @@
+7014:
+		- Added export function with possiblity to zip
+		- Added some AJAX to automatic import function
+
 7013:
 
 		- Default location to save patterns can be chosen by the user
