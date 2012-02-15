@@ -49,7 +49,7 @@ function patterns_export($form, &$form_state) {
     '#empty' => t('No Patterns'),
  );
 
- if (class_exists(ZipArchive)) {
+ if (class_exists('ZipArchive')) {
   $form['zip'] = array(
     '#type' => 'checkbox',
     '#title' => 'download files as zip-archive',
