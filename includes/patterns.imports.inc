@@ -300,17 +300,25 @@ function patterns_import_submit($form, &$form_state) {
  */
 
 function patterns_import_module($form, &$form_state) {
- 
+
   $list = module_list();
   if (!isset($list["macro"])) {
     drupal_set_message(t('You need to enable the macro module for the import from module function. You can get it <a href="@url">here</a>.',
       array('@url' => url('https://github.com/shakty/Macro/'))), 'error');    
     return;
   }
-  
+
+ drupal_add_js('misc/ajax.js');
   // check if 'step' is undefined and show current step
   if (!isset($form_state['values']['step']))
     $form_state['values']['step'] = 1;
+  if (isset($form_state['values']['module']))
+    $form_state['values']['step'] = 2;
+  if (isset($form_state['values']['module_forms']))
+    $form_state['values']['step'] = 3;
+  if (isset($form_state['values']['content']))
+    $form_state['values']['step'] = 4;
+  
   $step = $form_state['values']['step'];
   $name = isset($form_state['values']['name']) ?  $form_state['values']['name'] : 'name not set';
   $form['step'] = array(
@@ -340,10 +348,36 @@ function patterns_import_module($form, &$form_state) {
     '#title' => t('Choose a module to extract the pattern'),
     '#options' => $modules_with_components,
     '#default_value' => isset($form_state['values']['module']) ? $form_state['values']['module'] : '0',
-    '#disabled' => $step < 2 ? FALSE : TRUE, // disable when chosen
+    '#ajax' => array(
+      'wrapper' => 'module_forms-wrapper',
+      'callback' => 'patterns_import_module_ajax_module_forms_callback',
+    ),
+    //'#disabled' => $step < 2 ? FALSE : TRUE, // disable when chosen
   );
- 
-  if ($step > 1)  {
+    
+  $form['module_forms_container'] = array(
+    '#type' => 'fieldset',
+    // These provide the wrapper referred to in #ajax['wrapper'] above.
+    '#prefix' => '<div id="module_forms-wrapper">',
+    '#suffix' => '</div>',
+  );
+   // javascript for the check / uncheck all function
+  drupal_add_js("function checkUncheckAll(theElement) {
+        var theForm = theElement.form, z = 0;
+        for(z=0; z<theForm.length;z++){
+          if (theForm[z].type == 'checkbox' && theForm[z].name != 'checkall'){
+            theForm[z].checked = theElement.checked;
+          }
+        }
+      }
+    ", 'inline');
+
+  $form['module_forms_container']['checkall'] = array(
+      '#type' => 'checkboxes',
+      '#attributes' => array('onclick' => 'checkUncheckAll(this);'),
+      '#options' => array('UnCheckAll' => "Select / Unselect all"),
+  );
+  if (isset($form_state['values']['module']) && !is_int($form_state['values']['module']))  {
    // now get the forms and save them into $actions
    $module_name = $modules_with_components[$form_state['values']['module']];
    // first check if user might want to import from all
@@ -384,32 +418,18 @@ function patterns_import_module($form, &$form_state) {
    }
  
    // show all forms as checkboxes
-   $form['module_forms'] = array(
+   $form['module_forms_container']['module_forms'] = array(
       '#type' => 'checkboxes',
       '#multiple' => TRUE,
       '#options' => $options,      
       '#size' => count($options, COUNT_RECURSIVE), 
       '#title' => t('Which forms should be inspected?'),
       '#default_value' => isset($form_state['values']['module_forms']) ? $form_state['values']['module_forms'] : array(),
-      '#disabled' => $step < 3 ? FALSE : TRUE,
+      //'#disabled' => $step < 3 ? FALSE : TRUE,
    );
-   // javascript for the check / uncheck all function
-   drupal_add_js("function checkUncheckAll(theElement) {
-         var theForm = theElement.form, z = 0;
-         for(z=0; z<theForm.length;z++){
-           if (theForm[z].type == 'checkbox' && theForm[z].name != 'checkall'){
-             theForm[z].checked = theElement.checked;
-           }
-         }
-       }
-     ", 'inline');
  
-   $form['checkall'] = array(
-       '#type' => 'checkboxes',
-       '#attributes' => array('onclick' => 'checkUncheckAll(this);'),
-       '#options' => array('UnCheckAll' => "Select / Unselect all"),
-   );
   }
+
 
   if ( $step == 3 && !isset($form_state['values']['content'])) {
    // get macros of chosen forms
@@ -517,6 +537,7 @@ function patterns_import_module($form, &$form_state) {
    drupal_set_message(filter_xss("k-best: " . $min));
    variable_set('macro_enabled', FALSE);
    variable_set('patterns_import_module', FALSE);
+   
    // creating info section of yaml pattern file
    $yaml = "# YAML " . $modules_with_components[$form_state['values']['module']] . " Pattern\n" .
           "\n" .
@@ -636,10 +657,14 @@ function patterns_form_alter(&$form, $form_state, $form_id) {
  */
 function patterns_import_module_validate($form, &$form_state) {
   $form_state['rebuild'] = TRUE;
-  $form_state['values']['step'] = $form_state['values']['step']+1;
+  //$form_state['values']['step'] = $form_state['values']['step']+1;
  
   return TRUE;
 }
+
+function patterns_import_module_ajax_module_forms_callback($form, $form_state) {
+  return $form['module_forms_container'];
+} 
 
 /**
  * Helper function to be called in one of the import validation handlers.
