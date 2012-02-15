@@ -658,10 +658,6 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
   module_load_include('inc', 'patterns', 'includes/patterns.core.' . $mode);
   $fun = 'patterns_execute_pattern_' . $mode;
 
-//  if (!function_exists($fun) || !is_object($pattern)) {
-//    return FALSE; // TODO: should not happen.
-//  }
-
   drupal_set_time_limit(0);
 
   if (!isset($params['quickrun']) || !$params['quickrun']) {

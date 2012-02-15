@@ -1,2 +1,4 @@
 .directory
+__*
+test_*
 */*.swp
