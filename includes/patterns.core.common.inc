@@ -36,7 +36,8 @@ function patterns_prepare_actions(&$actions, $actions_map) {
   // Prepare actions for validation/processing
   /////////////////////////////////////////////
   foreach ($actions as &$action) {
-    patterns_invoke('prepare', $action['action'], $action['data']);
+    // TODO: error checking.
+    $result = patterns_invoke('prepare', $action['action'], $action['data']);
   }
 
   // @TODO Not sure if prepare and validate could be merged.

@@ -748,26 +748,27 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
   $tag_modules = patterns_get_tagmodules_index();
 
   // Unsetting it while the module performs operations.
-  // TODO: this needs to be checked (and produce an error message, if needed).
   $tag = $data['tag'];
   unset($data['tag']);
 
-  if (!isset($tag_modules[$tag])) {
-    // TODO: Handle invalid tag.
-  }
-  $module = $tag_modules[$tag]['module'];
-  $func = $module . '_patterns_' . $hook;
-
-  if (function_exists($func)) {
-    if ($form_id) { // We are past hook_patterns_build().
-      $return = $func($action, $form_id, $data, $a);
+  if (isset($tag_modules[$tag])) {
+    $module = $tag_modules[$tag]['module'];
+    $func = $module . '_patterns_' . $hook;
+    if (function_exists($func)) {
+      if ($form_id) { // We are past hook_patterns_build().
+        $return = $func($action, $form_id, $data, $a);
+      }
+      else {
+        $return = $func($action, $tag, $data, $a);
+      }
     }
     else {
-      $return = $func($action, $tag, $data, $a);
+      $msg = t('Required patterns callback function %func does not exist.', array('%func' => $func));
+      $return = patterns_results(PATTERNS_ERR, $msg);
     }
   }
   else {
-    $msg = t('Required patterns callback function %func does not exist.', array('%func' => $func));
+    $msg = t('Required patterns tag %tag is not provided by any component.', array('%tag' => $tag));
     $return = patterns_results(PATTERNS_ERR, $msg);
   }
 
