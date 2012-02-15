@@ -300,6 +300,14 @@ function patterns_import_submit($form, &$form_state) {
  */
 
 function patterns_import_module($form, &$form_state) {
+ 
+  $list = module_list();
+  if (!isset($list["macro"])) {
+    drupal_set_message(t('You need to enable the macro module for the import from module function. You can get it <a href="@url">here</a>.',
+      array('@url' => url('https://github.com/shakty/Macro/'))), 'error');    
+    return;
+  }
+  
   // check if 'step' is undefined and show current step
   if (!isset($form_state['values']['step']))
     $form_state['values']['step'] = 1;
