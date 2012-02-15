@@ -27,7 +27,7 @@ function patterns_help($section, $arg = NULL) {
   $output = '';
   switch ($section) {
     case 'admin/patterns':
-      $output = t('Patterns will be looked for in files under the following locations:') . ' ' . theme('item_list', array('items' => patterns_config_get_paths()));
+      $output = t('Looking for patterns files under the following locations:') . ' ' . theme('item_list', array('items' => patterns_config_get_paths()));
       break;
   }
   return $output;
@@ -38,6 +38,12 @@ function patterns_help($section, $arg = NULL) {
  * @TODO proper doc.
  */
 function patterns_config_settings($form, &$form_state) {
+  $form['patterns_file_dir'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Default Directory for Patterns Files'),
+    '#description' => t('By default, patterns files will be saved and loaded from here.'),
+    '#default_value' => variable_get('patterns_save_file', PATTERNS_DEFAULT_FILE_DIR),
+  );
   $form['patterns_form_helper'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable Patterns Form Helper'),
@@ -68,10 +74,13 @@ function patterns_patterns_components() {
 
 /**
  * Return the path to the directory containing the patterns files (imported  or
- * executed ones).
+ * executed ones). 
+ * 
+ * We do not use directly variable_get because it had some issues with the batch
+ * 
  */
 function patterns_config_get_files_dir() {
-  return drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns') . '/';
+  return drupal_realpath('public://') . "/patterns/";
 }
 
 /**
@@ -79,30 +88,26 @@ function patterns_config_get_files_dir() {
  */
 function patterns_config_get_paths() {
   global $profile;
+  //$base_path = $_SERVER['DOCUMENT_ROOT'] . base_path();
 
-  if (!isset($profile)) {
-    $profile = variable_get('install_profile', 'default');
-  }
-  $patterns_paths = array(
-    //conf_path() . '/patterns',
+  $patterns_paths = array (
+    patterns_config_get_files_dir(), // must be first, in order not lose changes
+    variable_get('patterns_save_file', 'sites/all/patterns/'),
     drupal_get_path('module', 'patterns') . '/patterns/',
-    //'profiles/' . $profile . '/patterns',
-    //'sites/all/patterns',
   );
 
+  $profile = variable_get('install_profile', 'default');
+  if (isset($profile)) {
+    $patterns_paths[] = 'profiles/' . $profile . '/patterns';
+  }
+  
   // Allow any module to include patterns too.
   foreach (module_invoke_all('patterns_directory') as $path) {
     if (is_dir($path)) {
       $patterns_paths[] = $path . '/patterns';
     }
   }
-
-  $path = patterns_config_get_files_dir();
-
-  // Ste: was directory_check (included in prepared dir)
-  if (file_prepare_directory($path)) {
-    array_unshift($patterns_paths, $path);
-  }
+  
   return $patterns_paths;
 }
 

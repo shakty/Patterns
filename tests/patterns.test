@@ -71,7 +71,7 @@ class PatternsPrivilegesTestCase extends DrupalWebTestCase {
     if ($response == 200) {
       $this->checkPage();
 
-      $this->assertUniqueText(t('Patterns will be looked for in files under the following locations:'), t('Patterns list was displayed'));
+      $this->assertUniqueText(t('Looking for patterns files under the following locations:'), t('Patterns list was displayed'));
       //$this->assertTitle('Patterns');
     }
 /*

@@ -1,3 +1,9 @@
+7013:
+
+		- Default location to save patterns can be chosen by the user
+		- Patterns are loaded from : user-defined location, patterns/patterns/, sites/all/patterns/, profiles/$profile/patterns
+		- In the editor page 'Cancel' became 'Back'
+
 7012:
 
     - Code cleanup

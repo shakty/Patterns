@@ -3,9 +3,10 @@ description = Enables extremely simple adding/removing features to your site wit
 dependencies[] = token
 dependencies[] = libraries
 ;dependencies[] = macro
+
 core = 7.x
 version = 7.x-1.x-dev
-build = 7012
+build = 7013
 package = Site Setup
 php = 5.2
 
