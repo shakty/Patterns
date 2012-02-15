@@ -654,7 +654,6 @@ function patterns_remove_pattern_submit($form, &$form_state) {
  * @see patterns_execute_pattern_php()
  */
 function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
-  module_load_include('inc', 'patterns', 'includes/patterns.core.common');
   module_load_include('inc', 'patterns', 'includes/patterns.core.' . $mode);
   $fun = 'patterns_execute_pattern_' . $mode;
 

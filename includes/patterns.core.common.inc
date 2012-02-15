@@ -1,4 +1,5 @@
 <?php
+ 
 /**
  * @file
  * The common functions used by the Batch and PHP running modes.
@@ -16,15 +17,17 @@
  * @return array $results array containing the description of eventual errors
  * @TODO Doc.
  */
-function patterns_prepare_actions(&$actions, $actions_map) {
+function patterns_prepare_actions(&$action, $data, $actions_map) {
+//function patterns_prepare_actions(&$actions, $actions_map) {
 
   $status = PATTERNS_SUCCESS;
   $message = '';
 
-  if (empty($actions)) {
+  if (empty($action)) {
     return patterns_results();
   }
 
+  // TODO: Do we need it now?
   patterns_load_components();
 
   // Keep a list of which modules handle what tags.
@@ -35,16 +38,16 @@ function patterns_prepare_actions(&$actions, $actions_map) {
   /////////////////////////////////////////////
   // Prepare actions for validation/processing
   /////////////////////////////////////////////
-  foreach ($actions as &$action) {
-    // TODO: error checking.
-    $result = patterns_invoke('prepare', $action['action'], $action['data']);
-  }
+//  foreach ($actions as &$action) {
+//    // TODO: error checking.
+    $result = patterns_invoke('prepare', $action, $data);
+//  }
 
   // @TODO Not sure if prepare and validate could be merged.
   //       Maybe they were required to be separate when we used to have subpatterns.
-  foreach ($actions as &$action) {
-    $key = &$action['action'];
-    $data = &$action['data'];
+//  foreach ($actions as &$action) {
+    $key = &$action;
+    $data = &$data;
 
     /////////////////////////////////////////////////////////
     // This is in case of included patterns. Not for now
@@ -75,7 +78,7 @@ function patterns_prepare_actions(&$actions, $actions_map) {
         $errors[] = t('pattern %title: !msg', array('!msg' => $results['msg'], '%tag' => $data['tag'], '%title' => $pattern_title));
       }
     }
-  }
+ // }
 
   if (count($errors)) {
     $message = t('Errors encountered during pre-processing:') . '<br/>' . implode('<br/>', $errors);

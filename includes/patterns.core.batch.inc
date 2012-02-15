@@ -1,4 +1,8 @@
 <?php
+
+// Must be included here and not in the .module file
+module_load_include('inc', 'patterns', 'includes/patterns.core.common');
+ 
 /**
  * @file
  * Running patterns using Drupal's batch API.
@@ -42,23 +46,24 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
     // Reformat the actions. $actions passed as reference.
     patterns_reformat($actions);
 
-    // $actions passed as reference.
-    $results = patterns_prepare_actions($actions, $actions_map);
-
-    if (!patterns_error_check_results($results)) {
-      return $results;
-    }
+//    //$actions passed as reference.
+//    $results = patterns_prepare_actions($actions, $actions_map);
+//
+//    if (!patterns_error_check_results($results)) {
+//      return $results;
+//    }
 
     $batch = array(
       'title' => t('Processing section %section of pattern %pattern', array('%section' => $section, '%pattern' => $info['title'])),
       'progress_message' => t('Running action @current out of @total'),
       'operations' => array(),
-      'file' => drupal_get_path('module', 'patterns') . '/includes/patterns.core.batch.inc',
+      'file' =>  drupal_get_path('module', 'patterns') . '/includes/patterns.core.batch.inc',
       'finished' => 'patterns_batch_finish'
     );
 
+    //$batch['operations'][] = array('patterns_prepare_actions', array($actions, $actions_map));
     $i = 0;
-    //$total = count($actions);
+    $total = count($actions);
     foreach ($actions as $action) {
       $batch['operations'][] = array('patterns_batch_actions', array($action['action'], $action['data'], $i, $actions_map));
       $i++;
@@ -94,12 +99,24 @@ function patterns_batch_actions($action, $data, $place, $actions_map, &$context)
     drupal_set_message(t('Cannot execute empty action.'), 'error');
     return FALSE;
   }
-
+  
   // Start a timer. Since we want each action to be its own http request, we need
   // to ensure the batch api will decide to do it like that by making each action
   // take at least a second to execute
   timer_start('patterns_action');
 
+  /////////////////////////
+  // PREPARATION
+  $results = patterns_prepare_actions($action, $data, $actions_map);
+
+  if (!patterns_error_check_results($results)) {
+    $context['finished'] = 1;
+    drupal_set_message(t('An error occurred while preparing the actions.'), 'error');
+    return FALSE;
+  }
+  ///////////////////////
+  
+  
   // skip action execution if an error is encountered in some of the previous operations
   if (!empty($context['results']['abort'])) {
     return;
@@ -139,6 +156,7 @@ function patterns_batch_finish($success, $results, $operations) {
     drupal_set_message(t('Pattern "@pattern" ran with errors. Check the error messages to get more details.', array('@pattern' => $pattern['title'])));
     drupal_set_message($results['error_message'], 'error');
   }
-  unset($_SESSION['patterns_batch_info']);
+  // TODO: check 
+  //unset($_SESSION['patterns_batch_info']);
   drupal_flush_all_caches();
 }
