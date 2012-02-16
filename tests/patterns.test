@@ -99,7 +99,7 @@ class PatternsPrivilegesTestCase extends DrupalWebTestCase {
 
       // Some assertions.
       // TODO: make this more general.
-      $this->assertUniqueText(t('Pattern "@pattern" ran successfully.', array('@pattern' => $name)), t('Valid pattern runs without errors.'));
+      $this->assertUniqueText(t('"@pattern" ran successfully.', array('@pattern' => $name)), t('Valid pattern runs without errors.'));
       $this->assertNoText(t('Error(s) while processing pattern:'), t('Valid pattern does not produce errors.'));
       $this->assertRaw('Enabled</td><td><label><strong>' . $name);
     }
@@ -180,12 +180,12 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
 
     if ($valid) {
       // Check for a valid syntax run.
-      $this->assertUniqueText(t('ran successfully.', array('@pattern' => $name)), t('Valid pattern runs without errors.'));
+      $this->assertUniqueText(t('"@pattern" ran successfully.', array('@pattern' => $name)), t('Valid pattern runs without errors.'));
       $this->assertNoText(t('Error(s) while processing pattern:'), t('Valid pattern does not produce errors.'));
     }
     else {
       $this->assertUniqueText(t('Error(s) while processing pattern:'), t('Invalid pattern produces errors.'));
-      $this->assertNoText(t('ran successfully.', array('@pattern' => $name)), t('Invalid pattern does not run without errors.'));
+      $this->assertNoText(t('"@pattern" ran successfully.', array('@pattern' => $name)), t('Invalid pattern does not run without errors.'));
     }
 
   }
