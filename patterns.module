@@ -232,14 +232,15 @@ function patterns_menu() {
     'type' => MENU_CALLBACK
   );
 
-  // TODO: Check patterns.xml.
-
+  /*
+   * TODO: outdated, disabled for now.
   $items['patterns.xml'] = array(
     'title' => 'Published Patterns',
     'page callback' => 'patterns_feed',
     'access callback' => TRUE,
     'type' => MENU_CALLBACK
   );
+  */
 
   // TODO: Check import.
 
@@ -471,7 +472,7 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
     '#title' => t('Running mode:'),
     '#description' => t('Batch mode uses the Batch API provided by Drupal thus providing intermediate feedback about the progress. PHP will only return when every action has been processed (or there has been an error), which is easier to debug.'),
     '#options' => $options_run_mode,
-    '#default_value' => 'batch',
+    '#default_value' => variable_get('patterns_default_running_mode', 'batch'),
     '#element_validate' => array('patterns_mode_validate'),
   );
 

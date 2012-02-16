@@ -38,11 +38,18 @@ function patterns_help($section, $arg = NULL) {
  * @TODO proper doc.
  */
 function patterns_config_settings($form, &$form_state) {
-  $form['patterns_file_dir'] = array(
+  $form['patterns_save_file'] = array(
     '#type' => 'textfield',
     '#title' => t('Default Directory for Patterns Files'),
     '#description' => t('By default, patterns files will be saved and loaded from here.'),
     '#default_value' => variable_get('patterns_save_file', 'sites/all/patterns/'),
+  );
+  $form['patterns_default_running_mode'] = array(
+    '#type' => 'radios',
+    '#title' => t('Default Running Mode'),
+    '#description' => t('The default running mode when running a pattern.'),
+    '#options' => array('batch' => 'Batch', 'php' => 'PHP'),
+    '#default_value' => variable_get('patterns_default_running_mode', 'batch'),
   );
   $form['patterns_form_helper'] = array(
     '#type' => 'checkbox',
@@ -50,12 +57,14 @@ function patterns_config_settings($form, &$form_state) {
     '#description' => t('When enabled, patterns form helper will dump $form_id and $form_state variables at the bottom of each page. Dump will always contain values from the latest form submission. This may be very helpful while writing your own patterns.'),
     '#default_value' => variable_get('patterns_form_helper', FALSE),
   );
+  /* TODO: Outdated, disabled for now.
   $form['patterns_allow_publish'] = array(
     '#type' => 'checkbox',
     '#title' => t('Share your patterns'),
     '#description' => t('When enabled, you will be able to "publish" selected patterns and make them available to other patterns users on the following URL: %url.', array('%url' => url(NULL, array('absolute' => TRUE)) . (variable_get('clean_url', 0) ? '' : '?q=') . 'patterns.xml')),
     '#default_value' => variable_get('patterns_allow_publish', FALSE),
   );
+   */
   // Reload patterns while we are here and ensure the lists are up to date.
   patterns_get_patterns(TRUE);
 

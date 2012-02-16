@@ -77,7 +77,7 @@ function patterns_quickrun($form, &$form_state) {
     '#title' => t('Running mode:'),
     '#description' => t('Batch mode uses the Batch API provided by Drupal thus providing intermediate feedback about the progress. PHP will only return when every action has been processed (or there has been an error), which is easier to debug.'),
     '#options' => $options_run_mode,
-    '#default_value' => 'batch',
+    '#default_value' => variable_get('patterns_default_running_mode', 'batch'),
     '#element_validate' => array('patterns_mode_validate'),
   );
 
@@ -337,7 +337,6 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
 function patterns_edit_validate($form, &$form_state) {
 
   // real_path(public) returns the path to the files dir
-  // TODO: patterns_save_file is never set.
   $path = drupal_realpath('public://') . "/" . variable_get('patterns_save_file', 'patterns');
 
   if (!file_prepare_directory($path, FILE_CREATE_DIRECTORY)) { // TODO: is FILE_CREATE_DIRECTORY good here?
