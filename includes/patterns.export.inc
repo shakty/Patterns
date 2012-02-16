@@ -80,6 +80,7 @@ function patterns_export_submit($form, &$form_state) {
   
   $file = "";  
   $filename = "patterns_export.yaml";
+  $path = patterns_config_get_files_dir();
   
   if(isset($form_state['values']['zip']) && !empty($form_state['values']['zip'] ))    
     $zip_flag = $form_state['values']['zip'];
@@ -90,27 +91,26 @@ function patterns_export_submit($form, &$form_state) {
   if ($zip_flag) {
     $zip = new ZipArchive();
     // TODO: check if path ok; get better path if possible
-    $zip_filename = "./patterns" . strval(time()) . ".zip"; 
-    if ($zip->open($zip_filename, ZIPARCHIVE::CREATE)!=TRUE) {
+    $zip_filename = "patterns" . strval(time()) . ".zip"; 
+    if ($zip->open($path . $zip_filename, ZIPARCHIVE::CREATE)!=TRUE) {
       exit("Cannot locally create zip-archive. Ask your administrator for help.");
     }
-    $filename = "patterns" . strval(time()) . ".zip";
   } 
   
   // send header depending on if we zip or not
   if ($zip_flag) {
-    drupal_add_http_header("Content-type", "application/octet-stream");
+    
   } else {
-    drupal_add_http_header("Content-type", " text/plain; charset=utf-8");
+    
   }
-  drupal_add_http_header("Content-Disposition", "attachment;filename=". $filename);
+  
   
   // concatenate yaml files to a huge file or zip all files
   foreach ($form_state['values']['patterns_table'] as $pid) {
-    if(!is_int($pid)) {
+    if (!is_int($pid)) {
       $pattern = patterns_get_pattern($pid);
       
-      if(substr($pattern->file, -4) != "yaml")
+      if (substr($pattern->file, -4) != "yaml")
         continue;
       //if(!$pattern->public)
       //  continue;
@@ -119,7 +119,7 @@ function patterns_export_submit($form, &$form_state) {
       }
       else {
         $file .= "---\n";
-        $file .=  file_get_contents($pattern->file);
+        $file .=  @file_get_contents($pattern->file);
         $file .= "\n";
       }
     }
@@ -127,11 +127,27 @@ function patterns_export_submit($form, &$form_state) {
 
   if ($zip_flag) {
     $zip->close();
-    $h = readfile($zip_filename);
-    unlink($zip_filename);   
+    $zip_path = $path . $zip_filename;
+    if(!is_readable($zip_path)) {
+      drupal_set_message("An error occured: ". $zip_path ." isn't readable.", 'error');
+    } else {
+      drupal_add_http_header("Content-type", "application/octet-stream");
+      drupal_add_http_header("Content-Disposition", "attachment;filename=". $zip_path);
+      $err = @readfile($zip_path); 
+      if($err == FALSE) {
+        drupal_set_message("An error occured: couldn't read ". $zip_path .".", 'error');
+      }
+      exit;
+    }
+    if (@unlink($zip_path) == FALSE) {
+      drupal_set_message("An error occured: couldn't delete file ". $zip_path .".", 'error');
+    }
   }
-  else {
+  else { // .yaml file
+    drupal_add_http_header("Content-type", " text/plain; charset=utf-8");
+    drupal_add_http_header("Content-Disposition", "attachment;filename=". $filename);
     print $file;
+    exit;
   }
-  exit;
+
 }
