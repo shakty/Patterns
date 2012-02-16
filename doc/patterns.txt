@@ -164,6 +164,11 @@ you are working with the prepared data and you are checking against the database
 
 * *+hook_patterns_cleanup($action, $tag, &$data)+*: performs optional additional operations,
    after the execution of the action has finished.
+
+* *+hook_patterns_get_arguments($action, $tag, $form_id, &$loop)+*: returns arguments needed for the forms when 
+ using the automatic pattern import function. If arguments are given back for several executions, $loop needs to be
+ set to true. Return arguments always in an array, if they're for several executions, create an array of arrays. 
+ When you want to be able to extract all data, you will need to create an extra tag. When this tag is given to this function, it should then return all the arguments.
 ******************************************************************
 
 where *+$action+* is one of the actions *+create+*, *+modify+*,
@@ -213,6 +218,12 @@ All the other hooks return the following special associative array:
 * *+status+*: One of *+[PATTERNS_SUCCESS, PATTERNS_WARN, PATTERNS_ERR]+*. Required.
 * *+msg+*: A message.
 * *+result+*: Any kind of additional data.
+
+*+hook_patterns_get_arguments+*
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Returns arguments needed for the forms when using the automatic pattern import function. If arguments are given back for several executions, $loop needs to be
+ set to true. Return arguments always in an array, if they're for several executions, create an array of arrays.
 
 Pattern execution modes
 ----------------------
