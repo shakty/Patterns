@@ -1,3 +1,9 @@
+7015:
+	
+		- Sections are executed sequentially both in batch and php mode
+		- patterns_prepare_action is also executed during the batch now
+		- Defalt mode: batch/php can be set by user
+
 7014:
 		- Added export function with possiblity to zip
 		- Added some AJAX to automatic import function

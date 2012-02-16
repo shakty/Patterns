@@ -1,4 +1,8 @@
 <?php
+
+// Must be included here and not in the .module file
+module_load_include('inc', 'patterns', 'includes/patterns.core.common');
+ 
 /**
  * @file
  * Running patterns using Drupal's batch API.
@@ -37,36 +41,49 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
   ///////////////////////////////
   // Looping through the sections
   ///////////////////////////////
-
+  $tot_sec = count($sections);
+  $cur_sec = 1;
   foreach ($sections as $section => $actions) {
     // Reformat the actions. $actions passed as reference.
     patterns_reformat($actions);
-
-    // $actions passed as reference.
-    $results = patterns_prepare_actions($actions, $actions_map);
-
-    if (!patterns_error_check_results($results)) {
-      return $results;
-    }
-
-    $batch = array(
-      'title' => t('Processing section %section of pattern %pattern', array('%section' => $section, '%pattern' => $info['title'])),
-      'progress_message' => t('Running action @current out of @total'),
-      'operations' => array(),
-      'file' => drupal_get_path('module', 'patterns') . '/includes/patterns.core.batch.inc',
-      'finished' => 'patterns_batch_finish'
+    
+    $progress_params = array (
+                          '%section' => $section,
+                          '%cur_sec' => $cur_sec,
+                          '%tot_sec' => $tot_sec, 
     );
-
-    $i = 0;
-    //$total = count($actions);
+    
+    $progress = t('Running section "%section" (%cur_sec/%tot_sec), action @current out of @total', $progress_params); 
+    
+    $batch = array(
+      //'title' => t('Processing section %section of pattern %pattern', array('%section' => $section, '%pattern' => $info['title'])),
+      'title' => t('Processing pattern %pattern', array('%pattern' => $info['title'])),
+      'progress_message' => $progress,
+      'operations' => array(),
+      'file' =>  drupal_get_path('module', 'patterns') . '/includes/patterns.core.batch.inc',
+      'finished' => 'patterns_batch_finish',
+      'init_message' => t('Initializing section "%section" (%cur_sec/%tot_sec)', array(
+                          '%section' => $section,
+                          '%cur_sec' => $cur_sec,
+                          '%tot_sec' => $tot_sec, 
+                         )),
+    );
+    
+    $total = count($actions);
+    $i=0;
     foreach ($actions as $action) {
-      $batch['operations'][] = array('patterns_batch_actions', array($action['action'], $action['data'], $i, $actions_map));
+      $batch['operations'][] = array('patterns_batch_action', array($action['action'], 
+                                                                    $action['data'], 
+                                                                    $i, 
+                                                                    $actions_map,
+                                                                    $section,
+                                                                    ));
       $i++;
     }
 
     $_SESSION['patterns_batch_info'] = $infos;
-
     batch_set($batch);
+    $cur_sec++;
   }
 
   return TRUE;
@@ -82,7 +99,7 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
  * @param array $context
  * @TODO Doc.
  */
-function patterns_batch_actions($action, $data, $place, $actions_map, &$context) {
+function patterns_batch_action($action, $data, $place, $actions_map, $section, &$context) {
 
   // Since we are in the batch, we need to load some things once more.
   module_load_include('inc', 'patterns', 'includes/patterns.core.common');
@@ -94,12 +111,27 @@ function patterns_batch_actions($action, $data, $place, $actions_map, &$context)
     drupal_set_message(t('Cannot execute empty action.'), 'error');
     return FALSE;
   }
-
+  
+  // Saving the name of the section in the context
+  $context['results']['section'] = $section;
+  
   // Start a timer. Since we want each action to be its own http request, we need
   // to ensure the batch api will decide to do it like that by making each action
   // take at least a second to execute
   timer_start('patterns_action');
 
+  /////////////////////////
+  // PREPARATION
+  $results = patterns_prepare_action($action, $data, $actions_map);
+
+  if (!patterns_error_check_results($results)) {
+    $context['finished'] = 1;
+    drupal_set_message(t('An error occurred while preparing the actions.'), 'error');
+    return FALSE;
+  }
+  ///////////////////////
+  
+  
   // skip action execution if an error is encountered in some of the previous operations
   if (!empty($context['results']['abort'])) {
     return;
@@ -124,21 +156,27 @@ function patterns_batch_actions($action, $data, $place, $actions_map, &$context)
  */
 function patterns_batch_finish($success, $results, $operations) {
   $info = $_SESSION['patterns_batch_info'];
+  $section = $results['section'];
   if (empty($results['abort'])) {
-
-    // TODO: info is different: was pid-> array of infos
-
     foreach ($info as $key => $i) {
-      drupal_set_message(t('Pattern "@pattern" ran successfully.', array('@pattern' => $i['title'])));
-      $query_params = array('en' => time(), 'pid' => $key); // Note: time() != $_SERVER['REQUEST_TIME']
-      db_query("UPDATE {patterns} SET status = 1, enabled = :en WHERE pid = :pid", $query_params);
+      drupal_set_message(t('Section "@section" of pattern "@pattern" ran successfully.', array('@pattern' => $i['title'],
+                                                                                             '@section' => $section,
+      )));
+      $query_params = array(':time' => time(), // Note: time() != $_SERVER['REQUEST_TIME']
+                            ':pid' => $key,
+                            ':en' => PATTERNS_STATUS_ENABLED,
+      ); 
+      db_query("UPDATE {patterns} SET status = :en, enabled = :time WHERE pid = :pid", $query_params);
     }
   }
   else {
     $pattern = reset($info);
-    drupal_set_message(t('Pattern "@pattern" ran with errors. Check the error messages to get more details.', array('@pattern' => $pattern['title'])));
+    drupal_set_message(t('Section "@section" of pattern "@pattern" ran with errors. Check the error messages to get more details.', array('@pattern' => $pattern['title'],
+                                                                                                                                        '@section' => $section,
+    )));
     drupal_set_message($results['error_message'], 'error');
   }
-  unset($_SESSION['patterns_batch_info']);
+  // TODO: check 
+  //unset($_SESSION['patterns_batch_info']);
   drupal_flush_all_caches();
 }
