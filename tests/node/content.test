@@ -45,8 +45,7 @@ class PatternsContentTypeTestCase extends PatternRunTestCase {
     // TODO: more fields
   }
 
-  // TODO
-  private function testDelete() {
+  public function testDelete() {
     // First, create the content type.
     parent::runFile('content.yaml', 'Content Type (create)', PatternsContentTypeTestCase::NODE_TESTS_DIR);
 
@@ -61,8 +60,7 @@ class PatternsContentTypeTestCase extends PatternRunTestCase {
     parent::runFile('content_delete.yaml', 'Content Type (delete)', PatternsContentTypeTestCase::NODE_TESTS_DIR);
 
     // Expected messages.
-    // TODO
-    $this->assertUniqueText(t('The has been removed.'));
+    $this->assertUniqueText(t('The content type Test Content Type has been deleted.'));
 
     // The content type should exist at this point.
     $node_type_count = db_select('node_type', 'n')

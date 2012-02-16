@@ -300,8 +300,8 @@ function _patterns_scan_pattern($pattern) {
 
   if (!empty($pattern)) {
     // Patterns must contain:
-    // 1 and only section info
-    // 0 or 1 section modules
+    // exactly one section 'info'
+    // 0 or 1 section 'modules'
     // 1 or more other sections
     // All the sections must be a non-empty array
     $valid_actions = patterns_actions();
