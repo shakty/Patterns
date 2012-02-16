@@ -59,8 +59,11 @@ function patterns_execute_pattern_php($pattern, $params, $patterns_details, $act
       drupal_set_message(t('Section "%section" of pattern "%pattern" ran successfully.', array('%pattern' => $info['title'],
                                                                                                '%section' => $section,
       )));
-      $query_params = array(':en' => time(), ':pid' => $pid); // Note: time() != $_SERVER['REQUEST_TIME']
-      db_query("UPDATE {patterns} SET status = 1, enabled = :en WHERE pid = :pid", $query_params);
+      $query_params = array(':time' => time(), // Note: time() != $_SERVER['REQUEST_TIME']
+                            ':pid' => $pid,
+                            ':en' => PATTERNS_STATUS_ENABLED,
+      ); 
+      db_query("UPDATE {patterns} SET status = :en, enabled = :time WHERE pid = :pid", $query_params);
     }
   }
   drupal_flush_all_caches();

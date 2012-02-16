@@ -162,8 +162,11 @@ function patterns_batch_finish($success, $results, $operations) {
       drupal_set_message(t('Section "@section" of pattern "@pattern" ran successfully.', array('@pattern' => $i['title'],
                                                                                              '@section' => $section,
       )));
-      $query_params = array(':en' => time(), ':pid' => $key); // Note: time() != $_SERVER['REQUEST_TIME']
-      db_query("UPDATE {patterns} SET status = 1, enabled = :en WHERE pid = :pid", $query_params);
+      $query_params = array(':time' => time(), // Note: time() != $_SERVER['REQUEST_TIME']
+                            ':pid' => $key,
+                            ':en' => PATTERNS_STATUS_ENABLED,
+      ); 
+      db_query("UPDATE {patterns} SET status = :en, enabled = :time WHERE pid = :pid", $query_params);
     }
   }
   else {
