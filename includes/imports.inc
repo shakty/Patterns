@@ -479,7 +479,7 @@ function patterns_import_module($form, &$form_state) {
           // include needed files
           if (isset($entry[PATTERNS_FILES])) {
            foreach ($entry[PATTERNS_FILES] as $file) {
-            include_once  $file;
+            require_once $file;
            }
           }
           // check if we get argument for the form and if we get them for

@@ -188,7 +188,7 @@ function patterns_execute_config($module) {
   $path = drupal_get_path('module', $module) . '/' . $module . '.config';
 
   if (file_exists($path)) {
-    include_once($path);
+    require_once $path;
 
     if (empty($actions)) {
       return;

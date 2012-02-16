@@ -1,7 +1,7 @@
 <?php
 
 // Must be included here and not in the .module file
-module_load_include('inc', 'patterns', 'includes/patterns.core.common');
+module_load_include('inc', 'patterns', 'includes/core.common');
  
 /**
  * @file
@@ -102,7 +102,7 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
 function patterns_batch_action($action, $data, $place, $actions_map, $section, &$context) {
 
   // Since we are in the batch, we need to load some things once more.
-  module_load_include('inc', 'patterns', 'includes/patterns.core.common');
+  module_load_include('inc', 'patterns', 'includes/core.common');
   patterns_load_components();
 
   // Nothing to do if there is no action

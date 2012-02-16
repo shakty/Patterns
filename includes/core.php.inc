@@ -1,7 +1,7 @@
 <?php
 
 // Must be included here and not in the .module file
-module_load_include('inc', 'patterns', 'includes/patterns.core.common');
+module_load_include('inc', 'patterns', 'includes/core.common');
  
 /**
  * @file

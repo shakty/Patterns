@@ -4,8 +4,8 @@
  * Installation file for Patterns.
  */
 
-require_once 'includes/patterns.config.inc';
-require_once 'includes/patterns.io.inc';
+require_once 'includes/config.inc';
+require_once 'includes/io.inc';
 
 /**
  * Implements hook_install().

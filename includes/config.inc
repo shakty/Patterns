@@ -93,7 +93,7 @@ function patterns_config_get_files_dir() {
 }
 
 /**
- * Return a list of paths that will be scanned for patterns/.
+ * Return a list of paths that will be scanned for pattern files.
  */
 function patterns_config_get_paths() {
   global $profile;

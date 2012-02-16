@@ -50,32 +50,20 @@
  *
  */
 
-module_load_include('inc', 'patterns', 'includes/patterns.config');
-module_load_include('inc', 'patterns', 'includes/patterns.db');
-module_load_include('inc', 'patterns', 'includes/patterns.error');
-module_load_include('inc', 'patterns', 'includes/patterns.export');
-module_load_include('inc', 'patterns', 'includes/patterns.io');
-module_load_include('inc', 'patterns', 'includes/patterns.parser');
-module_load_include('inc', 'patterns', 'includes/patterns.utils');
-module_load_include('inc', 'patterns', 'includes/patterns.editor');
-module_load_include('inc', 'patterns', 'includes/patterns.imports');
-module_load_include('inc', 'patterns', 'includes/patterns.theme');
-
-// Not used for now
-//module_load_include('inc', 'patterns', 'includes/patterns.servers');
-
-//require_once 'includes/patterns.config.inc';
-//require_once 'includes/patterns.db.inc';
-//require_once 'includes/patterns.error.inc';
-//require_once 'includes/patterns.io.inc';
-//require_once 'includes/patterns.parser.inc';
-//require_once 'includes/patterns.utils.inc';
-//require_once 'includes/patterns.editor.inc';
-//require_once 'includes/patterns.imports.inc';
+module_load_include('inc', 'patterns', 'includes/config');
+module_load_include('inc', 'patterns', 'includes/db');
+module_load_include('inc', 'patterns', 'includes/error');
+module_load_include('inc', 'patterns', 'includes/export');
+module_load_include('inc', 'patterns', 'includes/io');
+module_load_include('inc', 'patterns', 'includes/parser');
+module_load_include('inc', 'patterns', 'includes/utils');
+module_load_include('inc', 'patterns', 'includes/editor');
+module_load_include('inc', 'patterns', 'includes/imports');
+module_load_include('inc', 'patterns', 'includes/theme');
 
 // Not used for now.
-//require_once 'includes/patterns.servers.inc';
-//require_once 'includes/patterns.theme.inc';
+module_load_include('inc', 'patterns', 'includes/servers');
+module_load_include('inc', 'patterns', 'includes/theme');
 
 define('PATTERNS_SUCCESS', 1);
 define('PATTERNS_WARN', 0);
@@ -655,7 +643,7 @@ function patterns_remove_pattern_submit($form, &$form_state) {
  * @see patterns_execute_pattern_php()
  */
 function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
-  module_load_include('inc', 'patterns', 'includes/patterns.core.' . $mode);
+  module_load_include('inc', 'patterns', 'includes/core.' . $mode);
   $fun = 'patterns_execute_pattern_' . $mode;
 
   drupal_set_time_limit(0);
