@@ -114,8 +114,12 @@ function patterns_export_submit($form, &$form_state) {
         continue;
       //if(!$pattern->public)
       //  continue;
+      if(!is_readable($pattern->file)) {
+        drupal_set_mesage("An error occured: couldn't read ". $pattern->file .".", 'error');
+        continue;
+      }
       if ($zip_flag) {
-        $zip->addFromString($pattern->name . '.yaml', file_get_contents($pattern->file));
+        $zip->addFromString($pattern->name . '.yaml', @file_get_contents($pattern->file));
       }
       else {
         $file .= "---\n";
