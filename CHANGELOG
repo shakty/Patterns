@@ -1,3 +1,8 @@
+7014:
+
+		- Sections are executed sequentially both in batch and php mode
+		- patterns_prepare_action is also executed during the batch now
+
 7013:
 
 		- Default location to save patterns can be chosen by the user
