@@ -102,6 +102,7 @@ function patterns_config_get_paths() {
   $patterns_paths = array (
     patterns_config_get_files_dir(), // must be first, in order not lose changes
     variable_get('patterns_save_file', 'sites/all/patterns/'),
+    conf_path() .'/patterns',
     drupal_get_path('module', 'patterns') . '/patterns/',
   );
 
