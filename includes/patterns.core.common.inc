@@ -17,7 +17,7 @@
  * @return array $results array containing the description of eventual errors
  * @TODO Doc.
  */
-function patterns_prepare_actions(&$action, $data, $actions_map) {
+function patterns_prepare_action(&$action, &$data, $actions_map) {
 //function patterns_prepare_actions(&$actions, $actions_map) {
 
   $status = PATTERNS_SUCCESS;

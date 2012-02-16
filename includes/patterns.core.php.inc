@@ -41,26 +41,25 @@ function patterns_execute_pattern_php($pattern, $params, $patterns_details, $act
   foreach ($sections as $section => $actions) { // TODO: is this loop necessary?
     // Reformat the actions. $actions passed as reference.
     patterns_reformat($actions);
-    // $actions passed as reference.
-    $results = patterns_prepare_actions($actions, $actions_map);
 
-    if (!patterns_error_check_results($results)) {
-      return $results;
-    }
     $i = 0;
     $success = TRUE;
     foreach ($actions as $action) {
-      $results = patterns_php_actions($action['action'], $action['data'], $i, $actions_map);
+      $results = patterns_php_action($action['action'], $action['data'], $i, $actions_map);
       if (!patterns_error_check_results($results)) {
-        drupal_set_message(t('Pattern "@pattern" ran with errors. Check the error messages to get more details.', array('@pattern' => $info['title'])));
+        drupal_set_message(t('Section "%section" of pattern "%pattern" ran with errors. Check the error messages to get more details.', array('%pattern' => $info['title'],
+                                                                                                                                              '%section' => $section,
+        )));
         $success = FALSE;
         break;
       }
       $i++;
     }
     if ($success) {
-      drupal_set_message(t('Pattern "@pattern" ran successfully.', array('@pattern' => $info['title'])));
-      $query_params = array('en' => time(), 'pid' => $pid); // Note: time() != $_SERVER['REQUEST_TIME']
+      drupal_set_message(t('Section "%section" of pattern "%pattern" ran successfully.', array('%pattern' => $info['title'],
+                                                                                               '%section' => $section,
+      )));
+      $query_params = array(':en' => time(), ':pid' => $pid); // Note: time() != $_SERVER['REQUEST_TIME']
       db_query("UPDATE {patterns} SET status = 1, enabled = :en WHERE pid = :pid", $query_params);
     }
   }
@@ -78,7 +77,7 @@ function patterns_execute_pattern_php($pattern, $params, $patterns_details, $act
  * @param array $actions_map [$pid pattern id, $index ??]
  * @TODO Doc.
  */
-function patterns_php_actions($action, $data, $place, $actions_map) {
+function patterns_php_action($action, $data, $place, $actions_map) {
 
   patterns_load_components(); // TODO: move this out of here?
 
@@ -87,6 +86,13 @@ function patterns_php_actions($action, $data, $place, $actions_map) {
     drupal_set_message(t('Cannot execute empty action.'), 'error');
     return FALSE;
   }
+  
+  // $actions passed as reference.
+  $results = patterns_prepare_action($action, $data, $actions_map);
+  if (!patterns_error_check_results($results)) {
+    return $results;
+  }
+  
   $identifiers = array();
   return patterns_implement_action($action, $data, $identifiers, $place, $actions_map);
 }
