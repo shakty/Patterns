@@ -3,30 +3,32 @@
 
 info:
   title: Execute PHP functions
-  description: as title
+  description: Runs a simple dvm function from the Devel module.
   author: QScience
-  category: QScience
+  category: System
   version: 1.0
   core: 7.x
-  author_email: sbalietti@ethz.ch
-  author_website: qscience.csko.hu
+
+modules:
+  - devel
 
 actions: 
-
-  create:
-    tag: call_php_func
-    function: dvm
-    arguments:
-        - array:
-            - abcString
-            - defArray:
-                - item1
-                - item2
+  - create:
+      tag: call_php_func
+      function: dvm
+      arguments:
+          - array:
+              - abcString
+              - defArray:
+                  - item1
+                  - item2
 
 # TODO: create an example
-#  - tag: call_php_func
-#    function:
-#    arguments:
-#    type: inc
-#    module: my_module
-#    name: include_name
+#  - create:
+#      tag: call_php_func
+#      function:
+#      arguments:
+#      type: inc
+#      module: my_module
+#      name: include_name
+

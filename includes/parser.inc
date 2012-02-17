@@ -335,6 +335,7 @@ function _patterns_scan_pattern($pattern) {
               // NOTE: Having additional valid actions will work, but is discouraged,
               // and therefore undocumented.
               $found = FALSE;
+              // TODO: check if $data is an array.
               foreach ($data as $akey => $avalue) {
                 if (!array_key_exists($akey, $valid_actions)) {
                   $result['invalid_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
