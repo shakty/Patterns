@@ -13,7 +13,7 @@ function taxonomy_patterns($data) {
   $actions['vocabulary'] = array(
     PATTERNS_INFO => t('Create/Modify/Delete Taxonomy Vocabularies'),
     PATTERNS_CREATE => array('taxonomy_form_vocabulary'),
-    PATTERNS_MODIFY => array('taxonomy_form_vocabulary', 'taxonomy_form_vocabulary'),
+    PATTERNS_MODIFY => array('taxonomy_form_vocabulary'),
     PATTERNS_DELETE => array('taxonomy_vocabulary_confirm_delete'),
     PATTERNS_FILES => array('modules/taxonomy/taxonomy.admin.inc'),
   );
@@ -29,6 +29,12 @@ function taxonomy_patterns($data) {
   $actions['vocabulary_extract_all']  = array(
     PATTERNS_INFO => t('Create/Modify/Delete Taxonomy Vocabularies'),
     PATTERNS_MODIFY => array('taxonomy_form_vocabulary'),
+    PATTERNS_FILES => array('modules/taxonomy/taxonomy.admin.inc'),
+  );
+  
+  $actions['term_extract_all'] = array(
+    PATTERNS_INFO => t('Create/Modify/Delete Taxonomy Terms'),
+    PATTERNS_MODIFY => array('taxonomy_form_term'),
     PATTERNS_FILES => array('modules/taxonomy/taxonomy.admin.inc'),
   );
 
@@ -50,23 +56,38 @@ function taxonomy_patterns_actions($data) {
 function taxonomy_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
   static $i = -1;
   $i++;
-  $vocabulary = taxonomy_get_vocabularies();
-
-  if ($tag == 'vocabulary') {
-    if ($action == PATTERNS_MODIFY) {
-      if ($form_id == 'taxonomy_form_vocabulary') {
-        return array(array_pop($vocabulary));
+  
+  if($tag == 'vocabulary' || $tag == 'vocabulary_extract_all') {
+    $vocabulary = taxonomy_get_vocabularies();
+    if ($tag == 'vocabulary' && $action == PATTERNS_MODIFY 
+        && $form_id == 'taxonomy_form_vocabulary') {
+          return array(array_pop($vocabulary));
+    }
+    elseif ($tag == 'vocabulary_extract_all') {
+      $loop = TRUE;
+      $return = array();
+      foreach ($vocabulary as $voc) {
+        array_push($return, array($voc));
       }
+      return $return;
     }
   }
-  elseif ($tag == 'vocabulary_extract_all') {
-    $loop = TRUE;
-    $return = array();
-    foreach ($vocabulary as $voc) {
-      array_push($return, array($voc));
+  elseif ($tag == 'term' || $tag == 'term_extract_all') {
+    $terms = entity_load('taxonomy_term');
+    if ($tag == 'vocabulary' && $action == PATTERNS_MODIFY 
+         && $form_id == 'taxonomy_form_vocabulary') {
+         return array(array_pop($terms));
+     }
+     elseif ($tag == 'term_extract_all') {
+      $loop = TRUE;
+      $return = array();
+      foreach ($terms as $term) {
+        array_push($return, array($term));
+      }
+      return $return;
     }
-    return $return;
   }
+
 }
 
 // Prepare data for processing
@@ -301,6 +322,10 @@ function _taxonomy_patterns_prepare_parent_terms($parents) {
         continue;
       }
       $parent = array_pop($ps);
+    }
+    else if ($p === 0) {
+        $parent = new stdClass();
+        $parent->tid = 0;
     }
     else {
       $parent = taxonomy_term_load($p);
