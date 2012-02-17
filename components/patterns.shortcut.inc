@@ -206,6 +206,19 @@ function shortcut_patterns_params($action, $form_id, &$data = NULL, &$a) {
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
 
+function shortcut_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
+// if($tag == "shortcut_set_user") {
+//    $loop = TRUE;
+//    $return = array();
+//    $users = entity_load('user');
+//    echo var_dump($users);
+//    foreach($users as $usr) {
+//      array_push($return, array($usr));
+//    }
+//    return $return; 
+//  }
+}
+
 /**
  * hook_patterns_cleanup()
  */
