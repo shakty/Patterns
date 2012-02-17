@@ -16,7 +16,13 @@ class PatternsBlockTestCase extends PatternRunTestCase {
     );
   }
 
-  public function testCreate() {
+  public function testCreateModifyDelete() {
+    $this->testCreate();
+    //$this->testModify();
+    $this->testDelete();
+  }
+
+  private function testCreate() {
     // The block should not exist at this point.
     $block_count = db_select('block', 'b')
       ->fields('b', array('bid'))
@@ -71,18 +77,7 @@ class PatternsBlockTestCase extends PatternRunTestCase {
     //debug($block[0]->pages); debug("page1\npage2\npage3"); debug($block[0]->pages == "page1\npage2\npage3");
   }
 
-  public function testDelete() {
-    // First, create the block.
-    parent::runFile('block.yaml', 'Blocks (create)', PatternsBlockTestCase::BLOCK_TESTS_DIR);
-
-    // The block should exist at this point.
-    $block_count = db_select('block', 'b')
-      ->fields('b', array('bid'))
-      ->condition('module', 'block')
-      ->condition('title', 'Test title')
-      ->countQuery()->execute()->fetchField();
-    $this->assertEqual($block_count, '2', t('The custom block should exist at this point.'));
-
+  private function testDelete() {
     // Run the pattern.
     parent::runFile('block_delete.yaml', 'Blocks (custom) delete', PatternsBlockTestCase::BLOCK_TESTS_DIR);
 

@@ -62,7 +62,7 @@ class PatternsSystemTestCase extends PatternRunTestCase {
         ->fields('v', array('name'))
         ->execute()
         ->fetchAll());
-    */
+     */
     $this->assertNotIdentical(variable_get('user_pictures', NULL), NULL, t('user_pictures variable should be set.'));
     $this->assertIdentical(variable_get('votingapi_anonymous_window', NULL), NULL, t('votingapi_anonymous_window variable should not be set.'));
     $this->assertIdentical(variable_get('fivestar_widget', NULL), NULL, t('fivestar_widget variable should not be set.'));
@@ -82,20 +82,12 @@ class PatternsSystemTestCase extends PatternRunTestCase {
         ->fields('v', array('name'))
         ->execute()
         ->fetchAll());
-    */
-    }
+     */
+  }
 
   public function testForms() {
     // Check for variables before running the pattern.
-    /*
-    debug(db_select('variable', 'v')
-        ->fields('v', array('name'))
-        ->execute()
-        ->fetchAll());
-    */
-
     $this->assertIdentical(variable_get('cache', NULL), NULL, t('cache variable should not be set.'));
-
     $this->assertIdentical(variable_get('anonymous', NULL), NULL, t("anonymous variable should not be set."));
 
     // Run the pattern.
@@ -106,17 +98,9 @@ class PatternsSystemTestCase extends PatternRunTestCase {
 
     // Check for variables after running the pattern.
     $this->assertIdentical(variable_get('cache', NULL), 1, t('cache variable should be 1.'));
-
     $this->assertIdentical(variable_get('anonymous', NULL), 'Anonymous2', t("Anonymous variable should be 'Anonymous2'."));
 
-    /*
-    debug(db_select('variable', 'v')
-        ->fields('v', array('name'))
-        ->execute()
-        ->fetchAll());
-    */
-
-    }
+  }
 
   public function testTheme() {
     // TODO: test when 'default' is not set

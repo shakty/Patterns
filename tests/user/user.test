@@ -17,7 +17,13 @@ class PatternsUserTestCase extends PatternRunTestCase {
     );
   }
 
-  public function testCreate() {
+  public function testCreateModifyDelete() {
+    $this->testCreate();
+    // $this->testModify();
+    // $this->testDelete();
+  }
+
+  private function testCreate() {
     // The user should not exist at this point.
     $user_count = db_select('users', 'u')
       ->fields('u', array('uid'))
@@ -41,15 +47,6 @@ class PatternsUserTestCase extends PatternRunTestCase {
   }
 
   private function testDelete() {
-    // First, create the user.
-    parent::runFile('user_create.yaml', 'Users (create)', PatternsUserTestCase::USER_TESTS_DIR);
-
-    $user_count = db_select('users', 'u')
-      ->fields('u', array('uid'))
-      ->condition('uid', 'test_uid')
-      ->countQuery()->execute()->fetchField(); 
-    $this->assertIdentical($user_count, '1', t('The user should exist at this point.'));
-
     // Run the pattern.
     parent::runFile('user_delete.yaml', 'Users (delete)', PatternsUserTestCase::USER_TESTS_DIR);
 

@@ -561,7 +561,7 @@ function patterns_trash_pattern_submit($form, &$form_state) {
   }
 
   $form_state['redirect'] = 'admin/patterns';
- }
+}
 
 /**
  * Form constructor for the Patterns removing form.
@@ -806,7 +806,7 @@ function patterns_get_tagmodules_index($tag_name = NULL, $data = NULL, $id = NUL
   static $tag_modules;
 
   // Index not yet built or $tag_name is set.
- if (!is_array($tag_modules) || $tag_name != NULL) {
+  if (!is_array($tag_modules) || $tag_name != NULL) {
     $tag_modules = array();
     // Get a list of tags and their modules.
     // TODO: Optimize: if $tag_name is set, and $tag_modules is not empty, look

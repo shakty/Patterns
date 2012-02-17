@@ -16,7 +16,14 @@ class PatternsContentTypeTestCase extends PatternRunTestCase {
     );
   }
 
-  public function testCreate() {
+  public function testCreateModifyDelete() {
+    $this->testCreate();
+    $this->testModify();
+    $this->testDelete();
+  }
+
+
+  private function testCreate() {
     // The content type should not exist at this point.
     $node_type_count = db_select('node_type', 'n')
       ->fields('n', array('type'))
@@ -45,22 +52,12 @@ class PatternsContentTypeTestCase extends PatternRunTestCase {
     // TODO: more fields
   }
 
-  public function testDelete() {
-    // First, create the content type.
-    parent::runFile('content.yaml', 'Content Type (create)', PatternsContentTypeTestCase::NODE_TESTS_DIR);
-
-    // The content type should exist at this point.
-    $node_type_count = db_select('node_type', 'n')
-      ->fields('n', array('type'))
-      ->condition('type', 'test_content_type')
-      ->countQuery()->execute()->fetchField();
-    $this->assertIdentical($node_type_count, '1', t('The content type should exist at this point.'));
-
+  private function testDelete() {
     // Run the pattern.
     parent::runFile('content_delete.yaml', 'Content Type (delete)', PatternsContentTypeTestCase::NODE_TESTS_DIR);
 
     // Expected messages.
-    $this->assertUniqueText(t('The content type Test Content Type has been deleted.'));
+    $this->assertUniqueText(t('The content type Test Content Type2 has been deleted.'));
 
     // The content type should exist at this point.
     $node_type_count = db_select('node_type', 'n')
@@ -71,17 +68,7 @@ class PatternsContentTypeTestCase extends PatternRunTestCase {
 
   }
 
-  public function testModify() {
-    // First, create the content type.
-    parent::runFile('content.yaml', 'Content Type (create)', PatternsContentTypeTestCase::NODE_TESTS_DIR);
-
-    // The content type should exist at this point.
-    $node_type_count = db_select('node_type', 'n')
-      ->fields('n', array('type'))
-      ->condition('type', 'test_content_type')
-      ->countQuery()->execute()->fetchField();
-    $this->assertIdentical($node_type_count, '1', t('The content type should exist at this point.'));
-
+  private function testModify() {
     // Run the pattern.
     parent::runFile('content_modify.yaml', 'Content Type (modify)', PatternsContentTypeTestCase::NODE_TESTS_DIR);
 
