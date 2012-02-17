@@ -91,17 +91,20 @@ function patterns_db_save_pattern($pattern, $path, $name) {
   // Pattern already in the DB, data needs to be updated.
   if (!empty($pattern_data)) {
 
+    // TODO: how to update the status correctly? Improve!
     if ($pattern_data['status'] == PATTERNS_STATUS_REMOVED) {
       $status = PATTERNS_STATUS_REMOVED;
     }
-
-    //print_r($pattern_data);
-
+    else if ($pattern_data['status'] == PATTERNS_STATUS_ENABLED) {
+      if ($status == PATTERNS_STATUS_OK) {
+        $status = PATTERNS_STATUS_ENABLED;
+      }
+    }
+    
     $pid = $pattern_data['pid'];
-    // $updated = (db_query("SELECT updated FROM {patterns} WHERE pid = :d", array('d' => $pid))->fetchField());
     $updated = $pattern_data['updated'];
     $file = $pattern_data['file'];
-
+    
     // Change of location.
     if ($path != $file) {
       $query_params = array('file' => $path, 'updated' => time(), 'pid' => $pid);
