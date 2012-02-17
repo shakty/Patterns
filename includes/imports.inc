@@ -671,7 +671,7 @@ function patterns_import_module_ajax_module_forms_callback($form, $form_state) {
  */
 function _patterns_imports_check_dirs($dir) {
  // Check Patterns Directory
- if (!_patterns_io_is_patterns_dir_ready($dir)) {
+ if (!_patterns_io_is_patterns_dir_ready($dir, FILE_CREATE_DIRECTORY)) {
   $message = t("Destination folder does not exist or is not writable: %path<br />", array('%path' => $dir)); // TODO: move this out for performance
   $link = l(t('status report'), 'admin/reports/status');
   $message .= t('You might want to check the !link to ensure your files directory exists and is writable.', array('!link' => $link));

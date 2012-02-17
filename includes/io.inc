@@ -434,12 +434,13 @@ function _patterns_io_check_htaccess() {
 /**
  * Checks if the patterns directory exist and is writable.
  */
-function _patterns_io_is_patterns_dir_ready($patterns_files_dir = '') {
+function _patterns_io_is_patterns_dir_ready($patterns_files_dir = '', $flag = FILE_MODIFY_PERMISSIONS) {
+ 
   // TODO: keep pattern_files_dir in a separate location. Warning: defining a constant creates an error.
   if (empty($patterns_files_dir)) {
     $patterns_files_dir = patterns_config_get_files_dir(); // TODO: move this out for performance
   }
-  return (file_prepare_directory($patterns_files_dir)) ? TRUE : FALSE;
+  return (file_prepare_directory($patterns_files_dir, $flag)) ? TRUE : FALSE;
 }
 
 
@@ -472,7 +473,7 @@ function patterns_io_save_pattern($content, $name, $format = 'yaml', $dir = NULL
     $dir = patterns_config_get_files_dir();
   }
 
-  if (file_prepare_directory($dir, TRUE)) {
+  if (file_prepare_directory($dir, FILE_CREATE_DIRECTORY)) {
     $path =  $dir . '/' . $name . '.' . $format;
 
     if (file_unmanaged_save_data($content, $path, FILE_EXISTS_REPLACE)) {
