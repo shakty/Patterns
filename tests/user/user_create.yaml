@@ -1,0 +1,21 @@
+# YAML User Pattern
+# QScience
+
+info:
+  title: Users (create)
+  description: Creates a few users
+  author: QScience
+  category: Users
+  version: 1.0
+  core: 7.x
+
+actions:
+  - create:
+      tag: user
+      name: test_uid
+      mail: testemail@example.com
+      password: test_password
+      timezone: Europe/Berlin
+      roles: 2
+      status: 1
+

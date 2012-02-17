@@ -28,3 +28,5 @@ files[] = tests/node/content.test
 files[] = tests/node/node.test
 files[] = tests/toolbar/toolbar.test
 files[] = tests/shortcut/shortcut.test
+;files[] = tests/user/user.test
+
