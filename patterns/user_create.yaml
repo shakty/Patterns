@@ -2,8 +2,8 @@
 # QScience
 
 info:
-  title: Users (create)
-  description: Creates a few users
+  title: Users, roles, and permissions (create)
+  description: Creates a few users with roles, permissions
   author: QScience
   category: Users
   version: 1.0
@@ -18,4 +18,13 @@ actions:
       timezone: Europe/Berlin
       roles: 2
       status: 1
+
+  - create:
+      tag: role
+      name: manager
+
+  - create:
+      tag: permission
+      rid: 5
+      value: administer menu, bypass node access
 

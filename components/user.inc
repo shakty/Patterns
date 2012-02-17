@@ -2,6 +2,8 @@
 /*
  * @file
  * Patterns component for users.
+ * TODO: when creating a user, check if the email is already taken.
+ * TODO: user modifying does not work, it's asking for the password.
  */
 
 /**
@@ -89,11 +91,13 @@ function user_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
  * Implements hook_patterns_prepare() for the user module.
  */
 function user_patterns_prepare($action, $tag, &$data) {
+  $status = PATTERNS_SUCCESS;
+  $msg = t('Execution successful');
   if ($tag == 'user') {
-    // Check with isset first, otherwise we get a notice
     if (!isset($data['name'])) {
       if (!isset($data['uid'])) {
-        return t('Cannot create/modify user. Missing name and uid.');
+        $status = PATTERNS_ERR;
+        $msg = t('Cannot create/modify user. Missing name and uid.');
       }
       // Retrieve the username name from the db
       $data['name'] = db_select('users', 'u')
@@ -143,18 +147,6 @@ function user_patterns_prepare($action, $tag, &$data) {
       $data['name'] = $data['value'];
       unset($data['value']);
     }
-
-    if (empty($data['rid'])) {
-      $rid = db_select('role', 'r')
-               ->fields('r', array('rid'))
-               ->condition('r.name', $data['name'])
-               ->execute()
-               ->fetchField();
-//      $rid = db_query("SELECT rid FROM {role} WHERE name = :name", array('name' => $data['name']))->fetchField();
-      if ($rid) {
-        $data['rid'] = $rid;
-      }
-    }
   }
   elseif ($tag == 'permissions') {
     if (isset($data['role']) && !$data['rid']) {
@@ -162,7 +154,7 @@ function user_patterns_prepare($action, $tag, &$data) {
     }
     unset($data['role']);
   }
-  return patterns_results();
+  return patterns_results($status, $msg);
 }
 
 // Validate the values for an action before running the pattern
@@ -194,7 +186,7 @@ function user_patterns_validate($action, $tag, &$data) {
     }
     elseif ($data['uid'] == 1 && $action === PATTERNS_DELETE) {
       $status = PATTERNS_ERR;
-      $msg = t('Cannot delete super-user account. Please modify pattern and try again.');
+      $msg = t('Cannot delete super-user account.');
     }
     elseif ($data['uid'] == $user->uid && $action === PATTERNS_DELETE) {
       $status = PATTERNS_ERR;
@@ -219,7 +211,21 @@ function user_patterns_validate($action, $tag, &$data) {
   }
 
   elseif ($tag == 'role') {
-    if (isset($data['rid']) && (DRUPAL_ANONYMOUS_RID == $data['rid'] || DRUPAL_AUTHENTICATED_RID == $data['rid'])) {
+    if (empty($data['rid'])) {
+      $rid = db_select('role', 'r')
+        ->fields('r', array('rid'))
+        ->condition('r.name', $data['name'])
+        ->execute()
+        ->fetchField();
+      if ($rid) {
+       $data['rid'] = $rid;
+      }
+    }
+    if (isset($rid) && $action === PATTERNS_CREATE) {
+      $status = PATTERNS_ERR;
+      $msg = t('Role %role already exists.', array('%role' => $data['name']));
+    }
+    elseif (isset($data['rid']) && (DRUPAL_ANONYMOUS_RID == $data['rid'] || DRUPAL_AUTHENTICATED_RID == $data['rid'])) {
       $status = PATTERNS_ERR;
       $msg = t('The authenticated or anonymous roles cannot be updated or deleted.');
     }
@@ -229,7 +235,7 @@ function user_patterns_validate($action, $tag, &$data) {
     }
     elseif ($action === PATTERNS_CREATE && !empty($data['rid'])) {
       $status = PATTERNS_ERR;
-      $msg = t('You cannot create a role with fixed rid id');
+      $msg = t('You cannot create a role with fixed rid.');
     }
   }
   elseif ($tag == 'permissions') {
@@ -330,21 +336,6 @@ function user_patterns_build($action, $form_id, &$data = NULL, &$a) {
     }
   }
   elseif ($form_id == 'user_admin_roles' || $form_id == 'user_admin_role_delete_confirm' || $form_id == 'user_admin_role') {
-    static $old_q; // TODO: What is this?
-    $old_q = $_GET['q'];
-    if ($data['rid']) {
-      if ($data['delete']) {
-        $data['confirm'] = 1;
-        $_GET['q'] = 'admin/people/permissions/roles/delete/' . $data['rid'];
-      }
-      else {
-        $_GET['q'] = 'admin/people/permissions/roles/edit/' . $data['rid'];
-      }
-    }
-    else {
-      $_GET['q'] = '';
-    }
-
     if ($action === PATTERNS_DELETE) {
       $data['op'] = t('Delete');
     }
@@ -440,10 +431,10 @@ function user_patterns_params($action, $form_id, &$data = NULL, &$a) {
     $result = array(user_load($data['uid']));
   }
   elseif ($form_id == 'user_admin_role_delete_confirm' || $form_id == 'user_admin_role') {
-    $result = (object) $data; // TODO: array?
+    $result = array((object) $data);
   }
   elseif ($form_id == 'user_admin_permissions') {
-    $result = $data['rid']; // TODO: array?
+    $result = array($data['rid']);
   }
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
