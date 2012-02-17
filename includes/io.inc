@@ -297,7 +297,7 @@ function patterns_io_scan_directories() {
 
     // Get list of directories to scan for patterns.
     $patterns_paths = patterns_config_get_paths();
-    
+
     // Get valid file extensions.
     $mask = '/.\.(' . implode('|', patterns_config_get_file_types()) . ')$/';
 

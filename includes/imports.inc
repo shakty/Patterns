@@ -157,7 +157,7 @@ function patterns_import_file_validate($form, &$form_state) {
   $form_state['pattern_uri']->destination = $destination;
  }
  else {
-   
+
   form_set_error('pattern_uri', t('Failed to retreive the pattern specified: %uri. Check your file and try again. Notice: only yaml and xml files are accepted', array('%uri' => $uri)));
   return FALSE;
  }
@@ -304,7 +304,7 @@ function patterns_import_module($form, &$form_state) {
   $list = module_list();
   if (!isset($list["macro"])) {
     drupal_set_message(t('You need to enable the macro module for the import from module function. You can get it <a href="@url">here</a>.',
-      array('@url' => url('https://github.com/shakty/Macro/'))), 'error');    
+      array('@url' => url('https://github.com/shakty/Macro/'))), 'error');
     return;
   }
 
@@ -318,7 +318,7 @@ function patterns_import_module($form, &$form_state) {
     $form_state['values']['step'] = 3;
   if (isset($form_state['values']['content']))
     $form_state['values']['step'] = 4;
-  
+
   $step = $form_state['values']['step'];
   $name = isset($form_state['values']['name']) ?  $form_state['values']['name'] : 'name not set';
   $form['step'] = array(
@@ -327,7 +327,7 @@ function patterns_import_module($form, &$form_state) {
      '#description' => t('step'),
      '#value' => t($step),
   );
- 
+
   // for all modules, check if hook_patterns() is defined and let the user choose
   // a module from a radio button form
   $enabled_modules = module_list();
@@ -335,13 +335,13 @@ function patterns_import_module($form, &$form_state) {
   // the string for the 'import from all' checkbox
   $import_from_all_string = t('Import from every module');
   array_push($modules_with_components, $import_from_all_string);
- 
+
   // need to load components to be able to check
   // TODO: refactor: this does something very similar to patterns_get_tagmodules_index
   patterns_load_components();
   foreach ( module_implements('patterns') as $module)
     array_push($modules_with_components, $module);
- 
+
   // show all modules that implement the hook
   $form['module'] = array(
     '#type' => 'radios',
@@ -354,7 +354,7 @@ function patterns_import_module($form, &$form_state) {
     ),
     //'#disabled' => $step < 2 ? FALSE : TRUE, // disable when chosen
   );
-    
+
   $form['module_forms_container'] = array(
     '#type' => 'fieldset',
     // These provide the wrapper referred to in #ajax['wrapper'] above.
@@ -390,16 +390,16 @@ function patterns_import_module($form, &$form_state) {
      if ($module == $import_from_all_string) continue;
      $actions = array_merge($actions, call_user_func($module . "_patterns", NULL));
     }
- 
+
    }
- 
+
    // get all the forms
    $module_form_ids = array();
    $files = array();
    foreach ($actions as $entry) {
     $files = array_merge(isset($entry[PATTERNS_FILES]) ?  $entry[PATTERNS_FILES] : array(), $files);
    }
- 
+
    // build array of forms for showing as checkboxes
    // current output per form: <tag> : <descr> '<action>' : <myform>
    $options = array();
@@ -416,18 +416,18 @@ function patterns_import_module($form, &$form_state) {
      }
     }
    }
- 
+
    // show all forms as checkboxes
    $form['module_forms_container']['module_forms'] = array(
       '#type' => 'checkboxes',
       '#multiple' => TRUE,
-      '#options' => $options,      
-      '#size' => count($options, COUNT_RECURSIVE), 
+      '#options' => $options,
+      '#size' => count($options, COUNT_RECURSIVE),
       '#title' => t('Which forms should be inspected?'),
       '#default_value' => isset($form_state['values']['module_forms']) ? $form_state['values']['module_forms'] : array(),
       //'#disabled' => $step < 3 ? FALSE : TRUE,
    );
- 
+
   }
 
 
@@ -437,14 +437,14 @@ function patterns_import_module($form, &$form_state) {
    $yaml_content[PATTERNS_CREATE] = '';
    $yaml_content[PATTERNS_MODIFY] = '';
    $yaml_content[PATTERNS_DELETE] = '';
- 
+
    variable_set('patterns_import_module', TRUE);
    variable_set('macro_enabled', TRUE);
    variable_set('macro_submissions', array());
    $chosen_forms = $form_state['values']['module_forms'];
-   
+
    // same loop as above for creating the checkboxes
- 
+
    // for measuring the perfomance / time, k-best
    $measure = FALSE;
    if ($measure) {
@@ -459,21 +459,21 @@ function patterns_import_module($form, &$form_state) {
     $k = 1;
     $j = 0;
    }
- 
+
    $i=0;
    while ($j<$k) {
     $j = $j+1;
     while ($i<$runs) {
      $i = $i+1;
- 
-     
+
+
      $counter = 0;
      foreach ($actions as $tag => $entry) {
       $descr = $entry[PATTERNS_INFO];
       foreach ($entry as $action => $forms) {
        if ($action != PATTERNS_INFO && $action != PATTERNS_FILES && $action != PATTERNS_CREATE && $action != PATTERNS_DELETE) {
         foreach ($forms as $my_form) {
-         // 
+         //
          //$key = ;
          if ($chosen_forms["o" . $counter]) {
           // include needed files
@@ -490,23 +490,23 @@ function patterns_import_module($form, &$form_state) {
           else {
            $arguments = array("");
           }
- 
+
           // small transformation for the loop below:
           // arguments for one run must be put in a array
           if (!$loop) {
            $arguments = array($arguments);
           }
- 
+
           // go through all argumentarrays for all the runs
           foreach ($arguments as $arguments_element) {
            // submit and save output
            $module_form_state = array();
            $module_form_state['values'] = array();
            variable_set('macro_submissions', array());
- 
+
            $module_form_state['build_info']['args'] = $arguments_element;
            drupal_form_submit($my_form, $module_form_state);
- 
+
            $my_macro = macro_get_macro_yaml();
            // format output: trim --- and whitespaces at the beginning and end
            // and then indent correctly
@@ -524,9 +524,9 @@ function patterns_import_module($form, &$form_state) {
        }
       }
      }
- 
+
     }
- 
+
     if ($measure) {
      $time = (microtime(TRUE) - $start);
      $min = $time < $min ? $time : $min;
@@ -537,15 +537,15 @@ function patterns_import_module($form, &$form_state) {
    drupal_set_message(filter_xss("k-best: " . $min));
    variable_set('macro_enabled', FALSE);
    variable_set('patterns_import_module', FALSE);
-   
+
    // creating info section of yaml pattern file
    $yaml = "# YAML " . $modules_with_components[$form_state['values']['module']] . " Pattern\n" .
           "\n" .
           "info:\n" .
           "  title: #please add a title\n" .
-          "  description: " . 
+          "  description: " .
                "automatically generated Pattern file";
- 
+
    global $user;
    global $base_root;
    // TODO: get core version
@@ -564,11 +564,11 @@ function patterns_import_module($form, &$form_state) {
    $yaml .= $yaml_content[PATTERNS_MODIFY];
    $yaml .= $yaml_content[PATTERNS_DELETE];
   }
- 
+
   // show pattern import form
   if ($step >= 3) {
    $def_dir = patterns_config_get_files_dir();
- 
+
    if (!isset($yaml))
    $yaml = $form_state['values']['content'];
    // patterns_editor('patterns_import_source', $yaml);
@@ -584,7 +584,7 @@ function patterns_import_module($form, &$form_state) {
        '#description' => t('Machine readable name for the pattern. The actual title should be included in the pattern itself.'),
        '#required' => TRUE,
    );
- 
+
    $form['content'] = array(
        '#type' => 'textarea',
        '#rows' => 25,
@@ -592,13 +592,13 @@ function patterns_import_module($form, &$form_state) {
        '#default_value' => $yaml,
        '#description' => t('Imported patterns are not executed until you run them manually.'),
    );
- 
+
    $form['validate'] = array(
        '#prefix' => '<span style=\'margin-right:10px\'>',
        '#markup' => "<a href='#' id='validate_pattern'>" . t('Validate') . "</a>",
        '#suffix' => '</span> ',
    );
- 
+
    // TODO: transform in a FILE form
    $form['destination'] = array(
        '#type' => 'textfield',
@@ -611,7 +611,7 @@ function patterns_import_module($form, &$form_state) {
     $co2 = l(t('Codemirror'), 'http://codemirror.net/');
     $editor .= t('Install !co2 in sites/all/libraries/codemirror2 for advanced editing functionalities.', array('!co2' => $co2));
    }
- 
+
    // Load the JS of for the ajax validation.
    drupal_add_js(drupal_get_path('module', 'patterns') . '/js/ajax_validation.js');
   }
@@ -633,7 +633,7 @@ function patterns_import_module($form, &$form_state) {
    $form['#validate'][] = 'patterns_import_validate';
    $form['#submit'][] = 'patterns_import_submit';
   }
- 
+
   return $form;
 }
 
@@ -658,13 +658,13 @@ function patterns_form_alter(&$form, $form_state, $form_id) {
 function patterns_import_module_validate($form, &$form_state) {
   $form_state['rebuild'] = TRUE;
   //$form_state['values']['step'] = $form_state['values']['step']+1;
- 
+
   return TRUE;
 }
 
 function patterns_import_module_ajax_module_forms_callback($form, $form_state) {
   return $form['module_forms_container'];
-} 
+}
 
 /**
  * Helper function to be called in one of the import validation handlers.

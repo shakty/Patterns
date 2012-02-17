@@ -2,7 +2,7 @@
 
 // Must be included here and not in the .module file
 module_load_include('inc', 'patterns', 'includes/core.common');
- 
+
 /**
  * @file
  * A simple, sequential version of running patterns.
@@ -62,7 +62,7 @@ function patterns_execute_pattern_php($pattern, $params, $patterns_details, $act
       $query_params = array(':time' => time(), // Note: time() != $_SERVER['REQUEST_TIME']
                             ':pid' => $pid,
                             ':en' => PATTERNS_STATUS_ENABLED,
-      ); 
+      );
       db_query("UPDATE {patterns} SET status = :en, enabled = :time WHERE pid = :pid", $query_params);
     }
   }
@@ -89,13 +89,13 @@ function patterns_php_action($action, $data, $place, $actions_map) {
     drupal_set_message(t('Cannot execute empty action.'), 'error');
     return FALSE;
   }
-  
+
   // $actions passed as reference.
   $results = patterns_prepare_action($action, $data, $actions_map);
   if (!patterns_error_check_results($results)) {
     return $results;
   }
-  
+
   $identifiers = array();
   return patterns_implement_action($action, $data, $identifiers, $place, $actions_map);
 }

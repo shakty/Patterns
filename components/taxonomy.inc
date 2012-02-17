@@ -31,7 +31,7 @@ function taxonomy_patterns($data) {
     PATTERNS_MODIFY => array('taxonomy_form_vocabulary'),
     PATTERNS_FILES => array('modules/taxonomy/taxonomy.admin.inc'),
   );
-  
+
   $actions['term_extract_all'] = array(
     PATTERNS_INFO => t('Create/Modify/Delete Taxonomy Terms'),
     PATTERNS_MODIFY => array('taxonomy_form_term'),
@@ -56,10 +56,10 @@ function taxonomy_patterns_actions($data) {
 function taxonomy_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
   static $i = -1;
   $i++;
-  
-  if($tag == 'vocabulary' || $tag == 'vocabulary_extract_all') {
+
+  if ($tag == 'vocabulary' || $tag == 'vocabulary_extract_all') {
     $vocabulary = taxonomy_get_vocabularies();
-    if ($tag == 'vocabulary' && $action == PATTERNS_MODIFY 
+    if ($tag == 'vocabulary' && $action == PATTERNS_MODIFY
         && $form_id == 'taxonomy_form_vocabulary') {
           return array(array_pop($vocabulary));
     }
@@ -74,11 +74,11 @@ function taxonomy_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE
   }
   elseif ($tag == 'term' || $tag == 'term_extract_all') {
     $terms = entity_load('taxonomy_term');
-    if ($tag == 'vocabulary' && $action == PATTERNS_MODIFY 
-         && $form_id == 'taxonomy_form_vocabulary') {
+    if ($tag == 'vocabulary' && $action == PATTERNS_MODIFY
+        && $form_id == 'taxonomy_form_vocabulary') {
          return array(array_pop($terms));
-     }
-     elseif ($tag == 'term_extract_all') {
+    }
+    elseif ($tag == 'term_extract_all') {
       $loop = TRUE;
       $return = array();
       foreach ($terms as $term) {
@@ -141,7 +141,7 @@ function taxonomy_patterns_validate($action, $tag, &$data) {
       $vocabs = taxonomy_get_vocabularies();
 
       foreach ($vocabs as $vid => $vocab) {
-        if (strtolower($vocab->name) == strtolower($data['vocabulary'])) {
+        if (drupal_strtolower($vocab->name) == drupal_strtolower($data['vocabulary'])) {
           $data['vid'] = $vid;
           break;
         }
@@ -205,7 +205,7 @@ function taxonomy_patterns_params($action, $form_id, &$data = NULL, &$a) {
 
 // Cleanup any global settings after the action runs
 function taxonomy_patterns_cleanup($action, $tag, &$data) {
-  unset($_POST['op']);
+  unset($_POST['op']); // TODO: ???
   return patterns_results();
 }
 
@@ -323,7 +323,7 @@ function _taxonomy_patterns_prepare_parent_terms($parents) {
       }
       $parent = array_pop($ps);
     }
-    else if ($p === 0) {
+    elseif ($p === 0) {
         $parent = new stdClass();
         $parent->tid = 0;
     }

@@ -221,7 +221,7 @@ function patterns_form_helper($form, $form_state) {
 
 /**
  * Prints XML feed of published (public) patterns.
- * TODO: this function is outdated. It would be nice to have multiple format 
+ * TODO: this function is outdated. It would be nice to have multiple format
  * support (YAML, XML, ...).
  */
 function patterns_feed() {
