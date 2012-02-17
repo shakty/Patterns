@@ -100,6 +100,44 @@ function menu_patterns_prepare($action, $tag, &$data) {
   return patterns_results();
 }
 
+/*
+ * 
+ */
+function menu_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
+  // taken from menu_load_links
+  if($tag == 'menu_item' && $action == PATTERNS_MODIFY && $form_id == 'menu_edit_item') {
+        $links = db_select('menu_links', 'ml', array('fetch' => PDO::FETCH_ASSOC))
+    ->fields('ml')
+    ->execute()
+    ->fetchAll();
+    $loop = TRUE;
+    $return = array();
+    $i = 0;
+    foreach ($links as &$link) {
+      $i++;
+      //if($i > 10) break;
+      $link['options'] = unserialize($link['options']);
+      $link['href'] = ""; 
+      // to get rid of the notice
+      // Notice: Undefined index: href in menu_edit_item() (line 306 of /var/www/drupal-7.9/modules/menu/menu.admin.inc).
+      // should be ok, because it's only used in the description.
+      array_push($return, array("edit", $link, $link));
+    }
+    return $return;;
+  }
+  // taken from menu_overview_page
+  elseif ($tag == 'menu' && $action == PATTERNS_MODIFY && $form_id == 'menu_edit_menu') {
+    $loop = TRUE;
+    $result = db_query("SELECT * FROM {menu_custom} ORDER BY title", array(), array('fetch' => PDO::FETCH_ASSOC));
+    $return = array();
+    foreach ($result as $menu) {
+      array_push($return, array("edit", $menu));
+    }
+    return $return;
+  }
+
+}
+
 // Validate the values for an action before running the pattern
 function menu_patterns_validate($action, $tag, &$data) {
   $status = PATTERNS_SUCCESS;
