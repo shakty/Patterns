@@ -19,7 +19,7 @@ function patterns_load_yaml($path, $local = TRUE) {
     return FALSE;
   }
 
-  include_once libraries_get_path('spyc') . '/spyc.php';
+  require_once libraries_get_path('spyc') . '/spyc.php';
   return Spyc::YAMLLoad($path);
 }
 
@@ -272,7 +272,7 @@ function patterns_load_components() {
 
   foreach ($paths as $path) {
     foreach (file_scan_directory($path, '/\.inc$/') as $file) {
-      include_once $file->uri;
+      require_once $file->uri;
     }
   }
 
@@ -297,7 +297,7 @@ function patterns_io_scan_directories() {
 
     // Get list of directories to scan for patterns.
     $patterns_paths = patterns_config_get_paths();
-    
+
     // Get valid file extensions.
     $mask = '/.\.(' . implode('|', patterns_config_get_file_types()) . ')$/';
 

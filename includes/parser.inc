@@ -267,7 +267,7 @@ function _patterns_validate_patternscan($patternscan, $display_errors = FALSE) {
  */
 function patterns_parse_yaml($pattern) {
   if (!is_array($pattern)) {
-    include_once libraries_get_path('spyc') . '/spyc.php';
+    require_once libraries_get_path('spyc') . '/spyc.php';
     $pattern = Spyc::YAMLLoad($pattern);
   }
   return $pattern;

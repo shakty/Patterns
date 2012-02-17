@@ -83,7 +83,6 @@ function user_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
       }
     }
   }
-  //	print_r($return);
   return $return;
 }
 /**
@@ -102,7 +101,6 @@ function user_patterns_prepare($action, $tag, &$data) {
                         ->condition('u.uid', $data['uid'])
                         ->execute()
                         ->fetchField();
-//      $data['name'] = db_query('SELECT name FROM {users} WHERE uid = :uid', array('uid ' => $data['uid']))->fetchField();
     }
     else {
       if (!isset($data['uid'])) {
@@ -111,7 +109,6 @@ function user_patterns_prepare($action, $tag, &$data) {
                         ->condition('u.name', $data['name'])
                         ->execute()
                         ->fetchField();
-//        $data['uid'] = db_query('SELECT uid FROM {users} WHERE name = :name', array('name' => $data['name']))->fetchField();
       }
     }
 
@@ -124,22 +121,18 @@ function user_patterns_prepare($action, $tag, &$data) {
       unset($data['password']);
     }
 
-
     if (isset($data['timezone'])) {
-      // TODO
-//          if (in_array($data['timezone'], array('0', '+0', '-0', '0000', '-0000'))) {
-//            $data['timezone'] = '+0000';
-//          }
-//         if (!empty($data['timezone']) && preg_match('/(\+|-)([0][0-9]|[1][01])(00|30|45)/', $data['timezone'], $parts)) {
-//          $seconds = $parts[2] * 3600 + $parts[3] * 60;
-//          $sign = $parts[1] == '+' ? '' : '-';
-//          $data['timezone'] = $sign . $seconds;
-//          }
-
-      // Something
-
+    /* TODO: this needs work and verification
+      if (in_array($data['timezone'], array('0', '+0', '-0', '0000', '-0000'))) {
+        $data['timezone'] = '+0000';
+      }
+      if (!empty($data['timezone']) && preg_match('/(\+|-)([0][0-9]|[1][01])(00|30|45)/', $data['timezone'], $parts)) {
+        $seconds = $parts[2] * 3600 + $parts[3] * 60;
+        $sign = $parts[1] == '+' ? '' : '-';
+        $data['timezone'] = $sign . $seconds;
+      }
+    */
     }
-
     else {
       // Default timezone is Europe/Berlin.
       $data['timezone'] = 'Europe/Berlin';
@@ -193,7 +186,7 @@ function user_patterns_validate($action, $tag, &$data) {
     // TODO: check $data['method'] for valid values if PATTERNS_DELETE.
 
     // Cannot create/edit/delete anon user.
-    global $user; // TODO: what is this?
+    global $user; // Current logged in user.
 
     if ($data['uid'] === 0) {
       $status = PATTERNS_ERR;
@@ -217,15 +210,12 @@ function user_patterns_validate($action, $tag, &$data) {
     }
 
     if (!empty($data['timezone'])) {
-      // Ste: was
-      //$zones = _system_zonelist();
       $zones = system_time_zones();
       if (!array_key_exists($data['timezone'], $zones)) {
         $status = PATTERNS_ERR;
         $msg = t('Invalid timezone: %zone. Use the following format: America/New_York or Europe/Berlin', array('%zone' => $data['timezone']));
       }
     }
-    //unset($data['timezone_original']);
   }
 
   elseif ($tag == 'role') {
@@ -264,11 +254,9 @@ function user_patterns_callbacks($action, $tag, &$data) {
       elseif ($action === PATTERNS_MODIFY) {
         $result = array('user_profile_form');
       }
-      else { // TODO: Why can't we delete by uid?
-      }
     }
     else {
-      if (!($action === PATTERNS_DELETE)) {
+      if ($action !== PATTERNS_DELETE) {
         $result = array('user_register_form');
       }
       else {
@@ -312,8 +300,6 @@ function user_patterns_build($action, $form_id, &$data = NULL, &$a) {
 
   }
   elseif ($form_id == 'user_profile_form') {
-    module_load_include('inc', 'user', 'user.pages'); // TODO: Isn't this already loaded?
-
     // Make sure that required fields are not left empty.
     if (empty($data['mail'])) {
       $data['mail'] = db_query("SELECT mail FROM {users} WHERE uid = :uid", array('uid' => $data['uid']))->fetchField();
@@ -327,7 +313,6 @@ function user_patterns_build($action, $form_id, &$data = NULL, &$a) {
     $_GET['q'] = 'user/' . $data['uid'] . '/edit';
   }
   elseif ($id == 'user_cancel_confirm_form') {
-    module_load_include('inc', 'user', 'user.pages'); // TODO: Isn't this already loaded?
     $data['confirm'] = 1;
     switch ($data['method']) {
       case '1':
@@ -345,7 +330,6 @@ function user_patterns_build($action, $form_id, &$data = NULL, &$a) {
     }
   }
   elseif ($form_id == 'user_admin_roles' || $form_id == 'user_admin_role_delete_confirm' || $form_id == 'user_admin_role') {
-    module_load_include('inc', 'user', 'user.admin'); // TODO: Isn't this already loaded?
     static $old_q; // TODO: What is this?
     $old_q = $_GET['q'];
     if ($data['rid']) {
@@ -370,10 +354,9 @@ function user_patterns_build($action, $form_id, &$data = NULL, &$a) {
     else {
       $data['op'] = t('Add role');
     }
-    // unset($data['rid']);
   }
   elseif ($form_id == 'user_admin_permissions') {
-
+    // TODO: use user_permission_get_modules() instead.
     // Get list of permissions to ensure only available permissions are saved.
     $permissions = array();
     foreach (module_list(FALSE, FALSE, TRUE) as $module) {
@@ -450,6 +433,7 @@ function user_patterns_build($action, $form_id, &$data = NULL, &$a) {
 
   return patterns_results($status, $msg, $result);
 }
+
 // Build a patterns actions and parameters
 function user_patterns_params($action, $form_id, &$data = NULL, &$a) {
   if ($form_id == 'user_cancel_confirm_form' && $form_id == 'user_profile_form') {

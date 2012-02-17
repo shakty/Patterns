@@ -16,7 +16,7 @@ function patterns_export($form, &$form_state) {
  );
  $rows = array();
  patterns_load_components();
- 
+
  //$removed = $args[PATTERNS_STATUS_REMOVED];
 
  // Load the patterns from database.
@@ -32,12 +32,12 @@ function patterns_export($form, &$form_state) {
   $description = t(@$pattern->description);
   $row = array(
   'category' => $category,
-  'name' => $name, 
-  'status' => $status, 
+  'name' => $name,
+  'status' => $status,
   'author' => $author,
   'version' => $version,
   'description' => $description);
-  $rows[$pid-1] = $row; // want to avoid one 
+  $rows[$pid-1] = $row; // want to avoid one
  }
 
 
@@ -60,7 +60,7 @@ function patterns_export($form, &$form_state) {
    '#value' => t('Download')
  );
  $form['#submit'][] = 'patterns_export_submit';
- 
+
  return $form;
 }
 
@@ -72,50 +72,51 @@ function patterns_export($form, &$form_state) {
  */
 function patterns_export_submit($form, &$form_state) {
   @patterns_load_components();
- 
+
   // Load the patterns from database.
   @$patterns = patterns_get_patterns();
   @$patterns = $patterns[PATTERNS_STATUS_OK];
   //$removed = $args[PATTERNS_STATUS_REMOVED];
-  
-  $file = "";  
+
+  $file = "";
   $filename = "patterns_export.yaml";
   $path = patterns_config_get_files_dir();
-  
-  if(isset($form_state['values']['zip']) && !empty($form_state['values']['zip'] ))    
+
+  if (isset($form_state['values']['zip']) && !empty($form_state['values']['zip'] ))
     $zip_flag = $form_state['values']['zip'];
   else
-    $zip_flag = false;
-  
+    $zip_flag = FALSE;
+
   // check if we want to zip he files
   if ($zip_flag) {
     $zip = new ZipArchive();
     // TODO: check if path ok; get better path if possible
-    $zip_filename = "patterns" . strval(time()) . ".zip"; 
+    $zip_filename = "patterns" . strval(time()) . ".zip";
     if ($zip->open($path . $zip_filename, ZIPARCHIVE::CREATE)!=TRUE) {
       exit("Cannot locally create zip-archive. Ask your administrator for help.");
     }
-  } 
-  
+  }
+
   // send header depending on if we zip or not
   if ($zip_flag) {
-    
-  } else {
-    
+
   }
-  
-  
+  else {
+
+  }
+
+
   // concatenate yaml files to a huge file or zip all files
   foreach ($form_state['values']['patterns_table'] as $pid) {
     if (!is_int($pid)) {
       $pattern = patterns_get_pattern($pid);
-      
+
       if (substr($pattern->file, -4) != "yaml")
         continue;
       //if(!$pattern->public)
       //  continue;
-      if(!is_readable($pattern->file)) {
-        drupal_set_message("An error occured: couldn't read ". $pattern->file .".", 'error');
+      if (!is_readable($pattern->file)) {
+        drupal_set_mesage("An error occured: couldn't read " . $pattern->file . ".", 'error'); // TODO: t()
         continue;
       }
       if ($zip_flag) {
@@ -132,24 +133,25 @@ function patterns_export_submit($form, &$form_state) {
   if ($zip_flag) {
     $zip->close();
     $zip_path = $path . $zip_filename;
-    if(!is_readable($zip_path)) {
-      drupal_set_message("An error occured: ". $zip_path ." isn't readable.", 'error');
-    } else {
+    if (!is_readable($zip_path)) {
+      drupal_set_message("An error occured: " . $zip_path . " isn't readable.", 'error'); // TODO: t()
+    }
+    else {
       drupal_add_http_header("Content-type", "application/octet-stream");
-      drupal_add_http_header("Content-Disposition", "attachment;filename=". $zip_path);
-      $err = @readfile($zip_path); 
-      if($err == FALSE) {
-        drupal_set_message("An error occured: couldn't read ". $zip_path .".", 'error');
+      drupal_add_http_header("Content-Disposition", "attachment;filename=" . $zip_path);
+      $err = @readfile($zip_path);
+      if ($err == FALSE) {
+        drupal_set_message("An error occured: couldn't read " . $zip_path . ".", 'error'); // TODO: t()
       }
       exit;
     }
-    if (@unlink($zip_path) == FALSE) {
-      drupal_set_message("An error occured: couldn't delete file ". $zip_path .".", 'error');
+    if (@drupal_unlink($zip_path) == FALSE) {
+      drupal_set_message("An error occured: couldn't delete file " . $zip_path . ".", 'error'); // TODO: t()
     }
   }
   else { // .yaml file
     drupal_add_http_header("Content-type", " text/plain; charset=utf-8");
-    drupal_add_http_header("Content-Disposition", "attachment;filename=". $filename);
+    drupal_add_http_header("Content-Disposition", "attachment;filename=" . $filename);
     print $file;
     exit;
   }

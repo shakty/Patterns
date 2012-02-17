@@ -135,7 +135,7 @@ you must create a 'component', much like a driver software. The main components
 reside in *+patterns/components/+*, although modules can use the *+hook_patterns_components+* hook
 to expand the set of supported components.
 
-You need to implement at most 7 pattern hooks, as here explained in the same
+You need to implement at most 8 pattern hooks, as here explained in the same
 order as they are being called by Patterns module. For examples, see *+block.inc+*, *+system.inc+*, *+taxonomy.inc+*.
 
 *******************************************************************
@@ -289,9 +289,6 @@ TODO
 
 Besides standard link:http://drupal.org/coding-standards[Drupal coding
 conventions] the Patterns module uses the following naming conventions :
-
-- *PHP file names*: any extra php used for Patterns execution  should begin
-   with the prefix *+patterns.+*. E.g.: *+patterns.editor.inc+*;
 
 - *Function names*: functions declared in .inc files should contain
    the name of the .inc file in their

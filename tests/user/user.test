@@ -1,0 +1,67 @@
+<?php
+/**
+ * @file
+ * SimpleTests for the User component of Patterns.
+ * TODO: roles, permissions.
+ */
+
+class PatternsUserTestCase extends PatternRunTestCase {
+
+  const USER_TESTS_DIR = 'tests/user/';
+
+  static function getInfo() {
+    return array(
+      'name' => 'User component',
+      'description' => 'Creates, modifies and deletes users.',
+      'group' => 'Patterns',
+    );
+  }
+
+  public function testCreateModifyDelete() {
+    $this->testCreate();
+    // $this->testModify();
+    // $this->testDelete();
+  }
+
+  private function testCreate() {
+    // The user should not exist at this point.
+    $user_count = db_select('users', 'u')
+      ->fields('u', array('uid'))
+      ->condition('uid', 'test_uid')
+      ->countQuery()->execute()->fetchField(); 
+    $this->assertIdentical($user_count, '0', t('The user should not exist at this point.'));
+
+    // Run the pattern.
+    parent::runFile('user_create.yaml', 'Users (create)', PatternsUserTestCase::USER_TESTS_DIR);
+
+    // Expected messages.
+    $this->assertUniqueText(t('Created a new user account for test_uid.'));
+
+    // The user should exist with the right values.
+    $user = db_select('users', 'u')
+      ->fields('u', array('uid'))
+      ->condition('uid', 'test_uid')
+      ->execute()->fetchField(); 
+    $this->assertIdentical(count($user), 1);
+    // TODO: Check fields.
+  }
+
+  private function testDelete() {
+    // Run the pattern.
+    parent::runFile('user_delete.yaml', 'Users (delete)', PatternsUserTestCase::USER_TESTS_DIR);
+
+    // Expected messages.
+    $this->assertUniqueText(t('')); // TODO
+
+    // The user should not exist at this point.
+    $user_count = db_select('users', 'u')
+      ->fields('u', array('uid'))
+      ->condition('uid', 'test_uid')
+      ->countQuery()->execute()->fetchField(); 
+    $this->assertIdentical($user_count, '0', t('The user should not exist at this point.'));
+  }
+
+  // TODO
+  private function testModify() {
+  }
+}

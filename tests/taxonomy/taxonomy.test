@@ -80,17 +80,17 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
     parent::runFile('taxonomy_vocabulary_delete.yaml', 'Taxonomy_Vocabulary_DELETE', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
 
     $taxos = db_select('taxonomy_vocabulary', 'tv')
-                    ->fields('tv', array('vid', 'name', 'description'))
-                    ->condition('tv.machine_name', $voc)
-                    ->execute()
-                    ->fetchAll(); // return array of Std objs
+      ->fields('tv', array('vid', 'name', 'description'))
+      ->condition('tv.machine_name', $voc)
+      ->execute()
+      ->fetchAll(); // return array of Std objs
 
     $this->assertEqual(count($taxos), 0, t('Vocabulary \'anothervoc\' deleted.'));
 
     //$this->verbose('Vocabulary modified: ' . var_export($taxo, TRUE));
   }
 
-/**
+  /**
    * Test the:
    *
    *    * Creation
@@ -129,10 +129,10 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
     parent::runFile('taxonomy_term_modify.yaml', 'Taxonomy_Term_MODIFY', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
 
     $terms = db_select('taxonomy_term_data', 'ttd')
-                    ->fields('ttd', array('vid', 'tid', 'name', 'description'))
-                    ->condition('ttd.tid', $tid)
-                    ->execute()
-                    ->fetchAll(); // return array of Std objs
+      ->fields('ttd', array('vid', 'tid', 'name', 'description'))
+      ->condition('ttd.tid', $tid)
+      ->execute()
+      ->fetchAll(); // return array of Std objs
 
     $this->assertEqual(count($terms), 1, t('One term found'));
     $t = $terms[0];
@@ -147,10 +147,10 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
     parent::runFile('taxonomy_term_delete.yaml', 'Taxonomy_Term_DELETE', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
 
     $terms = db_select('taxonomy_term_data', 'ttd')
-                    ->fields('ttd', array('vid', 'tid', 'name', 'description'))
-                    ->condition('ttd.name', $term)
-                    ->execute()
-                    ->fetchAll(); // return array of Std objs
+      ->fields('ttd', array('vid', 'tid', 'name', 'description'))
+      ->condition('ttd.name', $term)
+      ->execute()
+      ->fetchAll(); // return array of Std objs
 
     $this->assertEqual(count($terms), 0, t('Term \'Patatina\' deleted.'));
 

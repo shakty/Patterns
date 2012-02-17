@@ -1,5 +1,5 @@
 <?php
- 
+
 /**
  * @file
  * The common functions used by the Batch and PHP running modes.
@@ -171,7 +171,7 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
       // Auto include FILES
       if (!empty($tag_info[PATTERNS_FILES])) {
         foreach ($tag_info[PATTERNS_FILES] as $file) {
-          include_once($file);
+          require_once($file);
         }
       }
 

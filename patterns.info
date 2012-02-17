@@ -5,7 +5,7 @@ dependencies[] = libraries
 
 core = 7.x
 version = 7.x-1.x-dev
-build = 7014
+build = 7016
 package = Site Setup
 php = 5.2
 
@@ -13,18 +13,20 @@ php = 5.2
 
 ; Core
 files[] = tests/patterns.test
-files[] = tests/parser/patterns.parser.test
-files[] = tests/importing/patterns.importing.test
+files[] = tests/parser/parser.test
+files[] = tests/importing/importing.test
 
 ; Components
-files[] = tests/taxonomy/patterns.taxonomy.test
+files[] = tests/taxonomy/taxonomy.test
 files[] = tests/system/system.test
 files[] = tests/block/block.test
-files[] = tests/field/patterns.field.test
-files[] = tests/color/patterns.color.test
-files[] = tests/pathauto/patterns.pathauto.test
-files[] = tests/menu/patterns.menu.test
+files[] = tests/field/field.test
+files[] = tests/color/color.test
+files[] = tests/pathauto/pathauto.test
+files[] = tests/menu/menu.test
 files[] = tests/node/content.test
 files[] = tests/node/node.test
-files[] = tests/toolbar/patterns.toolbar.test
-files[] = tests/shortcut/patterns.shortcut.test
+files[] = tests/toolbar/toolbar.test
+files[] = tests/shortcut/shortcut.test
+;files[] = tests/user/user.test
+
