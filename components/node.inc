@@ -54,12 +54,12 @@ function node_patterns_actions($data) {
 // $loop is set if we want to extract all values
 function node_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
   // TODO: node
-  if ($tag == 'content_type') {
-    if ($action == PATTERNS_MODIFY) {
-      if ($form_id == 'node_type_form') {
-        return array(); // ???
+  if ($tag == 'content_type' && $action == PATTERNS_MODIFY && $action == PATTERNS_MODIFY) {
+      $types = (object) _node_types_build();
+      foreach (array_values($types->types) as $type) {
+        return array($type);
       }
-    }
+      return array(); // ???
   }
   elseif ($tag == 'content_type_extract_all') {
     $loop = TRUE;

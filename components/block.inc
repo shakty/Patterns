@@ -41,12 +41,27 @@ function block_patterns_actions($data) {
 // returns arguments needed for the forms when processing automatically
 // $loop is set if we want to extract all values
 function block_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
-  if ($tag == 'block') {
-    if ($action == PATTERNS_MODIFY) {
-      if ($form_id == 'block_admin_display_form' or $form_id == 'block_admin_configure') {
-        return array(); // ???
+  // gives one dataset as an example how it looks like, while extract_all
+  // extracts all
+  if ($tag == 'block' && $action == PATTERNS_MODIFY) {
+    $block_list = _block_rehash();
+
+    if ($form_id == 'block_admin_display_form') {
+      $blocks = array();
+      foreach ($block_list as $key => $block) {
+        array_push($blocks, $block);
+      }
+      foreach (array_keys(list_themes()) as $theme) {
+        return array($blocks, $theme);
       }
     }
+    elseif ($form_id == 'block_admin_configure') {
+      foreach ($block_list as $key => $block) {
+        return array($block['module'], $block['delta']);
+      }
+    }
+
+    return array();
   }
   elseif ($tag == 'block_extract_all') {
     $loop = TRUE;

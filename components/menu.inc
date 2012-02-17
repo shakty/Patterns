@@ -114,8 +114,8 @@ function menu_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
     $return = array();
     $i = 0;
     foreach ($links as &$link) {
-      $i++;
-      //if($i > 10) break;
+      $i++; // debugging reasons
+      //if($i > 20) break;
       $link['options'] = unserialize($link['options']);
       $link['href'] = ""; 
       // to get rid of the notice
@@ -123,7 +123,7 @@ function menu_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
       // should be ok, because it's only used in the description.
       array_push($return, array("edit", $link, $link));
     }
-    return $return;;
+    return $return;
   }
   // taken from menu_overview_page
   elseif ($tag == 'menu' && $action == PATTERNS_MODIFY && $form_id == 'menu_edit_menu') {
