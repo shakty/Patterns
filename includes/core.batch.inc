@@ -60,7 +60,7 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
       'title' => t('Processing pattern %pattern', array('%pattern' => $info['title'])),
       'progress_message' => $progress,
       'operations' => array(),
-      'file' =>  drupal_get_path('module', 'patterns') . '/includes/patterns.core.batch.inc',
+      'file' =>  drupal_get_path('module', 'patterns') . '/includes/core.batch.inc',
       'finished' => 'patterns_batch_finish',
       'init_message' => t('Initializing section "%section" (%cur_sec/%tot_sec)', array(
                           '%section' => $section,
