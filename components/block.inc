@@ -273,7 +273,6 @@ function block_patterns_build($action, $form_id, &$data, &$a) {
 function block_patterns_params($action, $form_id, &$data, &$a) {
   if ($form_id == 'block_admin_configure') {
     $result = array($data['module'], $data['delta']);
-    var_dump($result);
   }
   elseif ($form_id == 'block_admin_display_form') {
     $blocks = _block_rehash(); // TODO: Haven't we done this before?
