@@ -157,10 +157,10 @@ function block_patterns_prepare($action, $tag, &$data) {
       // Replace empty or missing regions with "-1"
       foreach ($themes as $theme) {
         if (!isset($data['regions'][$theme]) or empty($data['regions'][$theme])) {
-          $data['regions'][$theme] = '-1';
+          $data['regions'][$theme] = -1;
         }
-        $data['regions'][$theme] = (string) $data['regions'][$theme];
       }
+      // TODO: check if the regions are all valid?
     }
 
     // This must be a custom block.
@@ -186,6 +186,16 @@ function block_patterns_validate($action, $tag, &$data) {
     elseif ($action === PATTERNS_DELETE && $data['module'] != 'block') {
       $status = PATTERNS_ERR;
       $msg = t('Unable to delete non-block module blocks.');
+    }
+    elseif ($action === PATTERNS_MODIFY || $action === PATTERNS_DELETE) {
+      // Block must exist.
+      // TODO: support $data['info']
+      $block_count = db_query('SELECT COUNT(1) FROM {block} WHERE module = :module AND delta = :delta',
+        array('module' => $data['module'], 'delta' => $data['delta']))->fetchField();
+      if ($block_count == 0) {
+        $status = PATTERNS_ERR;
+        $msg = t('Block does not exist.');
+      }
     }
   }
 
@@ -263,6 +273,7 @@ function block_patterns_build($action, $form_id, &$data, &$a) {
 function block_patterns_params($action, $form_id, &$data, &$a) {
   if ($form_id == 'block_admin_configure') {
     $result = array($data['module'], $data['delta']);
+    var_dump($result);
   }
   elseif ($form_id == 'block_admin_display_form') {
     $blocks = _block_rehash(); // TODO: Haven't we done this before?

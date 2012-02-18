@@ -12,6 +12,17 @@ info:
   author_website: qscience.csko.hu
 
 actions:
+  - create:
+      tag: theme
+      value: bartik
+      default: true
+
+  - create:
+      tag: theme
+      value: seven
+      default: true
+      admin: true
+
   - modify: # Module-provided block
       tag: block
       #id: user-online # Same as the module and delta below.
@@ -44,8 +55,8 @@ actions:
       info: Test custom block2
       body:
           value: Here comes the body text.2
-          format: full_html
-      region: content # Redundant, but needed, for now.
+          format: plain_text
+      region: header # Redundant, but needed, for now.
       regions:
           seven: -1
           bartik: header

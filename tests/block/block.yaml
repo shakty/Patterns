@@ -29,8 +29,6 @@ actions:
      region: content # Redundant, but needed, for now.
      regions:
          seven: content
-         bartik: -1
-         garland: -1
      pages: # Contents of the "Pages" block; contains either a list of paths on which to include/exclude the block or PHP code, depending on "visibility" setting.
          page1
          page2

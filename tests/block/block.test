@@ -18,7 +18,7 @@ class PatternsBlockTestCase extends PatternRunTestCase {
 
   public function testCreateModifyDelete() {
     $this->testCreate();
-    //$this->testModify();
+    $this->testModify();
     $this->testDelete();
   }
 
@@ -78,7 +78,7 @@ class PatternsBlockTestCase extends PatternRunTestCase {
     parent::runFile('block_delete.yaml', 'Blocks (custom) delete', PatternsBlockTestCase::BLOCK_TESTS_DIR);
 
     // Expected messages.
-    $this->assertUniqueText(t('The block Test custom block has been removed.'));
+    $this->assertUniqueText(t('The block Test custom block2 has been removed.'));
 
     // The block should not exist at this point.
     $block_count = db_select('block', 'b')
@@ -89,7 +89,6 @@ class PatternsBlockTestCase extends PatternRunTestCase {
     $this->assertIdentical($block_count, '0', t('The custom block should not exist at this point.'));
   }
 
-  // TODO
   private function testModify() {
     $block = db_select('block', 'b')
       ->fields('b')
@@ -127,16 +126,16 @@ class PatternsBlockTestCase extends PatternRunTestCase {
     $block = $block->fields('bc')->execute()->fetchAll();
 
     $this->assertIdentical(count($block), 1);
-    $this->assertIdentical($block[0]->status, '0');
+    $this->assertIdentical($block[0]->status, '1');
     $this->assertIdentical($block[0]->title, 'Test title2');
     $this->assertIdentical($block[0]->weight, '4');
-    $this->assertIdentical($block[0]->region, '-1');
+    $this->assertIdentical($block[0]->region, 'header');
     $this->assertIdentical($block[0]->custom, '1');
     $this->assertIdentical($block[0]->visibility, '0');
     $this->assertEqual($block[0]->pages, "page2\r\npage3\r\npage4");
     $this->assertIdentical($block[0]->body, 'Here comes the body text.2');
     $this->assertIdentical($block[0]->info, 'Test custom block2');
-    $this->assertIdentical($block[0]->format, 'full_html');
+    $this->assertIdentical($block[0]->format, 'plain_text');
 
     $block = db_select('block', 'b')
       ->fields('b')
@@ -152,7 +151,7 @@ class PatternsBlockTestCase extends PatternRunTestCase {
     $this->assertIdentical($block[0]->region, '-1');
     $this->assertIdentical($block[0]->custom, '1');
     $this->assertIdentical($block[0]->visibility, '0');
-    $this->assertEqual($block[0]->pages, "page2\npage3\npage4");
+    $this->assertEqual($block[0]->pages, "page2\r\npage3\r\npage4");
     debug($block);
 
     $block = db_select('block', 'b')
