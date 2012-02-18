@@ -52,9 +52,7 @@ class PatternsBlockTestCase extends PatternRunTestCase {
     $this->assertIdentical($block[0]->region, '-1');
     $this->assertIdentical($block[0]->custom, '1');
     $this->assertIdentical($block[0]->visibility, '0');
-    // TODO
-    //$this->assertEqual($block[0]->pages, "page1\npage2\npage3");
-    //debug($block[0]->pages); debug("page1\npage2\npage3"); debug($block[0]->pages == "page1\npage2\npage3");
+    $this->assertEqual($block[0]->pages, "page1\r\npage2\r\npage3");
     $this->assertIdentical($block[0]->body, 'Here comes the body text.');
     $this->assertIdentical($block[0]->info, 'Test custom block');
     $this->assertIdentical($block[0]->format, 'filtered_html');
@@ -72,9 +70,7 @@ class PatternsBlockTestCase extends PatternRunTestCase {
     $this->assertIdentical($block[0]->region, 'content');
     $this->assertIdentical($block[0]->custom, '1');
     $this->assertIdentical($block[0]->visibility, '0');
-    // TODO
-    //$this->assertEqual($block[0]->pages, "page1\npage2\npage3");
-    //debug($block[0]->pages); debug("page1\npage2\npage3"); debug($block[0]->pages == "page1\npage2\npage3");
+    $this->assertEqual($block[0]->pages, "page1\r\npage2\r\npage3");
   }
 
   private function testDelete() {
@@ -95,9 +91,6 @@ class PatternsBlockTestCase extends PatternRunTestCase {
 
   // TODO
   private function testModify() {
-    // First, create the custom block.
-    parent::runFile('block.yaml', 'Blocks (create)', PatternsBlockTestCase::BLOCK_TESTS_DIR);
-
     $block = db_select('block', 'b')
       ->fields('b')
       ->condition('module', 'block')
@@ -105,15 +98,6 @@ class PatternsBlockTestCase extends PatternRunTestCase {
     $block->join('block_custom', 'bc', 'b.delta = bc.bid');
     $block_count = $block->fields('bc')->execute()->fetchAll();
     debug($block_count);
-
-    // The custom block should exist at this point.
-    $block = db_select('block', 'b')
-      ->fields('b')
-      ->condition('module', 'block')
-      ->condition('title', 'Test title');
-    $block->join('block_custom', 'bc', 'b.delta = bc.bid');
-    $block_count = $block->fields('bc')->countQuery()->execute()->fetchField();
-    $this->assertIdentical($block_count, '2', t('The custom block should exist at this point.'));
 
     // The user block should provide an online block for two themes.
     $block_count = db_select('block', 'b')
@@ -149,10 +133,7 @@ class PatternsBlockTestCase extends PatternRunTestCase {
     $this->assertIdentical($block[0]->region, '-1');
     $this->assertIdentical($block[0]->custom, '1');
     $this->assertIdentical($block[0]->visibility, '0');
-    debug($block);
-    // TODO
-    //$this->assertEqual($block[0]->pages, "page2\npage3\npage4");
-    //debug($block[0]->pages); debug("page2\npage3\npage4"); debug($block[0]->pages == "page2\npage3\npage4");
+    $this->assertEqual($block[0]->pages, "page2\r\npage3\r\npage4");
     $this->assertIdentical($block[0]->body, 'Here comes the body text.2');
     $this->assertIdentical($block[0]->info, 'Test custom block2');
     $this->assertIdentical($block[0]->format, 'full_html');
@@ -171,9 +152,7 @@ class PatternsBlockTestCase extends PatternRunTestCase {
     $this->assertIdentical($block[0]->region, '-1');
     $this->assertIdentical($block[0]->custom, '1');
     $this->assertIdentical($block[0]->visibility, '0');
-    // TODO
-    //$this->assertEqual($block[0]->pages, "page2\npage3\npage4");
-    //debug($block[0]->pages); debug("page2\npage3\npage4"); debug($block[0]->pages == "page2\npage3\npage4");
+    $this->assertEqual($block[0]->pages, "page2\npage3\npage4");
     debug($block);
 
     $block = db_select('block', 'b')

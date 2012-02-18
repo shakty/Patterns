@@ -1,7 +1,8 @@
 <?php
 /*
- * TODO: The logic from 6.x to 7.x has changed a bit. When a theme is missing from "regions",
- *       it should be -1 and the corresponding block_admin_configure should not be called.
+ * TODO: The logic from 6.x to 7.x has changed a bit.
+ *       When a theme is missing from "regions", it should be -1 and
+ *       the corresponding block_admin_configure should not be called.
  *       On the other hand, for every theme supplied, the weight needs to be set properly.
  *       Also, try to avoid redundancy in the syntax of the pattern.
  * @file
@@ -123,7 +124,6 @@ function block_patterns_prepare($action, $tag, &$data) {
     }
     // Block description for custom blocks is always unique so we can try to get delta by looking up info field
     elseif ($data['info']) {
-      // TODO: Rewrite using db_select().
       $delta = db_query('SELECT delta FROM {block} bl INNER JOIN {block_custom} bo ON bl.delta = bo.bid AND bl.module = :module WHERE bo.info = :info', array('module' => 'block', 'info' => $data['info']))->fetchField();
       if ($delta) {
         $data['delta'] = $delta;
@@ -142,8 +142,25 @@ function block_patterns_prepare($action, $tag, &$data) {
 
     // Split the pages array into a multi-line string.
     if ($data['pages'] && is_array($data['pages'])) {
-      $pages = implode("\r\n", $data['pages']); // TODO: In some cases only \n?
+      $pages = implode("\r\n", $data['pages']);
       $data['pages'] = str_replace('[front]', '<front>', $pages);
+    }
+
+    $themes = array_keys(list_themes());
+
+    // If the regions field is missing, assign -1 to every theme.
+    if (!isset($data['regions']) or !is_array($data['regions'])
+      or empty($data['regions'])) {
+      $data['regions'] = array_combine($themes, array_fill(0, count($themes), '-1'));
+    }
+    else {
+      // Replace empty or missing regions with "-1"
+      foreach ($themes as $theme) {
+        if (!isset($data['regions'][$theme]) or empty($data['regions'][$theme])) {
+          $data['regions'][$theme] = '-1';
+        }
+        $data['regions'][$theme] = (string) $data['regions'][$theme];
+      }
     }
 
     // This must be a custom block.
