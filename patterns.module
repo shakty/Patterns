@@ -658,7 +658,10 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
     }
   }
 
-  $pattern->subpatterns_run_mode = $params['run-subpatterns'];
+  // This is needed for the Patterns installation profile.
+  if (isset($params['run-subpatterns'])) {
+    $pattern->subpatterns_run_mode = $params['run-subpatterns'];
+  }
 
   /////////////////////////////////////////
   // Get Patterns details

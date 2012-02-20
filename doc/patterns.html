@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
 <meta name="generator" content="AsciiDoc 8.6.6" />
-<title>Drupal 7 Patterns Documentation</title>
+<title>Patterns 7.x-1.x Documentation</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
 
@@ -735,10 +735,10 @@ asciidoc.install(2);
 </head>
 <body class="article">
 <div id="header">
-<h1>Drupal 7 Patterns Documentation</h1>
+<h1>Patterns 7.x-1.x Documentation</h1>
 <span id="author">Qscience Team</span><br />
-<span id="revnumber">version 0.2,</span>
-<span id="revdate">September, 2011</span>
+<span id="revnumber">version 0.3,</span>
+<span id="revdate">February, 2012</span>
 <div id="toc">
   <div id="toctitle">Table of Contents</div>
   <noscript><p><b>JavaScript must be enabled in your browser to display the table of contents.</b></p></noscript>
@@ -784,6 +784,48 @@ It makes uses of external libraries which must be installed separately:
 </ul></div>
 <div class="paragraph"><p>Both libraries should be installed under <strong><tt>sites/all/libraries/</tt></strong>
 under directory names of <strong><tt>spyc</tt></strong> and <strong><tt>codemirror2</tt></strong>.</p></div>
+<div class="sect2">
+<h3 id="_drush_makefile">Drush Makefile</h3>
+<div class="olist arabic"><ol class="arabic">
+<li>
+<p>
+Download and extract <a href="http://drupal.org/project/drush">Drush</a>.
+</p>
+</li>
+<li>
+<p>
+Download <a href="http://drupal.org/project/drush_make">Drush make</a> (don&#8217;t be bothered by the fact that only 6.x is available).
+</p>
+</li>
+<li>
+<p>
+Extract drush_make in <strong>drush/commands/</strong>.
+</p>
+</li>
+<li>
+<p>
+Change into your (possibly empty) target directory in your webroot.
+</p>
+</li>
+<li>
+<p>
+Run the makefile: <strong>PATH_TO_drush/drush make PATH_TO_patterns.make</strong>
+</p>
+</li>
+<li>
+<p>
+Your directory structure should be ready to use.
+</p>
+</li>
+</ol></div>
+</div>
+<div class="sect2">
+<h3 id="_installation_profile">Installation Profile</h3>
+<div class="paragraph"><p>For 6.x, the Patterns Installation Profile can be found at
+<a href="http://drupal.org/project/patterns_profile">http://drupal.org/project/patterns_profile</a>. Hopefully it will be updated with
+the 7.x version, but in the meantime, you can download the 7.x-1.x version from
+<a href="https://github.com/csko/Patterns-Installation-Profile">https://github.com/csko/Patterns-Installation-Profile</a>.</p></div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -1196,8 +1238,8 @@ original file remain untouched.</p></div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Version 0.2<br />
-Last updated 2012-02-17 12:46:33 CET
+Version 0.3<br />
+Last updated 2012-02-20 11:58:51 CET
 </div>
 </div>
 </body>

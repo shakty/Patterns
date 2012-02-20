@@ -1,7 +1,7 @@
-Drupal 7 Patterns Documentation
+Patterns 7.x-1.x Documentation
 ===============================
 Qscience Team
-v0.2, September, 2011
+v0.3, February, 2012
 
 // QScience Team <www.qlectives.eu>
 
@@ -43,6 +43,23 @@ It makes uses of external libraries which must be installed separately:
 
 Both libraries should be installed under *+sites/all/libraries/+*
 under directory names of *+spyc+* and *+codemirror2+*. 
+
+Drush Makefile
+~~~~~~~~~~~~~~
+
+1. Download and extract http://drupal.org/project/drush[Drush].
+2. Download http://drupal.org/project/drush_make[Drush make] (don't be bothered by the fact that only 6.x is available).
+3. Extract drush_make in **drush/commands/**.
+4. Change into your (possibly empty) target directory in your webroot.
+5. Run the makefile: **PATH_TO_drush/drush make PATH_TO_patterns.make**
+6. Your directory structure should be ready to use.
+
+Installation Profile
+~~~~~~~~~~~~~~~~~~~~
+For 6.x, the Patterns Installation Profile can be found at
+http://drupal.org/project/patterns_profile. Hopefully it will be updated with
+the 7.x version, but in the meantime, you can download the 7.x-1.x version from
+https://github.com/csko/Patterns-Installation-Profile.
 
 [[pattern-example]]
 What is a Pattern?
