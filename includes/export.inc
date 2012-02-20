@@ -110,13 +110,16 @@ function patterns_export_submit($form, &$form_state) {
   foreach ($form_state['values']['patterns_table'] as $pid) {
     if (!is_int($pid)) {
       $pattern = patterns_get_pattern($pid);
-
+      if (!$pattern) {
+        drupal_set_message(t('Error reading pattern with id :pid', array(':pid' => $pid)), 'error');
+        continue;
+      }
       if (substr($pattern->file, -4) != "yaml")
         continue;
       //if(!$pattern->public)
       //  continue;
       if (!is_readable($pattern->file)) {
-        drupal_set_message("An error occured: couldn't read " . $pattern->file . ".", 'error'); // TODO: t()
+        drupal_set_message("An error occurred: couldn't read " . $pattern->file . ".", 'error'); // TODO: t()
         continue;
       }
       if ($zip_flag) {
