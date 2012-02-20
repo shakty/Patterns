@@ -116,7 +116,7 @@ function patterns_export_submit($form, &$form_state) {
       //if(!$pattern->public)
       //  continue;
       if (!is_readable($pattern->file)) {
-        drupal_set_mesage("An error occured: couldn't read " . $pattern->file . ".", 'error'); // TODO: t()
+        drupal_set_message("An error occured: couldn't read " . $pattern->file . ".", 'error'); // TODO: t()
         continue;
       }
       if ($zip_flag) {
