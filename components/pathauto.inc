@@ -4,7 +4,7 @@
  * Patterns component for pathauto.
  */
 function pathauto_patterns() {
-  $files = array('sites/all/modules/pathauto/pathauto.admin.inc');
+  $files = array('sites/all/modules/pathauto/pathauto.admin.inc','modules/path/path.admin.inc');
 
   $actions['pathauto'] = array(
     'descr' => t('Setting pathauto'),
@@ -37,6 +37,7 @@ function pathauto_patterns_actions() {
     'pathauto_bulk_update_form' => t('Pathauto: Generate URL aliases according to patterns settings'),
   );
 }
+
 
 // Prepare data for processing
 function pathauto_patterns_prepare($action, $tag, &$data = NULL) {
@@ -123,6 +124,35 @@ function pathauto_patterns_build($action, $tag, &$data = NULL, $form_id) {
   module_load_include('inc', 'pathauto', 'pathauto.admin');
   module_load_include('inc', 'path', 'path.admin');
   return patterns_results(PATTERNS_SUCCESS,   t('Execution successful'), $data);
+}
+
+/*
+ * 
+ */
+function pathauto_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
+	 $return = array();
+	 if ($form_id == "path_admin_form" && $action == PATTERNS_MODIFY) {
+	 	$loop = TRUE;
+	 	 $paths = db_query("SELECT * FROM {url_alias}", array(), array('fetch' => PDO::FETCH_ASSOC))->fetchAll();
+    	 foreach ($paths as $path) {
+      // to get rid of the notice
+      // Notice: Undefined index: href in menu_edit_item() (line 306 of /var/www/drupal-7.9/modules/menu/menu.admin.inc).
+      // should be ok, because it's only used in the description.
+      		array_push($return, array($path));
+    	}
+    	return $return;
+  	}
+  	elseif ($form_id == "path_admin_form") {
+    	$result = array(array(
+        'source' => '',
+        'alias' => '',
+        'language' => 'und',
+        'pid' => NULL,
+      ));
+      return $result;
+  	}
+	
+
 }
 
 // Build a patterns actions and parameters
