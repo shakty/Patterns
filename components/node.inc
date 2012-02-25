@@ -128,6 +128,14 @@ function node_patterns_validate($action, $tag, &$data) {
   $result = NULL;
 
   if ($tag == 'node') {
+    if ($action !== PATTERNS_CREATE) {
+      $data['node'] = (object) node_load($data['nid']);
+      if (!$data['node']) {
+        $status = PATTERNS_ERR;
+        $msg = t('Cannot modify or delete a nonexsitent Node.');
+      }
+    }
+
     if (empty($data['type']) && $action === PATTERNS_CREATE) {
       $status = PATTERNS_ERR;
       $msg = t('"type" field is required.');
@@ -140,14 +148,7 @@ function node_patterns_validate($action, $tag, &$data) {
       $status = PATTERNS_ERR;
       $msg = t("You can't change content type for already existing node.");
     }
-    elseif ($action !== PATTERNS_CREATE) {
-      $data['node'] = (object) node_load($data['nid']);
-      if (!$data['node']) {
-        $status = PATTERNS_ERR;
-        $msg = t('Cannot modify or delete a nonexsitent Node.');
-      }
-    }
-    // TODO: validate name field - should be valid/existing username
+   // TODO: validate name field - should be valid/existing username
   }
   elseif ($tag == 'content_type') {
     // TODO: check required fields for content types
@@ -253,15 +254,35 @@ function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
     $data['changed'] = time();
     $data['op'] = t('Save');
 
+    $data['node']->language = 'und'; // TODO
     $node = clone($data['node']);
+//    unset($node->body);
+//    unset($node->title);
 
     // build Content Type fields
     $type = $data['type'];
     $form_id = $type .'_node_form';
-    $form_state = array();
-    $form_state['build_info']['args'] = array($node);
+    $form_state = array(
+      'build_info' => array('args' => array($node),
+        'files' => array('menu' => 'modules/node/node.pages.inc')),
+// TODO: all these needed?
+      'rebuild' => FALSE,
+      'rebuild_info' => array(),
+      'redirect' => NULL,
+      'temporary' => array(),
+      'submitted' => FALSE,
+      'executed' => FALSE,
+      'programmed' => FALSE,
+      'cache' => FALSE,
+      'method' => 'post',
+      'groups' => array(),
+      'buttons' => array(),
+      'input' => array(),
+    );
+    require_once('modules/node/node.pages.inc');
+
     $form = drupal_retrieve_form($form_id, $form_state);
-    var_dump($form, $form_id, $node, $form_state); die;
+    //var_dump($form, $form_id, $node, $form_state);
     drupal_prepare_form($form_id, $form, $form_state);
 
     /*
