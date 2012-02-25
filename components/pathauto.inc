@@ -44,6 +44,8 @@ function pathauto_patterns_prepare($action, $tag, &$data = NULL) {
   $datacopy = $data;
   if ($tag == "pathauto_patterns" || $tag == "pathauto") {
     foreach ($datacopy as $key => $value) {
+      if(strpos($key, 'pathauto') !== FALSE)
+        continue;
       if (is_array($value)) {
         if ( $key != "update") {
           foreach ($value as $i => $v) {
@@ -63,7 +65,7 @@ function pathauto_patterns_prepare($action, $tag, &$data = NULL) {
           }
         }
       }
-      else {
+      else if(substr($key, 0, 9) != 'pathauto_') {
         $new = 'pathauto_' . $key;
         $data[$new] = $value;
         unset($data[$key]);
@@ -130,29 +132,24 @@ function pathauto_patterns_build($action, $tag, &$data = NULL, $form_id) {
  * 
  */
 function pathauto_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
-	 $return = array();
-	 if ($form_id == "path_admin_form" && $action == PATTERNS_MODIFY) {
-	 	$loop = TRUE;
-	 	 $paths = db_query("SELECT * FROM {url_alias}", array(), array('fetch' => PDO::FETCH_ASSOC))->fetchAll();
-    	 foreach ($paths as $path) {
-      // to get rid of the notice
-      // Notice: Undefined index: href in menu_edit_item() (line 306 of /var/www/drupal-7.9/modules/menu/menu.admin.inc).
-      // should be ok, because it's only used in the description.
-      		array_push($return, array($path));
-    	}
-    	return $return;
-  	}
-  	elseif ($form_id == "path_admin_form") {
-    	$result = array(array(
-        'source' => '',
-        'alias' => '',
-        'language' => 'und',
-        'pid' => NULL,
-      ));
-      return $result;
-  	}
-	
-
+  $return = array();
+  if ($form_id == "path_admin_form" && $action == PATTERNS_MODIFY) {
+    $loop = TRUE;
+    $paths = db_query("SELECT * FROM {url_alias}", array(), array('fetch' => PDO::FETCH_ASSOC))->fetchAll();
+    foreach ($paths as $path) {
+      array_push($return, array($path));
+    }
+    return $return;
+  }
+  elseif ($form_id == "path_admin_form") {
+   $result = array(array(
+     'source' => '',
+     'alias' => '',
+     'language' => 'und',
+     'pid' => NULL,
+   ));
+   return $result;
+ }
 }
 
 // Build a patterns actions and parameters
