@@ -76,7 +76,6 @@ function node_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
 
 
 function node_patterns_prepare($action, $tag, &$data) {
-
   if ($tag == 'content_type') {
     if ($action === PATTERNS_CREATE or $action === PATTERNS_MODIFY) {
       if ($data['node_options']) {
@@ -110,6 +109,7 @@ function node_patterns_prepare($action, $tag, &$data) {
     if ($action == PATTERNS_CREATE) {
       unset($data['nid']);
       unset($data['vid']);
+      $data['node'] = (object) $data;
       $data['update'] = FALSE;
     }
     elseif ($action == PATTERNS_MODIFY) {
@@ -253,6 +253,38 @@ function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
     $data['changed'] = time();
     $data['op'] = t('Save');
 
+    $node = clone($data['node']);
+
+    // build Content Type fields
+    $type = $data['type'];
+    $form_id = $type .'_node_form';
+    $form_state = array();
+    $form_state['build_info']['args'] = array($node);
+    $form = drupal_retrieve_form($form_id, $form_state);
+    var_dump($form, $form_id, $node, $form_state); die;
+    drupal_prepare_form($form_id, $form, $form_state);
+
+    /*
+    $content_type = content_types($type);
+    $fields_info = $content_type['fields'];
+    if (module_exists('fieldgroup')) {
+      $groups = fieldgroup_groups($type, FALSE, TRUE);
+    }
+
+    $fields = array();
+    $fields_diff = array();
+    if (!empty($groups)) {
+      foreach($groups as $key => $group) {
+        $fields = array_merge($fields, array_intersect_ukey($form[$key], $group['fields'], '_patterns_compare_keys'));
+      }
+      $fields_diff = array_diff_ukey($fields_info, $fields, '_patterns_compare_keys');
+      $fields = array_merge($fields, array_intersect_ukey($form, $fields_diff, '_patterns_compare_keys'));
+    }
+    else {
+      $fields = array_merge($fields, array_intersect_ukey($form, $fields_info, '_patterns_compare_keys'));
+    }
+
+     */
   }
 
   $result = $data;
@@ -269,11 +301,11 @@ function node_patterns_params($action, $form_id, &$data = NULL, &$a) {
     $result = array((object) $data);
   }
   elseif (($action === PATTERNS_MODIFY and $form_id == 'node_type_form') or
-      $form_id == 'node_type_delete_confirm') {
-    $types = (object)_node_types_build();
-    $type = $types->types[$data['type']];
-    $result = array($type);
-  }
+    $form_id == 'node_type_delete_confirm') {
+      $types = (object)_node_types_build();
+      $type = $types->types[$data['type']];
+      $result = array($type);
+    }
   else { // TODO: other cases, Node create&modify
 
   }

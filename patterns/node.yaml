@@ -1,4 +1,3 @@
----
 info: 
   title: Example Article creation
   description: Creates an example article node
@@ -9,8 +8,8 @@ info:
 
 actions:
   - create:
-    tag: node
-    type: article
-    title: Test Article
-    body: lorem ipsum ...
+      tag: node
+      type: article
+      title: Test Article
+      body: lorem ipsum ...
 
