@@ -106,22 +106,11 @@ function menu_patterns_prepare($action, $tag, &$data) {
 function menu_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
   // taken from menu_load_links
   if($tag == 'menu_item' && $action == PATTERNS_MODIFY && $form_id == 'menu_edit_item') {
-        $links = db_select('menu_links', 'ml', array('fetch' => PDO::FETCH_ASSOC))
-    ->fields('ml')
-    ->execute()
-    ->fetchAll();
-    $loop = TRUE;
+	 $links = db_query("SELECT * FROM {menu_links}", array(), array('fetch' => PDO::FETCH_ASSOC))->fetchAll();
+ 	$loop = TRUE;
     $return = array();
-    $i = 0;
-    foreach ($links as &$link) {
-      $i++; // debugging reasons
-      //if($i > 20) break;
-      $link['options'] = unserialize($link['options']);
-      $link['href'] = ""; 
-      // to get rid of the notice
-      // Notice: Undefined index: href in menu_edit_item() (line 306 of /var/www/drupal-7.9/modules/menu/menu.admin.inc).
-      // should be ok, because it's only used in the description.
-      array_push($return, array("edit", $link, $link));
+    foreach ($links as $link) {
+          array_push($return, array($link));
     }
     return $return;
   }
