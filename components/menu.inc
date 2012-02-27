@@ -106,15 +106,26 @@ function menu_patterns_prepare($action, $tag, &$data) {
 function menu_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
   // taken from menu_load_links
   if($tag == 'menu_item' && $action == PATTERNS_MODIFY && $form_id == 'menu_edit_item') {
-	 $links = db_query("SELECT * FROM {menu_links}", array(), array('fetch' => PDO::FETCH_ASSOC))->fetchAll();
- 	$loop = TRUE;
+	// $links = db_query("SELECT * FROM {menu_links}", array(), array('fetch' => PDO::FETCH_ASSOC))->fetchAll();
+ 	 $links = db_select('menu_links', 'ml', array('fetch' => PDO::FETCH_ASSOC))
+	      ->fields('ml')
+	     ->execute()
+	    ->fetchAll();
+	//print_r($links); //for debug
+	$loop = TRUE;
     $return = array();
-    foreach ($links as $link) {
-          array_push($return, array($link));
+	$i = 0;
+    foreach ($links as &$link) {
+       $i++;
+	   //$link['link_title'] = $link['title'];
+	   $link['options'] = unserialize($link['options']);
+	   $link['href'] = "";
+	   array_push($return, array("edit", $link, $link));
     }
     return $return;
   }
-  // taken from menu_overview_page
+
+// taken from menu_overview_page
   elseif ($tag == 'menu' && $action == PATTERNS_MODIFY && $form_id == 'menu_edit_menu') {
     $loop = TRUE;
     $result = db_query("SELECT * FROM {menu_custom} ORDER BY title", array(), array('fetch' => PDO::FETCH_ASSOC));
@@ -126,6 +137,7 @@ function menu_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
   }
 
 }
+
 
 // Validate the values for an action before running the pattern
 function menu_patterns_validate($action, $tag, &$data) {
