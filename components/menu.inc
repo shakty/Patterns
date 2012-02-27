@@ -106,7 +106,6 @@ function menu_patterns_prepare($action, $tag, &$data) {
 function menu_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
   // taken from menu_load_links
   if($tag == 'menu_item' && $action == PATTERNS_MODIFY && $form_id == 'menu_edit_item') {
-	// $links = db_query("SELECT * FROM {menu_links}", array(), array('fetch' => PDO::FETCH_ASSOC))->fetchAll();
  	 $links = db_select('menu_links', 'ml', array('fetch' => PDO::FETCH_ASSOC))
 	      ->fields('ml')
 	     ->execute()
@@ -117,7 +116,9 @@ function menu_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
 	$i = 0;
     foreach ($links as &$link) {
        $i++;
-	   //$link['link_title'] = $link['title'];
+	   if($link['link_title'] == ''){
+	       $link['link_title'] = 'null';
+		}
 	   $link['options'] = unserialize($link['options']);
 	   $link['href'] = "";
 	   array_push($return, array("edit", $link, $link));
