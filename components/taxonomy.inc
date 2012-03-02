@@ -92,7 +92,11 @@ function taxonomy_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE
 
 // Prepare data for processing
 function taxonomy_patterns_prepare($action, $tag, &$data) {
-
+  // dirty fix for the int <-> string problem
+  $data['name'] = strval($data['name']);
+  $data['machine_name'] = '' . $data['machine_name'];
+  $data['old_machine_name'] = '' . $data['old_machine_name'];
+  
   // VOCABULARY
   if ($tag == 'vocabulary') {
     if ($action == PATTERNS_DELETE ) {
