@@ -41,6 +41,12 @@ function pathauto_patterns_actions() {
 
 // Prepare data for processing
 function pathauto_patterns_prepare($action, $tag, &$data = NULL) {
+  // dirty fix for the null/0/false/'' problem
+  if($data['pathauto_verbose'] === 0)
+    $data['pathauto_verbose'] = NULL;
+  if($data['pathauto_reduce_ascii'] === 0)
+    $data['pathauto_reduce_ascii'] = NULL;
+
   $datacopy = $data;
   if ($tag == "pathauto_patterns" || $tag == "pathauto") {
     foreach ($datacopy as $key => $value) {
