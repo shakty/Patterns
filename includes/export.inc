@@ -104,7 +104,14 @@ function patterns_export_submit($form, &$form_state) {
   else {
 
   }
-
+  global $user;
+  global $base_root;
+  $file .= "  author: " . $user->name . "\n" .
+           "  category: Megapatterns\n" .
+           "  version: 1.0\n" .
+           "  core: x.y\n" .
+           "  author_email: " . $user->mail . "\n" .
+           "  author_website: " . $base_root . "\n";
 
   // concatenate yaml files to a huge file or zip all files
   foreach ($form_state['values']['patterns_table'] as $pid) {
@@ -127,11 +134,13 @@ function patterns_export_submit($form, &$form_state) {
       }
       else {
         $file .= "---\n";
+        $file .= "sub:\n";
         $file .=  @file_get_contents($pattern->file);
         $file .= "\n";
       }
     }
   }
+  $file .= "---\n";
 
   if ($zip_flag) {
     $zip->close();
