@@ -8,6 +8,7 @@ info:
   category: System
   version: 1.0
   core: 7.x
+  author_website: http://qlectives.eu/
 
 modules:
   - devel

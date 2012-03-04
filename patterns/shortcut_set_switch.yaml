@@ -6,11 +6,12 @@
 info:
   title: switch shortcut set for users (modify)
   description: switch shortcut set for users 
-  author: Rui
+  author: QScience
   category: Shortcut
   version: 1.0
   core: 7.x
   author_email: xrfind@gmail.com
+  author_website: http://qlectives.eu/
 
 actions:
   - modify:

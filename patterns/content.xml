@@ -2,7 +2,6 @@
   <info>
     <title>Enable/disable modules (XML)</title>
     <description>Based on http://drupal.org/node/408960</description>
-    <email>abc</email>
     <author>QScience</author>
     <category>System</category>
     <version>1.0</version>

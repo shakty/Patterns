@@ -4,11 +4,12 @@
 info:
   title: add a link to a shortcut set (create)
   description: add a link to a shortcut set
-  author: Rui
-  category: Shortcut 
+  author: QScience
+  category: Shortcut
   version: 1.0
   core: 7.x
   author_email: xrfind@gmail.com
+  author_website: http://qlectives.eu/
 
 actions:
   - create:
@@ -16,4 +17,3 @@ actions:
       shortcut_set_name: new_set_fortest
       shortcut_link_title: link_admcont
       shortcut_link_path: admin/content
-      

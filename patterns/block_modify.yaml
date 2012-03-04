@@ -8,8 +8,7 @@ info:
   category: Block
   version: 1.0
   core: 7.x
-  author_email: sbalietti@ethz.ch
-  author_website: qscience.csko.hu
+  author_website: http://qlectives.eu/
 
 actions:
   - create:

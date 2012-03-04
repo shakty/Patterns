@@ -2,30 +2,30 @@
 # yaml pattern file
 
 info:
-  title: pathauto setting
+  title: Pathauto settings
   description: Enable clean URLs, setting patterns for auto URLs aliases, bulk update, setting and delete aliases
-  author: yanbo
+  author: QScience
   category: pathauto
   version: 1.0
   core: 7.x
-  author_email: csko@inf.u-szeged.hu
+  author_website: http://qlectives.eu
 
 #enable modules
 #Enable clean URLs
 
-actions:     
-     
+actions:
+
   - modify:
       tag: pathauto_patterns
       node_pattern: contentnode/[node:title]
       taxonomy_term_pattern: "[term:vocabulary]/[term:name]"
       user_pattern: users/[user:name]
       update:
-      	node:1
-      	taxonomy:1
-      	user:1 
-  
-  - modify:      
+      	node: 1
+      	taxonomy: 1
+      	user: 1
+
+  - modify:
       tag: pathauto
       case:1
       max_component_length:50
@@ -34,22 +34,21 @@ actions:
       reduce_ascii:1
       separator:'-'
       update_action:2
-      verbose: 1
+      verbose:1
 #      reset:1
-          
-          
+
 # add url aliases
   - create:
       tag: url_alias
-      source:admin/patterns/quickrun
-      alias:pathauto1
-      
+      source: admin/patterns/quickrun
+      alias: pathauto1
+
   - modify:
       tag: url_alias
-      pid:7
-      source:admin/patterns/quickrun
-      alias:pathauto1
-      
+      pid: 7
+      source: admin/patterns/quickrun
+      alias: pathauto1
+
   - delete:
       tag: url_alias
-      pid:7
+      pid: 7

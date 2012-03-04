@@ -8,19 +8,18 @@ info:
   category: System
   version: 1.0
   core: 7.x
-  author_email: sbalietti@ethz.ch
-  author_website: qscience.csko.hu
+  author_website: http://qlectives.eu/
 
 actions:
 
     - create:
         tag: theme
         value: garland
-        default: 1
+        default: true
 
     - create:
         tag: theme
         value: bartik
-        default: 1
-        admin: 1
+        default: true
+        admin: true
 

@@ -4,13 +4,12 @@
 info:
   title: Edit fields
   description: Edit fields
-  author: Yanbo
+  author: QScience
   category: Field
   version: 1.0
   core: 7.x
   author_email: nbboob@gmail.com
-  author_website: http://www.qlectives.eu
-
+  author_website: http://qlectives.eu/
 
 
 actions:
@@ -19,11 +18,11 @@ actions:
       tag: instance
       entity: user
       bundle: user
-      name: sponsor 
-      label:edit
-      cardinality:3
-      required:1
-      default_value:bobo
-      description:test
-      size:10
-      text_processing:1
+      name: sponsor
+      label: edit
+      cardinality: 3
+      required: 1
+      default_value: bobo
+      description: test
+      size: 10
+      text_processing: 1

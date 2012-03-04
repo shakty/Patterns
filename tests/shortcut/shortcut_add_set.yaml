@@ -4,11 +4,12 @@
 info:
   title: add new shortcut set (create)
   description: add a new shortcut set
-  author: Rui
-  category: Shortcut 
+  author: QScience
+  category: Shortcut
   version: 1.0
   core: 7.x
   author_email: xrfind@gmail.com
+  author_website: http://qlectives.eu/
 
 actions:
   - create:

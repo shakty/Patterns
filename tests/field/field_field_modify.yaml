@@ -4,22 +4,20 @@
 info:
   title: Modify field setting
   description: Modify field setting
-  author: Yanbo
+  author: QScience
   category: Field
   version: 1.0
   core: 7.x
   author_email: nbboob@gmail.com
-  author_website: http://www.qlectives.eu
-
-
+  author_website: http://qlectives.eu/
 
 actions:
 
   - modify:
       tag: field
       entity: node
-      bundle:  article
+      bundle: article
       name: first
       settings:      
-        max_length:100
+        max_length: 100
 

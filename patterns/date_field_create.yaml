@@ -2,16 +2,15 @@
 # QScience
 
 info:
-  title: Add date fields to NODE
-  description: Add date fields to  NODE
-  author: Yanbo
+  title: Add date fields to Node
+  description: Add date fields to Node
+  author: QScience
   category: Field
   version: 1.0
   core: 7.x
   author_email: nbboob@gmail.com
-  author_website: http://www.qlectives.eu
-  
-  
+  author_website: http://qlectives.eu/
+
 
 actions:
   - create:

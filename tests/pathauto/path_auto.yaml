@@ -4,17 +4,17 @@
 info:
   title: pathauto setting
   description: Enable clean URLs, setting patterns for auto URLs aliases, bulk update, setting and delete aliases
-  author: yanbo
-  category: pathauto
+  author: QScience
+  category: Pathauto
   version: 1.0
   core: 7.x
-  author_email: csko@inf.u-szeged.hu
+  author_website: http://qlectives.eu/
 
 #enable modules
 #Enable clean URLs
 
-actions:     
-     
+actions:
+
   - modify:
       tag: pathauto_patterns
       node_pattern: contentnode/[node:title]

@@ -4,22 +4,21 @@
 info:
   title: Edit menu items
   description: Based on http://drupal.org/node/408952
-  author: yanbo
-  category: menu
+  author: QScience
+  category: Menu
   version: 1.0
   core: 7.x
-  author_email: sbalietti@ethz.ch
-  author_website: qscience.csko.hu
-  
+  author_website: http://qlectives.eu/
+
 actions:
 
-  - modify:      
+  - modify:
       tag: menu_item
       menu_name_old: menu-footer-links
-      link_path_old:http://123.com
-      link_title_old:menu link title
+      link_path_old: http://123.com
+      link_title_old: menu link title
       menu_name: menu-footer-links
-      link_path:http://123.com
+      link_path: http://123.com
       link_title: menu link title changed
-      disable:1
-    
+      disable: 1
+

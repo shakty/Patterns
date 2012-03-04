@@ -7,11 +7,10 @@ info:
   category: QScience
   version: 1.0
   core: 7.x
-  author_email: qscience@...
-  author_website: http://www.qlectives.eu
+  author_website: http://qlectives.eu/
 
 modules:
-  -pathauto
+  - pathauto
 
 actions:
 

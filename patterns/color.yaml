@@ -4,27 +4,26 @@
 info:
   title: Set theme color
   description: as title
-  author: Yanbo
+  author: QScience
   category: Color
   version: 1.0
   core: 7.x
-  author_email: sbalietti@ethz.ch
-  author_website: qscience.csko.hu
+  author_website: http://qlectives.eu/
 
-actions: 
+actions:
 
   - modify:
       tag: color
-      theme:bartik
- #     scheme:default
+      theme: bartik
+ #     scheme: default
       palette:
-      	bottom:#494949
-      	link:#494949
-      	top:#494949
-      	bg:#494949
-      	sidebar:#494949
-      	sidebarborders:#494949
-      	footer:#494949
-      	titleslogan:#494949
-      	text:#494949
+        bottom:#494949
+        link:#494949
+        top:#494949
+        bg:#494949
+        sidebar:#494949
+        sidebarborders:#494949
+        footer:#494949
+        titleslogan:#494949
+        text:#494949
 

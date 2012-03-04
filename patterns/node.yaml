@@ -5,6 +5,7 @@ info:
   version: 1.0
   category: Content
   core: 7.x
+  author_website: http://qlectives.eu/
 
 actions:
   - create:

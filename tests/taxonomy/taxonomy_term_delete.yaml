@@ -9,8 +9,8 @@ info:
   version: 1.0
   core: 7.x
   author_email: sbalietti@ethz.ch
-  author_website: qlectives.eu
-  
+  author_website: http://qlectives.eu/
+
 
 # In order to delete a term a unique term name must exist. 
 # Multiple deletion of terms with the same name are not allowed.
@@ -18,7 +18,7 @@ info:
 # Alternatively the tid can be passed
 
 actions:
-        
+
     - delete:
         tag: term
         vocabulary: anothervoc # machine_name

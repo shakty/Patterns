@@ -2,15 +2,14 @@
 # QScience
 
 info:
-  title: Modify field setting
-  description: Modify field setting
-  author: Yanbo
+  title: Modify field settings
+  description: Modify field settings
+  author: QScience
   category: Field
   version: 1.0
   core: 7.x
   author_email: nbboob@gmail.com
-  author_website: http://www.qlectives.eu
-
+  author_website: http://qlectives.eu/
 
 
 actions:

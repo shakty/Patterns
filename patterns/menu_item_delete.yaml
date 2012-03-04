@@ -4,18 +4,17 @@
 info:
   title: Delete menu items
   description: Based on http://drupal.org/node/408952
-  author: yanbo
-  category: menu
+  author: QScience
+  category: Menu
   version: 1.0
   core: 7.x
-  author_email: sbalietti@ethz.ch
-  author_website: qscience.csko.hu
-  
+  author_website: http://qlectives.eu/
+
 actions:
 
-  - delete:      
+  - delete:
       tag: menu_item
       menu_name: menu-footer-links
-      link_path:http://123.com
+      link_path: http://123.com
       link_title: menu link title changed
-    
+

@@ -7,7 +7,7 @@ info:
   category: QScience
   version: 1.0
   core: 6.x
-  author_email: csko@inf.u-szeged.hu
+  author_website: http://qlectives.eu/
 
 modules:
   #- views

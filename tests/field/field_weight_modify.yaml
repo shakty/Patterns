@@ -4,14 +4,12 @@
 info:
   title: Modify field weight
   description: Modify field weight
-  author: Yanbo
+  author: QScience
   category: Field
   version: 1.0
   core: 7.x
   author_email: nbboob@gmail.com
-  author_website: http://www.qlectives.eu
-
-
+  author_website: http://qlectives.eu/
 
 actions:
 
@@ -20,5 +18,5 @@ actions:
       entity: node
       bundle: article
       weight:
-        first:8
+        first: 8
 

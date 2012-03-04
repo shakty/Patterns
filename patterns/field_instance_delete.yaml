@@ -1,16 +1,15 @@
- # YAML Field Pattern
+# YAML Field Pattern
 # QScience
 
 info:
   title: Delete fields
   description: Delete fields
-  author: Yanbo
+  author: QScience
   category: Field
   version: 1.0
   core: 7.x
   author_email: nbboob@gmail.com
-  author_website: http://www.qlectives.eu
-
+  author_website: http://qlectives.eu/
 
 
 actions:

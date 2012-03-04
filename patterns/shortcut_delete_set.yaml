@@ -4,13 +4,14 @@
 info:
   title: delete a shortcut set (delete)
   description: delete a shortcut set 
-  author: Rui
+  author: QScience
   category: Shortcut
   version: 1.0
   core: 7.x
   author_email: xrfind@gmail.com
+  author_website: http://qlectives.eu/
 
 actions:
   - delete:
       tag: shortcut_set
-      name: new_set_fortest
+      name: newer_set_fortest

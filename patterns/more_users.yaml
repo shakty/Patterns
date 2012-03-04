@@ -8,8 +8,7 @@ info:
   category: QScience
   version: 1.0
   core: 7.x
-  author_email: sbalietti@ethz.ch
-  author_website: xxx
+  author_website: http://qlectives.eu/
 
 actions:
 

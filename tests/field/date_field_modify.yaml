@@ -4,14 +4,12 @@
 info:
   title: Modify date fields
   description: Modify date fields
-  author: Yanbo
+  author: QScience
   category: Field
   version: 1.0
   core: 7.x
   author_email: nbboob@gmail.com
-  author_website: http://www.qlectives.eu
-  
-  
+  author_website: http://qlectives.eu/
 
 actions:
 
@@ -20,29 +18,29 @@ actions:
       entity: node
       bundle: article
       name: date
-      cardinality:2
+      cardinality: 2
       instance_settings:
-      	default_value:strtotime
-      	default_value_code:'-10'
+      	default_value: strtotime
+      	default_value_code: '-10'
       widget_settings:
-      	increment:10
-      	input_format:Y/m/d - H:i:s
+      	increment: 10
+      	input_format: Y/m/d - H:i:s
       	year_range:
-      		years_back:'-2'
-      		years_forward:'+2'
+      		years_back: '-2'
+      		years_forward: '+2'
       	advanced:
-      		label_position:within
+      		label_position: within
       		text_parts:
-      			year:1
-      			month:1
-      			day:1
-      			hour:1
-      			minute:1
-      			second:1
+      			year: 1
+      			month: 1
+      			day: 1
+      			hour: 1
+      			minute: 1
+      			second: 1
       field_settings:
       	granularity:
-      		second:second
-      		hour:hour
-      	tz_handling:date
-      	enddate_get:1
-      	
+      		second: second
+      		hour: hour
+      	tz_handling: date
+      	enddate_get: 1
+

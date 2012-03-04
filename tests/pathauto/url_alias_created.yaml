@@ -4,17 +4,17 @@
 info:
   title: URLs aliases create
   description: setting patterns for auto URLs aliases, setting and delete aliases
-  author: yanbo
-  category: pathauto
+  author: QScience
+  category: Pathauto
   version: 1.0
   core: 7.x
-  author_email: csko@inf.u-szeged.hu
+  author_website: http://qlectives.eu/
 
 #enable modules
 #Enable clean URLs
 
 actions:
-          
+
 # add url aliases
   - create:
       tag: url_alias

@@ -9,9 +9,7 @@ info:
   version: 1.0
   core: 7.x
   author_email: sbalietti@ethz.ch
-  author_website: qlectives.eu
-
-
+  author_website: http://qlectives.eu/
 
 actions:
 

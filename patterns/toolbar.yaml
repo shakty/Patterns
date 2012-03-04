@@ -9,11 +9,12 @@
 info:
   title: Toolbarrole (modify)
   description: deside what kind of users (roles) can see the toolbar.
-  author: Rui
+  author: QScience
   category: Toolbar
   version: 1.0
   core: 7.x
   author_email: xrfind@gmail.com
+  author_website: http://qlectives.eu/
 
 actions:
   - modify:
