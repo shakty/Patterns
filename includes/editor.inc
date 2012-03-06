@@ -206,14 +206,19 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
   $content = '# Pattern';
   $extension = 'yaml';
 
+  debug($pattern);
+  
   if (!empty($pattern->file)) {
+    $extension = pathinfo($pattern->file, PATHINFO_EXTENSION);
     $content = file_get_contents($pattern->file);
   }
 
-  if (!empty($pattern->file)) {
-    $extension = pathinfo($pattern->file, PATHINFO_EXTENSION);
+  if (!$content) {
+    drupal_set_message(t('The pattern file was removed from its stored location in the file system.', 'ERR'));
+    // TODO: load from the database. Say that comments are missing
   }
-
+  
+  
   if ($pattern->status >= 0) {
     $validation = 'This is a valid pattern';
   }
