@@ -206,16 +206,20 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
   $content = '# Pattern';
   $extension = 'yaml';
 
-  debug($pattern);
-  
   if (!empty($pattern->file)) {
     $extension = pathinfo($pattern->file, PATHINFO_EXTENSION);
     $content = file_get_contents($pattern->file);
   }
 
   if (!$content) {
-    drupal_set_message(t('The pattern file was removed from its stored location in the file system.', 'ERR'));
-    // TODO: load from the database. Say that comments are missing
+    drupal_set_message(t('The pattern file was removed from its stored location in the file system. Trying to load from the database, comments will be missing.'), 'error');
+    if (empty($pattern->pattern)){
+      drupal_set_message(t('No valid pattern found in the database either.', 'ERR'));   
+    }
+    else {
+      require_once libraries_get_path('spyc') . '/spyc.php';
+      $content = Spyc::YAMLDump($pattern->pattern);
+    }
   }
   
   
