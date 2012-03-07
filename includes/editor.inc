@@ -229,7 +229,12 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
   
   if (!empty($pattern->file)) {
     $extension = pathinfo($pattern->file, PATHINFO_EXTENSION);
-    $content = file_get_contents($pattern->file);
+    if (file_exists($pattern->file)) {
+      $content = file_get_contents($pattern->file);
+    }
+    else {
+      $content = FALSE;
+    }
   }
 
   if (!$content) {

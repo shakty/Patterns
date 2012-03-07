@@ -282,6 +282,8 @@ function patterns_db_get_enabled_patterns_array($fields = array()) {
  * the one in the file system and return TRUE if the file system
  * has a newer copy of the pattern stored in the database.
  * 
+ * Return TRUE also if it cannot finds the file in the fs.
+ * 
  * @param mixed $pattern A pattern object, an array representing
  *  the pattern object, a numeric id or alphanumeric name of 
  *  the pattern as it is in the database
@@ -291,6 +293,7 @@ function patterns_db_is_pattern_updated ($pattern = NULL) {
   $pattern = _patterns_db_get_pattern($pattern);
   if (empty($pattern)) return FALSE;
   
+  if (!file_exists($pattern->file)) return TRUE;
   $new_updated = filemtime($pattern->file);
   $updated = $pattern->updated;
   
