@@ -4,6 +4,26 @@
  * Retrieve, save, and remove patterns from the database.
  */
 
+/**
+ * Returns a pattern object from different input parameters.
+ * 
+ * Returns FALSE in case of errors.
+ * 
+ * @param mixed $pattern A pattern object, an array representing
+ *  the pattern object, a numeric id or alphanumeric name of 
+ *  the pattern as it is in the database
+ *  
+ */
+function _patterns_db_get_pattern($pattern) {
+  if (is_null($pattern)) return FALSE;
+  if (is_array($pattern)) {
+    $pattern = (object) $pattern;
+  }
+  if (!is_object($pattern)) {
+    $pattern = patterns_get_pattern($pattern);
+  }
+  return $pattern;
+}
 
 /**
  * Mark that pattern status as trashed in the database.
@@ -111,7 +131,8 @@ function patterns_db_save_pattern($pattern, $path, $name) {
       db_query("UPDATE {patterns} SET file = :file, updated = :updated WHERE pid = :pid", $query_params);
     }
 
-    if (($new_updated = filemtime($path)) > $updated) {
+    if (patterns_db_is_pattern_updated($pattern_data)) {
+    //if (($new_updated = filemtime($path)) > $updated) {
       $query_params = array('pattern' => serialize($pattern),
                             'title' => $title,
                             'file' => $path,
@@ -159,6 +180,7 @@ function patterns_db_save_pattern($pattern, $path, $name) {
  *   The Pattern obj containing the unsereliazed pattern.
  */
 function patterns_get_pattern($id) {
+  if (empty($id)) return FALSE;
   $pattern = FALSE;
 
   $query = db_select('patterns', 'p')
@@ -188,7 +210,8 @@ function patterns_get_pattern($id) {
  * @param $name
  */
 function patterns_db_load_pattern_from_name($name = NULL) {
-
+  if (empty($name)) return FALSE;
+  
   $query = db_select('patterns', 'p');
   $result = $query->condition('name', $name)
                   ->fields('p')
@@ -253,4 +276,83 @@ function patterns_db_get_enabled_patterns_array($fields = array()) {
     $out[] = $pa;
   }
   return $out;
+}
+
+/**
+ * Compares the date of the last update in the database with
+ * the one in the file system and return TRUE if the file system
+ * has a newer copy of the pattern stored in the database.
+ * 
+ * @param mixed $pattern A pattern object, an array representing
+ *  the pattern object, a numeric id or alphanumeric name of 
+ *  the pattern as it is in the database
+ * 
+ */
+function patterns_db_is_pattern_updated ($pattern = NULL) {
+  $pattern = _patterns_db_get_pattern($pattern);
+  if (empty($pattern)) return FALSE;
+  
+  $new_updated = filemtime($pattern->file);
+  $updated = $pattern->updated;
+  
+  if ($new_updated && !$updated) return TRUE;
+  if ($updated && !$new_updated) return FALSE;
+  if (!$updated && !$new_updated) return FALSE;
+  
+  if ($new_updated > $updated) return TRUE;
+}
+
+
+
+/**
+ * Looks up a numerical id into the database for a valid
+ * patterns name. Returns false, if no valid pattern name
+ * was found.
+ * 
+ * 
+ * @param mixed $name the name of the pattern to look up
+ *  
+ */
+function patterns_db_get_id_from_name ($name) {
+  if (empty($name)) return FALSE;
+  $p = patterns_get_pattern($name);
+  if ($p) $p = $p['id'];
+  return $p;
+}
+
+
+/**
+ * Looks up a pattern name into the database and returns
+ * the numerical id associated with it. Returns false, 
+ * if no valid pattern name was passed.
+ * 
+ * @param mixed $id the numerical id to look up
+ * 
+ */
+function patterns_db_get_name_from_id ($id) {
+  if (empty($id)) return FALSE;
+  $p = patterns_get_pattern($id);
+  if ($p) $p = $p['name'];
+  return $p;
+}
+
+
+
+/**
+ * Returns a string representation of the status of the pattern as it 
+ * is in the database;
+ * 
+ * @param mixed $pattern A pattern object, an array representing
+ *  the pattern object, a numeric id or alphanumeric name of 
+ *  the pattern as it is in the database
+ */
+function patterns_db_analyze_patterns_status ($pattern) {
+  $pattern = _patterns_db_get_pattern($pattern);
+  
+  if (!$pattern) return 'This pattern has not been validated yet.';
+  if ($pattern->status >= 0) return 'This is a valid pattern';
+  if ($pattern->status === PATTERNS_STATUS_INVALID) return 'This pattern is marked as NOT valid';
+  if ($pattern->status === PATTERNS_STATUS_REMOVED) return 'This pattern is marked as REMOVED.';
+  
+  return 'This pattern has not been validated yet.';
 }

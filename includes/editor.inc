@@ -206,36 +206,8 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
   $content = '# Pattern';
   $extension = 'yaml';
 
-  if (!empty($pattern->file)) {
-    $extension = pathinfo($pattern->file, PATHINFO_EXTENSION);
-    $content = file_get_contents($pattern->file);
-  }
-
-  if (!$content) {
-    drupal_set_message(t('The pattern file was removed from its stored location in the file system. Trying to load from the database, comments will be missing.'), 'error');
-    if (empty($pattern->pattern)){
-      drupal_set_message(t('No valid pattern found in the database either.', 'ERR'));   
-    }
-    else {
-      require_once libraries_get_path('spyc') . '/spyc.php';
-      $content = Spyc::YAMLDump($pattern->pattern);
-    }
-  }
+  $validation = patterns_db_analyze_patterns_status($pattern->status);
   
-  
-  if ($pattern->status >= 0) {
-    $validation = 'This is a valid pattern';
-  }
-  elseif ($pattern->status === PATTERNS_STATUS_INVALID) {
-    $validation = 'This pattern is marked as NOT valid';
-  }
-  elseif ($pattern->status === PATTERNS_STATUS_REMOVED) {
-    $validation = 'This pattern is marked as REMOVED.';
-  }
-  else {
-    $validation = 'This pattern has not been validated yet.';
-  }
-
   $form['name'] = array(
     '#type' => 'value',
     '#value' => $pattern->name,
@@ -258,32 +230,82 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
     '#options' => array_combine(patterns_config_get_file_types(), patterns_config_get_file_types()),
     '#default_value' => $extension,
   );
+  
+  
+  
+  
+  if (!empty($pattern->file)) {
+    $extension = pathinfo($pattern->file, PATHINFO_EXTENSION);
+    $content = file_get_contents($pattern->file);
+  }
 
-  $form['content'] = array(
+  if (!$content) {
+    drupal_set_message(t('The pattern file was removed from its stored location in the file system. Trying to load from the database, comments will be missing.'), 'error');
+    if (empty($pattern->pattern)){
+      drupal_set_message(t('No valid pattern found in the database either.', 'ERR'));   
+    }
+    else {
+      require_once libraries_get_path('spyc') . '/spyc.php';
+      $content = Spyc::YAMLDump($pattern->pattern);
+    }
+  }
+  else {
+    // Pattern was updated in the file system. Show what was in the database
+    if (patterns_db_is_pattern_updated($pattern)) {
+      require_once libraries_get_path('spyc') . '/spyc.php';
+      $db_content = Spyc::YAMLDump($pattern->pattern);
+      
+      $form['db'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('The Pattern file stored in the database'),
+      );
+    
+      $form['db']['validation_result'] = array(
+        '#markup' => '<strong>' . $validation . '</strong>',
+        '#prefix' => '<div id="validation_result">',
+        '#suffix' => '</div>',
+      );
+      
+      $form['db']['content'] = array(
+        '#type' => 'textarea',
+        '#title' => t('Pattern\'s code'),
+        '#rows' => 25,
+        '#default_value' => $db_content,
+      );
+    }    
+  }
+
+  $form['fs'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Pattern file as loaded from the file system',
+  );
+  
+  
+  $form['fs']['content'] = array(
     '#type' => 'textarea',
     '#title' => t('Pattern\'s code'),
     '#rows' => 25,
     '#default_value' => $content,
   );
 
-  $form['submit'] = array(
+  $form['fs']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
   );
 
-  $form['validate'] = array(
+  $form['fs']['validate'] = array(
     '#prefix' => '<span style=\'margin-right:10px\'>',
     '#markup' => "<a href='#' id='validate_pattern'>" . t('Validate') . "</a>",
     '#suffix' => '</span> ',
   );
 
-  $form['run'] = array(
+  $form['fs']['run'] = array(
     '#prefix' => '<span style=\'margin-right:10px\'>',
     '#markup' => l(t('Run current pattern'), 'admin/patterns/enable/' . $pattern->pid),
     '#suffix' => '</span> ',
   );
 
-  $form['cancel'] = array(
+  $form['fs']['cancel'] = array(
     '#markup' => l(t('Back'), 'admin/patterns'),
   );
 

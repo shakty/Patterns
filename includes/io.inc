@@ -288,12 +288,17 @@ function patterns_load_components() {
  * @return array The array of found patterns.
  */
 function patterns_io_scan_directories() {
-
-    // Get a listing of enabled patterns.
+     
     $enabled = array();
-
-    $priority = array();
+    $messages = array();
     $errors = array();
+    
+    // If we can update patterns in the db from changes in the file
+    // systems then we need to now what was enabled before;
+    // those will not be updated anyway
+    if (variable_get('patterns_update_db_from_fs', TRUE)) {
+      $enabled = patterns_db_get_enabled_patterns_array('name');
+    }
 
     // Get list of directories to scan for patterns.
     $patterns_paths = patterns_config_get_paths();
@@ -308,13 +313,12 @@ function patterns_io_scan_directories() {
     foreach ($patterns_paths as $path) {
       //debug($path);
       foreach (file_scan_directory($path, $mask, $no_mask) as $file) {
-        // Can't update existing patterns that are enabled.
-        if (in_array($file->filename, $enabled) || in_array($file->name, $priority)) {
-          //debug('Skip ' . $file->filename);
-          continue;
-        }
 
-        $priority[] = $file->name;
+        if (!empty($enabled)) {
+          if (in_array($file->filename, $enabled)) {
+            continue; // Skip updating enabled patterns.
+          }
+        }
 
         // Choose appropriate function based on the file extension: YAML or XML.
         $func = 'patterns_load_' . substr($file->filename, strlen($file->name) + 1);
@@ -338,8 +342,11 @@ function patterns_io_scan_directories() {
   if (!empty($errors)) {
     drupal_set_message(t('Invalid patterns files found') . ':<br/>' . implode('<br/>', $errors) . '<br/>' . t('Make sure that above file(s) are readable and contain valid data.'), 'warning');
   }
+  if (!empty($messages)) {
+    drupal_set_message(implode('<br/>', $messages) . '<br/>' . t('Make sure that above pattern(s) are readable and contain valid data.'), 'warn');
+  }
 
-    variable_set('patterns_loaded', time());
+  variable_set('patterns_loaded', time());
 }
 
 /**
@@ -355,7 +362,7 @@ function patterns_get_patterns($reset = TRUE) {
   if ($reset || !variable_get('patterns_loaded', FALSE)) {
     patterns_io_scan_directories();
   }
-
+  
   $result = db_query('SELECT * FROM {patterns} ORDER BY status');
 
   $messages = array();
@@ -365,16 +372,16 @@ function patterns_get_patterns($reset = TRUE) {
 
 
   foreach ($result as $pattern) {
-    // Skip pattern if its file is missing.
-    if (!is_file($pattern->file)) {
+    
+    // Skip pattern if its name is missing.
+    if (!is_file($pattern->name)) {
       continue;
     }
-
-    // Skip pattern if loading failed and report that to the user.
-//    if (in_array($pattern->file, $errors)) {
-//      $messages[] = t("Pattern couldn't be loaded from the file '%file'", array('%file' => $pattern->file));
-//      continue;
-//    }
+    
+    // Skip pattern if its file is missing.  
+    if (!is_file($pattern->file)) {
+      $messages[] = t("Pattern %name has no file associated in the file system.", array('%name' => $pattern->name));
+    }
 
     $status = $pattern->status;
     if (in_array($status, array(PATTERNS_STATUS_OK, PATTERNS_STATUS_ENABLED, PATTERNS_STATUS_INVALID))) {
@@ -391,9 +398,9 @@ function patterns_get_patterns($reset = TRUE) {
 
   }
 
-//  if (!empty($messages)) {
-//    drupal_set_message(implode('<br/>', $messages) . '<br/>' . t('Make sure that above file(s) are readable and contain valid data.'), 'error');
-//  }
+  if (!empty($messages)) {
+    drupal_set_message(implode('<br/>', $messages) . '<br/>' . t('Make sure that above pattern(s) are readable and contain valid data.'), 'error');
+  }
 
   return $patterns;
 }

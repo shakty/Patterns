@@ -431,6 +431,14 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
     return $form;
   }
 
+  if (patterns_db_is_pattern_updated($pid)) {
+    $form['modified'] = array(
+      '#markup' => t('A more recent version of this pattern was found in the file system. The version stored in the database is going to be executed. If unsure, ') . ' ' . l(t('click here to check it out.'), 'admin/patterns/edit/' . $pid),
+      '#prefix' => '<div id="important"><strong>',
+      '#suffix' => '</strong></br></br></div>',
+    );
+  }
+  
   $form['pid'] = array(
     '#type' => 'value',
     '#value' => $pid,
