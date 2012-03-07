@@ -4,6 +4,37 @@
  * Retrieve, save, and remove patterns from the database.
  */
 
+
+/**
+ * Converts all the patterns objects in a results set 
+ * from a database query on the patterns table into an
+ * arrays and unserialize the pattern code, if found.
+ * 
+ * @param array $set the result set
+ * @param boolean $merge if TRUE, merges all the values of
+ *  the results set into one big array. Keys are lost.
+ *  
+ * @return array the converted results set
+ * 
+ */
+function _patterns_db_convert_results_set($set, $merge = FALSE) {
+  $out = array();
+  if (empty($set)) return $out;
+  
+  foreach($set as $p) {
+    $pa = get_object_vars($p);
+    if (isset($pa['pattern'])) {
+      $pa = unserialize($pa['pattern']);
+    }
+    if ($merge) {
+      $out = array_merge($out, array_values($pa)); 
+    }
+    else {
+      $out[] = $pa;
+    }
+  }
+  return $out;
+}
 /**
  * Returns a pattern object from different input parameters.
  * 
@@ -226,6 +257,55 @@ function patterns_db_load_pattern_from_name($name = NULL) {
 }
 
 /**
+ * Returns the array of patterns objects that are currently in the database.
+ * 
+ * No further check against the file system is performed. It just returns
+ * what is in the database.
+ * 
+ * It is possible to specify which fields to return with a 
+ * parameter, that can be either a string or an array.
+ * 
+ * The pattern code within each each object is still to be unserialized.
+ * 
+ * @param mixed $fields Specifies which fields to return.
+ *
+ * @return array An array of all available patterns objects.
+ * 
+ * @see patterns_get_patterns
+ */
+function patterns_db_get_patterns($fields = array()) {
+  if (!empty($fields)) {
+    if (!is_array($fields)) {
+      $fields = array($fields);
+    }
+  }
+  
+  $query = db_select('patterns', 'p');
+  $result = $query->fields('p', $fields)
+                  ->execute()
+                  ->fetchAll();
+                  
+  return $result;
+}
+
+/**
+ * Returns the array of patterns array that are currently enabled.
+ * 
+ * It is possible to specify which fields to return with the fields 
+ * parameter, that can be either a string or an array.
+ * 
+ * If found, pattern code inside each pattern object is
+ * automatically unserialized.
+ * 
+ * @param mixed $fields Specifies which fields to return.
+ * 
+ */
+function patterns_db_get_patterns_array($fields = array(), $merge = FALSE) {
+  $patterns = patterns_db_get_patterns($fields);
+  return _patterns_db_convert_results_set($patterns, $merge);
+}
+
+/**
  * Returns the array of patterns objects that are currently enabled.
  * 
  * It is possible to specify which fields to return with the fields 
@@ -264,17 +344,9 @@ function patterns_db_get_enabled_patterns($fields = array()) {
  * @param mixed $fields Specifies which fields to return.
  * 
  */
-function patterns_db_get_enabled_patterns_array($fields = array()) {
+function patterns_db_get_enabled_patterns_array($fields = array(), $merge = FALSE) {
   $patterns = patterns_db_get_enabled_patterns($fields);
-  $out = array();
-  foreach($patterns as $p) {
-    $pa = get_object_vars($p);
-    if (isset($pa['pattern'])) {
-      $pa = unserialize($pa['pattern']);
-    }
-    $out[] = $pa;
-  }
-  return $out;
+  return _patterns_db_convert_results_set($patterns, $merge);
 }
 
 /**

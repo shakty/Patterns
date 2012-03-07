@@ -280,7 +280,7 @@ function patterns_load_components() {
 }
 
 /**
- * Scan the directories looking for patterns files.
+ * Scan directories looking for patterns files.
  *
  * Checks inside the directories defined by patterns_config_get_paths().
  * @see patterns_config_get_paths()
@@ -288,17 +288,12 @@ function patterns_load_components() {
  * @return array The array of found patterns.
  */
 function patterns_io_scan_directories() {
-     
-    $enabled = array();
+  
+    $existing = patterns_db_get_patterns_array('name', TRUE);    
+    // Patterns already enabled won't be updated in the database
+    $enabled = patterns_db_get_enabled_patterns_array('name', TRUE);
     $errors = array();
     $skipped = array();
-    
-    // If we can update patterns in the db from changes in the file
-    // systems then we need to now what was enabled before;
-    // those will not be updated anyway
-    if (variable_get('patterns_update_db_from_fs', TRUE)) {
-      $enabled = patterns_db_get_enabled_patterns_array('name');
-    }
 
     // Get list of directories to scan for patterns.
     $patterns_paths = patterns_config_get_paths();
@@ -313,14 +308,20 @@ function patterns_io_scan_directories() {
     foreach ($patterns_paths as $path) {
       //debug($path);
       foreach (file_scan_directory($path, $mask, $no_mask) as $file) {
-
-        if (!empty($enabled)) {
-          if (in_array($file->filename, $enabled)) {
-            $skipped[] = $file->filename;
-            continue; // Skip updating enabled patterns.
+        
+        if (in_array($file->name, $existing)) {
+          if (!variable_get('patterns_update_db_from_fs', TRUE)) {
+            continue;
+          }
+          
+          if (!empty($enabled)) {
+            if (in_array($file->name, $enabled)) {
+              $skipped[] = $file->name;
+              continue; // Skip updating enabled patterns.
+            }
           }
         }
-
+    
         // Choose appropriate function based on the file extension: YAML or XML.
         $func = 'patterns_load_' . substr($file->filename, strlen($file->name) + 1);
 
@@ -344,7 +345,7 @@ function patterns_io_scan_directories() {
     drupal_set_message(t('Some invalid patterns were found: ') . '<br/>' . implode('<br/>', $errors) . '<br/>' . t('Make sure that above file(s) are readable and contain valid data.') . '<br/><br/>', 'warning');
   }
   if (!empty($skipped)) {
-    drupal_set_message(t('Enabled patterns are not automatically updated in the database. Please check: ') .implode('<br/>', $skipped) . '<br/>', 'warn');
+    drupal_set_message(t('Patterns that are already enabled are not updated against changes in the file systems. Please verify the following ones: ') . '<br/>' . implode('<br/>', $skipped) . '<br/><br/>', 'warning');
   }
 
   variable_set('patterns_loaded', time());
@@ -352,19 +353,25 @@ function patterns_io_scan_directories() {
 
 /**
  * Loads all the available patterns from the database.
+ * It also check against the file systems, and, if the 
+ * patterns global configuration options allow it, 
+ * updates the database with the latest modifications. 
+ * Notice: enabled patterns will not be updated anyway.
  *
- * @param $reset
+ * @param $reset if TRUE, it always updates the patterns in
+ *  the database with the file system. 
  *
  * @return array The array of available patterns.
  */
 function patterns_get_patterns($reset = TRUE) {
-  patterns_load_components();
 
   if ($reset || !variable_get('patterns_loaded', FALSE)) {
+    // Updates the patterns in the database   
     patterns_io_scan_directories();
   }
   
-  $result = db_query('SELECT * FROM {patterns} ORDER BY status');
+  // Get all the patterns from the database
+  $result = patterns_db_get_patterns();
 
   $messages = array();
   $patterns = array();

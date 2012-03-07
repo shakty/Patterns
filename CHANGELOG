@@ -1,3 +1,14 @@
+7017:
+
+    - patterns DB include empowered. New api for loading patterns added.
+    - patterns_update_db_from_fs. New system setting option added. If selected
+      patterns on the database are automatically sync with fs, unless they were
+      already enabled.
+    - patterns_utils_toString: given a pattern returns a string file_name (title) 
+    - Patterns is aware of patterns files modifications in the file systems
+      and prompt the users with adequate information both in the editor and
+      before executing it.
+
 7016:
 
     - Don't have to prefix filenames with 'patterns.'.

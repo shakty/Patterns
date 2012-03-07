@@ -539,6 +539,6 @@ function patterns_reformat(&$actions) {
  */
 function patterns_utils_toString($pattern = NULL) {
   $pattern = _patterns_db_get_pattern($pattern);
-  if (!$pattern) return FALSE;;
+  if (!$pattern) return FALSE;
   return $pattern->name . ' (' . $pattern->title . ')';
 }
