@@ -7,9 +7,10 @@ jQuery('document').ready( function() {
 		idx = unescape(location.href).lastIndexOf(detect);
 		
 		var url = unescape(location.href).substring(0,idx + detect.length) + '/validate';
-		var textarea = document.getElementById("edit-content");
 		
-		if (textarea) {	
+		function validate(textarea) {
+			if (!textarea) return;
+		
 			var vp = document.getElementById('validate_pattern');
 			
 			if (vp) {
@@ -40,6 +41,11 @@ jQuery('document').ready( function() {
 				};
 			}
 		}
+		
+		validate(document.getElementById("edit-content-db"));
+		validate(document.getElementById("edit-content"));
+		
+		
 	})();
 		
 	

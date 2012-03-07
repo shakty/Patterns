@@ -131,8 +131,7 @@ function patterns_db_save_pattern($pattern, $path, $name) {
       db_query("UPDATE {patterns} SET file = :file, updated = :updated WHERE pid = :pid", $query_params);
     }
 
-    if (patterns_db_is_pattern_updated($pattern_data)) {
-    //if (($new_updated = filemtime($path)) > $updated) {
+    if (($new_updated = filemtime($path)) > $updated) {
       $query_params = array('pattern' => serialize($pattern),
                             'title' => $title,
                             'file' => $path,

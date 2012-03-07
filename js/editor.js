@@ -2,10 +2,9 @@ window.onload = function() {
 	
 	(function () {
 		
-		var textarea = document.getElementById("edit-content")
-		
-		if (textarea) {
-		
+		function addCO2 (textarea) {
+			if (!textarea) return;
+				
 		    var editor = CodeMirror.fromTextArea(textarea, {
 		        lineNumbers: true,
 		        onKeyEvent: function(i, e) {
@@ -47,8 +46,13 @@ window.onload = function() {
 		    }
 		    
 		    window.CO2editor = editor;
+			
 		}
-	    
+		
+
+		addCO2(document.getElementById("edit-content-db"));
+		addCO2(document.getElementById("edit-content"));
+		
 	})();
 	
 };
