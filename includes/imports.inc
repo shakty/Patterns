@@ -304,7 +304,7 @@ function patterns_import_module($form, &$form_state) {
   $list = module_list();
   if (!isset($list["macro"])) {
     drupal_set_message(t('You need to enable the macro module for the import from module function. You can get it <a href="@url">here</a>.',
-      array('@url' => url('https://github.com/shakty/Macro/'))), 'error');
+      array('@url' => url('http://drupal.org/project/macro/'))), 'error');
     return;
   }
 

@@ -42,9 +42,7 @@ jQuery('document').ready( function() {
 			}
 		}
 		
-		validate(document.getElementById("edit-content-db"));
 		validate(document.getElementById("edit-content"));
-		
 		
 	})();
 		
