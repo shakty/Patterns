@@ -374,13 +374,15 @@ function patterns_get_patterns($reset = TRUE) {
   foreach ($result as $pattern) {
     
     // Skip pattern if its name is missing.
-    if (!is_file($pattern->name)) {
+    if (!isset($pattern->name)) {
       continue;
     }
     
     // Skip pattern if its file is missing.  
     if (!is_file($pattern->file)) {
-      $messages[] = t("Pattern %name has no file associated in the file system.", array('%name' => $pattern->name));
+      $messages[] = t("Pattern %name (%title) has no file associated in the file system.", array('%name' => $pattern->name,
+                                                                                                 '%title' => $pattern->title,
+      ));
     }
 
     $status = $pattern->status;
@@ -399,7 +401,7 @@ function patterns_get_patterns($reset = TRUE) {
   }
 
   if (!empty($messages)) {
-    drupal_set_message(implode('<br/>', $messages) . '<br/>' . t('Make sure that above pattern(s) are readable and contain valid data.'), 'error');
+    drupal_set_message(implode('<br/>', $messages) . '<br/>' . t('Make sure that above pattern(s) are readable and contain valid data.'), 'warning');
   }
 
   return $patterns;
