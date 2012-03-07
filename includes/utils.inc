@@ -529,3 +529,16 @@ function patterns_reformat(&$actions) {
   }
   $actions = $newactions;
 }
+
+/**
+ * Returns a string representation of a pattern object or array.
+ * If an id or the name of the pattern is passed, it tries
+ * to load it, and then constructs the name of the pattern.
+ * 
+ * @param mixed $pattern
+ */
+function patterns_utils_toString($pattern = NULL) {
+  $pattern = _patterns_db_get_pattern($pattern);
+  if (!$pattern) return FALSE;;
+  return $pattern->name . ' (' . $pattern->title . ')';
+}

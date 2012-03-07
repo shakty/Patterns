@@ -290,8 +290,8 @@ function patterns_load_components() {
 function patterns_io_scan_directories() {
      
     $enabled = array();
-    $messages = array();
     $errors = array();
+    $skipped = array();
     
     // If we can update patterns in the db from changes in the file
     // systems then we need to now what was enabled before;
@@ -316,6 +316,7 @@ function patterns_io_scan_directories() {
 
         if (!empty($enabled)) {
           if (in_array($file->filename, $enabled)) {
+            $skipped[] = $file->filename;
             continue; // Skip updating enabled patterns.
           }
         }
@@ -340,10 +341,10 @@ function patterns_io_scan_directories() {
     }
 
   if (!empty($errors)) {
-    drupal_set_message(t('Invalid patterns files found') . ':<br/>' . implode('<br/>', $errors) . '<br/>' . t('Make sure that above file(s) are readable and contain valid data.'), 'warning');
+    drupal_set_message(t('Some invalid patterns were found: ') . '<br/>' . implode('<br/>', $errors) . '<br/>' . t('Make sure that above file(s) are readable and contain valid data.') . '<br/><br/>', 'warning');
   }
-  if (!empty($messages)) {
-    drupal_set_message(implode('<br/>', $messages) . '<br/>' . t('Make sure that above pattern(s) are readable and contain valid data.'), 'warn');
+  if (!empty($skipped)) {
+    drupal_set_message(t('Enabled patterns are not automatically updated in the database. Please check: ') .implode('<br/>', $skipped) . '<br/>', 'warn');
   }
 
   variable_set('patterns_loaded', time());
@@ -380,9 +381,7 @@ function patterns_get_patterns($reset = TRUE) {
     
     // Skip pattern if its file is missing.  
     if (!is_file($pattern->file)) {
-      $messages[] = t("Pattern %name (%title) has no file associated in the file system.", array('%name' => $pattern->name,
-                                                                                                 '%title' => $pattern->title,
-      ));
+      $messages[] = patterns_utils_toString($pattern);
     }
 
     $status = $pattern->status;
@@ -401,7 +400,7 @@ function patterns_get_patterns($reset = TRUE) {
   }
 
   if (!empty($messages)) {
-    drupal_set_message(implode('<br/>', $messages) . '<br/>' . t('Make sure that above pattern(s) are readable and contain valid data.'), 'warning');
+    drupal_set_message(t("The following patterns were found in the database, but not in the file system:") . '<br/>' . implode('<br/>', $messages) . '<br/>', 'warning');
   }
 
   return $patterns;
