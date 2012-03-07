@@ -202,3 +202,55 @@ function patterns_db_load_pattern_from_name($name = NULL) {
     return FALSE;
   }
 }
+
+/**
+ * Returns the array of patterns objects that are currently enabled.
+ * 
+ * It is possible to specify which fields to return with the fields 
+ * parameter, that can be either a string or an array.
+ * 
+ * The pattern code within each each object is still to be unserialized.
+ * 
+ * @param mixed $fields Specifies which fields to return.
+ * 
+ */
+function patterns_db_get_enabled_patterns($fields = array()) {
+  if (!empty($fields)) {
+    if (!is_array($fields)) {
+      $fields = array($fields);
+    }
+  }
+  $query = db_select('patterns', 'p');
+  $result = $query->condition('status', PATTERNS_STATUS_ENABLED)
+                  ->fields('p', $fields)
+                  ->execute()
+                  ->fetchAll();
+                  
+  return $result;
+}
+
+
+/**
+ * Returns the array of patterns array that are currently enabled.
+ * 
+ * It is possible to specify which fields to return with the fields 
+ * parameter, that can be either a string or an array.
+ * 
+ * If found, pattern code inside each pattern object is
+ * automatically unserialized.
+ * 
+ * @param mixed $fields Specifies which fields to return.
+ * 
+ */
+function patterns_db_get_enabled_patterns_array($fields = array()) {
+  $patterns = patterns_db_get_enabled_patterns($fields);
+  $out = array();
+  foreach($patterns as $p) {
+    $pa = get_object_vars($p);
+    if (isset($pa['pattern'])) {
+      $pa = unserialize($pa['pattern']);
+    }
+    $out[] = $pa;
+  }
+  return $out;
+}
