@@ -260,6 +260,7 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
       $form['db'] = array(
         '#type' => 'fieldset',
         '#title' => t('The Pattern file stored in the database'),
+        '#prefix' => '<strong>' .t('Warning!! A newer version of this pattern was found in the file system, and both the version stored in the database, and the one just found are displayed here for comparison.') . '</strong><br/>',
         '#description' => t('This is the old version of the pattern found in the database. This is what will be executed if this pattern is run.') . '</br></br>',
         '#collapsibale' => TRUE,
       );
