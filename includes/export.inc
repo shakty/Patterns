@@ -41,9 +41,9 @@ function patterns_export($form, &$form_state) {
  }
 
 
- $form['patterns']['patterns_table'] = array
- (
+ $form['patterns']['patterns_table'] = array (
     '#type' => 'tableselect',
+    '#prefix' => '<div>' . t('For now, only YAML patterns can be selected and exported') . '</div>',
     '#header' => $header,
     '#options' => $rows,
     '#empty' => t('No Patterns'),
@@ -52,18 +52,53 @@ function patterns_export($form, &$form_state) {
  if (class_exists('ZipArchive')) {
   $form['zip'] = array(
     '#type' => 'checkbox',
-    '#title' => 'download files as zip-archive',
+    '#title' => t('Download files as a zip-archive'),
   );
  }
+
+ $form['export_name'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Name of the exported pattern file'),
+  '#description' => t('Extension will be automatically added'),
+  '#default_value' => t('exported_pattern') . '_' . strval(time()),
+ );
+ 
  $form['submit'] = array(
    '#type' => 'submit',
    '#value' => t('Download')
  );
+ 
  $form['#submit'][] = 'patterns_export_submit';
 
  return $form;
 }
 
+/**
+ * Checks if the patterns directory is ready and if the file name
+ * for exported patterns is valid.
+ * 
+ * @param $form
+ * @param $form_state
+ */
+function patterns_export_validate($form, &$form_state) {
+  
+  if (!isset($form_state['values']['patterns_table'])) {
+    drupal_set_message(t('An error has occurred'), 'error');
+    return FALSE;
+  }
+  
+  if (count($form_state['values']['patterns_table']) === 0) {
+    drupal_set_message(t('No pattern selected to export.'), 'error');
+    return FALSE;
+  }
+  
+  if (empty($form_state['values']['export_name'])) {
+    $form_state['values']['export_name'] = 'exported_pattern';
+  } 
+  $form_state['values']['export_name'] = $form_state['values']['export_name'] . '.yaml';
+  
+  return TRUE;
+}
 
 /**
  * Exports selected patterns either in a file or as a zip-archive
@@ -76,17 +111,17 @@ function patterns_export_submit($form, &$form_state) {
   // Load the patterns from database.
   @$patterns = patterns_get_patterns();
   @$patterns = $patterns[PATTERNS_STATUS_OK];
-  //$removed = $args[PATTERNS_STATUS_REMOVED];
 
-  $file = "";
-  $filename = "patterns_export.yaml";
+  $filename = $form_state['values']['export_name'];
   $path = patterns_config_get_files_dir();
 
-  if (isset($form_state['values']['zip']) && !empty($form_state['values']['zip'] ))
+  if (isset($form_state['values']['zip']) && !empty($form_state['values']['zip'] )) {
     $zip_flag = $form_state['values']['zip'];
-  else
+  }
+  else {
     $zip_flag = FALSE;
-
+  }
+  
   // check if we want to zip he files
   if ($zip_flag) {
     $zip = new ZipArchive();
@@ -97,21 +132,19 @@ function patterns_export_submit($form, &$form_state) {
     }
   }
 
-  // send header depending on if we zip or not
-  if ($zip_flag) {
-
-  }
-  else {
-
-  }
+  
   global $user;
   global $base_root;
-  $file .= "  author: " . $user->name . "\n" .
-           "  category: Megapatterns\n" .
-           "  version: 1.0\n" .
-           "  core: x.y\n" .
-           "  author_email: " . $user->mail . "\n" .
-           "  author_website: " . $base_root . "\n";
+  $count = 0; // count how many patterns will be exported
+ 
+  // Info section for exported pattern
+  $file = "info:\n";
+  $file.= "  author: " . $user->name . "\n" .
+          "  category: Exported Patterns\n" .
+          "  version: 1.0\n" .
+          "  core: x.y\n" .
+          "  author_email: " . $user->mail . "\n" .
+          "  author_website: " . $base_root . "\n\n";
 
   // concatenate yaml files to a huge file or zip all files
   foreach ($form_state['values']['patterns_table'] as $pid) {
@@ -133,14 +166,21 @@ function patterns_export_submit($form, &$form_state) {
         $zip->addFromString($pattern->name . '.yaml', @file_get_contents($pattern->file));
       }
       else {
-        $file .= "---\n";
-        $file .= "sub:\n";
-        $file .=  @file_get_contents($pattern->file);
+        $file .= "\n################## \n";
+        $file .= "\ninclude:\n\n";
+        $file .= @file_get_contents($pattern->file);
         $file .= "\n";
       }
+      
+      $count++;
     }
   }
-  $file .= "---\n";
+ 
+  // Add an header to the exported pattern
+  $header = "# Patterns exported: " . $count . " \n";
+  $header.= "# Date and time: " . date('r') . "\n\n";
+  $file = $header . $file;
+  
 
   if ($zip_flag) {
     $zip->close();

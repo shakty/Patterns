@@ -669,7 +669,7 @@ function patterns_import_module_ajax_module_forms_callback($form, $form_state) {
 /**
  * Helper function to be called in one of the import validation handlers.
  */
-function _patterns_imports_check_dirs($dir) {
+function _patterns_imports_check_dirs($dir = NULL) {
  // Check Patterns Directory
  if (!_patterns_io_is_patterns_dir_ready($dir, FILE_CREATE_DIRECTORY)) {
   $message = t("Destination folder does not exist or is not writable: %path<br />", array('%path' => $dir)); // TODO: move this out for performance
