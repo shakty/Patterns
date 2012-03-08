@@ -499,7 +499,8 @@ function patterns_actions() {
   return array(PATTERNS_CREATE => PATTERNS_CREATE,
                PATTERNS_MODIFY => PATTERNS_MODIFY,
                PATTERNS_DELETE => PATTERNS_DELETE,
-               );
+               PATTERNS_INCLUDE => PATTERNS_INCLUDE,
+              );
 }
 
 /**
@@ -541,4 +542,41 @@ function patterns_utils_toString($pattern = NULL) {
   $pattern = _patterns_db_get_pattern($pattern);
   if (!$pattern) return FALSE;
   return $pattern->name . ' (' . $pattern->title . ')';
+}
+
+
+/**
+ * Generate an array representing a standard info section of a pattern.
+ * Default values for empty parameters are passed, e.g. the current user
+ * for the author, and author's email and the url of the Drupal web site
+ * for the author's web site.
+ * 
+ * @param mixed $category
+ * @param mixed $descr
+ * @param mixed $v
+ * @param mixed $core
+ * @param mixed $user
+ * @param mixed $base_root
+ * 
+ */
+function patterns_utils_generate_info_section($category = 'General', 
+                                              $descr = 'No description',
+                                              $v = '1.0',
+                                              $core = 'x.y', 
+                                              $user = NULL,
+                                              $base_root = NULL ) {
+  if (is_null($user)) global $user;
+  if (is_null($base_root)) global $base_root;
+  
+  $info = array('info' => array());
+  
+  $info['info']['author']         = $user->name;
+  $info['info']['category']       = $category;
+  $info['info']['description']    = $descr;
+  $info['info']['core']           = $core;
+  $info['info']['author']         = $user->name;
+  $info['info']['author_email']   = $user->mail;
+  $info['info']['author_website'] = $base_root;
+  
+  return $info;
 }

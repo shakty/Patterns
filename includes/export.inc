@@ -15,20 +15,18 @@ function patterns_export($form, &$form_state) {
   'description' => array('data' => 'description', 'field' => 'n.description')
  );
  $rows = array();
- patterns_load_components();
-
- //$removed = $args[PATTERNS_STATUS_REMOVED];
 
  // Load the patterns from database.
- $patterns = patterns_get_patterns();
- $patterns = $patterns[PATTERNS_STATUS_OK];
+ // no check with file system
+ $patterns = patterns_db_get_patterns();
 
  foreach ($patterns as $pid => $pattern) {
-  $category = @$pattern->info['category'] ? @$pattern->info['category'] : t('Other');
+  $pattern_code = unserialize($pattern->pattern);
+  $category = @$pattern_code['info']['category'] ? @$pattern_code['info']['category'] : t('Other');
   $name = $pattern->title;
   $status = (@$pattern->status) ? t('Enabled') : t('Disabled');
-  $author = @$pattern->info['author'];
-  $version = @$pattern->info['version'];
+  $author = @$pattern_code['info']['author'];
+  $version = @$pattern_code['info']['version'];
   $description = t(@$pattern->description);
   $row = array(
   'category' => $category,
@@ -39,7 +37,6 @@ function patterns_export($form, &$form_state) {
   'description' => $description);
   $rows[$pid-1] = $row; // want to avoid one
  }
-
 
  $form['patterns']['patterns_table'] = array (
     '#type' => 'tableselect',
@@ -106,12 +103,11 @@ function patterns_export_validate($form, &$form_state) {
  * @param $form_state
  */
 function patterns_export_submit($form, &$form_state) {
-  @patterns_load_components();
+  //@patterns_load_components();
 
   // Load the patterns from database.
-  @$patterns = patterns_get_patterns();
-  @$patterns = $patterns[PATTERNS_STATUS_OK];
-
+  @$patterns = patterns_db_get_patterns();
+  
   $filename = $form_state['values']['export_name'];
   $path = patterns_config_get_files_dir();
 
@@ -132,19 +128,11 @@ function patterns_export_submit($form, &$form_state) {
     }
   }
 
-  
-  global $user;
-  global $base_root;
   $count = 0; // count how many patterns will be exported
- 
-  // Info section for exported pattern
-  $file = "info:\n";
-  $file.= "  author: " . $user->name . "\n" .
-          "  category: Exported Patterns\n" .
-          "  version: 1.0\n" .
-          "  core: x.y\n" .
-          "  author_email: " . $user->mail . "\n" .
-          "  author_website: " . $base_root . "\n\n";
+  $errors = array();
+  
+  // the export array with a general info section
+  $export = patterns_utils_generate_info_section('Exported');
 
   // concatenate yaml files to a huge file or zip all files
   foreach ($form_state['values']['patterns_table'] as $pid) {
@@ -158,18 +146,34 @@ function patterns_export_submit($form, &$form_state) {
         continue;
       //if(!$pattern->public)
       //  continue;
-      if (!is_readable($pattern->file)) {
-        drupal_set_message("An error occurred: couldn't read " . $pattern->file . ".", 'error'); // TODO: t()
+
+      if (!$pattern->pattern) {
+        $errors[] = patterns_utils_toString($pattern);
         continue;
       }
+
+      // unserialize pattern code
+      //$pattern_code = unserialize($pattern->pattern); 
+      //debug($pattern_code);
+      // add it to the export array
+      
+      $included = array('tag' => 'attached', 'pattern' => $pattern->pattern);
+      
+      $export['exported'][] = array('include' => $included);
+      
+//      if (!is_readable($pattern->file)) {
+//        drupal_set_message("An error occurred: couldn't read " . $pattern->file . ".", 'error'); // TODO: t()
+//        continue;
+//      }
+
       if ($zip_flag) {
         $zip->addFromString($pattern->name . '.yaml', @file_get_contents($pattern->file));
       }
       else {
-        $file .= "\n################## \n";
-        $file .= "\ninclude:\n\n";
-        $file .= @file_get_contents($pattern->file);
-        $file .= "\n";
+//        $file .= "\n################## \n";
+//        $file .= "\ninclude:\n\n";
+//        $file .= @file_get_contents($pattern->file);
+//        $file .= "\n";
       }
       
       $count++;
@@ -177,9 +181,13 @@ function patterns_export_submit($form, &$form_state) {
   }
  
   // Add an header to the exported pattern
-  $header = "# Patterns exported: " . $count . " \n";
-  $header.= "# Date and time: " . date('r') . "\n\n";
-  $file = $header . $file;
+//  $header = "# Patterns exported: " . $count . " \n";
+//  $header.= "# Date and time: " . date('r') . "\n\n";
+//  $file = $header . $file;
+  
+  // Load SPYC
+  require_once libraries_get_path('spyc') . '/spyc.php';
+  $file = Spyc::YAMLDump($export);
   
 
   if ($zip_flag) {
