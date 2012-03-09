@@ -328,9 +328,9 @@ function patterns_io_scan_directories() {
         // Load and save pattern.
         if ($pattern = $func($file->uri)) {
           
-          if ($file->name === 'import_to_delete2') {
-              //debug($pattern);
-           }
+//          if ($file->name === 'import_to_delete2') {
+//              //debug($pattern);
+//           }
           
           if (patterns_validate_pattern($pattern)) {
             

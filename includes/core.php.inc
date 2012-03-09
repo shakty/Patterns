@@ -38,9 +38,10 @@ function patterns_execute_pattern_php($pattern, $params, $patterns_details, $act
   // Looping through the sections
   ///////////////////////////////
 
-  foreach ($sections as $section => $actions) { // TODO: is this loop necessary?
+  foreach ($sections as $section => $actions) {
     // Reformat the actions. $actions passed as reference.
-    patterns_reformat($actions);
+    // If includes are found, they are exploded into other actions
+    patterns_reformat_actions($actions);
 
     $i = 0;
     $success = TRUE;

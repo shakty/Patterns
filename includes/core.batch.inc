@@ -45,7 +45,8 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
   $cur_sec = 1;
   foreach ($sections as $section => $actions) {
     // Reformat the actions. $actions passed as reference.
-    patterns_reformat($actions);
+    $actions = _patterns_parser_retrieve_actions_from_section($actions);
+    patterns_reformat_actions($actions);
 
     $progress_params = array(
                           '%section' => $section,

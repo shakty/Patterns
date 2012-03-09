@@ -27,9 +27,6 @@ function patterns_prepare_action(&$action, &$data, $actions_map) {
     return patterns_results();
   }
 
-  // TODO: Do we need it now?
-  patterns_load_components();
-
   // Keep a list of which modules handle what tags.
   $tag_modules = patterns_get_tagmodules_index();
 
@@ -314,4 +311,42 @@ function patterns_execute_action($form_id, &$form_state, $params) {
 
   //$batch = $batch_clone;
 
+}
+
+/**
+ * Group the action and the data fields.
+ *
+ * @param array $actions The array of actions.
+ */
+function patterns_reformat_actions(&$actions) {
+  $valid_actions = patterns_actions();
+  $newactions = array();
+  
+  foreach ($actions as $key => $value) {
+    //$found = FALSE;
+    foreach ($value as $akey => $avalue) {
+      if (!array_key_exists($akey, $valid_actions)) {
+        // Should not happen.
+        drupal_set_message(t("Invalid action: %action.", $akey), 'error');
+      }
+      else {
+          $newactions[] = array('action' => $akey, 'data' => $avalue);
+
+// experimental 08.03          
+//                  if ($akey === PATTERNS_INCLUDE) {
+//          $included = _patterns_retrieve_actions_included_from_pattern($avalue);
+//          $reformated = patterns_reformat_actions($included);
+//          $newactions = array_merge($newactions, $reformated);
+//                  }
+        
+      // Additional actions. Discouraged and undocumented.
+//        if ($found) {
+//          $result['extra_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
+//        }
+        
+        //$found = TRUE;
+      }
+    }
+  }
+  $actions = $newactions;
 }

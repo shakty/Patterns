@@ -504,34 +504,6 @@ function patterns_actions() {
 }
 
 /**
- * Group the action and the data fields.
- *
- * @param array $actions The array of actions.
- */
-function patterns_reformat(&$actions) {
-  $valid_actions = patterns_actions();
-  $newactions = array();
-  foreach ($actions as $key => $value) {
-  $found = FALSE;
-  foreach ($value as $akey => $avalue) {
-    if (!array_key_exists($akey, $valid_actions)) {
-      // Should not happen.
-      drupal_set_message(t("Invalid action: %action.", $akey), 'error');
-    }
-    else {
-      // Additional actions. Discouraged and undocumented.
-      if ($found) {
-        $result['extra_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
-      }
-      $newactions[] = array('action' => $akey, 'data' => $avalue);
-      $found = TRUE;
-      }
-    }
-  }
-  $actions = $newactions;
-}
-
-/**
  * Returns a string representation of a pattern object or array.
  * If an id or the name of the pattern is passed, it tries
  * to load it, and then constructs the name of the pattern.
@@ -559,7 +531,8 @@ function patterns_utils_toString($pattern = NULL) {
  * @param mixed $base_root
  * 
  */
-function patterns_utils_generate_info_section($category = 'General', 
+function patterns_utils_generate_info_section($title = 'Untitled Pattern',
+                                              $category = 'General', 
                                               $descr = 'No description',
                                               $v = '1.0',
                                               $core = 'x.y', 
@@ -570,6 +543,7 @@ function patterns_utils_generate_info_section($category = 'General',
   
   $info = array('info' => array());
   
+  $info['info']['title']          = $title;
   $info['info']['author']         = $user->name;
   $info['info']['category']       = $category;
   $info['info']['description']    = $descr;

@@ -227,15 +227,22 @@ function _patterns_analyze_patternscan($patternscan) {
             array('%found' => implode(', ', $extraactions)));
   }
 
-  // TODO: This is not yet working.
+  // TODO: This is not yet working properly. Check when it is applicable!
   if (count($patternscan['missing_tag']) != 0) {
     foreach ($patternscan['missing_tag'] as $key => $value) {
-      $msgs[] = t('The \'tag\' value is missing for action %action.', array('%action' => $value['key']));
+      $msgs[] = t('A mandatory \'tag\' was missing for action %action.', array('%action' => $value['key']));
     }
   }
 
   if (count($patternscan['empties']) > 0) {
     $msgs[] = t('Pattern contains empty sections or actions:') . ' ' . implode(', ', $patternscan['empties']);
+  }
+  
+  if (count($patternscan['contain_includes']) > 0) {
+    foreach ($patternscan['contain_includes'] as $i) {
+      //$msgs[] = print_r($patternscan['includes'], true);
+      $msgs = array_merge($msgs, _patterns_analyze_patternscan($i));
+    }
   }
 
   return $msgs;
@@ -282,103 +289,146 @@ function patterns_parse_yaml($pattern) {
  *   array $result Summary of the pattern.
  *
  * @TODO Expand this function to include much more detailed validation.
+ * @TODO Rewrite in an object oriented fashion
+ * 
  */
 function _patterns_scan_pattern($pattern) {
-  
+  $generic_error = 'pattern not loaded correctly';
   $result = array(
                   'info' => 0,
                   'modules' => 0,
                   'empties' => array(),
-                  'include' => array(),
                   'invalid_actions' => array(),
                   'extra_actions' => array(),
                   'missing_tag' => array(),
                   'other_sections' => array(),
+                  'contain_includes' => FALSE,
+                  'include_scans' => array(),
   );
   
   if (!is_array($pattern)) {
     $pattern = patterns_parse_yaml($pattern); // TODO: other formats as well.
   }
   
-  if (!empty($pattern)) {
-    // Patterns must contain:
-    // exactly one section 'info'
-    // 0 or 1 section 'modules'
-    // 1 or more other sections
-    // All the sections must be a non-empty array.
-    // If a section is called 'include;
-    // it means that we are included a new pattern
-    // and we apply _patterns_scan_pattern recursively.
-    $valid_actions = patterns_actions();
-    foreach ($pattern as $key => $value) {
-      if ($key === 'info') {
-        $result['info']++;
+  if (empty($pattern)) {
+    $result['empties'][] = $generic_error;
+    return $result;
+  }
+  
+  // Patterns is valid if contains:
+  
+  //  - exactly 1 topmost section 'info'
+  //  - at most 1 topmost section 'modules'
+  //  - at least 1 more other sections
+  //
+  // All the sections must be a non-empty array.
+  // If a section is called 'include;
+  // it means that we are including a new pattern
+  // and we apply _patterns_scan_pattern recursively.
+  
+  $valid_actions = patterns_actions();
+  foreach ($pattern as $key => $value) {
+    
+    // INFO
+    if ($key === 'info') {
+      $result['info']++;
+      continue;
+    }
+    
+    // MODULES
+    if ($key === 'modules') {
+      $result['modules']++;
+      continue;
+    }
+ 
+    // SECTIONS: invalid
+    if (!is_array($value)) {
+      // If the YAML is not loaded correctly you get 0.
+      $result['empties'][] = ($key === 0) ? $generic_error : $key; 
+      continue;
+    }
+    
+    // SECTIONS: valid        
+    $resultactions = array();
+    $newactions = array();
+    
+    // Collect info specific to each section
+    $section_info = array();
+    $section_info[PATTERNS_CREATE] = 0;
+    $section_info[PATTERNS_MODIFY] = 0;
+    $section_info[PATTERNS_DELETE] = 0;
+    $section_info[PATTERNS_INCLUDE] = 0;
+    
+    foreach ($value as $action => &$data) {
+
+      if (empty($data)) {
+        $result['empties'][] = $action;
+        continue;  
       }
-      elseif ($key === 'modules') {
-        $result['modules']++;
-      }
-      elseif ($key === 'include') {
-        $result['include']++;
-        debug('include!!!');
-      }
-      else {
-        if (!is_array($value)) {
-          $result['empties'][] = ($key === 0) ? 'undefined' : $key; // If the YAML is not loaded correctly you get 0.
+      
+      
+      // Make sure there is only one valid action in each array element.
+      // NOTE: Having additional valid actions will work, but is discouraged,
+      // and therefore undocumented.
+      $found = FALSE;
+      
+      // TODO: check if $data is an array.
+      foreach ($data as $akey => $avalue) {
+        
+        if (!array_key_exists($akey, $valid_actions)) {
+          $result['invalid_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
+          continue;
+        }
+        
+        
+        // Update counter of the action;
+        $section_info[$akey] = $section_info[$akey]+1;
+
+        // Report additional valid actions.
+        if ($found) {
+          $result['extra_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
+        }
+        
+        // Do action specific checkings
+        ////////////////////////////////
+        
+        if ($akey === PATTERNS_INCLUDE) {
+          $result['contain_includes'] = TRUE;
+          
+          if (!isset($avalue['pattern'])) {
+            $result['missing_tag'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
+            continue;  
+          }
+          
+          // only if the pattern is hard-coded, then scan it
+          if (is_array($avalue['pattern'])) {
+            $result['include_scans'][] = _patterns_scan_pattern($avalue['pattern']); 
+          }
+          continue;
+        }
+        
+        
+        // Check if 'tag' is present.
+        if (!isset($avalue['tag']) || !is_string($avalue['tag'])) {
+          $result['missing_tag'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
         }
         else {
-          
-          
-          $resultactions = array();
-          $newactions = array();
-          $section_info[PATTERNS_CREATE] = 0;
-          $section_info[PATTERNS_MODIFY] = 0;
-          $section_info[PATTERNS_DELETE] = 0;
-          $section_info[PATTERNS_INCLUDE] = 0;
-          
-          foreach ($value as $action => &$data) {
-
-            if (empty($data)) {
-              $result['empties'][] = $action;
-            }
-            else {
-              // Make sure there is only one valid action in each array element.
-              // NOTE: Having additional valid actions will work, but is discouraged,
-              // and therefore undocumented.
-              $found = FALSE;
-              // TODO: check if $data is an array.
-              foreach ($data as $akey => $avalue) {
-                if (!array_key_exists($akey, $valid_actions)) {
-                  $result['invalid_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
-                }
-                else {
-                  // Update count;
-                  $section_info[$akey] = $section_info[$akey]+1;
-
-                  // Report additional valid actions.
-                  if ($found) {
-                    $result['extra_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
-                  }
-                  
-                  // Check if 'tag' is present.
-                  if (!isset($avalue['tag']) or !is_string($avalue['tag'])) {
-                    $result['missing_tag'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
-                  }
-                  else {
-                    $newactions[] = array('action' => $akey, 'data' => $avalue);
-                  }
-                  $found = TRUE;
-                }
-              }
-            }
-          }
-          $value = $newactions;
-
-          $result['other_sections'][$key] =  '(' . PATTERNS_CREATE . ':' . $section_info[PATTERNS_CREATE] . ', ' .
-                                             PATTERNS_MODIFY . ':' . $section_info[PATTERNS_MODIFY] . ', ' .
-                                             PATTERNS_DELETE . ':' . $section_info[PATTERNS_DELETE] . ')';
+          $newactions[] = array('action' => $akey, 'data' => $avalue);
         }
+        $found = TRUE;
+          
+       
       }
     }
+    $value = $newactions;
+
+    $result['other_sections'][$key] =  '(' . PATTERNS_CREATE . ':' . $section_info[PATTERNS_CREATE] . ', ' .
+                                       PATTERNS_MODIFY . ':' . $section_info[PATTERNS_MODIFY] . ', ' .
+                                       PATTERNS_DELETE . ':' . $section_info[PATTERNS_DELETE] . ', ' .
+                                       PATTERNS_INCLUDE . ':' . $section_info[PATTERNS_INCLUDE] . ')';
+    
+  
+    
   }
 
   return $result;
@@ -397,7 +447,7 @@ function patterns_validate_service() {
     $count = count($scan['other_sections']) + $scan['info'] + $scan['modules'];
     $out = t('This pattern is valid. !count sections found ->', array('!count' => $count)) . ' ';
 
-    $out .= ($scan['info']) ? 'info ' : '' ;
+    $out .= 'info ';
     $out .= ($scan['modules']) ? 'modules ' : '' ;
 
     foreach ($scan['other_sections'] as $key => $value) {
@@ -424,20 +474,21 @@ function patterns_validate_service() {
  *   array('pid1' => $details, 'pid2' => $details, ...),
  *   FALSE if there were errors (in which case the errors will be displayed).
  */
-function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = array()) {
+function patterns_parser_get_pattern_details($pattern, $recursive = FALSE, &$pids = array()) {
   $scan = _patterns_scan_pattern($pattern->pattern);
-
+  // This will display errors if there are any.
+  if (!_patterns_validate_patternscan($scan, TRUE)) return FALSE;
+  
   $details = array();
-
-  if (_patterns_validate_patternscan($scan, TRUE)) { // This will display errors if there are any.
-    $details['info'] = $pattern->pattern['info'];
-    $details['sections'] = array_intersect_key($pattern->pattern, $scan['other_sections']);
-    $details['modules'] = ($scan['modules'] > 0 ) ? $pattern->pattern['modules'] : array();
+  
+  $details['info'] = $pattern->pattern['info'];
+  $details['sections'] = array_intersect_key($pattern->pattern, $scan['other_sections']);
+  $details['modules'] = ($scan['modules'] > 0 ) ? $pattern->pattern['modules'] : array();
+  //if (!$scan['contain_includes'])
     return array($pattern->pid => $details); // TODO: only one pattern
-  }
-  else {
-    return FALSE;
-  }
+  //}
+  
+  
 
   ////////////////////////////////////////////////////////////////
   // IMPORTANT
@@ -519,7 +570,7 @@ function patterns_get_pattern_details($pattern, $recursive = FALSE, &$pids = arr
             break;
         }
 
-        $a = patterns_get_pattern_details($p, TRUE, $pids);
+        $a = patterns_parser_get_pattern_details($p, TRUE, $pids);
         if ($a === FALSE) { // TODO: error handling
         }
         if (is_array($a) && empty($a)) {
@@ -635,3 +686,78 @@ function patterns_parser_validate_xml_pattern($content) {
 
   return TRUE;
 }
+
+
+/**
+ * Returns all the actions from a a given section
+ * @param array $section 
+ * @param array $pattern the pattern to scan
+ * 
+ */
+function _patterns_parser_retrieve_actions_from_section($section, $mode = PATTERNS_INCLUDE_NEVER) {
+  if (empty($section)) return FALSE;
+  
+  $actions = array();
+  foreach ($section as $key => $value ) {
+    $action = key($value);
+    if (in_array($action, patterns_actions())) {
+      if ($action !== PATTERNS_INCLUDE) {
+        $actions[] = $section[$key]; 
+      }
+      // include
+      else {
+          $new_actions =  _patterns_parser_retrieve_actions_from_include($value[PATTERNS_INCLUDE]);
+          $actions = array_merge($actions, $new_actions);
+      }
+      
+    }
+  }
+  return $actions;
+}
+
+/**
+ * Returns all the actions from a pattern array. 
+ * Sections are not preserved.
+ * 
+ * @param array $pattern the pattern to scan
+ * @param array $sections (not used for now)
+ * 
+ */
+function _patterns_parser_retrieve_actions_from_include($pattern, $sections = NULL) {
+  $actions = array();
+  if (!isset($pattern['pattern']) || empty($pattern['pattern'])){
+    return $actions;
+  }
+  
+  // Loop through the sections of the included pattern
+  // TODO: import only actions from the specified sections
+  foreach ($pattern['pattern'] as $section => $value) {
+    if (in_array($section, array('info', 'modules'))) continue;
+    $newactions = _patterns_parser_retrieve_actions_from_section($value);
+    $actions = array_merge($actions, $newactions);
+  }
+  return $actions;
+}
+
+/**
+ * Inserts the action of a pattern into another one. 
+ * Sections are not preserved.
+ * 
+ * @param array $pattern the including pattern
+ * @param array $include the included pattern
+ * @param mixed $mount_point the ordinal index where to insert the actions
+ * @param array $sections (not used for now)
+ */
+function patterns_parser_include_pattern(&$pattern, $include, $mount_point = NULL, $sections = NULL) {
+  if (empty($pattern)) return FALSE;
+  if (empty($include)) return FALSE;
+  if (empty($include['pattern'])) return FALSE;
+  if (empty($mount_point)) $mount_point = count($pattern); 
+  
+  $included_actions = _patterns_retrieve_actions_included_from_pattern($include); 
+  $pattern = array_splice($pattern, $mount_point, $included_actions);
+}
+
+//function patterns_parser_rewrite_with_includes($pattern) {
+//}
+

@@ -132,7 +132,7 @@ function patterns_export_submit($form, &$form_state) {
   $errors = array();
   
   // the export array with a general info section
-  $export = patterns_utils_generate_info_section('Exported');
+  $export = patterns_utils_generate_info_section($filename, 'Exported');
 
   // concatenate yaml files to a huge file or zip all files
   foreach ($form_state['values']['patterns_table'] as $pid) {
@@ -157,7 +157,7 @@ function patterns_export_submit($form, &$form_state) {
       //debug($pattern_code);
       // add it to the export array
       
-      $included = array('tag' => 'attached', 'pattern' => $pattern->pattern);
+      $included = array('pattern' => $pattern->pattern);
       
       $export['exported'][] = array('include' => $included);
       

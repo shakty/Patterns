@@ -420,7 +420,7 @@ function patterns_execute_pattern_drushbatch($pattern, $params = array()) {
   }
 
   $pattern->subpatterns_run_mode = $params['run-subpatterns'];
-  $pattern_details = patterns_get_pattern_details($pattern, TRUE);
+  $pattern_details = patterns_parser_get_pattern_details($pattern, TRUE);
 
   $modules = $pattern_details['modules'];
   $actions = $pattern_details['actions'];
@@ -477,7 +477,7 @@ function patterns_execute_pattern_drush($pattern, $params = array()) {
   }
 
   $pattern->subpatterns_run_mode = $params['run-subpatterns'];
-  $pattern_details = patterns_get_pattern_details($pattern, TRUE);
+  $pattern_details = patterns_parser_get_pattern_details($pattern, TRUE);
 
   $modules = $pattern_details['modules'];
   $actions = $pattern_details['actions'];

@@ -57,6 +57,23 @@ function _patterns_db_get_pattern($pattern) {
 }
 
 /**
+ * Returns the array representation of a pattern 
+ * from different input parameters.
+ * 
+ * Returns FALSE in case of errors.
+ * 
+ * @param mixed $pattern A pattern object, an array representing
+ *  the pattern object, a numeric id or alphanumeric name of 
+ *  the pattern as it is in the database
+ *  
+ */
+function _patterns_db_get_pattern_array($pattern) {
+  if (is_null($pattern)) return FALSE;
+  if (is_array($pattern)) return $pattern;
+  if (!is_object($pattern)) return patterns_get_pattern($pattern);
+}
+
+/**
  * Mark that pattern status as trashed in the database.
  *
  * @param mixed $pid
