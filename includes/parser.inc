@@ -238,8 +238,8 @@ function _patterns_analyze_patternscan($patternscan) {
     $msgs[] = t('Pattern contains empty sections or actions:') . ' ' . implode(', ', $patternscan['empties']);
   }
   
-  if (count($patternscan['contain_includes']) > 0) {
-    foreach ($patternscan['contain_includes'] as $i) {
+  if (count($patternscan['include_scans']) > 0) {
+    foreach ($patternscan['include_scans'] as $i) {
       //$msgs[] = print_r($patternscan['includes'], true);
       $msgs = array_merge($msgs, _patterns_analyze_patternscan($i));
     }

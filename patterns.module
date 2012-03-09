@@ -706,15 +706,16 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
   
   $sections = $pattern_details['sections'];
 
+  
   // Ste: Actions_map seems to be used with includes. Probably we do not need it now.
-  $actions_map = array('patterns' => $pattern_details['info'], 'map' => $pattern_details['actions_map']);
+  //$actions_map = array('patterns' => $pattern_details['info'], 'map' => $pattern_details['actions_map']);
 
   // TODO: Patterns details was returning this in case of recursive includes.
   //  $result['actions_map'][] = array(
   //          'pid'   => $pattern->pid,
   //          'index' => $key,
   //        );
-  //$actions_map = array('patterns' => $infos, 'map' => NULL); // Fix this.
+  $actions_map = array('patterns' => $infos, 'map' => NULL); // Fix this.
   ////////////////////////////////////////
 
   
