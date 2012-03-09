@@ -84,10 +84,16 @@ define('PATTERNS_STATUS_INVALID', -1);  // invalid
 define('PATTERNS_STATUS_REMOVED', -5);  // removed
 
 define('PATTERNS_INCLUDE_NEVER', 0);
-define('PATTERNS_INCLUDE_FIRSTRUN', 0);
-define('PATTERNS_INCLUDE_UPDATE', 0);
-define('PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE', 0);
+define('PATTERNS_INCLUDE_FIRSTRUN', 1);
+define('PATTERNS_INCLUDE_UPDATE', 2);
+define('PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE', 3);
+define('PATTERNS_INCLUDE_ALWAYS', 4);
 
+define('PATTERNS_INCLUDE_NEVER_TEXT', 'Never run');
+define('PATTERNS_INCLUDE_FIRSTRUN_TEXT', 'Only during the first run');
+define('PATTERNS_INCLUDE_UPDATE_TEXT', 'Only if pattern was updated');
+define('PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE_TEXT', 'If it is the first run or if the pattern was updated');
+define('PATTERNS_INCLUDE_ALWAYS_TEXT', 'Always');
 
 // Add libraries for performing AJAX calls outside forms
 //drupal_add_library('system', 'drupal.ajax');
@@ -479,12 +485,11 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
     '#element_validate' => array('patterns_mode_validate'),
   );
 
-  $options = array(
-    'first-update' => t('only if disabled or if updated since last run (recommended)'),
-    'always' => t('always'),
-    'update' => t('only if updated since last run'),
-    'first' => t('only if disabled'),
-    'never' => t("don't run sub-patterns at all"),
+  $options = array(PATTERNS_INCLUDE_NEVER => PATTERNS_INCLUDE_NEVER_TEXT,
+                   PATTERNS_INCLUDE_FIRSTRUN => PATTERNS_INCLUDE_FIRSTRUN_TEXT,
+                   PATTERNS_INCLUDE_UPDATE => PATTERNS_INCLUDE_UPDATE_TEXT,
+                   PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE => PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE_TEXT,
+                   PATTERNS_INCLUDE_ALWAYS => PATTERNS_INCLUDE_ALWAYS_TEXT,
   );
 
   $form['run-subpatterns'] = array(
@@ -492,8 +497,7 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
     '#title' => t('Run sub-patterns:'),
     '#description' => t("Decide when to run sub-patterns that are called by the currently run pattern. If unsure, stick to recommended setting. Note that your choice won't have any effect if your pattern doesn't contain sub-patterns or if this setting has been defined within the pattern file itself."),
     '#options' => $options,
-    '#default_value' => 'first-update',
-    '#disabled' => 'true',
+    '#default_value' => variable_get('patterns_default_include_mode', PATTERNS_INCLUDE_NEVER),
   );
 
   $disclaimer = t('Please be sure to backup your site before running a pattern. Patterns are not guaranteed to be reversable in case they do not execute well or if unforseen side effects occur.');

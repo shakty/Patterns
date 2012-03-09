@@ -39,6 +39,7 @@ function patterns_execute_pattern_php($pattern, $params, $patterns_details, $act
   ///////////////////////////////
 
   foreach ($sections as $section => $actions) {
+    $actions = _patterns_parser_retrieve_actions_from_section($actions);
     // Reformat the actions. $actions passed as reference.
     // If includes are found, they are exploded into other actions
     patterns_reformat_actions($actions);

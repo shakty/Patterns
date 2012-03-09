@@ -276,7 +276,7 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
         '#title' => t('Pattern\'s code'),
         '#rows' => 25,
         '#default_value' => $db_content,
-        '#disabled' => TRUE,
+        '#disabled' => 'true',
       );
       
       

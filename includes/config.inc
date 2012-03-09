@@ -61,11 +61,24 @@ function patterns_config_settings($form, &$form_state) {
     '#default_value' => variable_get('patterns_form_helper', FALSE),
   );
   
-   $form['patterns_update_db_from_fs'] = array(
+  $form['patterns_update_db_from_fs'] = array(
     '#type' => 'checkbox',
     '#title' => t('Sync database and file system'),
     '#description' => t('When enabled, patterns in the database will be automatically updated to the latest version found in the file system. If the pattern was already been enabled, it just display a warning, but it does not execute the update.'),
     '#default_value' => variable_get('patterns_update_db_from_fs', TRUE),
+  );
+  
+  $form['patterns_default_include_mode'] = array(
+    '#type' => 'radios',
+    '#title' => t('Included patterns'),
+    '#description' => t('Default behavior with included patterns.'),
+    '#options' =>array(PATTERNS_INCLUDE_NEVER => PATTERNS_INCLUDE_NEVER_TEXT,
+                   PATTERNS_INCLUDE_FIRSTRUN => PATTERNS_INCLUDE_FIRSTRUN_TEXT,
+                   PATTERNS_INCLUDE_UPDATE => PATTERNS_INCLUDE_UPDATE_TEXT,
+                   PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE => PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE_TEXT,
+                   PATTERNS_INCLUDE_ALWAYS => PATTERNS_INCLUDE_ALWAYS_TEXT,
+  ),
+    '#default_value' => variable_get('patterns_default_include_mode', PATTERNS_INCLUDE_NEVER),
   );
   
   /* TODO: Outdated, disabled for now.
@@ -76,8 +89,9 @@ function patterns_config_settings($form, &$form_state) {
     '#default_value' => variable_get('patterns_allow_publish', FALSE),
   );
    */
+  
   // Reload patterns while we are here and ensure the lists are up to date.
-  patterns_get_patterns(TRUE);
+  //patterns_get_patterns(TRUE);
 
   return system_settings_form($form);
 }
