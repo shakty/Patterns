@@ -38,14 +38,20 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
   $modules = $pattern_details['modules'];
   $sections = $pattern_details['sections'];
 
+  $include_options = patterns_parser_build_include_options($pid, $params['run-subpatterns']);
+  
   ///////////////////////////////
   // Looping through the sections
   ///////////////////////////////
   $tot_sec = count($sections);
   $cur_sec = 1;
   foreach ($sections as $section => $actions) {
+    // by default this pattern should run included ?
+    // this setting can be overwritten by the pattern file itself
+     
+    $actions = patterns_parser_retrieve_actions_from_section($actions, $include_options);
+   
     // Reformat the actions. $actions passed as reference.
-    $actions = _patterns_parser_retrieve_actions_from_section($actions);
     patterns_reformat_actions($actions);
 
     $progress_params = array(

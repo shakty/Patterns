@@ -694,7 +694,7 @@ function patterns_parser_validate_xml_pattern($content) {
  * @param array $pattern the pattern to scan
  * 
  */
-function _patterns_parser_retrieve_actions_from_section($section, $mode = PATTERNS_INCLUDE_NEVER) {
+function patterns_parser_retrieve_actions_from_section($section, $options = array()) {
   if (empty($section)) return FALSE;
   
   $actions = array();
@@ -706,8 +706,11 @@ function _patterns_parser_retrieve_actions_from_section($section, $mode = PATTER
       }
       // include
       else {
-          $new_actions =  _patterns_parser_retrieve_actions_from_include($value[PATTERNS_INCLUDE]);
-          $actions = array_merge($actions, $new_actions);
+          $include = $value[PATTERNS_INCLUDE];
+          if (patterns_parser_should_include_local($include, $options)) {
+            $new_actions =  _patterns_parser_retrieve_actions_from_include($include);
+            $actions = array_merge($actions, $new_actions);
+          }
       }
       
     }
@@ -719,21 +722,21 @@ function _patterns_parser_retrieve_actions_from_section($section, $mode = PATTER
  * Returns all the actions from a pattern array. 
  * Sections are not preserved.
  * 
- * @param array $pattern the pattern to scan
- * @param array $sections (not used for now)
+ * @param $include the pattern to scan
+ * @param array $sections include only these sections (not used for now)
  * 
  */
-function _patterns_parser_retrieve_actions_from_include($pattern, $sections = NULL) {
+function _patterns_parser_retrieve_actions_from_include($include, $sections = NULL) {
   $actions = array();
-  if (!isset($pattern['pattern']) || empty($pattern['pattern'])){
+  if (!isset($include['pattern']) || empty($include['pattern'])){
     return $actions;
   }
   
   // Loop through the sections of the included pattern
   // TODO: import only actions from the specified sections
-  foreach ($pattern['pattern'] as $section => $value) {
+  foreach ($include['pattern'] as $section => $value) {
     if (in_array($section, array('info', 'modules'))) continue;
-    $newactions = _patterns_parser_retrieve_actions_from_section($value);
+    $newactions = patterns_parser_retrieve_actions_from_section($value);
     $actions = array_merge($actions, $newactions);
   }
   return $actions;
@@ -758,6 +761,167 @@ function patterns_parser_include_pattern(&$pattern, $include, $mount_point = NUL
   $pattern = array_splice($pattern, $mount_point, $included_actions);
 }
 
-//function patterns_parser_rewrite_with_includes($pattern) {
-//}
+/**
+ * Determines whether an pattern should be included based on the
+ * local configuration (the pattern code itself). 
+ * 
+ * If a pattern id is specified in the associative array $options,
+ * it also takes that into consideration, otherwise uses the default
+ * include settings.
+ * 
+ *  @see patterns_parser_should_include
+ *  @see _patterns_parser_merge_default_include_options
+ */
+function patterns_parser_should_include_local($include, $options = array()) {
+  $options = _patterns_parser_merge_default_include_options($options);
+  
+  if (!empty($include) && isset($include['run'])) {
+    
+     // then we check if something is specified in the pattern file
+    if (patterns_parser_is_valid_include_mode($include['run'])) {
+        $options = array_merge($options, array('mode' => $include['run']));
+        return patterns_parser_should_include(NULL, $options);
+    }
+  }
+  
+  return $options['include'];
+}
 
+/**
+ * Determines if a pattern should be included or not. 
+ * The following conditions are checked in order:
+ * 
+ *  - if a 'run' attribute is associated with the include tag
+ *  - if $mode parameter was passed
+ *  - the default include mode from system variables
+ * 
+ * @param mixed $pattern the including pattern, identified by its id or its name, or
+ *  the full object as loaded from the database. If the including
+ * @param array $include the include tag from a pattern
+ * @param mixed $mode a valid mode for sub-patterns execution
+ * 
+ */
+function patterns_parser_should_include($pattern = NULL, 
+                                        $options = array()
+                                       ){
+    
+  $options = _patterns_parser_merge_default_include_options($options);
+
+  $pattern = $options['pattern'];
+  $updated = $options['updated'];
+  $enabled = $options['enabled'];
+  $verbose = $options['verbose'];
+  $mode    = $options['mode'];
+  
+  // If we set $mode programmatically, that has the highest priority
+  // otherwise fallback on default configuration
+  if (!patterns_parser_is_valid_include_mode($mode)) {
+      $mode = variable_get('patterns_default_include_mode', PATTERNS_INCLUDE_NEVER);
+  }
+
+  // Do we want to include it into a specific pattern?
+  // If so we need to check its status from the database
+  if (!is_null($pattern)) {
+      $p = _patterns_db_get_pattern($pattern);
+      if ($p) {
+        $updated = ($p->enabled >= $p->updated) ? TRUE : FALSE;
+        $enabled = ($p->status === PATTERNS_ENABLED) ? TRUE : FALSE;
+      }
+  }
+  
+  switch ($mode) {
+    case PATTERNS_INCLUDE_ALWAYS:
+      break;
+      
+    case PATTERNS_INCLUDE_FIRSTRUN:
+      // Only run on first run.
+      if ($enabled) {
+        if ($verbose) {
+          drupal_set_message(t('A pattern was not included because the pattern was set to execute only on the first run.'), 'status'); 
+        }
+        return FALSE;
+      }
+      break;
+      
+    case PATTERNS_INCLUDE_UPDATE:
+      // Only run on pattern update.
+      if (!$updated) {
+        if ($verbose) {
+           drupal_set_message(t('A pattern was not included because the pattern was set to execute only on pattern update.'), 'status');
+        }
+        return FALSE;
+      }
+      break;
+      
+    case PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE:
+      // Only run on first run or pattern update.
+      if ($enabled || !$updated) {
+        if ($verbose) {
+          drupal_set_message(t('A pattern was not included because the pattern was set to execute only on first run or update.'), 'status'); 
+        }
+        return FALSE;
+      }
+      break;
+      
+    case PATTERNS_INCLUDE_ATTACHED:
+      if (!is_array($include['pattern'])) {
+        if ($verbose) {
+          drupal_set_message(t('A pattern was not included because lookup in the database is prohibited by the current configuration.'), 'status');
+        }
+        return FALSE;
+      }
+      break;
+      
+    case PATTERNS_INCLUDE_NEVER:
+    default:
+      if ($verbose) {
+        drupal_set_message(t('A pattern was not included because that is forbidden by the current configuration.'), 'status'); 
+      }
+      return FALSE;
+      break;
+  }
+  
+  return TRUE;
+}
+
+function _patterns_parser_merge_default_include_options($options) {
+  $defaults = array('include' => FALSE,
+                    'enabled' => FALSE,
+                    'updated' => FALSE,
+                    'verbose' => FALSE,
+                    'pattern' => NULL,
+                    'mode' => NULL, 
+  );
+                                                              
+  return array_merge($defaults, $options);
+}
+
+/**
+ * Returns TRUE if the passed parameter is a valid flag
+ * to configure Patterns behaviors with the 'include' tag.
+ *  
+ */
+function patterns_parser_is_valid_include_mode($mode = NULL) {
+    if (is_null($mode)) return FALSE;
+    
+    $modes = array( PATTERNS_INCLUDE_NEVER,
+                  PATTERNS_INCLUDE_FIRSTRUN,
+                  PATTERNS_INCLUDE_UPDATE,
+                  PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE,
+                  PATTERNS_INCLUDE_ATTACHED,
+                  PATTERNS_INCLUDE_ALWAYS,
+  );
+  
+  return (in_array($mode, $modes)) ? TRUE : FALSE;
+}
+
+function patterns_parser_build_include_options($pid, $run_mode = NULL) {
+  
+  $run_mode = patterns_get_include_mode($run_mode);
+  $options = array('mode' => $run_mode);
+ 
+  return array('pattern' => $pid,
+               'include' => patterns_parser_should_include($pid, $options), 
+               'mode' => $run_mode,
+  );
+}

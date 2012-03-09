@@ -83,16 +83,18 @@ define('PATTERNS_STATUS_ENABLED', 1);   // installed, enabled
 define('PATTERNS_STATUS_INVALID', -1);  // invalid
 define('PATTERNS_STATUS_REMOVED', -5);  // removed
 
-define('PATTERNS_INCLUDE_NEVER', 0);
-define('PATTERNS_INCLUDE_FIRSTRUN', 1);
-define('PATTERNS_INCLUDE_UPDATE', 2);
-define('PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE', 3);
-define('PATTERNS_INCLUDE_ALWAYS', 4);
+define('PATTERNS_INCLUDE_NEVER', 'never');
+define('PATTERNS_INCLUDE_FIRSTRUN', 'firstrun');
+define('PATTERNS_INCLUDE_UPDATE', 'onupdate');
+define('PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE', 'first_or_up');
+define('PATTERNS_INCLUDE_ATTACHED', 'attached');
+define('PATTERNS_INCLUDE_ALWAYS', 'always');
 
 define('PATTERNS_INCLUDE_NEVER_TEXT', 'Never run');
 define('PATTERNS_INCLUDE_FIRSTRUN_TEXT', 'Only during the first run');
 define('PATTERNS_INCLUDE_UPDATE_TEXT', 'Only if pattern was updated');
 define('PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE_TEXT', 'If it is the first run or if the pattern was updated');
+define('PATTERNS_INCLUDE_ATTACHED_TEXT', 'Only if the pattern code is attached (no lookup to database)');
 define('PATTERNS_INCLUDE_ALWAYS_TEXT', 'Always');
 
 // Add libraries for performing AJAX calls outside forms
@@ -380,13 +382,13 @@ function patterns_list() {
 //    ),
 //  );
 
-    $form['commands']['refresh'] = array(
-      '#type' => 'button',
-      '#value' => 'Refresh All',
-      '#attributes' => array('style' => 'float:right',
-                             'id' => 'refresh-all',
-                             ),
-    );
+  $form['commands']['refresh'] = array(
+    '#type' => 'button',
+    '#value' => 'Refresh All',
+    '#attributes' => array('style' => 'float:right',
+                           'id' => 'refresh-all',
+                           ),
+  );
 
   $form['commands']['create'] = array(
     '#type' => 'button',
@@ -489,6 +491,7 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
                    PATTERNS_INCLUDE_FIRSTRUN => PATTERNS_INCLUDE_FIRSTRUN_TEXT,
                    PATTERNS_INCLUDE_UPDATE => PATTERNS_INCLUDE_UPDATE_TEXT,
                    PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE => PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE_TEXT,
+                   PATTERNS_INCLUDE_ATTACHED => PATTERNS_INCLUDE_ATTACHED_TEXT,
                    PATTERNS_INCLUDE_ALWAYS => PATTERNS_INCLUDE_ALWAYS_TEXT,
   );
 
@@ -497,7 +500,7 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
     '#title' => t('Run sub-patterns:'),
     '#description' => t("Decide when to run sub-patterns that are called by the currently run pattern. If unsure, stick to recommended setting. Note that your choice won't have any effect if your pattern doesn't contain sub-patterns or if this setting has been defined within the pattern file itself."),
     '#options' => $options,
-    '#default_value' => variable_get('patterns_default_include_mode', PATTERNS_INCLUDE_NEVER),
+    '#default_value' => patterns_get_include_mode(),
   );
 
   $disclaimer = t('Please be sure to backup your site before running a pattern. Patterns are not guaranteed to be reversable in case they do not execute well or if unforseen side effects occur.');
@@ -891,4 +894,25 @@ function patterns_get_pattern_obj($pattern = array()) {
  * @TODO patterns_refresh().
  */
 function patterns_refresh() {
+}
+
+/**
+ * Returns the current option for included patterns, as it is in 
+ * the database. If the option stored in the database is not valid,
+ * by default patterns' inclusion is disabled.
+ *  
+ */
+function patterns_get_include_mode($mode = NULL) {
+  if (!is_null($mode)) {
+    if (patterns_parser_is_valid_include_mode($mode)) {
+      return $mode;
+    }
+  }
+  
+  $mode = variable_get('patterns_default_include_mode', PATTERNS_INCLUDE_NEVER);
+  if (!patterns_parser_is_valid_include_mode($mode)) {
+    $mode = PATTERNS_INCLUDE_NEVER;
+  }
+  
+  return $mode;
 }
