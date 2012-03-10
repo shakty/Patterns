@@ -773,17 +773,32 @@ function patterns_parser_include_pattern(&$pattern, $include, $mount_point = NUL
  *  @see _patterns_parser_merge_default_include_options
  */
 function patterns_parser_should_include_local($include, $options = array()) {
+  // ATTACHED
   $options = _patterns_parser_merge_default_include_options($options);
-  
-  if (!empty($include) && isset($include['run'])) {
+  if ($options['mode'] === PATTERNS_INCLUDE_ATTACHED) {
+    if (!is_array($include['pattern'])) {
+      if ($verbose) {
+        drupal_set_message(t('A pattern was not included because lookup in the database is prohibited by the current configuration.'), 'status');
+      }
+      return FALSE;
+    }
+  }
+  // OTHER MODES
+  else if (!empty($include) && isset($include['run'])) {
     
      // then we check if something is specified in the pattern file
     if (patterns_parser_is_valid_include_mode($include['run'])) {
-        $options = array_merge($options, array('mode' => $include['run']));
-        return patterns_parser_should_include(NULL, $options);
+      if ($include['run'] === PATTERNS_INCLUDE_ATTACHED) {
+        return patterns_parser_should_include_local($include, array('mode' => PATTERNS_INCLUDE_ATTACHED));
+      }
+        
+      $options = array_merge($options, array('mode' => $include['run']));
+      return patterns_parser_should_include(NULL, $options);
+      
     }
   }
   
+  // RETURN GLOBAL OPTION IF WE COULD NOT DO BETTER
   return $options['include'];
 }
 
@@ -807,7 +822,7 @@ function patterns_parser_should_include($pattern = NULL,
     
   $options = _patterns_parser_merge_default_include_options($options);
 
-  $pattern = $options['pattern'];
+  $pattern = is_null($pattern) ? $options['pattern'] : $pattern;
   $updated = $options['updated'];
   $enabled = $options['enabled'];
   $verbose = $options['verbose'];
@@ -824,13 +839,17 @@ function patterns_parser_should_include($pattern = NULL,
   if (!is_null($pattern)) {
       $p = _patterns_db_get_pattern($pattern);
       if ($p) {
-        $updated = ($p->enabled >= $p->updated) ? TRUE : FALSE;
-        $enabled = ($p->status === PATTERNS_ENABLED) ? TRUE : FALSE;
+        $updated = ($p->updated >= $p->enabled) ? TRUE : FALSE;
+        $enabled = ($p->status == PATTERNS_STATUS_ENABLED) ? TRUE : FALSE;
       }
   }
   
   switch ($mode) {
     case PATTERNS_INCLUDE_ALWAYS:
+      break;
+      
+    case PATTERNS_INCLUDE_ATTACHED:
+      // This option is checked by patterns_parser_should_include_local
       break;
       
     case PATTERNS_INCLUDE_FIRSTRUN:
@@ -855,18 +874,9 @@ function patterns_parser_should_include($pattern = NULL,
       
     case PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE:
       // Only run on first run or pattern update.
-      if ($enabled || !$updated) {
+      if (!$enabled || !$updated) {
         if ($verbose) {
           drupal_set_message(t('A pattern was not included because the pattern was set to execute only on first run or update.'), 'status'); 
-        }
-        return FALSE;
-      }
-      break;
-      
-    case PATTERNS_INCLUDE_ATTACHED:
-      if (!is_array($include['pattern'])) {
-        if ($verbose) {
-          drupal_set_message(t('A pattern was not included because lookup in the database is prohibited by the current configuration.'), 'status');
         }
         return FALSE;
       }

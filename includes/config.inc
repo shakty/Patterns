@@ -71,7 +71,7 @@ function patterns_config_settings($form, &$form_state) {
   $form['patterns_default_include_mode'] = array(
     '#type' => 'radios',
     '#title' => t('Included patterns'),
-    '#description' => t('Default behavior with included patterns.'),
+    '#description' => t('Default behavior with included patterns. This option can be overwritten inside the pattern code.'),
     '#options' => array(PATTERNS_INCLUDE_NEVER => PATTERNS_INCLUDE_NEVER_TEXT,
                    PATTERNS_INCLUDE_FIRSTRUN => PATTERNS_INCLUDE_FIRSTRUN_TEXT,
                    PATTERNS_INCLUDE_UPDATE => PATTERNS_INCLUDE_UPDATE_TEXT,
