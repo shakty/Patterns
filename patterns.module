@@ -459,12 +459,20 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
     '#value' => $pid,
   );
 
+  $form['options'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Options'),
+    // Make the fieldset collapsible.
+    '#collapsible' => TRUE, // Added
+    '#collapsed' => TRUE,  // Added
+  );
+  
   $options_mode = array(
     'extend' => 'Extend',
     'runover' => 'Run-Over',
   );
 
-  $form['execution'] = array(
+  $form['options']['execution'] = array(
     '#type' => 'radios',
     '#title' => t('Execution mode:'),
     '#description' => t('Extend mode can only add new feature to your web-site, Run-over can also delete. At the moment \'Extend\' is the only mode permitted.'),
@@ -478,7 +486,7 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
     'php' => 'PHP',
   );
 
-  $form['mode'] = array(
+  $form['options']['mode'] = array(
     '#type' => 'radios',
     '#title' => t('Running mode:'),
     '#description' => t('Batch mode uses the Batch API provided by Drupal thus providing intermediate feedback about the progress. PHP will only return when every action has been processed (or there has been an error), which is easier to debug.'),
@@ -495,7 +503,7 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
                    PATTERNS_INCLUDE_ALWAYS => PATTERNS_INCLUDE_ALWAYS_TEXT,
   );
 
-  $form['run-subpatterns'] = array(
+  $form['options']['run-subpatterns'] = array(
     '#type' => 'radios',
     '#title' => t('Run sub-patterns:'),
     '#description' => t("Decide when to run sub-patterns that are called by the currently run pattern. If unsure, stick to recommended setting. Note that your choice won't have any effect if your pattern doesn't contain sub-patterns or if this setting has been defined within the pattern file itself."),

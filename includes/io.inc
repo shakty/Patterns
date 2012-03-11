@@ -350,7 +350,7 @@ function patterns_io_scan_directories() {
   }
 
   if (!empty($messages['invalid'])) {
-    drupal_set_message(t('Some invalid patterns were found: ') . '<br/>' . implode('<br/>', $messages['invalid']) . '<br/>' . t('Make sure that above file(s) are readable and contain valid data.') . '<br/><br/>', 'warning');
+    drupal_set_message(t('Some invalid patterns were found: ') . '<br/>' . implode('<br/>', $messages['invalid']) . '<br/><br/>', 'warning');
   }
   if (!empty($messages['skipped'])) {
     drupal_set_message(t('Patterns that are already enabled are not updated against changes in the file systems. Please verify the following ones: ') . '<br/>' . implode('<br/>', $messages['skipped']) . '<br/><br/>', 'warning');
