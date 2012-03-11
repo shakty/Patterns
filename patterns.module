@@ -876,3 +876,30 @@ function patterns_get_include_mode($mode = NULL) {
   
   return $mode;
 }
+
+
+/**
+ * Extract all the values of the modules tag from a pattern and
+ * returns them as an array.
+ * 
+ * If succesfull returns the array of installed modules, FALSE
+ * otherwise.
+ * 
+ * @param mixed $pattern A pattern object, an array representing
+ *  the pattern object, a numeric id or alphanumeric name of 
+ *  the pattern as it is in the database. Array is the only input 
+ *  that does not get further converted.
+ * 
+ */
+function patterns_install_modules_in_pattern($pattern) {
+  $pattern = _patterns_db_get_pattern_array($pattern);
+  if (!$pattern) return FALSE;
+  
+  $modules = patterns_parser_extract_modules($pattern);
+  $results = patterns_install_modules($modules);
+  if (!$results['success']) { // TODO: handle properly.
+    drupal_set_message($results['error_message'], 'error');
+    return FALSE;
+  }
+  return $modules;
+}

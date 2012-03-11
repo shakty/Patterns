@@ -528,48 +528,6 @@ function patterns_parser_get_pattern_details($pattern, $recursive = FALSE, &$pid
           continue;
         }
 
-        // Decide if sub-pattern needs to be run based on the mode defined within the pattern or selected in UI at the time of form submission
-        // @TODO: UI setting should be able to override a setting defined within the pattern
-        $modes = array('first-update', 'always', 'update', 'first', 'never');
-        if (!empty($action['run']) && in_array($action['run'], $modes)) {
-          $mode = $action['run'];
-        }
-        else {
-          $mode = $pattern->subpatterns_run_mode;
-        }
-
-        switch ($mode) {
-          case 'never':
-            // Don't run sub-pattern.
-            drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to be skipped.', array('%key' => $key + 1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
-            continue 2;
-            break;
-          case 'first':
-            // Only run on first run.
-            if ($p->status) {
-              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on the first run.', array('%key' => $key + 1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
-              continue 2;
-            }
-            break;
-          case 'update':
-            // Only run on pattern update.
-            if ($p->enabled >= $p->updated) {
-              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on pattern update.', array('%key' => $key + 1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
-              continue 2;
-            }
-            break;
-          case 'first-update':
-            // Only run on first run or pattern update.
-            if ($p->status && $p->enabled >= $p->updated) {
-              drupal_set_message(t('Action #%key in %file: Pattern %pattern not ran because the pattern was set to execute only on first run or update.', array('%key' => $key + 1, '%file' => $pattern->title, '%pattern' => $name)), 'status');
-              continue 2;
-            }
-            break;
-          case 'always':
-          default:
-            // Run always.
-            break;
-        }
 
         $a = patterns_parser_get_pattern_details($p, TRUE, $pids);
         if ($a === FALSE) { // TODO: error handling
@@ -709,8 +667,10 @@ function patterns_parser_retrieve_actions_from_section($section, $options = arra
       else {
           $include = $value[PATTERNS_INCLUDE];
           if (patterns_parser_should_include_local($include, $options)) {
-            $new_actions =  _patterns_parser_retrieve_actions_from_include($include, $options);
-            $actions = array_merge($actions, $new_actions);
+            // $actions is passed as reference
+            patterns_parser_include_pattern($actions, $include, $options);
+//            $new_actions =  _patterns_parser_retrieve_actions_from_include($include, $options);
+//            $actions = array_merge($actions, $new_actions);
           }
       }
       
@@ -748,22 +708,29 @@ function _patterns_parser_retrieve_actions_from_include($include, $options, $sec
 }
 
 /**
- * Inserts the action of a pattern into another one. 
- * Sections are not preserved.
+ * Inserts the actions of a pattern into another one. 
+ * Sections of the included patterns are not preserved, and all its actions
+ * are appended at the end of the first parameter
  * 
- * @param array $pattern the including pattern
+ * @param array $actions the including pattern, or a subset of actions of it
  * @param array $include the included pattern
- * @param mixed $mount_point the ordinal index where to insert the actions
- * @param array $sections (not used for now)
+ * @param array $options the include options for nested patterns included 
+ *  in the included patterns.
+ * @param array $sections array containing the name of the sections,
+ *  from which extract the actions. If NULL, all the sections will be 
+ *  scanned.
+ * 
  */
-function patterns_parser_include_pattern(&$pattern, $include, $mount_point = NULL, $sections = NULL) {
-  if (empty($pattern)) return FALSE;
-  if (empty($include)) return FALSE;
-  if (empty($include['pattern'])) return FALSE;
-  if (empty($mount_point)) $mount_point = count($pattern); 
+function patterns_parser_include_pattern(&$actions, $include, $options = array(), $sections) {
+  if (empty($include)) return $actions;
   
-  $included_actions = _patterns_retrieve_actions_included_from_pattern($include); 
-  $pattern = array_splice($pattern, $mount_point, $included_actions);
+  if (!patterns_install_modules_in_pattern($include)) {
+    drupal_set_messaget(t('Failed to load the necessary modules for the included pattern. Its actions will not be executed.'));
+    return $actions;
+  }
+  // Success
+  $new_actions = patterns_parser_extract_all_actions($include, $options); 
+  $actions = array_merge($actions, $new_actions);
 }
 
 /**
@@ -967,4 +934,18 @@ function patterns_parser_extract_all_actions($pattern, $options, $sections = NUL
   }
   
   return $actions;
+}
+
+/**
+ * Extract all the values of the modules tag from a pattern and
+ * returns them as an array.
+ * 
+ */
+function patterns_parser_extract_modules($pattern) {
+  $modules = array();
+  if (!empty($pattern) && isset($pattern['modules'])) {   
+    $modules = (!is_array($pattern['modules'])) ? array($modules) 
+                                                : $pattern['modules'];  
+  }
+  return $modules;
 }

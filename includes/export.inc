@@ -9,6 +9,7 @@ function patterns_export($form, &$form_state) {
   $header = array(
     'category' => array('data' => t('category'), 'field' => 'n.category', 'sort' => 'asc'),
     'name' => array('data' => 'name', 'field' => 'n.name'),
+    'title' => array('data' => 'title', 'field' => 'n.title'),
     'status' => array('data' => 'status', 'field' => 'n.status'),
     'author' => array('data' => 'author', 'field' => 'n.author'),
     'version' => array('data' => 'version', 'field' => 'n.version'),
@@ -23,19 +24,22 @@ function patterns_export($form, &$form_state) {
   foreach ($patterns as $pid => $pattern) {
     $pattern_code = unserialize($pattern->pattern);
     $category = @$pattern_code['info']['category'] ? @$pattern_code['info']['category'] : t('Other');
-    $name = $pattern->title;
+    $title = @$pattern_code['info']['title'];
+    $name = $pattern->name;
     $status = (@$pattern->status) ? t('Enabled') : t('Disabled');
     $author = @$pattern_code['info']['author'];
     $version = @$pattern_code['info']['version'];
     $description = t(@$pattern->description);
     $row = array(
-    'category' => $category,
-    'name' => $name,
-    'status' => $status,
-    'author' => $author,
-    'version' => $version,
-    'description' => $description);
-    $rows[$pid-1] = $row; // want to avoid one
+      'category'    => $category,
+      'name'        => $name,
+      'title'       => empty($title) ? '-' : $title,
+      'status'      => $status,
+      'author'      => empty($author) ? '-' : $author,
+      'version'     => empty($version) ? '-' : $version,
+      'description' => empty($description) ? '-' : 'No description', 
+    );  
+    $rows[$pid+1] = $row; // somehow we get (pid -1) in the submit handler 
   }
   
   $form['patterns'] = array(
@@ -99,25 +103,20 @@ function patterns_export($form, &$form_state) {
  * @param $form_state
  */
 function patterns_export_validate($form, &$form_state) {
-  
   if (!isset($form_state['values']['patterns_table'])) {
-    drupal_set_message(t('An error has occurred'), 'error');
-    return FALSE;
+    form_set_error('patterns_table', t('An error has occurred'));
   }
   
-  if (count($form_state['values']['patterns_table']) === 0) {
-    drupal_set_message(t('No pattern selected to export.'), 'error');
-    return FALSE;
+  if (array_sum($form_state['values']['patterns_table']) === 0) {
+    form_set_error('patterns_table', t('No pattern selected to export.'));
   }
 
   if (!isset($form_state['values']['mode']) || !patterns_export_is_valid_export_mode($form_state['values']['mode'])) {
-    drupal_set_message(t('Please select a valid export mode option'), 'error');
-    return FALSE;
+    form_set_error('mode', t('Please select a valid export mode option'));
   }
   
   if (!isset($form_state['values']['to'])) {
-    drupal_set_message(t('Please select a valid action for the export'), 'error');
-    return FALSE;
+    form_set_error('to', t('Please select a valid action for the export'));
   }
   
   if ($form_state['values']['to'] === PATTERNS_EXPORT_TO_DB) {
@@ -126,7 +125,7 @@ function patterns_export_validate($form, &$form_state) {
   else if (empty($form_state['values']['export_name'])) {
     $form_state['values']['export_name'] = 'exported_pattern';
   }
-
+  
   return TRUE;
 }
 
