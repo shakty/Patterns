@@ -668,7 +668,7 @@ function patterns_parser_retrieve_actions_from_section($section, $options = arra
           $include = $value[PATTERNS_INCLUDE];
           if (patterns_parser_should_include_local($include, $options)) {
             // $actions is passed as reference
-            patterns_parser_include_pattern($actions, $include, $options);
+            patterns_parser_include_pattern($actions, $include['pattern'], $options);
 //            $new_actions =  _patterns_parser_retrieve_actions_from_include($include, $options);
 //            $actions = array_merge($actions, $new_actions);
           }
@@ -721,11 +721,10 @@ function _patterns_parser_retrieve_actions_from_include($include, $options, $sec
  *  scanned.
  * 
  */
-function patterns_parser_include_pattern(&$actions, $include, $options = array(), $sections) {
+function patterns_parser_include_pattern(&$actions, $include, $options = array(), $sections = NULL) {
   if (empty($include)) return $actions;
-  
   if (!patterns_install_modules_in_pattern($include)) {
-    drupal_set_messaget(t('Failed to load the necessary modules for the included pattern. Its actions will not be executed.'));
+    drupal_set_message(t('Failed to load the necessary modules for the included pattern. Its actions will not be executed.'));
     return $actions;
   }
   // Success
