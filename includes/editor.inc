@@ -156,7 +156,7 @@ function patterns_editor_create_page($pid = NULL) {
   return $out;
 }
 
-/*
+/**
  * Display the page for editing a pattern.
  */
 function patterns_edit_page($pid = NULL) {

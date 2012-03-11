@@ -50,72 +50,20 @@
  *
  */
 
+module_load_include('inc', 'patterns', 'includes/variables');
 module_load_include('inc', 'patterns', 'includes/config');
+module_load_include('inc', 'patterns', 'includes/utils');
 module_load_include('inc', 'patterns', 'includes/db');
 module_load_include('inc', 'patterns', 'includes/error');
 module_load_include('inc', 'patterns', 'includes/export');
 module_load_include('inc', 'patterns', 'includes/io');
 module_load_include('inc', 'patterns', 'includes/parser');
-module_load_include('inc', 'patterns', 'includes/utils');
 module_load_include('inc', 'patterns', 'includes/editor');
-module_load_include('inc', 'patterns', 'includes/imports');
+module_load_include('inc', 'patterns', 'includes/import');
 module_load_include('inc', 'patterns', 'includes/theme');
 
-// Not used for now.
+// TODO: Check
 module_load_include('inc', 'patterns', 'includes/servers');
-module_load_include('inc', 'patterns', 'includes/theme');
-
-define('PATTERNS_SUCCESS', 1);
-define('PATTERNS_WARN', 0);
-define('PATTERNS_ERR', -1);
-
-define('PATTERNS_CREATE', 'create');
-define('PATTERNS_MODIFY', 'modify');
-define('PATTERNS_DELETE', 'delete');
-define('PATTERNS_INCLUDE', 'include');
-
-define('PATTERNS_FILES', 'files');
-define('PATTERNS_INFO', 'descr');
-
-
-define('PATTERNS_STATUS_OK', 0);        // installed, not enabled
-define('PATTERNS_STATUS_ENABLED', 1);   // installed, enabled
-define('PATTERNS_STATUS_INVALID', -1);  // invalid
-define('PATTERNS_STATUS_REMOVED', -5);  // removed
-
-define('PATTERNS_INCLUDE_NEVER', 'never');
-define('PATTERNS_INCLUDE_FIRSTRUN', 'firstrun');
-define('PATTERNS_INCLUDE_UPDATE', 'onupdate');
-define('PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE', 'first_or_up');
-define('PATTERNS_INCLUDE_ATTACHED', 'attached');
-define('PATTERNS_INCLUDE_ALWAYS', 'always');
-
-define('PATTERNS_INCLUDE_NEVER_TEXT', 'Never run');
-define('PATTERNS_INCLUDE_FIRSTRUN_TEXT', 'Only during the first run');
-define('PATTERNS_INCLUDE_UPDATE_TEXT', 'Only if pattern was updated');
-define('PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE_TEXT', 'If it is the first run or if the pattern was updated');
-define('PATTERNS_INCLUDE_ATTACHED_TEXT', 'Only if the pattern code is attached (no lookup to database)');
-define('PATTERNS_INCLUDE_ALWAYS_TEXT', 'Always');
-
-define('PATTERNS_EXPORT_TO_FILE', 'file');
-define('PATTERNS_EXPORT_TO_DB', 'database');
-define('PATTERNS_EXPORT_TO_ZIP', 'zip');
-
-define('PATTERNS_EXPORT_TO_FILE_TEXT', 'Download as a pattern file');
-define('PATTERNS_EXPORT_TO_DB_TEXT', 'Import into the database');
-define('PATTERNS_EXPORT_TO_ZIP_TEXT', 'Download as a zip-archive');
-
-
-define('PATTERNS_EXPORT_MODE_FULL', 'full');
-define('PATTERNS_EXPORT_MODE_ACTIONS', 'actions');
-define('PATTERNS_EXPORT_MODE_ID', 'id');
-define('PATTERNS_EXPORT_MODE_NAME', 'name');
-
-define('PATTERNS_EXPORT_MODE_FULL_TEXT', 'All the sections (info and modules included) of the pattern');
-define('PATTERNS_EXPORT_MODE_ACTIONS_TEXT', 'Actions only (info and modules sections excluded) of the pattern');
-define('PATTERNS_EXPORT_MODE_ID_TEXT', 'The numerical id of the pattern');
-define('PATTERNS_EXPORT_MODE_NAME_TEXT', 'The unique name of the pattern');
-
 
 // Add libraries for performing AJAX calls outside forms
 //drupal_add_library('system', 'drupal.ajax');
@@ -124,20 +72,14 @@ define('PATTERNS_EXPORT_MODE_NAME_TEXT', 'The unique name of the pattern');
 
 /**
  * @todo:
- * @ Load (some) of the includes only when really needed
- * @ When you modify a pattern you always need to reload the main pattern page, so it noticed that the pattern is actually changed. In confirm form it is too late.
- * @ Enable pattern configurations
  * @ Enable components to analyze the current pattern for better validation
  * @ Allow module version restricting
  * @ Put in functionality to auto-download modules (and the correct version)
  * @ Enable backups before running patterns and reverting back to those backups
  * @ Implement a progress meter
  * @ Enable interactive actions by allowing patterns to resume from a saved position
- * @ Implement an export feature for all available form_ids
  * @ Allow resuming failed patterns
- * @ In the pattern details, list any sub-patterns directly on the patterns listing page
  * @ Create a Pattern class (?) check performance
- * @ Increase performaces, it seems still slow.
  */
 
 
