@@ -283,11 +283,16 @@ function patterns_load_components() {
  * Scan directories looking for patterns files.
  *
  * Checks inside the directories defined by patterns_config_get_paths().
- * @see patterns_config_get_paths()
  *
- * @return array The array of found patterns.
+ * @param boolean $verbose if TRUE, displays on the screen information
+ *   about the scan.
+ *
+ * @see patterns_config_get_paths()
+ * @see patterns_io_analyze_scandir_messages()
+ *
+ * @return array An associative array of informative messages
  */
-function patterns_io_scan_directories() {
+function patterns_io_scan_directories($verbose = FALSE) {
   
   $existing = patterns_db_get_patterns_array('name', TRUE);    
   // Patterns already enabled won't be updated in the database
@@ -378,7 +383,24 @@ function patterns_io_scan_directories() {
       
     }
   }
+  
+  variable_set('patterns_loaded', time());
+  if ($verbose) {
+    _patterns_io_analyze_scandir_messages($messages);
+  }
+  return $messages;
+}
 
+/**
+ * Analyzes the result of the patterns directories scan and 
+ * displays relevant Drupal messages to the user.  
+ * 
+ * @see patterns_io_scan_directories
+ * 
+ */
+function _patterns_io_analyze_scandir_messages($messages = NULL) {
+  if (is_null($messages)) return;
+  
   if (!empty($messages['found'])) {
     drupal_set_message(t('New patterns were found and added to the database: ') . '<br/>' . implode('<br/>', $messages['found']) . '<br/><br/>');
   }
@@ -401,7 +423,6 @@ function patterns_io_scan_directories() {
     drupal_set_message(t('A newer version of the following pattern was found, but could not be saved in the database: ') . '<br/>' . implode('<br/>', $messages['error_found']) . '<br/><br/>', 'warning');
   }
   
-  variable_set('patterns_loaded', time());
 }
 
 /**
@@ -416,11 +437,11 @@ function patterns_io_scan_directories() {
  *
  * @return array The array of available patterns.
  */
-function patterns_get_patterns($reset = TRUE) {
+function patterns_get_patterns($reset = TRUE, $verbose = TRUE) {
 
   if ($reset || !variable_get('patterns_loaded', FALSE)) {
     // Updates the patterns in the database   
-    patterns_io_scan_directories();
+   patterns_io_scan_directories($verbose); 
   }
   
   // Get all the patterns from the database
