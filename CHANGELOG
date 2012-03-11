@@ -1,3 +1,14 @@
+7019:
+
+		- Improved interface
+		- Export page can export to the database
+		- Several code cleanup
+
+7018:
+
+		- patterns can be 'included'
+		- a set of 'include' options provided
+
 7017:
 
     - patterns DB include empowered. New api for loading patterns added.

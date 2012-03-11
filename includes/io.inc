@@ -487,49 +487,41 @@ function _patterns_io_is_patterns_dir_ready($patterns_files_dir = '', $flag = FI
  * @TODO: Move $format as an element of pattern, a column in the DB.
  *
  */
-function patterns_io_save_pattern($content, $name, $format = 'yaml', $dir = NULL) {
+function patterns_io_save_pattern($content = NULL, $name = NULL, $format = 'yaml', $dir = NULL) {
 
+  if (is_null($name)) {
+    drupal_set_message(t('Cannot save pattern with \'NULL\' identifier.'), 'error');
+    return FALSE;
+  }
   if (!patterns_validate_pattern($content)) {
     drupal_set_message(t("Pattern '%name' could not be saved. Make sure edited code is well-formed.", array('%name' => $name)), 'error');
     return FALSE;
   }
-
-  if (empty($dir)) {
-    // System Patterns directory.
+  if (is_null($dir)) {
     $dir = patterns_config_get_files_dir();
   }
-
-  if (file_prepare_directory($dir, FILE_CREATE_DIRECTORY)) {
-    $path =  $dir . '/' . $name . '.' . $format;
-
-    if (file_unmanaged_save_data($content, $path, FILE_EXISTS_REPLACE)) {
-
-      // Load and save pattern.
-      $load_func = 'patterns_load_' . $format;
-
-      if ($pattern = $load_func($path)) {
-        patterns_db_save_pattern($pattern, $path, $name);
-        drupal_set_message(t('Pattern %name was saved in %path.', array('%name' => $name,
-                                                                        '%path' => $path,
-        )));
-        // Not for now.
-        //_patterns_clear_failed_edit();
-      }
-      else {
-        drupal_set_message(t("Pattern '%name' could not be saved into the database. Make sure edited code is well-formed.", array('%name' => $name)), 'error');
-        return FALSE;
-      }
-    }
-    else {
-      drupal_set_message(t('Error: file could not be saved.'), 'error');
-      return FALSE;
-    }
-  }
-  else {
+  if (!file_prepare_directory($dir, FILE_CREATE_DIRECTORY)) {
     drupal_set_message(t('Error: the pattern is not writable. Please check the file system permissions.'), 'error');
     return FALSE;
   }
+  $path =  $dir . '/' . $name . '.' . $format;
+  if (!file_unmanaged_save_data($content, $path, FILE_EXISTS_REPLACE)) {
+    drupal_set_message(t('Error: file could not be saved.'), 'error');
+    return FALSE;
+  }
 
+  // Load and save pattern.
+  $load_func = 'patterns_load_' . $format;
+  $pattern = $load_func($path);
+  if (!$pattern) {
+    drupal_set_message(t("Pattern '%name' could not be saved into the database. Make sure edited code is well-formed.", array('%name' => $name)), 'error');
+    return FALSE;
+  }
+  
+  patterns_db_save_pattern($pattern, $path, $name);
+  drupal_set_message(t('Pattern %name was saved in %path.', array('%name' => $name,
+                                                                  '%path' => $path,
+  )));
 
   return TRUE;
 }

@@ -696,3 +696,29 @@ function _patterns_imports_check_name($name = '') {
   return FALSE;
  }
 }
+
+/**
+ * Creates a miniminal form_state object to import a pattern into the database.
+ * 
+ * Returns FALSE if $name or $pattern are missing.
+ * 
+ * @param mixed $name the name of the pattern
+ * @param mixed $pattern the pattern code as string or array. If array gets 
+ *  converted to string
+ * @param mixed $dest the folder in the file system where the pattern will be
+ *  saved. If empty it uses the default patterns files directory.
+ */
+function patterns_import_build_import_form_state($name = NULL, $pattern = NULL, $dest = NULL) {
+  if (is_null($name) || is_null($pattern)) return FALSE;
+  if (is_null($dest)) {
+    $dest = patterns_config_get_files_dir();
+  }
+  
+  $form = array();
+  $form['values'] = array();
+  $form['values']['name']         = $name;
+  $form['values']['content']      = $pattern;
+  $form['values']['destination']  = $dest;
+  return $form;
+}
+

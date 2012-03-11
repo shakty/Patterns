@@ -463,8 +463,8 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
     '#type' => 'fieldset',
     '#title' => t('Options'),
     // Make the fieldset collapsible.
-    '#collapsible' => TRUE, // Added
-    '#collapsed' => TRUE,  // Added
+    '#collapsible' => TRUE, 
+    '#collapsed' => TRUE,  
   );
   
   $options_mode = array(

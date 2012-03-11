@@ -78,7 +78,10 @@ function theme_patterns_list($args) {
 
 //  print_r($args);
 //  exit;
-//
+
+  drupal_add_js('misc/collapse.js');
+  drupal_add_js('misc/drupal.js');
+  
   $patterns = $args[PATTERNS_STATUS_OK];
   $removed = $args[PATTERNS_STATUS_REMOVED];
 
@@ -110,7 +113,7 @@ function theme_patterns_list($args) {
         '#type' => 'fieldset',
         '#title' => t($category),
         '#collapsible' => TRUE,
-        '#collapsed' => FALSE,
+        '#collapsed' => FALSE,  
         '#theme' => 'patterns_patterns_fieldset',
         '#header' => array(
           array('data' => t('Enabled'), 'class' => array('checkbox')),
@@ -145,7 +148,7 @@ function theme_patterns_list($args) {
         '#type' => 'fieldset',
         '#title' => t($category),
         '#collapsible' => TRUE,
-        '#collapsed' => FALSE,
+        '#collapsed' => FALSE, 
         '#theme' => 'patterns_patterns_fieldset',
         '#header' => array(
           array('data' => t('Enabled'), 'class' => array('checkbox')),
@@ -200,13 +203,6 @@ function theme_patterns_patterns_fieldset($variables) {
     $row[] = drupal_render($pattern['version']);
     // Add the description, along with any modules it requires.
     $description = drupal_render($pattern['description']);
-
-    if ($pattern['#requires']) {
-      $description .= '<div class="admin-requirements">' . t('Requires: !module-list', array('!module-list' => implode(', ', $pattern['#requires']))) . '</div>';
-    }
-    if ($pattern['#required_by']) {
-      $description .= '<div class="admin-requirements">' . t('Required by: !module-list', array('!module-list' => implode(', ', $pattern['#required_by']))) . '</div>';
-    }
 
     $row[] = array('data' => $description, 'class' => array('description'));
 
