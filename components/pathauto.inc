@@ -7,19 +7,19 @@ function pathauto_patterns() {
   $files = array('sites/all/modules/pathauto/pathauto.admin.inc','modules/path/path.admin.inc');
 
   $actions['pathauto'] = array(
-    'descr' => t('Setting pathauto'),
+    PATTERNS_INFO => t('Setting pathauto'),
     PATTERNS_MODIFY => array('pathauto_settings_form'),
     PATTERNS_FILES => $files,
   );
   $actions['url_alias'] = array(
-    'descr' => t('create/edit/delit url aliases'),
+    PATTERNS_INFO => t('Create/Edit/Delete URL aliases'),
     PATTERNS_CREATE => array('path_admin_form'),
     PATTERNS_MODIFY => array('path_admin_form'),
     PATTERNS_DELETE => array('path_admin_delete_confirm'),
     PATTERNS_FILES => $files,
   );
   $actions['pathauto_patterns'] = array(
-    'descr' => t('setting patterns for auto URLs aliases'),
+    PATTERNS_INFO => t('setting patterns for auto URLs aliases'),
     PATTERNS_MODIFY => array('pathauto_patterns_form', 'pathauto_bulk_update_form'),
     PATTERNS_FILES => $files,
   );
@@ -30,8 +30,8 @@ function pathauto_patterns() {
 
 function pathauto_patterns_actions() {
   return array(
-    'pathauto_admin_form' => t('Pathauto: Create/edit url aliases'),
-    'path_admin_delete_confirm' => t('Pathauto: Delit url aliases'),
+    'pathauto_admin_form' => t('Pathauto: Create/Edit URL aliases'),
+    'path_admin_delete_confirm' => t('Pathauto: Delete URL aliases'),
     'pathauto_settings_form' => t('Pathauto: Configure pathauto settings'),
     'pathauto_patterns_form' => t('Pathauto: Configure patterns settings for auto URLs aliases'),
     'pathauto_bulk_update_form' => t('Pathauto: Generate URL aliases according to patterns settings'),

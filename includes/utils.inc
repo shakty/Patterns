@@ -151,7 +151,7 @@ function patterns_modules_page($pid) {
   }
 
   if ($not_available) {
-    drupal_set_message(t('Some modules are not availalble, please download them before running this pattern.'), 'error');
+    drupal_set_message(t('Some modules are not available, please download them before running this pattern.'), 'error');
   }
   else {
     drupal_set_message(t('All modules required by this module are available. Click !here to run this pattern.', array('!here' => l(t('here'), 'admin/patterns/enable/' . $pid))));

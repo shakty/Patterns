@@ -198,19 +198,19 @@ function patterns_export_submit($form, &$form_state) {
     $zip->close();
     $zip_path = $path . $zip_filename;
     if (!is_readable($zip_path)) {
-      drupal_set_message("An error occured: " . $zip_path . " isn't readable.", 'error'); // TODO: t()
+      drupal_set_message("An error occurred: " . $zip_path . " isn't readable.", 'error'); // TODO: t()
     }
     else {
       drupal_add_http_header("Content-type", "application/octet-stream");
       drupal_add_http_header("Content-Disposition", "attachment;filename=" . $zip_path);
       $err = @readfile($zip_path);
       if ($err == FALSE) {
-        drupal_set_message("An error occured: couldn't read " . $zip_path . ".", 'error'); // TODO: t()
+        drupal_set_message("An error occurred: couldn't read " . $zip_path . ".", 'error'); // TODO: t()
       }
       exit;
     }
     if (@drupal_unlink($zip_path) == FALSE) {
-      drupal_set_message("An error occured: couldn't delete file " . $zip_path . ".", 'error'); // TODO: t()
+      drupal_set_message("An error occurred: couldn't delete file " . $zip_path . ".", 'error'); // TODO: t()
     }
     return;
   }

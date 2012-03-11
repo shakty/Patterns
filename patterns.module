@@ -504,7 +504,7 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
     '#default_value' => patterns_get_include_mode(),
   );
 
-  $disclaimer = t('Please be sure to backup your site before running a pattern. Patterns are not guaranteed to be reversable in case they do not execute well or if unforseen side effects occur.');
+  $disclaimer = t('Please be sure to backup your site before running a pattern. Patterns are not guaranteed to be reversible in case they do not execute well or if unforeseen side effects occur.');
 
   return confirm_form($form, t('Proceed with running pattern %pattern?', array('%pattern' => $pattern->title)), 'admin/patterns', $disclaimer);
 }
@@ -580,7 +580,7 @@ function patterns_trash_pattern_submit($form, &$form_state) {
     drupal_set_message(t('Pattern could not be moved into the trash bin.'), 'error');
   }
   else {
-    drupal_set_message(t('Pattern succesfully moved into the trash bin.'), 'status');
+    drupal_set_message(t('Pattern successfully moved into the trash bin.'), 'status');
   }
 
   $form_state['redirect'] = 'admin/patterns';
@@ -635,7 +635,7 @@ function patterns_remove_pattern_submit($form, &$form_state) {
     drupal_set_message(t('Pattern could not be removed.'), 'error');
   }
   else {
-    drupal_set_message(t('Pattern was removed succesfully.'), 'status');
+    drupal_set_message(t('Pattern was removed successfully.'), 'status');
   }
   $form_state['redirect'] = 'admin/patterns';
 }

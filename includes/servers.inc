@@ -82,7 +82,7 @@ function patterns_import_server_validate($form, &$form_state) {
       return;
     }
     if (!$xml = file_get_contents($feed_url)) {
-      form_set_error('server_url', t('Failed to retreive the patterns feed from: %url. Please check your URL and try again.', array('%url' => $form_state['values']['server_url'])));
+      form_set_error('server_url', t('Failed to retrieve the patterns feed from: %url. Please check your URL and try again.', array('%url' => $form_state['values']['server_url'])));
       return;
     }
     // @todo: replace this with proper XML validation.

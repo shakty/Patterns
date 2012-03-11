@@ -158,7 +158,7 @@ function patterns_import_file_validate($form, &$form_state) {
  }
  else {
 
-  form_set_error('pattern_uri', t('Failed to retreive the pattern specified: %uri. Check your file and try again. Notice: only yaml and xml files are accepted', array('%uri' => $uri)));
+  form_set_error('pattern_uri', t('Failed to retrieve the pattern specified: %uri. Check your file and try again. Notice: only yaml and xml files are accepted', array('%uri' => $uri)));
   return FALSE;
  }
 
@@ -220,7 +220,7 @@ function patterns_import_validate($form, &$form_state) {
    $form_state['values']['content'] = $content;
   }
   else {
-   form_set_error('pattern_uri', t('Failed to retreive the pattern specified: %uri. Check your file and try again. Notice: only yaml and xml files are accepted', array('%uri' => $uri)));
+   form_set_error('pattern_uri', t('Failed to retrieve the pattern specified: %uri. Check your file and try again. Notice: only yaml and xml files are accepted', array('%uri' => $uri)));
    return FALSE;
   }
  }
@@ -234,7 +234,7 @@ function patterns_import_validate($form, &$form_state) {
  //  }
  //
  //  if ($obj = patterns_db_load_pattern_from_name($name)) {
- //    form_set_error('name', t('A pattern file with the same name alrady exists: !name', array('!name' => $name)));
+ //    form_set_error('name', t('A pattern file with the same name already exists: !name', array('!name' => $name)));
  //    return FALSE;
  //  }
 
@@ -693,7 +693,7 @@ function _patterns_imports_check_name($name = '') {
  }
 
  if ($obj = patterns_db_load_pattern_from_name($name)) {
-  form_set_error('name', t('A pattern file with the same name alrady exists: !name', array('!name' => $name)));
+  form_set_error('name', t('A pattern file with the same name already exists: !name', array('!name' => $name)));
   return FALSE;
  }
 }

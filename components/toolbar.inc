@@ -10,7 +10,7 @@
 function toolbar_patterns($data) {
   $files = array('modules/user/user.admin.inc');
   $actions['toolbarrole'] = array(
-    PATTERNS_INFO => t('decide who can see the toolbar'),
+    PATTERNS_INFO => t('Decide who can see the toolbar'),
     PATTERNS_MODIFY => array('user_admin_permissions'),
     PATTERNS_FILES => $files,
   );
@@ -19,7 +19,7 @@ function toolbar_patterns($data) {
 
 function toolbar_patterns_actions($data) {
   return array(
-    'user_admin_permissions' => t('deside who can use toolbar'),
+    'user_admin_permissions' => t('Decide who can use toolbar'),
     );
 }
 

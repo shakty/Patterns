@@ -132,7 +132,7 @@ function node_patterns_validate($action, $tag, &$data) {
       $data['node'] = (object) node_load($data['nid']);
       if (!$data['node']) {
         $status = PATTERNS_ERR;
-        $msg = t('Cannot modify or delete a nonexsitent Node.');
+        $msg = t('Cannot modify or delete a nonexistent Node.');
       }
     }
 
