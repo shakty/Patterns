@@ -297,6 +297,10 @@ function patterns_io_scan_directories() {
   $messages['errors'] = array();
   $messages['skipped'] = array();
   $messages['permission'] = array();
+  $messages['found'] = array();
+  $messages['updated'] = array();
+  $messages['error_found'] = array();
+  $messages['error_updated'] = array();
 
   // Get list of directories to scan for patterns.
   $patterns_paths = patterns_config_get_paths();
@@ -314,6 +318,11 @@ function patterns_io_scan_directories() {
       
       if (in_array($file->name, $existing)) {
         if (!variable_get('patterns_update_db_from_fs', TRUE)) {
+          continue;
+        }
+        
+        if (!patterns_db_is_pattern_updated($file->name)) {
+          // the database is already updated to the most recent version
           continue;
         }
         
@@ -345,10 +354,37 @@ function patterns_io_scan_directories() {
       }   
 
       // If everything was fine save it to the database
-      patterns_db_save_pattern($pattern, $file->uri, $file->name);
+      $result = patterns_db_save_pattern($pattern, $file->uri, $file->name);
+      
+      if ($result && !in_array($file->name, $existing)) {
+        $messages['found'][] = $file->name;
+        continue;
+      }
+      
+      if (!$result && !in_array($file->name, $existing)) {
+        $messages['error_found'][] = $file->name;
+        continue;
+      }
+      
+      if ($result && in_array($file->name, $existing)) {
+        $messages['updated'][] = $file->name;
+        continue;
+      }
+      
+      if (!$result && in_array($file->name, $existing)) {
+        $messages['error_updated'][] = $file->name;
+        continue;
+      }
+      
     }
   }
 
+  if (!empty($messages['found'])) {
+    drupal_set_message(t('New patterns were found and added to the database: ') . '<br/>' . implode('<br/>', $messages['found']) . '<br/><br/>');
+  }
+  if (!empty($messages['updated'])) {
+    drupal_set_message(t('The following patterns were updated to the newest version found in the file system: ') . '<br/>' . implode('<br/>', $messages['updated']) . '<br/><br/>');
+  }
   if (!empty($messages['invalid'])) {
     drupal_set_message(t('Some invalid patterns were found: ') . '<br/>' . implode('<br/>', $messages['invalid']) . '<br/><br/>', 'warning');
   }
@@ -356,9 +392,15 @@ function patterns_io_scan_directories() {
     drupal_set_message(t('Patterns that are already enabled are not updated against changes in the file systems. Please verify the following ones: ') . '<br/>' . implode('<br/>', $messages['skipped']) . '<br/><br/>', 'warning');
   }
   if (!empty($messages['permission'])) {
-    drupal_set_message(t('Some pattern files could not be open for reading. Please verify the permission of: ') . '<br/>' . implode('<br/>', $messages['skipped']) . '<br/><br/>', 'warning');
+    drupal_set_message(t('Some pattern files could not be open for reading. Please verify the permission of: ') . '<br/>' . implode('<br/>', $messages['permission']) . '<br/><br/>', 'warning');
   }
-
+  if (!empty($messages['error_found'])) {
+    drupal_set_message(t('New patterns were found, but could not be saved in the database: ') . '<br/>' . implode('<br/>', $messages['error_found']) . '<br/><br/>', 'warning');
+  }
+  if (!empty($messages['error_updated'])) {
+    drupal_set_message(t('A newer version of the following pattern was found, but could not be saved in the database: ') . '<br/>' . implode('<br/>', $messages['error_found']) . '<br/><br/>', 'warning');
+  }
+  
   variable_set('patterns_loaded', time());
 }
 
