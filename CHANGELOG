@@ -4,6 +4,7 @@
 					- files that are not updated are not saved again in the database
 					- new patterns are clearly notified when found
 					- divided in scanning and outputing the result of the scan. A boolean verbose flag was added
+		- Patterns interface displays the file name and the pattern title separately
 
 7019:
 
