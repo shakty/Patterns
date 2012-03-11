@@ -289,73 +289,74 @@ function patterns_load_components() {
  */
 function patterns_io_scan_directories() {
   
-    $existing = patterns_db_get_patterns_array('name', TRUE);    
-    // Patterns already enabled won't be updated in the database
-    $enabled = patterns_db_get_enabled_patterns_array('name', TRUE);
-    $errors = array();
-    $skipped = array();
+  $existing = patterns_db_get_patterns_array('name', TRUE);    
+  // Patterns already enabled won't be updated in the database
+  $enabled = patterns_db_get_enabled_patterns_array('name', TRUE);
+  
+  $messages = array();
+  $messages['errors'] = array();
+  $messages['skipped'] = array();
+  $messages['permission'] = array();
 
-    // Get list of directories to scan for patterns.
-    $patterns_paths = patterns_config_get_paths();
+  // Get list of directories to scan for patterns.
+  $patterns_paths = patterns_config_get_paths();
 
-    // Get valid file extensions.
-    $mask = '/.\.(' . implode('|', patterns_config_get_file_types()) . ')$/';
+  // Get valid file extensions.
+  $mask = '/.\.(' . implode('|', patterns_config_get_file_types()) . ')$/';
 
-    // Prepare list of files/folders to be excluded.
-    // 'enabled' - Don't save enabled pattern backups.
-    $no_mask = array('.', '..', 'CVS', '.svn', '.git', '.bzr', 'enabled');
+  // Prepare list of files/folders to be excluded.
+  // 'enabled' - Don't save enabled pattern backups.
+  $no_mask = array('.', '..', 'CVS', '.svn', '.git', '.bzr', 'enabled');
 
-    foreach ($patterns_paths as $path) {
-      //debug($path);
-      foreach (file_scan_directory($path, $mask, $no_mask) as $file) {
+  foreach ($patterns_paths as $path) {
+    //debug($path);
+    foreach (file_scan_directory($path, $mask, $no_mask) as $file) {
+      
+      if (in_array($file->name, $existing)) {
+        if (!variable_get('patterns_update_db_from_fs', TRUE)) {
+          continue;
+        }
         
-        if (in_array($file->name, $existing)) {
-          if (!variable_get('patterns_update_db_from_fs', TRUE)) {
-            continue;
+        if (!empty($enabled)) {
+          if (in_array($file->name, $enabled)) {
+            $messages['skipped'][] = $file->name;
+            continue; // Skip updating enabled patterns.
           }
-          
-          if (!empty($enabled)) {
-            if (in_array($file->name, $enabled)) {
-              $skipped[] = $file->name;
-              continue; // Skip updating enabled patterns.
-            }
-          }
-        }
-    
-        // Choose appropriate function based on the file extension: YAML or XML.
-        $func = 'patterns_load_' . substr($file->filename, strlen($file->name) + 1);
-
-        // Load and save pattern.
-        if ($pattern = $func($file->uri)) {
-          
-//          if ($file->name === 'import_to_delete2') {
-//              //debug($pattern);
-//           }
-          
-          if (patterns_validate_pattern($pattern)) {
-            
-            
-            
-            
-            
-            patterns_db_save_pattern($pattern, $file->uri, $file->name);
-          }
-          else{
-            $errors[] = $file->filename;
-          }
-        }
-        // @TODO: what to do with this branch?
-        else {
-          $errors[] = $file->filename;
         }
       }
-    }
+  
+      if (!is_readable($file->uri)) {
+        $messages['permission'][] = $file->filename;
+        continue;
+      }
+      
+      // Choose appropriate function based on the file extension: YAML or XML.
+      $func = 'patterns_load_' . substr($file->filename, strlen($file->name) + 1);
 
-  if (!empty($errors)) {
-    drupal_set_message(t('Some invalid patterns were found: ') . '<br/>' . implode('<br/>', $errors) . '<br/>' . t('Make sure that above file(s) are readable and contain valid data.') . '<br/><br/>', 'warning');
+      // Load and save pattern.
+      if (!($pattern = $func($file->uri))) {
+        $messages['errors'][] = $file->filename;
+        continue;
+      }
+      
+      if (!patterns_validate_pattern($pattern)) {
+        $messages['invalid'][] = $file->filename;
+        continue;
+      }   
+
+      // If everything was fine save it to the database
+      patterns_db_save_pattern($pattern, $file->uri, $file->name);
+    }
   }
-  if (!empty($skipped)) {
-    drupal_set_message(t('Patterns that are already enabled are not updated against changes in the file systems. Please verify the following ones: ') . '<br/>' . implode('<br/>', $skipped) . '<br/><br/>', 'warning');
+
+  if (!empty($messages['invalid'])) {
+    drupal_set_message(t('Some invalid patterns were found: ') . '<br/>' . implode('<br/>', $messages['invalid']) . '<br/>' . t('Make sure that above file(s) are readable and contain valid data.') . '<br/><br/>', 'warning');
+  }
+  if (!empty($messages['skipped'])) {
+    drupal_set_message(t('Patterns that are already enabled are not updated against changes in the file systems. Please verify the following ones: ') . '<br/>' . implode('<br/>', $messages['skipped']) . '<br/><br/>', 'warning');
+  }
+  if (!empty($messages['permission'])) {
+    drupal_set_message(t('Some pattern files could not be open for reading. Please verify the permission of: ') . '<br/>' . implode('<br/>', $messages['skipped']) . '<br/><br/>', 'warning');
   }
 
   variable_set('patterns_loaded', time());
