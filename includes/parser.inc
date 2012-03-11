@@ -492,7 +492,8 @@ function patterns_parser_get_pattern_details($pattern, $recursive = FALSE, &$pid
 
   ////////////////////////////////////////////////////////////////
   // IMPORTANT
-  // The part below is for handling the include tag. Not used now;
+  // The part below is for handling the include tag. Not used now
+  // and probably deprecated.
   ////////////////////////////////////////////////////////////////
 
 

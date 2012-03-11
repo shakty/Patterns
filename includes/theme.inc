@@ -118,6 +118,7 @@ function theme_patterns_list($args) {
         '#header' => array(
           array('data' => t('Enabled'), 'class' => array('checkbox')),
             t('Name'),
+            t('Title'),
             t('Version'),
             t('Description'),
           array('data' => t('Operations'), 'colspan' => 4),
@@ -153,6 +154,7 @@ function theme_patterns_list($args) {
         '#header' => array(
           array('data' => t('Enabled'), 'class' => array('checkbox')),
             t('Name'),
+            t('Title'),
             t('Version'),
             t('Description'),
           array('data' => t('Operations'), 'colspan' => 4),
@@ -200,6 +202,8 @@ function theme_patterns_patterns_fieldset($variables) {
 
     $row[] = $label . '><strong>' . drupal_render($pattern['name']) . '</strong></label>';
 
+    $row[] = drupal_render($pattern['title']);
+    
     $row[] = drupal_render($pattern['version']);
     // Add the description, along with any modules it requires.
     $description = drupal_render($pattern['description']);
@@ -237,35 +241,35 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
 
   $actions = array();
 
-    // Build Run/Re-Run/Update pattern links
-    if (!$pattern->status) {
-      $actions['run'] =  l(t('Run'), 'admin/patterns/enable/' . $pid);
-    }
-    elseif ($pattern->enabled >= $pattern->updated) {
-      $actions['run'] =  l(t('Re-Run'), 'admin/patterns/enable/' . $pid);
-    }
-    else {
-      $actions['run'] = l(t('Run Update'), 'admin/patterns/enable/' . $pid);
-    }
+  // Build Run/Re-Run/Update pattern links
+  if (!$pattern->status) {
+    $actions['run'] =  l(t('Run'), 'admin/patterns/enable/' . $pid);
+  }
+  elseif ($pattern->enabled >= $pattern->updated) {
+    $actions['run'] =  l(t('Re-Run'), 'admin/patterns/enable/' . $pid);
+  }
+  else {
+    $actions['run'] = l(t('Run Update'), 'admin/patterns/enable/' . $pid);
+  }
 
-    // Edit Link
-    $actions['edit'] = l(t('Edit'), 'admin/patterns/edit/' . $pid);
+  // Edit Link
+  $actions['edit'] = l(t('Edit'), 'admin/patterns/edit/' . $pid);
 
-    // Remove Link
-    //$actions['remove'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax'))));
+  // Remove Link
+  //$actions['remove'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax'))));
 
-    // Remove Link
-    $actions['trash'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax'))));
+  // Remove Link
+  $actions['trash'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax'))));
 
-     // Remove Link
-    $actions['remove'] = l(t('Remove'), 'admin/patterns/remove/' . $pid);
+   // Remove Link
+  $actions['remove'] = l(t('Remove'), 'admin/patterns/remove/' . $pid);
 
 
-    // Not yet ready
-    //Publish/Unpublish link
-    //if (variable_get('patterns_allow_publish', FALSE)) {
-    //  $actions['publish'] = $pattern->public ? l(t('Unpublish'), 'admin/patterns/unpublish/' . $pid) : l(t('Publish'), 'admin/patterns/publish/' . $pid);
-    //}
+  // Not yet ready
+  //Publish/Unpublish link
+  //if (variable_get('patterns_allow_publish', FALSE)) {
+  //  $actions['publish'] = $pattern->public ? l(t('Unpublish'), 'admin/patterns/unpublish/' . $pid) : l(t('Publish'), 'admin/patterns/publish/' . $pid);
+  //}
 
   $form = array(
     '#tree' => TRUE,
@@ -284,8 +288,11 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
 
   $title .= '<div id="pid-' . $pid . '-info" class="pattern-info">' . $author . '</div>';
 
-
   $form['name'] = array(
+    '#markup' => $pattern->name,
+  );
+  
+  $form['title'] = array(
     '#markup' => $title,
   );
   $form['description'] = array(
