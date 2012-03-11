@@ -321,7 +321,7 @@ function patterns_execute_action($form_id, &$form_state, $params) {
 function patterns_reformat_actions(&$actions) {
   $valid_actions = patterns_actions();
   $newactions = array();
-  
+
   foreach ($actions as $key => $value) {
     //$found = FALSE;
     foreach ($value as $akey => $avalue) {
@@ -332,18 +332,18 @@ function patterns_reformat_actions(&$actions) {
       else {
           $newactions[] = array('action' => $akey, 'data' => $avalue);
 
-// experimental 08.03          
+// experimental 08.03
 //                  if ($akey === PATTERNS_INCLUDE) {
 //          $included = _patterns_retrieve_actions_included_from_pattern($avalue);
 //          $reformated = patterns_reformat_actions($included);
 //          $newactions = array_merge($newactions, $reformated);
 //                  }
-        
+
       // Additional actions. Discouraged and undocumented.
 //        if ($found) {
 //          $result['extra_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
 //        }
-        
+
         //$found = TRUE;
       }
     }

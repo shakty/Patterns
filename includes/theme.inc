@@ -81,11 +81,11 @@ function theme_patterns_list($args) {
 
   drupal_add_js('misc/collapse.js');
   drupal_add_js('misc/drupal.js');
-  
+
   $patterns = $args[PATTERNS_STATUS_OK];
   $removed = $args[PATTERNS_STATUS_REMOVED];
 
-  $patterns_title = '<div id="all_patterns_div"><h3>'. t('Available Patterns') .'</h3>';
+  $patterns_title = '<div id="all_patterns_div"><h3>' . t('Available Patterns') . '</h3>';
 
   if (!file_exists(libraries_get_path('spyc') . '/spyc.php')) {
     $spyc = l(t('Spyc'), 'http://code.google.com/p/spyc/');
@@ -113,7 +113,7 @@ function theme_patterns_list($args) {
         '#type' => 'fieldset',
         '#title' => $category,
         '#collapsible' => TRUE,
-        '#collapsed' => FALSE,  
+        '#collapsed' => FALSE,
         '#theme' => 'patterns_patterns_fieldset',
         '#header' => array(
           array('data' => t('Enabled'), 'class' => array('checkbox')),
@@ -149,7 +149,7 @@ function theme_patterns_list($args) {
         '#type' => 'fieldset',
         '#title' => $category,
         '#collapsible' => TRUE,
-        '#collapsed' => FALSE, 
+        '#collapsed' => FALSE,
         '#theme' => 'patterns_patterns_fieldset',
         '#header' => array(
           array('data' => t('Enabled'), 'class' => array('checkbox')),
@@ -203,7 +203,7 @@ function theme_patterns_patterns_fieldset($variables) {
     $row[] = $label . '><strong>' . drupal_render($pattern['name']) . '</strong></label>';
 
     $row[] = drupal_render($pattern['title']);
-    
+
     $row[] = drupal_render($pattern['version']);
     // Add the description, along with any modules it requires.
     $description = drupal_render($pattern['description']);
@@ -291,7 +291,7 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
   $form['name'] = array(
     '#markup' => $pattern->name,
   );
-  
+
   $form['title'] = array(
     '#markup' => $title,
   );

@@ -207,15 +207,14 @@ function shortcut_patterns_params($action, $form_id, &$data = NULL, &$a) {
 }
 
 function shortcut_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
- if ($tag == "shortcut_set_user") {
+  if ($tag == "shortcut_set_user") {
     $loop = TRUE;
     $return = array();
     $users = entity_load('user');
-    //echo var_dump($users);
-    foreach($users as $usr) {
+    foreach ($users as $usr) {
       array_push($return, array($usr));
     }
-    return $return; 
+    return $return;
   }
   elseif ($tag == "shortcut_link") {
     $links = db_select('menu_links', 'ml', array('fetch' => PDO::FETCH_ASSOC))
@@ -227,9 +226,9 @@ function shortcut_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE
     $i = 0;
     foreach ($links as &$link) {
       $i++;
-      if($i > 20) break;
+      if ($i > 20) break;
       $link['options'] = unserialize($link['options']);
-      $link['href'] = ""; 
+      $link['href'] = "";
       // to get rid of the notice
       // Notice: Undefined index: href in menu_edit_item() (line 306 of /var/www/drupal-7.9/modules/menu/menu.admin.inc).
       // should be ok, because it's only used in the description.
@@ -241,22 +240,21 @@ function shortcut_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE
     $loop = TRUE;
     $return = array();
     $sets = shortcut_sets();
-    foreach($sets as $set) {
+    foreach ($sets as $set) {
       array_push($return, array($set));
     }
-    //echo var_dump($return);
     return $return;
     $sets = db_select('shortcut_set', 'ss')
-    ->fields('ss')
-    //->condition('set_name', $set_name)
-    ->execute()
-    ->fetchObject();
+      ->fields('ss')
+      //->condition('set_name', $set_name)
+      ->execute()
+      ->fetchObject();
     if (!$sets) {
-      drupal_set_message("no shortcuts found");
+      drupal_set_message(t("No shortcuts found."));
       return array();
     }
     //echo var_dump($sets);
-    foreach($sets as &$set) {
+    foreach ($sets as &$set) {
         $set->links = menu_load_links($set['set_name']);
     }
     return array($sets);

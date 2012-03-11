@@ -28,7 +28,7 @@ class PatternsUserTestCase extends PatternRunTestCase {
     $user_count = db_select('users', 'u')
       ->fields('u', array('uid'))
       ->condition('uid', 'test_uid')
-      ->countQuery()->execute()->fetchField(); 
+      ->countQuery()->execute()->fetchField();
     $this->assertIdentical($user_count, '0', t('The user should not exist at this point.'));
 
     // Run the pattern.
@@ -41,7 +41,7 @@ class PatternsUserTestCase extends PatternRunTestCase {
     $user = db_select('users', 'u')
       ->fields('u', array('uid'))
       ->condition('uid', 'test_uid')
-      ->execute()->fetchField(); 
+      ->execute()->fetchField();
     $this->assertIdentical(count($user), 1);
     // TODO: Check fields.
   }
@@ -57,7 +57,7 @@ class PatternsUserTestCase extends PatternRunTestCase {
     $user_count = db_select('users', 'u')
       ->fields('u', array('uid'))
       ->condition('uid', 'test_uid')
-      ->countQuery()->execute()->fetchField(); 
+      ->countQuery()->execute()->fetchField();
     $this->assertIdentical($user_count, '0', t('The user should not exist at this point.'));
   }
 

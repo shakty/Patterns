@@ -442,12 +442,12 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
 
   if (patterns_db_is_pattern_updated($pid)) {
     $form['modified'] = array(
-      '#markup' => t('A more recent version of this pattern was found in the file system. The version stored in the database is going to be executed. If unsure, ') . ' ' . l(t('click here to check it out.'), 'admin/patterns/edit/' . $pid),
+      '#markup' => t('A more recent version of this pattern was found in the file system. The version stored in the database is going to be executed. If unsure, ') . ' ' . l(t('click here to check it out.'), 'admin/patterns/edit/' . $pid), // TODO: proper t()
       '#prefix' => '<div id="important"><strong>',
       '#suffix' => '</strong></br></br></div>',
     );
   }
-  
+
   $form['pid'] = array(
     '#type' => 'value',
     '#value' => $pid,
@@ -456,10 +456,10 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
   $form['options'] = array(
     '#type' => 'fieldset',
     '#title' => t('Options'),
-    '#collapsible' => TRUE, 
-    '#collapsed' => TRUE,  
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
   );
-  
+
   $options_mode = array(
     'extend' => t('Extend'),
     'runover' => t('Run-Over'),
@@ -711,10 +711,10 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
     drupal_set_message($results['error_message'], 'error');
     return FALSE;
   }
-  
+
   $sections = $pattern_details['sections'];
 
-  
+
   // Ste: Actions_map seems to be used with includes. Probably we do not need it now.
   //$actions_map = array('patterns' => $pattern_details['info'], 'map' => $pattern_details['actions_map']);
 
@@ -726,7 +726,7 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
   $actions_map = array('patterns' => $infos, 'map' => NULL); // Fix this.
   ////////////////////////////////////////
 
-  
+
 
   // Execute the Pattern using the selected mode.
   return $fun($pattern, $params, $patterns_details, $actions_map);
@@ -898,10 +898,10 @@ function patterns_refresh() {
 }
 
 /**
- * Returns the current option for included patterns, as it is in 
+ * Returns the current option for included patterns, as it is in
  * the database. If the option stored in the database is not valid,
  * by default patterns' inclusion is disabled.
- *  
+ *
  */
 function patterns_get_include_mode($mode = NULL) {
   if (!is_null($mode)) {
@@ -909,11 +909,11 @@ function patterns_get_include_mode($mode = NULL) {
       return $mode;
     }
   }
-  
+
   $mode = variable_get('patterns_default_include_mode', PATTERNS_INCLUDE_NEVER);
   if (!patterns_parser_is_valid_include_mode($mode)) {
     $mode = PATTERNS_INCLUDE_NEVER;
   }
-  
+
   return $mode;
 }

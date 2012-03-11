@@ -261,7 +261,7 @@ function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
 
     // build Content Type fields
     $type = $data['type'];
-    $form_id = $type .'_node_form';
+    $form_id = $type . '_node_form';
     $form_state = array(
       'build_info' => array('args' => array($node),
         'files' => array('menu' => 'modules/node/node.pages.inc')),
