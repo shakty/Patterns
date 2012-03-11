@@ -160,13 +160,8 @@ function patterns_editor_create_page($pid = NULL) {
  * Display the page for editing a pattern.
  */
 function patterns_edit_page($pid = NULL) {
-  if (!is_numeric($pid)) {
-    drupal_set_message(t('You must specify a pattern to edit.'));
-    return FALSE;
-  }
-
-  $pattern = patterns_get_pattern($pid);
-
+  $pattern = patterns_utils_if_invalid_go_back($pid);
+  
   if (!$pattern->file) {
     drupal_set_message(t('This pattern does not seem to be associated with a valid source file.'), 'error');
     return FALSE;

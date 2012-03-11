@@ -554,3 +554,39 @@ function patterns_utils_generate_info_section($title = 'Untitled Pattern',
   
   return $info;
 }
+
+
+/**
+ * Checks a pattern identifier (numeric or alphanumeric) and if it not 
+ * valid displays an error message and redirect the user to the specified page.
+ * If the pattern is valid, returns it.
+ * 
+ * If no page is specified redirects to '/admin/patterns/'.
+ * 
+ * @param mixed $pattern the pattern identifier
+ * @param mixed $back the page to redirect to (default '/admin/patterns/')
+ * @param array $options an associative array of extra options. E.g.
+ *  $options('numeric' => TRUE) enforces that the pattern id must be numeric.
+ *  
+ *  
+ */
+function patterns_utils_if_invalid_go_back($pattern = NULL, 
+                                           $back = '/admin/patterns/',
+                                           $options = array()) {
+
+  if (isset($options['numeric'])) {
+    if (!is_numeric($pattern)) {
+      drupal_set_message(t('You must specify a valid id for the pattern.'));
+      return FALSE;
+    }
+  }
+  
+  $pattern = patterns_get_pattern($pattern);
+
+  if (!$pattern) {
+    drupal_set_message(t('No pattern was found with the given id.'), 'error');
+    drupal_goto($back);
+  }
+  
+  return $pattern;
+}

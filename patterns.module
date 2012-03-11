@@ -455,16 +455,7 @@ function patterns_list() {
  */
 function patterns_enable_pattern($form, &$form_state, $pid) {
 
-  $pattern = patterns_get_pattern($pid);
-  if (empty($pattern)) {
-    $form['not_existing'] = array(
-      '#markup' => t('Invalid pattern ID.') . ' ' . l(t('Back'), 'admin/patterns'),
-      '#prefix' => '<div id="important">',
-      '#suffix' => '<br/></div>',
-    );
-    $form_state['redirect'] = 'admin/patterns';
-    return $form;
-  }
+  $pattern = patterns_utils_if_invalid_go_back($pid);
 
   if (patterns_db_is_pattern_updated($pid)) {
     $form['modified'] = array(
