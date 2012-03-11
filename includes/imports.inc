@@ -170,7 +170,7 @@ function patterns_import_file_validate($form, &$form_state) {
   $patternscan = _patterns_scan_pattern($form_state['values']['content']);
   if (!_patterns_validate_patternscan($patternscan)) {
    $errors_on_scan = _patterns_analyze_patternscan($patternscan);
-   form_set_error('name', t('Error parsing the YAML file: ' . implode(', ', $errors_on_scan)));
+   form_set_error('name', t('Error parsing the YAML file: ' . implode(', ', $errors_on_scan))); // TODO: proper t()
   }
  }
  else { // XML or other
@@ -244,7 +244,7 @@ function patterns_import_validate($form, &$form_state) {
   $patternscan = _patterns_scan_pattern($form_state['values']['content']);
   if (!_patterns_validate_patternscan($patternscan)) {
    $errors_on_scan = _patterns_analyze_patternscan($patternscan);
-   form_set_error('name', t('Error parsing the YAML file: ' . implode(', ', $errors_on_scan)));
+   form_set_error('name', t('Error parsing the YAML file: ' . implode(', ', $errors_on_scan))); // TODO: proper t()
   }
  }
  else { // XML or other
@@ -325,7 +325,7 @@ function patterns_import_module($form, &$form_state) {
      '#type' => 'hidden',
      '#title' => t('Pattern Identifier'),
      '#description' => t('step'),
-     '#value' => t($step),
+     '#value' => $step,
   );
 
   // for all modules, check if hook_patterns() is defined and let the user choose
@@ -530,11 +530,12 @@ function patterns_import_module($form, &$form_state) {
     if ($measure) {
      $time = (microtime(TRUE) - $start);
      $min = $time < $min ? $time : $min;
+     // TODO: why filter_xss?
      drupal_set_message(filter_xss("testing with " . $runs . " runs, k = " . $j . ", time is: " . $time));
     }
    }
    if ($measure)
-   drupal_set_message(filter_xss("k-best: " . $min));
+     drupal_set_message(filter_xss("k-best: " . $min)); // TODO: why filter_xss?
    variable_set('macro_enabled', FALSE);
    variable_set('patterns_import_module', FALSE);
 
@@ -544,7 +545,7 @@ function patterns_import_module($form, &$form_state) {
           "info:\n" .
           "  title: #please add a title\n" .
           "  description: " .
-               "automatically generated Pattern file";
+          "automatically generated Pattern file";
 
    global $user;
    global $base_root;
@@ -572,7 +573,7 @@ function patterns_import_module($form, &$form_state) {
    if (!isset($yaml))
    $yaml = $form_state['values']['content'];
    // patterns_editor('patterns_import_source', $yaml);
-   $validation = "Pattern hasn't been validated yet.";
+   $validation = t('Pattern hasn\'t been validated yet.');
    $form['validation_result'] = array(
       '#markup' => '<br><strong>' . $validation . '</strong>',
       '#prefix' => '<div id="validation_result">',
@@ -687,7 +688,7 @@ function _patterns_imports_check_name($name = '') {
  // Name Validation
  $errors_on_name = _patterns_parser_analyze_pattern_name($name);
  if (!empty($errors_on_name)) {
-  form_set_error('name', t('Errors on the name of the pattern: ' . implode(', ', $errors_on_name)));
+  form_set_error('name', t('Errors in the name of the pattern: ' . implode(', ', $errors_on_name))); // TODO: use proper t()
   return FALSE;
  }
 

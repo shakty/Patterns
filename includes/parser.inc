@@ -293,7 +293,7 @@ function patterns_parse_yaml($pattern) {
  * 
  */
 function _patterns_scan_pattern($pattern) {
-  $generic_error = 'pattern not loaded correctly';
+  $generic_error = t('pattern not loaded correctly');
   $result = array(
                   'info' => 0,
                   'modules' => 0,

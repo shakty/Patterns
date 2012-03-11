@@ -50,7 +50,7 @@ function patterns_config_settings($form, &$form_state) {
     '#type' => 'radios',
     '#title' => t('Default Running Mode'),
     '#description' => t('The default running mode when running a pattern.'),
-    '#options' => array('batch' => 'Batch', 'php' => 'PHP'),
+    '#options' => array('batch' => t('Batch'), 'php' => t('PHP')),
     '#default_value' => variable_get('patterns_default_running_mode', 'batch'),
   );
   
@@ -72,12 +72,12 @@ function patterns_config_settings($form, &$form_state) {
     '#type' => 'radios',
     '#title' => t('Included patterns'),
     '#description' => t('Default behavior with included patterns. This option can be overwritten inside the pattern code.'),
-    '#options' => array(PATTERNS_INCLUDE_NEVER => PATTERNS_INCLUDE_NEVER_TEXT,
-                   PATTERNS_INCLUDE_FIRSTRUN => PATTERNS_INCLUDE_FIRSTRUN_TEXT,
-                   PATTERNS_INCLUDE_UPDATE => PATTERNS_INCLUDE_UPDATE_TEXT,
-                   PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE => PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE_TEXT,
-                   PATTERNS_INCLUDE_ATTACHED => PATTERNS_INCLUDE_ATTACHED_TEXT,
-                   PATTERNS_INCLUDE_ALWAYS => PATTERNS_INCLUDE_ALWAYS_TEXT,
+    '#options' => array(PATTERNS_INCLUDE_NEVER => t('Never run'),
+                   PATTERNS_INCLUDE_FIRSTRUN => t('Only during the first run'),
+                   PATTERNS_INCLUDE_UPDATE => t('Only if pattern was updated'),
+                   PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE => t('If it is the first run or if the pattern was updated'),
+                   PATTERNS_INCLUDE_ATTACHED => t('Only if the pattern code is attached (no lookup to database)'),
+                   PATTERNS_INCLUDE_ALWAYS => t('Always'),
   ),
     '#default_value' => patterns_get_include_mode(),
   );

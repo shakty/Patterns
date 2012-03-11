@@ -4,7 +4,6 @@
  * Retrieve, save, and remove patterns from the database.
  */
 
-
 /**
  * Converts all the patterns objects in a results set 
  * from a database query on the patterns table into an
@@ -439,13 +438,13 @@ function patterns_db_get_name_from_id ($id) {
  *  the pattern object, a numeric id or alphanumeric name of 
  *  the pattern as it is in the database
  */
-function patterns_db_analyze_patterns_status ($pattern) {
+function patterns_db_analyze_patterns_status($pattern) {
   $pattern = _patterns_db_get_pattern($pattern);
   
-  if (!$pattern) return 'This pattern has not been validated yet.';
-  if ($pattern->status >= 0) return 'This is a valid pattern';
-  if ($pattern->status === PATTERNS_STATUS_INVALID) return 'This pattern is marked as NOT valid';
-  if ($pattern->status === PATTERNS_STATUS_REMOVED) return 'This pattern is marked as REMOVED.';
+  if (!$pattern) return t('This pattern has not been validated yet.');
+  if ($pattern->status >= 0) return t('This is a valid pattern');
+  if ($pattern->status === PATTERNS_STATUS_INVALID) return t('This pattern is marked as NOT valid');
+  if ($pattern->status === PATTERNS_STATUS_REMOVED) return t('This pattern is marked as REMOVED.');
   
-  return 'This pattern has not been validated yet.';
+  return t('This pattern has not been validated yet.');
 }

@@ -85,7 +85,7 @@ function theme_patterns_list($args) {
   $patterns = $args[PATTERNS_STATUS_OK];
   $removed = $args[PATTERNS_STATUS_REMOVED];
 
-  $patterns_title = '<div id="all_patterns_div"><h3>Available Patterns</h3>';
+  $patterns_title = '<div id="all_patterns_div"><h3>'. t('Available Patterns') .'</h3>';
 
   if (!file_exists(libraries_get_path('spyc') . '/spyc.php')) {
     $spyc = l(t('Spyc'), 'http://code.google.com/p/spyc/');
@@ -111,7 +111,7 @@ function theme_patterns_list($args) {
       $form['patterns'][$category][] = _patterns_pattern_build_row($pid, $pattern);
       $form['patterns'][$category] += array(
         '#type' => 'fieldset',
-        '#title' => t($category),
+        '#title' => $category,
         '#collapsible' => TRUE,
         '#collapsed' => FALSE,  
         '#theme' => 'patterns_patterns_fieldset',
@@ -131,7 +131,7 @@ function theme_patterns_list($args) {
 
 
   $form['removed'] = array(
-    '#prefix' => '<div id="removed_patterns_div"><h3>Removed Patterns</h3>',
+    '#prefix' => '<div id="removed_patterns_div"><h3>' . t('Removed Patterns') . '</h3>',
     '#suffix' => ' </div>',
     '#tree' => TRUE,
   );
@@ -147,7 +147,7 @@ function theme_patterns_list($args) {
       $form['removed'][$category][] = _patterns_pattern_build_row($pid, $pattern);
       $form['removed'][$category] += array(
         '#type' => 'fieldset',
-        '#title' => t($category),
+        '#title' => $category,
         '#collapsible' => TRUE,
         '#collapsed' => FALSE, 
         '#theme' => 'patterns_patterns_fieldset',
@@ -296,7 +296,7 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
     '#markup' => $title,
   );
   $form['description'] = array(
-    '#markup' => t($pattern->description),
+    '#markup' => $pattern->description,
   );
   $form['version'] = array(
     '#markup' =>  @$pattern->info['version'],

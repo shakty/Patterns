@@ -100,6 +100,7 @@ function patterns_error_handler($errno, $message, $filename, $line, $context) {
 function patterns_error_get_last($op, $key, $description, $pattern_title, $pattern_file) {
   $error = patterns_error_last();
 
+  // TODO: t()?
   if (!empty($error) && $error['message'] != 'patterns_error') {
     $types = array(
         1 => array('Error', WATCHDOG_ERROR),
@@ -154,6 +155,7 @@ function patterns_error_check_results(&$result) {
     return TRUE;
   }
 
+  // TODO: t()?
   $msg = 'Error occurred in ';
 
   if (isset($result['details'])) {
@@ -166,7 +168,7 @@ function patterns_error_check_results(&$result) {
   }
 
   $msg = (empty($result['msg'])) ? $msg : $msg . $result['msg'];
-  watchdog('patterns', $msg, array(), $wd_type);
+  watchdog('patterns', $msg, array(), $wd_type); // TODO: $msg is not a literal string.
   drupal_set_message($result['msg'], $msg_type);
 
   return $return;

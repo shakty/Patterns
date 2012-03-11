@@ -27,7 +27,7 @@ function patterns_export($form, &$form_state) {
     $status = (@$pattern->status) ? t('Enabled') : t('Disabled');
     $author = @$pattern_code['info']['author'];
     $version = @$pattern_code['info']['version'];
-    $description = t(@$pattern->description);
+    $description = @$pattern->description;
     $row = array(
     'category' => $category,
     'name' => $name,
@@ -240,12 +240,12 @@ function patterns_export_submit($form, &$form_state) {
  */
 function _patterns_export_get_exp_to_options() {
   $options = array(
-    PATTERNS_EXPORT_TO_DB   => t(PATTERNS_EXPORT_TO_DB_TEXT),
-    PATTERNS_EXPORT_TO_FILE => t(PATTERNS_EXPORT_TO_FILE_TEXT),
+    PATTERNS_EXPORT_TO_DB   => t('Import into the database'),
+    PATTERNS_EXPORT_TO_FILE => t('Download as a pattern file'),
   );
   
   if (class_exists('ZipArchive')) {
-    $options[PATTERNS_EXPORT_TO_ZIP] = t(PATTERNS_EXPORT_TO_ZIP_TEXT);
+    $options[PATTERNS_EXPORT_TO_ZIP] = t('Download as a zip-archive');
   }
   
   return $options;
@@ -259,10 +259,10 @@ function _patterns_export_get_exp_to_options() {
  */
 function _patterns_export_get_exp_mode_options() {
   $options = array(
-    PATTERNS_EXPORT_MODE_FULL     => t(PATTERNS_EXPORT_MODE_FULL_TEXT),
-    PATTERNS_EXPORT_MODE_ACTIONS  => t(PATTERNS_EXPORT_MODE_ACTIONS_TEXT),
-    PATTERNS_EXPORT_MODE_NAME     => t(PATTERNS_EXPORT_MODE_NAME_TEXT),
-    PATTERNS_EXPORT_MODE_ID       => t(PATTERNS_EXPORT_MODE_ID_TEXT),
+    PATTERNS_EXPORT_MODE_FULL     => t('All the sections (info and modules included) of the pattern'),
+    PATTERNS_EXPORT_MODE_ACTIONS  => t('Actions only (info and modules sections excluded) of the pattern'),
+    PATTERNS_EXPORT_MODE_NAME     => t('The unique name of the pattern'),
+    PATTERNS_EXPORT_MODE_ID       => t('The numerical id of the pattern'),
   );
   
   return $options;

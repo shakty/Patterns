@@ -160,7 +160,7 @@ function patterns_modules_page($pid) {
   //Ste: was
   //return theme('table', array(t('Name'), t('Available'), t('Enabled'), t('Pattern Action')), $rows, t('Modules used for this pattern'));
   $header = array(t('Name'), t('Available'), t('Enabled'), t('Pattern Action'));
-  return theme('table', array('header' => $header, 'rows' => $rows, 'caption' => 'Modules used for this pattern')); //
+  return theme('table', array('header' => $header, 'rows' => $rows, 'caption' => t('Modules used for this pattern')));
 
 }
 
@@ -531,6 +531,7 @@ function patterns_utils_toString($pattern = NULL) {
  * @param mixed $base_root
  * 
  */
+// TODO: t()
 function patterns_utils_generate_info_section($title = 'Untitled Pattern',
                                               $category = 'General', 
                                               $descr = 'No description',

@@ -494,7 +494,7 @@ function patterns_io_get_patterns_service($type = 'ajax') {
 
   if ($type == 'ajax') {
     $patterns = patterns_get_patterns();
-    $output = '<div id="all_patterns_div"><strong>last update: </strong>' . date(DATE_RFC822);
+    $output = '<div id="all_patterns_div"><strong>'.t('last update:') . '</strong>' . date(DATE_RFC822);
     $output .= theme('patterns_list', $patterns);
     $output .= '</div>';
 

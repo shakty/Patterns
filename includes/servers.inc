@@ -161,7 +161,7 @@ function patterns_import_server_submit($form, &$form_state) {
     $patterns = array();
     foreach ($errors as $type => $files) {
       foreach ($files as $file) {
-        $patterns[] = $file['title'] . ' (cause: "' . $type . '" failed)';
+        $patterns[] = $file['title'] . ' (cause: "' . $type . '" failed)'; // TODO: t()
       }
       $patterns = theme('item_list', array('items' => $patterns)); // TODO: ???
     }

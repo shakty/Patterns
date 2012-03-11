@@ -1,5 +1,6 @@
 7021:
 
+    - Some t() related fixes and TODOs.
 		- Patterns include works also with names and id of patterns
 		- Different Export modes added (full/actions/name/id)
 
