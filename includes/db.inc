@@ -71,6 +71,8 @@ function _patterns_db_get_pattern_array($pattern) {
   if (is_null($pattern)) return FALSE;
   if (is_array($pattern)) return $pattern;
   if (!is_object($pattern)) return patterns_get_pattern($pattern);
+  // is standard class obj
+  return get_object_vars($pattern);
 }
 
 /**

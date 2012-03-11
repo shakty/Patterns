@@ -1,3 +1,9 @@
+7021:
+
+		- Patterns include works also with names and id of patterns
+		- Different Export modes added (full/actions/name/id)
+
+
 7020:
 
 		- Improved io scan directory: 

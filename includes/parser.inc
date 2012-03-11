@@ -709,7 +709,7 @@ function patterns_parser_retrieve_actions_from_section($section, $options = arra
       else {
           $include = $value[PATTERNS_INCLUDE];
           if (patterns_parser_should_include_local($include, $options)) {
-            $new_actions =  _patterns_parser_retrieve_actions_from_include($include);
+            $new_actions =  _patterns_parser_retrieve_actions_from_include($include, $options);
             $actions = array_merge($actions, $new_actions);
           }
       }
@@ -727,20 +727,24 @@ function patterns_parser_retrieve_actions_from_section($section, $options = arra
  * @param array $sections include only these sections (not used for now)
  * 
  */
-function _patterns_parser_retrieve_actions_from_include($include, $sections = NULL) {
+function _patterns_parser_retrieve_actions_from_include($include, $options, $sections = NULL) {
   $actions = array();
   if (!isset($include['pattern']) || empty($include['pattern'])){
     return $actions;
   }
   
-  // Loop through the sections of the included pattern
-  // TODO: import only actions from the specified sections
-  foreach ($include['pattern'] as $section => $value) {
-    if (in_array($section, array('info', 'modules'))) continue;
-    $newactions = patterns_parser_retrieve_actions_from_section($value);
-    $actions = array_merge($actions, $newactions);
+  // if pattern is an id or a name,
+  // try to load it from the database
+  if (!is_array($include['pattern'])) {
+    $p = patterns_get_pattern($include['pattern']);
+    if (!$p) {
+      drupal_set_message(t('Failed to include pattern %pattern'), array('%pattern' => $include['pattern']));
+      return $actions;
+    }
+    $include['pattern'] = $p->pattern;
   }
-  return $actions;
+  
+  return patterns_parser_extract_all_actions($include['pattern'], $options, $sections);
 }
 
 /**
@@ -935,4 +939,32 @@ function patterns_parser_build_include_options($pid, $run_mode = NULL) {
                'include' => patterns_parser_should_include($pid, $options), 
                'mode' => $run_mode,
   );
+}
+
+/**
+ * Extract all the actions from a pattern and returns them as an array.
+ * 
+ * @param mixed $pattern A pattern object, an array representing
+ *  the pattern object, a numeric id or alphanumeric name of 
+ *  the pattern as it is in the database
+ *  
+ * @param array $sections array containing the name of the sections,
+ *  from which extract the actions. If NULL, all the sections will be 
+ *  scanned.
+ * 
+ */
+function patterns_parser_extract_all_actions($pattern, $options, $sections = NULL) {
+  $actions = array();
+  $pattern = _patterns_db_get_pattern_array($pattern);
+  if (!$pattern) return $actions;
+  
+  // Loop through the sections of the included pattern
+  foreach ($pattern as $section => $value) {
+    if (in_array($section, array('info', 'modules'))) continue;
+    if (!is_null($sections) && !in_array($section, $sections)) continue;
+    $newactions = patterns_parser_retrieve_actions_from_section($value, $options);
+    $actions = array_merge($actions, $newactions);
+  }
+  
+  return $actions;
 }

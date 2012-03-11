@@ -52,11 +52,25 @@ function patterns_export($form, &$form_state) {
     '#empty' => t('No Patterns'),
   );
   
-  $form['export_to'] = array(
-    '#type' => 'radios',
-    '#options' => _patterns_export_get_exp_options(),
+  $form['export'] = array(
+    '#type' => 'fieldset',
     '#title' => t('Export options'),
-    '#default_value' => 'file',
+    '#collapsible' => TRUE, 
+    '#collapsed' => TRUE,  
+  );
+  
+  $form['export']['mode'] = array(
+    '#type' => 'radios',
+    '#options' => _patterns_export_get_exp_mode_options(),
+    '#title' => t('Export mode'),
+    '#default_value' => PATTERNS_EXPORT_MODE_FULL,
+  );
+  
+  $form['export']['to'] = array(
+    '#type' => 'radios',
+    '#options' => _patterns_export_get_exp_to_options(),
+    '#title' => t('Action'),
+    '#default_value' => PATTERNS_EXPORT_TO_FILE,
   );
  
  
@@ -96,12 +110,17 @@ function patterns_export_validate($form, &$form_state) {
     return FALSE;
   }
 
-  if (!isset($form_state['values']['export_to'])) {
-    drupal_set_message(t('Please select a valid export option'), 'error');
+  if (!isset($form_state['values']['mode']) || !patterns_export_is_valid_export_mode($form_state['values']['mode'])) {
+    drupal_set_message(t('Please select a valid export mode option'), 'error');
     return FALSE;
   }
   
-  if ($form_state['values']['export_to'] === 'database') {
+  if (!isset($form_state['values']['to'])) {
+    drupal_set_message(t('Please select a valid action for the export'), 'error');
+    return FALSE;
+  }
+  
+  if ($form_state['values']['to'] === PATTERNS_EXPORT_TO_DB) {
     _patterns_imports_check_name($form_state['values']['export_name']);
   }
   else if (empty($form_state['values']['export_name'])) {
@@ -123,7 +142,7 @@ function patterns_export_submit($form, &$form_state) {
   $filename = $form_state['values']['export_name'];
   $path = patterns_config_get_files_dir();
 
-  $zip_flag = ($form_state['values']['export_to'] === 'zip') ? TRUE : FALSE;
+  $zip_flag = ($form_state['values']['to'] === PATTERNS_EXPORT_TO_ZIP) ? TRUE : FALSE;
   
   if ($zip_flag) {
     $zip = new ZipArchive();
@@ -166,7 +185,8 @@ function patterns_export_submit($form, &$form_state) {
         $zip->addFromString($pattern->name . '.yaml', Spyc::YAMLDump($pattern->pattern));
       }
       else {
-        $included = array('pattern' => $pattern->pattern);      
+        $included = _patterns_export_include_pattern($pattern, $form_state['values']['mode']);
+        $included = array('pattern' => $included);      
         $export['exported'][] = array('include' => $included);
       }
       
@@ -200,7 +220,7 @@ function patterns_export_submit($form, &$form_state) {
   $file.= "# Date and time: " . date('r') . "\n\n";
   $file.= Spyc::YAMLDump($export);
 
-  if ($form_state['values']['export_to'] === 'database') {
+  if ($form_state['values']['to'] === PATTERNS_EXPORT_TO_DB) {
     patterns_io_save_pattern($file, $filename, 'yaml', $path);
     drupal_goto('admin/patterns/export/');
   }
@@ -218,15 +238,78 @@ function patterns_export_submit($form, &$form_state) {
  * Checks if zip compression is available.
  * 
  */
-function _patterns_export_get_exp_options() {
+function _patterns_export_get_exp_to_options() {
   $options = array(
-    'database'   => t('Import into database'),
-    'file' => t('Download as a file'),
+    PATTERNS_EXPORT_TO_DB   => t(PATTERNS_EXPORT_TO_DB_TEXT),
+    PATTERNS_EXPORT_TO_FILE => t(PATTERNS_EXPORT_TO_FILE_TEXT),
   );
   
   if (class_exists('ZipArchive')) {
-    $options['zip'] = t('Download as a zip-archive');
+    $options[PATTERNS_EXPORT_TO_ZIP] = t(PATTERNS_EXPORT_TO_ZIP_TEXT);
   }
   
   return $options;
 }
+
+/**
+ * Builds an associative array of export options. 
+ * 
+ * Checks if zip compression is available.
+ * 
+ */
+function _patterns_export_get_exp_mode_options() {
+  $options = array(
+    PATTERNS_EXPORT_MODE_FULL     => t(PATTERNS_EXPORT_MODE_FULL_TEXT),
+    PATTERNS_EXPORT_MODE_ACTIONS  => t(PATTERNS_EXPORT_MODE_ACTIONS_TEXT),
+    PATTERNS_EXPORT_MODE_NAME     => t(PATTERNS_EXPORT_MODE_NAME_TEXT),
+    PATTERNS_EXPORT_MODE_ID       => t(PATTERNS_EXPORT_MODE_ID_TEXT),
+  );
+  
+  return $options;
+}
+
+/**
+ * Returns TRUE if the passed parameter is a valid flag
+ * to configure Patterns behaviors with the 'include' tag.
+ *  
+ */
+function patterns_export_is_valid_export_mode($mode = NULL) {
+  if (is_null($mode)) return FALSE;
+  
+  $modes = array(
+    PATTERNS_EXPORT_MODE_FULL,
+    PATTERNS_EXPORT_MODE_ACTIONS,
+    PATTERNS_EXPORT_MODE_NAME,
+    PATTERNS_EXPORT_MODE_ID,
+  );
+  
+  return (in_array($mode, $modes)) ? TRUE : FALSE;
+}
+
+/**
+ * Returns the portion of a pattern object to be included as a string,
+ * depending on the passed mode of exporting. 
+ * 
+ * @param stdclass $pattern an object representing the pattern as loaded from
+ *  the database
+ * @param mixed $mode one of the four inclusion modes
+ * 
+ */
+function _patterns_export_include_pattern($pattern, $mode = PATTERNS_EXPORT_MODE_FULL) {
+  if (empty($pattern)) return FALSE;
+  if ($mode === PATTERNS_EXPORT_MODE_FULL) {
+    return $pattern->pattern;
+  }
+  if ($mode === PATTERNS_EXPORT_MODE_ACTIONS) {
+    return patterns_parser_extract_all_actions($pattern->pattern);
+  }
+  if ($mode === PATTERNS_EXPORT_MODE_NAME) {
+    return $pattern->name;
+  }
+  if ($mode === PATTERNS_EXPORT_MODE_ID) {
+    return $pattern->pid;
+  }
+  return FALSE;
+  
+}
+
