@@ -1,3 +1,8 @@
+7022:
+
+		- Fixed some little bugs with inclusions
+		- Modules are also enabled when needed by included patterns
+
 7021:
 
 		- Patterns include works also with names and id of patterns

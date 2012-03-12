@@ -882,8 +882,7 @@ function patterns_get_include_mode($mode = NULL) {
  * Extract all the values of the modules tag from a pattern and
  * returns them as an array.
  * 
- * If succesfull returns the array of installed modules, FALSE
- * otherwise.
+ * If succesfull returns TRUE, FALSE otherwise.
  * 
  * @param mixed $pattern A pattern object, an array representing
  *  the pattern object, a numeric id or alphanumeric name of 
@@ -901,5 +900,5 @@ function patterns_install_modules_in_pattern($pattern) {
     drupal_set_message($results['error_message'], 'error');
     return FALSE;
   }
-  return $modules;
+  return TRUE;
 }

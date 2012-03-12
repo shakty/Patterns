@@ -723,6 +723,10 @@ function _patterns_parser_retrieve_actions_from_include($include, $options, $sec
  */
 function patterns_parser_include_pattern(&$actions, $include, $options = array(), $sections = NULL) {
   if (empty($include)) return $actions;
+  if (is_array($include) && isset($include['pattern'])) {
+    // take the code / id / name
+    $include = $include['pattern'];
+  }
   if (!patterns_install_modules_in_pattern($include)) {
     drupal_set_message(t('Failed to load the necessary modules for the included pattern. Its actions will not be executed.'));
     return $actions;
@@ -746,9 +750,10 @@ function patterns_parser_include_pattern(&$actions, $include, $options = array()
 function patterns_parser_should_include_local($include, $options = array()) {
   // ATTACHED
   $options = _patterns_parser_merge_default_include_options($options);
+  
   if ($options['mode'] === PATTERNS_INCLUDE_ATTACHED) {
     if (!is_array($include['pattern'])) {
-      if ($verbose) {
+      if ($options['verbose']) {
         drupal_set_message(t('A pattern was not included because lookup in the database is prohibited by the current configuration.'), 'status');
       }
       return FALSE;
@@ -923,7 +928,9 @@ function patterns_parser_extract_all_actions($pattern, $options, $sections = NUL
   $actions = array();
   $pattern = _patterns_db_get_pattern_array($pattern);
   if (!$pattern) return $actions;
-  
+  if (isset($pattern['pattern'])) {
+    $pattern = $pattern['pattern'];
+  }
   // Loop through the sections of the included pattern
   foreach ($pattern as $section => $value) {
     if (in_array($section, array('info', 'modules'))) continue;
