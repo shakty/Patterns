@@ -208,7 +208,7 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
     }
     $dir = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/' . $dir;
     if (!file_exists($dir)) {
-      $this->error(t('Directory not found: ' . $dir));
+      $this->error(t('Directory not found: ' . $dir)); // TODO: proper t().
       return FALSE;
     }
 

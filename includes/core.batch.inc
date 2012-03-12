@@ -39,7 +39,7 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
   $sections = $pattern_details['sections'];
 
   $include_options = patterns_parser_build_include_options($pid, $params['run-subpatterns']);
-  
+
   ///////////////////////////////
   // Looping through the sections
   ///////////////////////////////
@@ -48,15 +48,15 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
   foreach ($sections as $section => $actions) {
     // by default this pattern should run included ?
     // this setting can be overwritten by the pattern file itself
-     
+
     $actions = patterns_parser_retrieve_actions_from_section($actions, $include_options);
-    
+
     // This can happen if includes are disabled
     if (count($actions) == 0 ) {
       drupal_set_message(t('Section "%section" did not contain any valid action. Please check your policy for included patterns.', array('%section' => $section)), 'warning');
       continue;
     }
-    
+
     // Reformat the actions. $actions passed as reference.
     patterns_reformat_actions($actions);
 

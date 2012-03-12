@@ -34,9 +34,9 @@ function patterns_execute_pattern_php($pattern, $params, $patterns_details, $act
 
   $modules = $pattern_details['modules'];
   $sections = $pattern_details['sections'];
-  
+
   $include_options = patterns_parser_build_include_options($pid, $params['run-subpatterns']);
-  
+
   ///////////////////////////////
   // Looping through the sections
   ///////////////////////////////
@@ -48,7 +48,7 @@ function patterns_execute_pattern_php($pattern, $params, $patterns_details, $act
       drupal_set_message(t('Section "%section" did not contain any valid action. Please check your policy for included patterns.', array('%section' => $section)), 'warning');
       continue;
     }
-    
+
     // Reformat the actions. $actions passed as reference.
     // If includes are found, they are exploded into other actions
     patterns_reformat_actions($actions);

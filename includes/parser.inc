@@ -237,7 +237,7 @@ function _patterns_analyze_patternscan($patternscan) {
   if (count($patternscan['empties']) > 0) {
     $msgs[] = t('Pattern contains empty sections or actions:') . ' ' . implode(', ', $patternscan['empties']);
   }
-  
+
   if (count($patternscan['include_scans']) > 0) {
     foreach ($patternscan['include_scans'] as $i) {
       //$msgs[] = print_r($patternscan['includes'], true);
@@ -290,10 +290,10 @@ function patterns_parse_yaml($pattern) {
  *
  * @TODO Expand this function to include much more detailed validation.
  * @TODO Rewrite in an object oriented fashion
- * 
+ *
  */
 function _patterns_scan_pattern($pattern) {
-  $generic_error = 'pattern not loaded correctly';
+  $generic_error = t('pattern not loaded correctly');
   $result = array(
                   'info' => 0,
                   'modules' => 0,
@@ -305,18 +305,18 @@ function _patterns_scan_pattern($pattern) {
                   'contain_includes' => FALSE,
                   'include_scans' => array(),
   );
-  
+
   if (!is_array($pattern)) {
     $pattern = patterns_parse_yaml($pattern); // TODO: other formats as well.
   }
-  
+
   if (empty($pattern)) {
     $result['empties'][] = $generic_error;
     return $result;
   }
-  
+
   // Patterns is valid if contains:
-  
+
   //  - exactly 1 topmost section 'info'
   //  - at most 1 topmost section 'modules'
   //  - at least 1 more other sections
@@ -325,62 +325,62 @@ function _patterns_scan_pattern($pattern) {
   // If a section is called 'include;
   // it means that we are including a new pattern
   // and we apply _patterns_scan_pattern recursively.
-  
+
   $valid_actions = patterns_actions();
   foreach ($pattern as $key => $value) {
-    
+
     // INFO
     if ($key === 'info') {
       $result['info']++;
       continue;
     }
-    
+
     // MODULES
     if ($key === 'modules') {
       $result['modules']++;
       continue;
     }
- 
+
     // SECTIONS: invalid
     if (!is_array($value)) {
       // If the YAML is not loaded correctly you get 0.
-      $result['empties'][] = ($key === 0) ? $generic_error : $key; 
+      $result['empties'][] = ($key === 0) ? $generic_error : $key;
       continue;
     }
-    
-    // SECTIONS: valid        
+
+    // SECTIONS: valid
     $resultactions = array();
     $newactions = array();
-    
+
     // Collect info specific to each section
     $section_info = array();
     $section_info[PATTERNS_CREATE] = 0;
     $section_info[PATTERNS_MODIFY] = 0;
     $section_info[PATTERNS_DELETE] = 0;
     $section_info[PATTERNS_INCLUDE] = 0;
-    
+
     foreach ($value as $action => &$data) {
 
       if (empty($data)) {
         $result['empties'][] = $action;
-        continue;  
+        continue;
       }
-      
-      
+
+
       // Make sure there is only one valid action in each array element.
       // NOTE: Having additional valid actions will work, but is discouraged,
       // and therefore undocumented.
       $found = FALSE;
-      
+
       // TODO: check if $data is an array.
       foreach ($data as $akey => $avalue) {
-        
+
         if (!array_key_exists($akey, $valid_actions)) {
           $result['invalid_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
           continue;
         }
-        
-        
+
+
         // Update counter of the action;
         $section_info[$akey] = $section_info[$akey]+1;
 
@@ -388,26 +388,26 @@ function _patterns_scan_pattern($pattern) {
         if ($found) {
           $result['extra_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
         }
-        
+
         // Do action specific checkings
         ////////////////////////////////
-        
+
         if ($akey === PATTERNS_INCLUDE) {
           $result['contain_includes'] = TRUE;
-          
+
           if (!isset($avalue['pattern'])) {
             $result['missing_tag'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
-            continue;  
+            continue;
           }
-          
+
           // only if the pattern is hard-coded, then scan it
           if (is_array($avalue['pattern'])) {
-            $result['include_scans'][] = _patterns_scan_pattern($avalue['pattern']); 
+            $result['include_scans'][] = _patterns_scan_pattern($avalue['pattern']);
           }
           continue;
         }
-        
-        
+
+
         // Check if 'tag' is present.
         if (!isset($avalue['tag']) || !is_string($avalue['tag'])) {
           $result['missing_tag'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
@@ -416,8 +416,8 @@ function _patterns_scan_pattern($pattern) {
           $newactions[] = array('action' => $akey, 'data' => $avalue);
         }
         $found = TRUE;
-          
-       
+
+
       }
     }
     $value = $newactions;
@@ -426,9 +426,9 @@ function _patterns_scan_pattern($pattern) {
                                        PATTERNS_MODIFY . ':' . $section_info[PATTERNS_MODIFY] . ', ' .
                                        PATTERNS_DELETE . ':' . $section_info[PATTERNS_DELETE] . ', ' .
                                        PATTERNS_INCLUDE . ':' . $section_info[PATTERNS_INCLUDE] . ')';
-    
-  
-    
+
+
+
   }
 
   return $result;
@@ -478,17 +478,17 @@ function patterns_parser_get_pattern_details($pattern, $recursive = FALSE, &$pid
   $scan = _patterns_scan_pattern($pattern->pattern);
   // This will display errors if there are any.
   if (!_patterns_validate_patternscan($scan, TRUE)) return FALSE;
-  
+
   $details = array();
-  
+
   $details['info'] = $pattern->pattern['info'];
   $details['sections'] = array_intersect_key($pattern->pattern, $scan['other_sections']);
   $details['modules'] = ($scan['modules'] > 0 ) ? $pattern->pattern['modules'] : array();
   //if (!$scan['contain_includes'])
     return array($pattern->pid => $details); // TODO: only one pattern
   //}
-  
-  
+
+
 
   ////////////////////////////////////////////////////////////////
   // IMPORTANT
@@ -649,19 +649,19 @@ function patterns_parser_validate_xml_pattern($content) {
 
 /**
  * Returns all the actions from a a given section
- * @param array $section 
+ * @param array $section
  * @param array $pattern the pattern to scan
- * 
+ *
  */
 function patterns_parser_retrieve_actions_from_section($section, $options = array()) {
   if (empty($section)) return FALSE;
-  
+
   $actions = array();
   foreach ($section as $key => $value ) {
     $action = key($value);
     if (in_array($action, patterns_actions())) {
       if ($action !== PATTERNS_INCLUDE) {
-        $actions[] = $section[$key]; 
+        $actions[] = $section[$key];
       }
       // include
       else {
@@ -673,26 +673,26 @@ function patterns_parser_retrieve_actions_from_section($section, $options = arra
 //            $actions = array_merge($actions, $new_actions);
           }
       }
-      
+
     }
   }
   return $actions;
 }
 
 /**
- * Returns all the actions from a pattern array. 
+ * Returns all the actions from a pattern array.
  * Sections are not preserved.
- * 
+ *
  * @param $include the pattern to scan
  * @param array $sections include only these sections (not used for now)
- * 
+ *
  */
 function _patterns_parser_retrieve_actions_from_include($include, $options, $sections = NULL) {
   $actions = array();
-  if (!isset($include['pattern']) || empty($include['pattern'])){
+  if (!isset($include['pattern']) || empty($include['pattern'])) {
     return $actions;
   }
-  
+
   // if pattern is an id or a name,
   // try to load it from the database
   if (!is_array($include['pattern'])) {
@@ -703,7 +703,7 @@ function _patterns_parser_retrieve_actions_from_include($include, $options, $sec
     }
     $include['pattern'] = $p->pattern;
   }
-  
+
   return patterns_parser_extract_all_actions($include['pattern'], $options, $sections);
 }
 
@@ -712,7 +712,7 @@ function _patterns_parser_retrieve_actions_from_include($include, $options, $sec
  * Sections of the included patterns are not preserved, and all its actions
  * are appended at the end of the first parameter
  * 
- * @param array $actions the including pattern, or a subset of actions of it
+ * @param array &$actions the including pattern, or a subset of actions of it
  * @param array $include the included pattern
  * @param array $options the include options for nested patterns included 
  *  in the included patterns.
@@ -738,12 +738,12 @@ function patterns_parser_include_pattern(&$actions, $include, $options = array()
 
 /**
  * Determines whether an pattern should be included based on the
- * local configuration (the pattern code itself). 
- * 
+ * local configuration (the pattern code itself).
+ *
  * If a pattern id is specified in the associative array $options,
  * it also takes that into consideration, otherwise uses the default
  * include settings.
- * 
+ *
  *  @see patterns_parser_should_include
  *  @see _patterns_parser_merge_default_include_options
  */
@@ -760,42 +760,40 @@ function patterns_parser_should_include_local($include, $options = array()) {
     }
   }
   // OTHER MODES
-  else if (!empty($include) && isset($include['run'])) {
-    
+  elseif (!empty($include) && isset($include['run'])) {
+
      // then we check if something is specified in the pattern file
     if (patterns_parser_is_valid_include_mode($include['run'])) {
       if ($include['run'] === PATTERNS_INCLUDE_ATTACHED) {
         return patterns_parser_should_include_local($include, array('mode' => PATTERNS_INCLUDE_ATTACHED));
       }
-        
+
       $options = array_merge($options, array('mode' => $include['run']));
       return patterns_parser_should_include(NULL, $options);
-      
+
     }
   }
-  
+
   // RETURN GLOBAL OPTION IF WE COULD NOT DO BETTER
   return $options['include'];
 }
 
 /**
- * Determines if a pattern should be included or not. 
+ * Determines if a pattern should be included or not.
  * The following conditions are checked in order:
- * 
+ *
  *  - if a 'run' attribute is associated with the include tag
  *  - if $mode parameter was passed
  *  - the default include mode from system variables
- * 
+ *
  * @param mixed $pattern the including pattern, identified by its id or its name, or
  *  the full object as loaded from the database. If the including
  * @param array $include the include tag from a pattern
  * @param mixed $mode a valid mode for sub-patterns execution
- * 
+ *
  */
-function patterns_parser_should_include($pattern = NULL, 
-                                        $options = array()
-                                       ){
-    
+function patterns_parser_should_include($pattern = NULL, $options = array()) {
+
   $options = _patterns_parser_merge_default_include_options($options);
 
   $pattern = is_null($pattern) ? $options['pattern'] : $pattern;
@@ -803,7 +801,7 @@ function patterns_parser_should_include($pattern = NULL,
   $enabled = $options['enabled'];
   $verbose = $options['verbose'];
   $mode    = $options['mode'];
-  
+
   // If we set $mode programmatically, that has the highest priority
   // otherwise fallback on default configuration
   if (!patterns_parser_is_valid_include_mode($mode)) {
@@ -819,25 +817,25 @@ function patterns_parser_should_include($pattern = NULL,
         $enabled = ($p->status == PATTERNS_STATUS_ENABLED) ? TRUE : FALSE;
       }
   }
-  
+
   switch ($mode) {
     case PATTERNS_INCLUDE_ALWAYS:
       break;
-      
+
     case PATTERNS_INCLUDE_ATTACHED:
       // This option is checked by patterns_parser_should_include_local
       break;
-      
+
     case PATTERNS_INCLUDE_FIRSTRUN:
       // Only run on first run.
       if ($enabled) {
         if ($verbose) {
-          drupal_set_message(t('A pattern was not included because the pattern was set to execute only on the first run.'), 'status'); 
+          drupal_set_message(t('A pattern was not included because the pattern was set to execute only on the first run.'), 'status');
         }
         return FALSE;
       }
       break;
-      
+
     case PATTERNS_INCLUDE_UPDATE:
       // Only run on pattern update.
       if (!$updated) {
@@ -847,26 +845,26 @@ function patterns_parser_should_include($pattern = NULL,
         return FALSE;
       }
       break;
-      
+
     case PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE:
       // Only run on first run or pattern update.
       if (!$enabled || !$updated) {
         if ($verbose) {
-          drupal_set_message(t('A pattern was not included because the pattern was set to execute only on first run or update.'), 'status'); 
+          drupal_set_message(t('A pattern was not included because the pattern was set to execute only on first run or update.'), 'status');
         }
         return FALSE;
       }
       break;
-      
+
     case PATTERNS_INCLUDE_NEVER:
     default:
       if ($verbose) {
-        drupal_set_message(t('A pattern was not included because that is forbidden by the current configuration.'), 'status'); 
+        drupal_set_message(t('A pattern was not included because that is forbidden by the current configuration.'), 'status');
       }
       return FALSE;
       break;
   }
-  
+
   return TRUE;
 }
 
@@ -876,20 +874,20 @@ function _patterns_parser_merge_default_include_options($options) {
                     'updated' => FALSE,
                     'verbose' => FALSE,
                     'pattern' => NULL,
-                    'mode' => NULL, 
+                    'mode' => NULL,
   );
-                                                              
+
   return array_merge($defaults, $options);
 }
 
 /**
  * Returns TRUE if the passed parameter is a valid flag
  * to configure Patterns behaviors with the 'include' tag.
- *  
+ *
  */
 function patterns_parser_is_valid_include_mode($mode = NULL) {
     if (is_null($mode)) return FALSE;
-    
+
     $modes = array( PATTERNS_INCLUDE_NEVER,
                   PATTERNS_INCLUDE_FIRSTRUN,
                   PATTERNS_INCLUDE_UPDATE,
@@ -897,32 +895,32 @@ function patterns_parser_is_valid_include_mode($mode = NULL) {
                   PATTERNS_INCLUDE_ATTACHED,
                   PATTERNS_INCLUDE_ALWAYS,
   );
-  
+
   return (in_array($mode, $modes)) ? TRUE : FALSE;
 }
 
 function patterns_parser_build_include_options($pid, $run_mode = NULL) {
-  
+
   $run_mode = patterns_get_include_mode($run_mode);
   $options = array('mode' => $run_mode);
- 
+
   return array('pattern' => $pid,
-               'include' => patterns_parser_should_include($pid, $options), 
+               'include' => patterns_parser_should_include($pid, $options),
                'mode' => $run_mode,
   );
 }
 
 /**
  * Extract all the actions from a pattern and returns them as an array.
- * 
+ *
  * @param mixed $pattern A pattern object, an array representing
- *  the pattern object, a numeric id or alphanumeric name of 
+ *  the pattern object, a numeric id or alphanumeric name of
  *  the pattern as it is in the database
- *  
+ *
  * @param array $sections array containing the name of the sections,
- *  from which extract the actions. If NULL, all the sections will be 
+ *  from which extract the actions. If NULL, all the sections will be
  *  scanned.
- * 
+ *
  */
 function patterns_parser_extract_all_actions($pattern, $options, $sections = NULL) {
   $actions = array();
@@ -938,7 +936,7 @@ function patterns_parser_extract_all_actions($pattern, $options, $sections = NUL
     $newactions = patterns_parser_retrieve_actions_from_section($value, $options);
     $actions = array_merge($actions, $newactions);
   }
-  
+
   return $actions;
 }
 

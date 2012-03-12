@@ -4,22 +4,22 @@
  * Patterns component for pathauto.
  */
 function pathauto_patterns() {
-  $files = array('sites/all/modules/pathauto/pathauto.admin.inc','modules/path/path.admin.inc');
+  $files = array('sites/all/modules/pathauto/pathauto.admin.inc', 'modules/path/path.admin.inc');
 
   $actions['pathauto'] = array(
-    'descr' => t('Setting pathauto'),
+    PATTERNS_INFO => t('Setting pathauto'),
     PATTERNS_MODIFY => array('pathauto_settings_form'),
     PATTERNS_FILES => $files,
   );
   $actions['url_alias'] = array(
-    'descr' => t('create/edit/delit url aliases'),
+    PATTERNS_INFO => t('Create/Edit/Delete URL aliases'),
     PATTERNS_CREATE => array('path_admin_form'),
     PATTERNS_MODIFY => array('path_admin_form'),
     PATTERNS_DELETE => array('path_admin_delete_confirm'),
     PATTERNS_FILES => $files,
   );
   $actions['pathauto_patterns'] = array(
-    'descr' => t('setting patterns for auto URLs aliases'),
+    PATTERNS_INFO => t('setting patterns for auto URLs aliases'),
     PATTERNS_MODIFY => array('pathauto_patterns_form', 'pathauto_bulk_update_form'),
     PATTERNS_FILES => $files,
   );
@@ -30,8 +30,8 @@ function pathauto_patterns() {
 
 function pathauto_patterns_actions() {
   return array(
-    'pathauto_admin_form' => t('Pathauto: Create/edit url aliases'),
-    'path_admin_delete_confirm' => t('Pathauto: Delit url aliases'),
+    'pathauto_admin_form' => t('Pathauto: Create/Edit URL aliases'),
+    'path_admin_delete_confirm' => t('Pathauto: Delete URL aliases'),
     'pathauto_settings_form' => t('Pathauto: Configure pathauto settings'),
     'pathauto_patterns_form' => t('Pathauto: Configure patterns settings for auto URLs aliases'),
     'pathauto_bulk_update_form' => t('Pathauto: Generate URL aliases according to patterns settings'),
@@ -42,18 +42,18 @@ function pathauto_patterns_actions() {
 // Prepare data for processing
 function pathauto_patterns_prepare($action, $tag, &$data = NULL) {
   // dirty fix for the null/0/false/'' problem
-  if(isset($data['pathauto_verbose']) && $data['pathauto_verbose'] === 0)
+  if (isset($data['pathauto_verbose']) && $data['pathauto_verbose'] === 0)
     $data['pathauto_verbose'] = NULL;
-  if(isset($data['pathauto_reduce_ascii']) && $data['pathauto_reduce_ascii'] === 0)
+  if (isset($data['pathauto_reduce_ascii']) && $data['pathauto_reduce_ascii'] === 0)
     $data['pathauto_reduce_ascii'] = NULL;
 
   $datacopy = $data;
   if ($tag == "pathauto_patterns" || $tag == "pathauto") {
     foreach ($datacopy as $key => $value) {
-      if(strpos($key, 'pathauto') !== FALSE)
+      if (strpos($key, 'pathauto') !== FALSE)
         continue;
       if (is_array($value)) {
-        if ( $key != "update") {
+        if ($key != "update") {
           foreach ($value as $i => $v) {
             $new =  'pathauto_' . $i . '_' . $key;
             $data[$new] = $v;
@@ -71,7 +71,7 @@ function pathauto_patterns_prepare($action, $tag, &$data = NULL) {
           }
         }
       }
-      else if(substr($key, 0, 9) != 'pathauto_') {
+      elseif (substr($key, 0, 9) != 'pathauto_') {
         $new = 'pathauto_' . $key;
         $data[$new] = $value;
         unset($data[$key]);
@@ -135,7 +135,7 @@ function pathauto_patterns_build($action, $tag, &$data = NULL, $form_id) {
 }
 
 /*
- * 
+ *
  */
 function pathauto_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
   $return = array();

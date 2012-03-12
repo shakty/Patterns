@@ -233,7 +233,7 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
 
       // @TODO: do we need this?
       if ($errors = form_get_errors()) {
-        $results['error_message'] = t('Above error(s) occured while executing action #%num (%action) in %title pattern. Error location(s) are: %errors', array('%num' => $index, '%action' => $action_description, '%title' => $pattern_title, '%errors' => str_replace('][', '->', implode(', ', array_keys($errors)))));
+        $results['error_message'] = t('Above error(s) occurred while executing action #%num (%action) in %title pattern. Error location(s) are: %errors', array('%num' => $index, '%action' => $action_description, '%title' => $pattern_title, '%errors' => str_replace('][', '->', implode(', ', array_keys($errors)))));
         $results['success'] = FALSE; // @TODO: Do we need success = FALSE ?
         $results['status'] = PATTERNS_ERR;
         return $results;
@@ -321,7 +321,7 @@ function patterns_execute_action($form_id, &$form_state, $params) {
 function patterns_reformat_actions(&$actions) {
   $valid_actions = patterns_actions();
   $newactions = array();
-  
+
   foreach ($actions as $key => $value) {
     //$found = FALSE;
     foreach ($value as $akey => $avalue) {
@@ -332,18 +332,18 @@ function patterns_reformat_actions(&$actions) {
       else {
           $newactions[] = array('action' => $akey, 'data' => $avalue);
 
-// experimental 08.03          
+// experimental 08.03
 //                  if ($akey === PATTERNS_INCLUDE) {
 //          $included = _patterns_retrieve_actions_included_from_pattern($avalue);
 //          $reformated = patterns_reformat_actions($included);
 //          $newactions = array_merge($newactions, $reformated);
 //                  }
-        
+
       // Additional actions. Discouraged and undocumented.
 //        if ($found) {
 //          $result['extra_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
 //        }
-        
+
         //$found = TRUE;
       }
     }

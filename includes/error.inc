@@ -12,7 +12,7 @@ function patterns_set_error_handler() {
   set_error_handler('patterns_error_handler');
   // trigger dummy error
   // This will be used as a refrence to determine if any real error
-  // occured during the pattern execution.
+  // occurred during the pattern execution.
   @trigger_error('patterns_error');
 }
 
@@ -84,7 +84,7 @@ function patterns_error_handler($errno, $message, $filename, $line, $context) {
  * Check and report PHP errors during patterns execution.
  *
  * @param $op
- *   Operation within hook_patterns() during which the error occured.
+ *   Operation within hook_patterns() during which the error occurred.
  * @param $key
  *   Number of the actions currently proccessed.
  * @param $description
@@ -100,6 +100,7 @@ function patterns_error_handler($errno, $message, $filename, $line, $context) {
 function patterns_error_get_last($op, $key, $description, $pattern_title, $pattern_file) {
   $error = patterns_error_last();
 
+  // TODO: t()?
   if (!empty($error) && $error['message'] != 'patterns_error') {
     $types = array(
         1 => array('Error', WATCHDOG_ERROR),
@@ -118,7 +119,7 @@ function patterns_error_get_last($op, $key, $description, $pattern_title, $patte
       );
 
     $php_error_message = $types[$error['type']][0] . ': ' . $error['message'] . ' in ' . $error['file'] . ' on line ' . $error['line'] . '.';
-    $message = t('Pattern %title (%pattern_file)<br/>Action #%key: %description (op "%op")<br/>PHP error occured:<br/>%error', array('%key' => $key, '%title' => $pattern_title, '%op' => $op, '%description' => $description, '%error' => $php_error_message, '%pattern_file' => $pattern_file));
+    $message = t('Pattern %title (%pattern_file)<br/>Action #%key: %description (op "%op")<br/>PHP error occurred:<br/>%error', array('%key' => $key, '%title' => $pattern_title, '%op' => $op, '%description' => $description, '%error' => $php_error_message, '%pattern_file' => $pattern_file));
     return $message;
   }
   return FALSE;
@@ -154,6 +155,7 @@ function patterns_error_check_results(&$result) {
     return TRUE;
   }
 
+  // TODO: t()?
   $msg = 'Error occurred in ';
 
   if (isset($result['details'])) {
@@ -166,7 +168,7 @@ function patterns_error_check_results(&$result) {
   }
 
   $msg = (empty($result['msg'])) ? $msg : $msg . $result['msg'];
-  watchdog('patterns', $msg, array(), $wd_type);
+  watchdog('patterns', $msg, array(), $wd_type); // TODO: $msg is not a literal string.
   drupal_set_message($result['msg'], $msg_type);
 
   return $return;

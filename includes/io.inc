@@ -293,11 +293,11 @@ function patterns_load_components() {
  * @return array An associative array of informative messages
  */
 function patterns_io_scan_directories($verbose = FALSE) {
-  
-  $existing = patterns_db_get_patterns_array('name', TRUE);    
+
+  $existing = patterns_db_get_patterns_array('name', TRUE);
   // Patterns already enabled won't be updated in the database
   $enabled = patterns_db_get_enabled_patterns_array('name', TRUE);
-  
+
   $messages = array();
   $messages['errors'] = array();
   $messages['skipped'] = array();
@@ -320,17 +320,17 @@ function patterns_io_scan_directories($verbose = FALSE) {
   foreach ($patterns_paths as $path) {
     //debug($path);
     foreach (file_scan_directory($path, $mask, $no_mask) as $file) {
-      
+
       if (in_array($file->name, $existing)) {
         if (!variable_get('patterns_update_db_from_fs', TRUE)) {
           continue;
         }
-        
+
         if (!patterns_db_is_pattern_updated($file->name)) {
           // the database is already updated to the most recent version
           continue;
         }
-        
+
         if (!empty($enabled)) {
           if (in_array($file->name, $enabled)) {
             $messages['skipped'][] = $file->name;
@@ -338,12 +338,12 @@ function patterns_io_scan_directories($verbose = FALSE) {
           }
         }
       }
-  
+
       if (!is_readable($file->uri)) {
         $messages['permission'][] = $file->filename;
         continue;
       }
-      
+
       // Choose appropriate function based on the file extension: YAML or XML.
       $func = 'patterns_load_' . substr($file->filename, strlen($file->name) + 1);
 
@@ -352,38 +352,38 @@ function patterns_io_scan_directories($verbose = FALSE) {
         $messages['errors'][] = $file->filename;
         continue;
       }
-      
+
       if (!patterns_validate_pattern($pattern)) {
         $messages['invalid'][] = $file->filename;
         continue;
-      }   
+      }
 
       // If everything was fine save it to the database
       $result = patterns_db_save_pattern($pattern, $file->uri, $file->name);
-      
+
       if ($result && !in_array($file->name, $existing)) {
         $messages['found'][] = $file->name;
         continue;
       }
-      
+
       if (!$result && !in_array($file->name, $existing)) {
         $messages['error_found'][] = $file->name;
         continue;
       }
-      
+
       if ($result && in_array($file->name, $existing)) {
         $messages['updated'][] = $file->name;
         continue;
       }
-      
+
       if (!$result && in_array($file->name, $existing)) {
         $messages['error_updated'][] = $file->name;
         continue;
       }
-      
+
     }
   }
-  
+
   variable_set('patterns_loaded', time());
   if ($verbose) {
     _patterns_io_analyze_scandir_messages($messages);
@@ -392,15 +392,16 @@ function patterns_io_scan_directories($verbose = FALSE) {
 }
 
 /**
- * Analyzes the result of the patterns directories scan and 
- * displays relevant Drupal messages to the user.  
- * 
- * @see patterns_io_scan_directories
- * 
+ * Analyzes the result of the patterns directories scan and
+ * displays relevant Drupal messages to the user.
+ *
+ * @see patterns_io_scan_directories()
+ *
  */
 function _patterns_io_analyze_scandir_messages($messages = NULL) {
   if (is_null($messages)) return;
-  
+
+  // TODO: fix these to be proper t().
   if (!empty($messages['found'])) {
     drupal_set_message(t('New patterns were found and added to the database: ') . '<br/>' . implode('<br/>', $messages['found']) . '<br/><br/>');
   }
@@ -422,28 +423,28 @@ function _patterns_io_analyze_scandir_messages($messages = NULL) {
   if (!empty($messages['error_updated'])) {
     drupal_set_message(t('A newer version of the following pattern was found, but could not be saved in the database: ') . '<br/>' . implode('<br/>', $messages['error_found']) . '<br/><br/>', 'warning');
   }
-  
+
 }
 
 /**
  * Loads all the available patterns from the database.
- * It also check against the file systems, and, if the 
- * patterns global configuration options allow it, 
- * updates the database with the latest modifications. 
+ * It also check against the file systems, and, if the
+ * patterns global configuration options allow it,
+ * updates the database with the latest modifications.
  * Notice: enabled patterns will not be updated anyway.
  *
  * @param $reset if TRUE, it always updates the patterns in
- *  the database with the file system. 
+ *  the database with the file system.
  *
  * @return array The array of available patterns.
  */
 function patterns_get_patterns($reset = TRUE, $verbose = TRUE) {
 
   if ($reset || !variable_get('patterns_loaded', FALSE)) {
-    // Updates the patterns in the database   
-   patterns_io_scan_directories($verbose); 
+    // Updates the patterns in the database
+    patterns_io_scan_directories($verbose);
   }
-  
+
   // Get all the patterns from the database
   $result = patterns_db_get_patterns();
 
@@ -454,13 +455,13 @@ function patterns_get_patterns($reset = TRUE, $verbose = TRUE) {
 
 
   foreach ($result as $pattern) {
-    
+
     // Skip pattern if its name is missing.
     if (!isset($pattern->name)) {
       continue;
     }
-    
-    // Skip pattern if its file is missing.  
+
+    // Skip pattern if its file is missing.
     if (!is_file($pattern->file)) {
       $messages[] = patterns_utils_toString($pattern);
     }
@@ -494,7 +495,7 @@ function patterns_io_get_patterns_service($type = 'ajax') {
 
   if ($type == 'ajax') {
     $patterns = patterns_get_patterns();
-    $output = '<div id="all_patterns_div"><strong>last update: </strong>' . date(DATE_RFC822);
+    $output = '<div id="all_patterns_div"><strong>' . t('last update:') . '</strong>' . date(DATE_RFC822);
     $output .= theme('patterns_list', $patterns);
     $output .= '</div>';
 
@@ -524,7 +525,7 @@ function _patterns_io_check_htaccess() {
  * Checks if the patterns directory exist and is writable.
  */
 function _patterns_io_is_patterns_dir_ready($patterns_files_dir = '', $flag = FILE_MODIFY_PERMISSIONS) {
- 
+
   // TODO: keep pattern_files_dir in a separate location. Warning: defining a constant creates an error.
   if (empty($patterns_files_dir)) {
     $patterns_files_dir = patterns_config_get_files_dir(); // TODO: move this out for performance
@@ -580,7 +581,7 @@ function patterns_io_save_pattern($content = NULL, $name = NULL, $format = 'yaml
     drupal_set_message(t("Pattern '%name' could not be saved into the database. Make sure edited code is well-formed.", array('%name' => $name)), 'error');
     return FALSE;
   }
-  
+
   patterns_db_save_pattern($pattern, $path, $name);
   drupal_set_message(t('Pattern %name was saved in %path.', array('%name' => $name,
                                                                   '%path' => $path,

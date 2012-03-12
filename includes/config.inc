@@ -38,50 +38,50 @@ function patterns_help($section, $arg = NULL) {
  * @TODO proper doc.
  */
 function patterns_config_settings($form, &$form_state) {
-  
+
   $form['patterns_save_file'] = array(
     '#type' => 'textfield',
     '#title' => t('Default Directory for Patterns Files'),
     '#description' => t('By default, patterns files will be saved and loaded from here.'),
     '#default_value' => variable_get('patterns_save_file', 'sites/all/patterns/'),
   );
-  
+
   $form['patterns_default_running_mode'] = array(
     '#type' => 'radios',
     '#title' => t('Default Running Mode'),
     '#description' => t('The default running mode when running a pattern.'),
-    '#options' => array('batch' => 'Batch', 'php' => 'PHP'),
+    '#options' => array('batch' => t('Batch'), 'php' => t('PHP')),
     '#default_value' => variable_get('patterns_default_running_mode', 'batch'),
   );
-  
+
   $form['patterns_form_helper'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable Patterns Form Helper'),
     '#description' => t('When enabled, patterns form helper will dump $form_id and $form_state variables at the bottom of each page. Dump will always contain values from the latest form submission. This may be very helpful while writing your own patterns.'),
     '#default_value' => variable_get('patterns_form_helper', FALSE),
   );
-  
+
   $form['patterns_update_db_from_fs'] = array(
     '#type' => 'checkbox',
     '#title' => t('Sync database and file system'),
     '#description' => t('When enabled, patterns in the database will be automatically updated to the latest version found in the file system. If the pattern was already been enabled, it just display a warning, but it does not execute the update.'),
     '#default_value' => variable_get('patterns_update_db_from_fs', TRUE),
   );
-  
+
   $form['patterns_default_include_mode'] = array(
     '#type' => 'radios',
     '#title' => t('Included patterns'),
     '#description' => t('Default behavior with included patterns. This option can be overwritten inside the pattern code.'),
-    '#options' => array(PATTERNS_INCLUDE_NEVER => PATTERNS_INCLUDE_NEVER_TEXT,
-                   PATTERNS_INCLUDE_FIRSTRUN => PATTERNS_INCLUDE_FIRSTRUN_TEXT,
-                   PATTERNS_INCLUDE_UPDATE => PATTERNS_INCLUDE_UPDATE_TEXT,
-                   PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE => PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE_TEXT,
-                   PATTERNS_INCLUDE_ATTACHED => PATTERNS_INCLUDE_ATTACHED_TEXT,
-                   PATTERNS_INCLUDE_ALWAYS => PATTERNS_INCLUDE_ALWAYS_TEXT,
+    '#options' => array(PATTERNS_INCLUDE_NEVER => t('Never run'),
+                   PATTERNS_INCLUDE_FIRSTRUN => t('Only during the first run'),
+                   PATTERNS_INCLUDE_UPDATE => t('Only if pattern was updated'),
+                   PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE => t('If it is the first run or if the pattern was updated'),
+                   PATTERNS_INCLUDE_ATTACHED => t('Only if the pattern code is attached (no lookup to database)'),
+                   PATTERNS_INCLUDE_ALWAYS => t('Always'),
   ),
     '#default_value' => patterns_get_include_mode(),
   );
-  
+
   /* TODO: Outdated, disabled for now.
   $form['patterns_allow_publish'] = array(
     '#type' => 'checkbox',
@@ -90,7 +90,7 @@ function patterns_config_settings($form, &$form_state) {
     '#default_value' => variable_get('patterns_allow_publish', FALSE),
   );
    */
-  
+
   // Reload patterns while we are here and ensure the lists are up to date.
   //patterns_get_patterns(TRUE);
 

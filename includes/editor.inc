@@ -161,7 +161,7 @@ function patterns_editor_create_page($pid = NULL) {
  */
 function patterns_edit_page($pid = NULL) {
   $pattern = patterns_utils_if_invalid_go_back($pid);
-  
+
   if (!$pattern->file) {
     drupal_set_message(t('This pattern does not seem to be associated with a valid source file.'), 'error');
     return FALSE;
@@ -204,7 +204,7 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
   $title = t('Pattern File');
   $description = '';
   $validation = patterns_db_analyze_patterns_status($pattern->status);
-  
+
   $form['name'] = array(
     '#type' => 'value',
     '#value' => $pattern->name,
@@ -221,7 +221,7 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
     '#options' => array_combine(patterns_config_get_file_types(), patterns_config_get_file_types()),
     '#default_value' => $extension,
   );
-  
+
   if (!empty($pattern->file)) {
     $extension = pathinfo($pattern->file, PATHINFO_EXTENSION);
     if (file_exists($pattern->file)) {
@@ -234,38 +234,38 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
 
   if (!$content) {
     drupal_set_message(t('The pattern file was removed from its stored location in the file system. Trying to load from the database.'), 'error');
-    if (empty($pattern->pattern)){
-      drupal_set_message(t('No valid pattern found in the database either.', 'ERR'));   
+    if (empty($pattern->pattern)) {
+      drupal_set_message(t('No valid pattern found in the database either.', 'ERR'));
     }
     else {
       require_once libraries_get_path('spyc') . '/spyc.php';
       $content = Spyc::YAMLDump($pattern->pattern);
     }
-    
+
     $title = t('Pattern file recovered from the database');
     $description = t('Comments are not stored in the database.') . '</br></br>';
-    
+
   }
   else {
     // Pattern was updated in the file system. Show what was in the database
     if (patterns_db_is_pattern_updated($pattern)) {
       require_once libraries_get_path('spyc') . '/spyc.php';
       $db_content = Spyc::YAMLDump($pattern->pattern);
-      
+
       $form['db'] = array(
         '#type' => 'fieldset',
         '#title' => t('The Pattern file stored in the database'),
-        '#prefix' => '<strong>' .t('Warning!! A newer version of this pattern was found in the file system, and both the version stored in the database, and the one just found are displayed here for comparison.') . '</strong><br/>',
+        '#prefix' => '<strong>' . t('Warning!! A newer version of this pattern was found in the file system, and both the version stored in the database, and the one just found are displayed here for comparison.') . '</strong><br/>',
         '#description' => t('This is the old version of the pattern found in the database. This is what will be executed if this pattern is run.') . '</br></br>',
         '#collapsibale' => TRUE,
       );
-      
+
       $form['db']['validation_result_db'] = array(
         '#markup' => '<strong>' . $validation . '</strong>',
         '#prefix' => '<div id="validation_result_db">',
         '#suffix' => '</div>',
       );
-      
+
       $form['db']['content_db'] = array(
         '#type' => 'textarea',
         '#title' => t('Pattern\'s code'),
@@ -273,13 +273,13 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
         '#default_value' => $db_content,
         '#disabled' => 'true',
       );
-      
-      
+
+
       // Update the validation string for the new pattern in the fs.
       $title = t('Pattern file as loaded from the file system');
       $validation = 'This pattern has not been validated yet.';
       $description = t('Newer version of the pattern found in the file system.') . '</br></br>';
-    }    
+    }
   }
 
   $form['fs'] = array(
@@ -288,13 +288,13 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
     '#description' => $description,
     '#suffix' => '</br>',
   );
-  
-   $form['fs']['validation_result'] = array(
+
+  $form['fs']['validation_result'] = array(
     '#markup' => '<strong>' . $validation . '</strong>',
     '#prefix' => '<div id="validation_result">',
     '#suffix' => '</div>',
   );
-  
+
   $form['fs']['content'] = array(
     '#type' => 'textarea',
     '#title' => t('Pattern\'s code'),

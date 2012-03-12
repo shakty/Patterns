@@ -151,7 +151,7 @@ function patterns_modules_page($pid) {
   }
 
   if ($not_available) {
-    drupal_set_message(t('Some modules are not availalble, please download them before running this pattern.'), 'error');
+    drupal_set_message(t('Some modules are not available, please download them before running this pattern.'), 'error');
   }
   else {
     drupal_set_message(t('All modules required by this module are available. Click !here to run this pattern.', array('!here' => l(t('here'), 'admin/patterns/enable/' . $pid))));
@@ -160,7 +160,7 @@ function patterns_modules_page($pid) {
   //Ste: was
   //return theme('table', array(t('Name'), t('Available'), t('Enabled'), t('Pattern Action')), $rows, t('Modules used for this pattern'));
   $header = array(t('Name'), t('Available'), t('Enabled'), t('Pattern Action'));
-  return theme('table', array('header' => $header, 'rows' => $rows, 'caption' => 'Modules used for this pattern')); //
+  return theme('table', array('header' => $header, 'rows' => $rows, 'caption' => t('Modules used for this pattern')));
 
 }
 
@@ -507,7 +507,7 @@ function patterns_actions() {
  * Returns a string representation of a pattern object or array.
  * If an id or the name of the pattern is passed, it tries
  * to load it, and then constructs the name of the pattern.
- * 
+ *
  * @param mixed $pattern
  */
 function patterns_utils_toString($pattern = NULL) {
@@ -522,27 +522,28 @@ function patterns_utils_toString($pattern = NULL) {
  * Default values for empty parameters are passed, e.g. the current user
  * for the author, and author's email and the url of the Drupal web site
  * for the author's web site.
- * 
+ *
  * @param mixed $category
  * @param mixed $descr
  * @param mixed $v
  * @param mixed $core
  * @param mixed $user
  * @param mixed $base_root
- * 
+ *
  */
+// TODO: t()
 function patterns_utils_generate_info_section($title = 'Untitled Pattern',
-                                              $category = 'General', 
+                                              $category = 'General',
                                               $descr = 'No description',
                                               $v = '1.0',
-                                              $core = 'x.y', 
+                                              $core = 'x.y',
                                               $user = NULL,
                                               $base_root = NULL ) {
   if (is_null($user)) global $user;
   if (is_null($base_root)) global $base_root;
-  
+
   $info = array('info' => array());
-  
+
   $info['info']['title']          = $title;
   $info['info']['author']         = $user->name;
   $info['info']['category']       = $category;
@@ -551,26 +552,26 @@ function patterns_utils_generate_info_section($title = 'Untitled Pattern',
   $info['info']['author']         = $user->name;
   $info['info']['author_email']   = $user->mail;
   $info['info']['author_website'] = $base_root;
-  
+
   return $info;
 }
 
 
 /**
- * Checks a pattern identifier (numeric or alphanumeric) and if it not 
+ * Checks a pattern identifier (numeric or alphanumeric) and if it not
  * valid displays an error message and redirect the user to the specified page.
  * If the pattern is valid, returns it.
- * 
+ *
  * If no page is specified redirects to '/admin/patterns/'.
- * 
+ *
  * @param mixed $pattern the pattern identifier
  * @param mixed $back the page to redirect to (default '/admin/patterns/')
  * @param array $options an associative array of extra options. E.g.
  *  $options('numeric' => TRUE) enforces that the pattern id must be numeric.
- *  
- *  
+ *
+ *
  */
-function patterns_utils_if_invalid_go_back($pattern = NULL, 
+function patterns_utils_if_invalid_go_back($pattern = NULL,
                                            $back = '/admin/patterns/',
                                            $options = array()) {
 
@@ -580,13 +581,13 @@ function patterns_utils_if_invalid_go_back($pattern = NULL,
       return FALSE;
     }
   }
-  
+
   $pattern = patterns_get_pattern($pattern);
 
   if (!$pattern) {
     drupal_set_message(t('No pattern was found with the given id.'), 'error');
     drupal_goto($back);
   }
-  
+
   return $pattern;
 }

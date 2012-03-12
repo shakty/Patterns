@@ -132,7 +132,7 @@ function node_patterns_validate($action, $tag, &$data) {
       $data['node'] = (object) node_load($data['nid']);
       if (!$data['node']) {
         $status = PATTERNS_ERR;
-        $msg = t('Cannot modify or delete a nonexsitent Node.');
+        $msg = t('Cannot modify or delete a nonexistent Node.');
       }
     }
 
@@ -261,7 +261,7 @@ function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
 
     // build Content Type fields
     $type = $data['type'];
-    $form_id = $type .'_node_form';
+    $form_id = $type . '_node_form';
     $form_state = array(
       'build_info' => array('args' => array($node),
         'files' => array('menu' => 'modules/node/node.pages.inc')),

@@ -8,7 +8,7 @@
 
 info:
   title: Toolbarrole (delete)
-  description: deside what kind of users (roles) can see the toolbar.
+  description: Decide what kind of users (roles) can see the toolbar.
   author: Rui
   category: Toolbar
   version: 1.0

@@ -105,26 +105,26 @@ function menu_patterns_prepare($action, $tag, &$data) {
  */
 function menu_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
   // taken from menu_load_links
-  if($tag == 'menu_item' && $action == PATTERNS_MODIFY && $form_id == 'menu_edit_item') {
- 	 $links = db_select('menu_links', 'ml', array('fetch' => PDO::FETCH_ASSOC))
-	      ->fields('ml')
-	     ->execute()
-	    ->fetchAll();
-	//print_r($links); //for debug
-	$loop = TRUE;
-    $return = array();
-	$i = 0;
-    foreach ($links as &$link) {
-       $i++;
-	   if($link['link_title'] == ''){
-	       $link['link_title'] = 'null';
-		}
-	   $link['options'] = unserialize($link['options']);
-	   $link['href'] = "";
-	   array_push($return, array("edit", $link, $link));
+  if ($tag == 'menu_item' && $action == PATTERNS_MODIFY && $form_id == 'menu_edit_item') {
+    $links = db_select('menu_links', 'ml', array('fetch' => PDO::FETCH_ASSOC))
+      ->fields('ml')
+      ->execute()
+      ->fetchAll();
+  //print_r($links); //for debug
+  $loop = TRUE;
+  $return = array();
+  $i = 0;
+  foreach ($links as &$link) {
+    $i++;
+    if ($link['link_title'] == '') {
+      $link['link_title'] = 'null';
     }
-    return $return;
+    $link['options'] = unserialize($link['options']);
+    $link['href'] = "";
+    array_push($return, array("edit", $link, $link));
   }
+  return $return;
+}
 
 // taken from menu_overview_page
   elseif ($tag == 'menu' && $action == PATTERNS_MODIFY && $form_id == 'menu_edit_menu') {

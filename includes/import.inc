@@ -158,7 +158,7 @@ function patterns_import_file_validate($form, &$form_state) {
  }
  else {
 
-  form_set_error('pattern_uri', t('Failed to retreive the pattern specified: %uri. Check your file and try again. Notice: only yaml and xml files are accepted', array('%uri' => $uri)));
+  form_set_error('pattern_uri', t('Failed to retrieve the pattern specified: %uri. Check your file and try again. Notice: only yaml and xml files are accepted', array('%uri' => $uri)));
   return FALSE;
  }
 
@@ -170,7 +170,7 @@ function patterns_import_file_validate($form, &$form_state) {
   $patternscan = _patterns_scan_pattern($form_state['values']['content']);
   if (!_patterns_validate_patternscan($patternscan)) {
    $errors_on_scan = _patterns_analyze_patternscan($patternscan);
-   form_set_error('name', t('Error parsing the YAML file: ' . implode(', ', $errors_on_scan)));
+   form_set_error('name', t('Error parsing the YAML file: ' . implode(', ', $errors_on_scan))); // TODO: proper t()
   }
  }
  else { // XML or other
@@ -220,7 +220,7 @@ function patterns_import_validate($form, &$form_state) {
    $form_state['values']['content'] = $content;
   }
   else {
-   form_set_error('pattern_uri', t('Failed to retreive the pattern specified: %uri. Check your file and try again. Notice: only yaml and xml files are accepted', array('%uri' => $uri)));
+   form_set_error('pattern_uri', t('Failed to retrieve the pattern specified: %uri. Check your file and try again. Notice: only yaml and xml files are accepted', array('%uri' => $uri)));
    return FALSE;
   }
  }
@@ -234,7 +234,7 @@ function patterns_import_validate($form, &$form_state) {
  //  }
  //
  //  if ($obj = patterns_db_load_pattern_from_name($name)) {
- //    form_set_error('name', t('A pattern file with the same name alrady exists: !name', array('!name' => $name)));
+ //    form_set_error('name', t('A pattern file with the same name already exists: !name', array('!name' => $name)));
  //    return FALSE;
  //  }
 
@@ -244,7 +244,7 @@ function patterns_import_validate($form, &$form_state) {
   $patternscan = _patterns_scan_pattern($form_state['values']['content']);
   if (!_patterns_validate_patternscan($patternscan)) {
    $errors_on_scan = _patterns_analyze_patternscan($patternscan);
-   form_set_error('name', t('Error parsing the YAML file: ' . implode(', ', $errors_on_scan)));
+   form_set_error('name', t('Error parsing the YAML file: ' . implode(', ', $errors_on_scan))); // TODO: proper t()
   }
  }
  else { // XML or other
@@ -325,7 +325,7 @@ function patterns_import_module($form, &$form_state) {
      '#type' => 'hidden',
      '#title' => t('Pattern Identifier'),
      '#description' => t('step'),
-     '#value' => t($step),
+     '#value' => $step,
   );
 
   // for all modules, check if hook_patterns() is defined and let the user choose
@@ -530,11 +530,12 @@ function patterns_import_module($form, &$form_state) {
     if ($measure) {
      $time = (microtime(TRUE) - $start);
      $min = $time < $min ? $time : $min;
+     // TODO: why filter_xss?
      drupal_set_message(filter_xss("testing with " . $runs . " runs, k = " . $j . ", time is: " . $time));
     }
    }
    if ($measure)
-   drupal_set_message(filter_xss("k-best: " . $min));
+     drupal_set_message(filter_xss("k-best: " . $min)); // TODO: why filter_xss?
    variable_set('macro_enabled', FALSE);
    variable_set('patterns_import_module', FALSE);
 
@@ -544,7 +545,7 @@ function patterns_import_module($form, &$form_state) {
           "info:\n" .
           "  title: #please add a title\n" .
           "  description: " .
-               "automatically generated Pattern file";
+          "automatically generated Pattern file";
 
    global $user;
    global $base_root;
@@ -572,7 +573,7 @@ function patterns_import_module($form, &$form_state) {
    if (!isset($yaml))
    $yaml = $form_state['values']['content'];
    // patterns_editor('patterns_import_source', $yaml);
-   $validation = "Pattern hasn't been validated yet.";
+   $validation = t('Pattern hasn\'t been validated yet.');
    $form['validation_result'] = array(
       '#markup' => '<br><strong>' . $validation . '</strong>',
       '#prefix' => '<div id="validation_result">',
@@ -687,23 +688,23 @@ function _patterns_imports_check_name($name = '') {
  // Name Validation
  $errors_on_name = _patterns_parser_analyze_pattern_name($name);
  if (!empty($errors_on_name)) {
-  form_set_error('name', t('Errors on the name of the pattern: ' . implode(', ', $errors_on_name)));
+  form_set_error('name', t('Errors in the name of the pattern: ' . implode(', ', $errors_on_name))); // TODO: use proper t()
   return FALSE;
  }
 
  if ($obj = patterns_db_load_pattern_from_name($name)) {
-  form_set_error('name', t('A pattern file with the same name alrady exists: !name', array('!name' => $name)));
+  form_set_error('name', t('A pattern file with the same name already exists: !name', array('!name' => $name)));
   return FALSE;
  }
 }
 
 /**
  * Creates a miniminal form_state object to import a pattern into the database.
- * 
+ *
  * Returns FALSE if $name or $pattern are missing.
- * 
+ *
  * @param mixed $name the name of the pattern
- * @param mixed $pattern the pattern code as string or array. If array gets 
+ * @param mixed $pattern the pattern code as string or array. If array gets
  *  converted to string
  * @param mixed $dest the folder in the file system where the pattern will be
  *  saved. If empty it uses the default patterns files directory.
@@ -713,7 +714,7 @@ function patterns_import_build_import_form_state($name = NULL, $pattern = NULL, 
   if (is_null($dest)) {
     $dest = patterns_config_get_files_dir();
   }
-  
+
   $form = array();
   $form['values'] = array();
   $form['values']['name']         = $name;

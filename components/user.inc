@@ -190,7 +190,7 @@ function user_patterns_validate($action, $tag, &$data) {
     }
     elseif ($data['uid'] == $user->uid && $action === PATTERNS_DELETE) {
       $status = PATTERNS_ERR;
-      $msg = t('You cannot delete the current users account. Please login with a different account and try again.');
+      $msg = t('You cannot delete the current users account. Please log in with a different account and try again.');
     }
     elseif ($data['uid'] && $action === PATTERNS_CREATE) {
       $status = PATTERNS_ERR;
