@@ -26,7 +26,9 @@ window.onload = function() {
 					alert(Drupal.t('Patterns could not recognize the url of the website. Cannot refresh.'));
 					return;
 				}
-				document.getElementById('all_patterns_div').innerHTML = '...refreshing...';
+				var allp_divs = document.getElementById('all_patterns_div');
+				allp_divs.parentNode.removeChild(document.getElementById('removed_patterns_div'));
+				allp_divs.innerHTML = '...refreshing...';
 				
 				jQuery.ajax({
 					type: 'POST',

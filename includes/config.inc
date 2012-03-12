@@ -83,6 +83,13 @@ function patterns_config_settings($form, &$form_state) {
     '#default_value' => variable_get('patterns_save_file', 'sites/all/patterns/'),
   );
   
+  $form['fs']['patterns_refresh_components'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Updates the patterns component at every page reload'),
+    '#description' => t('If selected, at every page reload on \'admin/patterns\' the components will be updated. It increases loading time, but keeps the components database always up to date.'),
+    '#default_value' => variable_get('patterns_refresh_components', TRUE),
+  );
+  
   $form['fs']['patterns_refresh_from_fs'] = array(
     '#type' => 'checkbox',
     '#title' => t('Scan for new patterns at every page reload'),

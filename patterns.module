@@ -65,7 +65,9 @@ module_load_include('inc', 'patterns', 'includes/theme');
 // TODO: Check
 module_load_include('inc', 'patterns', 'includes/servers');
 // Add libraries for performing AJAX calls outside forms
-//drupal_add_library('system', 'drupal.ajax');
+
+//drupal_add_js('misc/drupal.js');
+//drupal_add_library('system', 'drupal');
 //drupal_add_library('system', 'jquery.form');
 
 
@@ -327,7 +329,7 @@ function patterns_list() {
 
   drupal_add_css(drupal_get_path('module', 'patterns') . '/css/patterns.css');
   drupal_add_js(drupal_get_path('module', 'patterns') . '/js/patterns.js');
-
+  
   $form['commands'] = array(
     '#type' => 'fieldset',
     '#title' => 'Commands'
@@ -371,10 +373,12 @@ function patterns_list() {
 
   // Load the the pattern handlers from compontents directory
   // or from modules which implement hook_patterns().
-  patterns_load_components();
-
+  if (variable_get('patterns_refresh_components', TRUE)) {
+    patterns_load_components();
+  }
+  
   // Load the patterns from database.
-  $patterns = patterns_get_patterns(variable_get('patterns_refresh_from_fs'), TRUE);
+  $patterns = patterns_get_patterns(variable_get('patterns_refresh_from_fs', TRUE));
 
   $output .= theme('patterns_list', $patterns);
 
