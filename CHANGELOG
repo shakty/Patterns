@@ -1,3 +1,8 @@
+7023:
+
+		- Whether refresh patterns from the database or not can be decided from
+				the config settings form
+
 7022:
 
 		- Fixed some little bugs with inclusions

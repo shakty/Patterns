@@ -76,9 +76,6 @@ function theme_patterns_form_helper($form_id, $values) {
  */
 function theme_patterns_list($args) {
 
-//  print_r($args);
-//  exit;
-
   drupal_add_js('misc/collapse.js');
   drupal_add_js('misc/drupal.js');
 

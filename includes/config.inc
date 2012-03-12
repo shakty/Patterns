@@ -39,36 +39,23 @@ function patterns_help($section, $arg = NULL) {
  */
 function patterns_config_settings($form, &$form_state) {
 
-  $form['patterns_save_file'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Default Directory for Patterns Files'),
-    '#description' => t('By default, patterns files will be saved and loaded from here.'),
-    '#default_value' => variable_get('patterns_save_file', 'sites/all/patterns/'),
+   
+  $form['exec'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('File systems options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
   );
 
-  $form['patterns_default_running_mode'] = array(
+  $form['exec']['patterns_default_running_mode'] = array(
     '#type' => 'radios',
     '#title' => t('Default Running Mode'),
     '#description' => t('The default running mode when running a pattern.'),
     '#options' => array('batch' => t('Batch'), 'php' => t('PHP')),
     '#default_value' => variable_get('patterns_default_running_mode', 'batch'),
   );
-
-  $form['patterns_form_helper'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Enable Patterns Form Helper'),
-    '#description' => t('When enabled, patterns form helper will dump $form_id and $form_state variables at the bottom of each page. Dump will always contain values from the latest form submission. This may be very helpful while writing your own patterns.'),
-    '#default_value' => variable_get('patterns_form_helper', FALSE),
-  );
-
-  $form['patterns_update_db_from_fs'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Sync database and file system'),
-    '#description' => t('When enabled, patterns in the database will be automatically updated to the latest version found in the file system. If the pattern was already been enabled, it just display a warning, but it does not execute the update.'),
-    '#default_value' => variable_get('patterns_update_db_from_fs', TRUE),
-  );
-
-  $form['patterns_default_include_mode'] = array(
+  
+  $form['exec']['patterns_default_include_mode'] = array(
     '#type' => 'radios',
     '#title' => t('Included patterns'),
     '#description' => t('Default behavior with included patterns. This option can be overwritten inside the pattern code.'),
@@ -78,10 +65,54 @@ function patterns_config_settings($form, &$form_state) {
                    PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE => t('If it is the first run or if the pattern was updated'),
                    PATTERNS_INCLUDE_ATTACHED => t('Only if the pattern code is attached (no lookup to database)'),
                    PATTERNS_INCLUDE_ALWAYS => t('Always'),
-  ),
+    ),
     '#default_value' => patterns_get_include_mode(),
   );
 
+  $form['fs'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('File systems options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  
+  $form['fs']['patterns_save_file'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Default Directory for Patterns Files'),
+    '#description' => t('By default, patterns files will be saved and loaded from here.'),
+    '#default_value' => variable_get('patterns_save_file', 'sites/all/patterns/'),
+  );
+  
+  $form['fs']['patterns_refresh_from_fs'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Scan for new patterns at every page reload'),
+    '#description' => t('If selected, at every page reload on \'admin/patterns\' the directories will be scanned for new patterns. It increases loading time, but keeps the patterns database always up to date.'),
+    '#default_value' => variable_get('patterns_refresh_from_fs', FALSE),
+  );
+  
+  $form['fs']['patterns_update_db_from_fs'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Sync database and file system'),
+    '#description' => t('When enabled, patterns in the database will be automatically updated to the latest version found in the file system. If the pattern was already been enabled, it just display a warning, but it does not execute the update.'),
+    '#default_value' => variable_get('patterns_update_db_from_fs', TRUE),
+  );
+
+  $form['other'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Other'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  
+  );
+  
+  $form['other']['patterns_form_helper'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable Patterns Form Helper'),
+    '#description' => t('When enabled, patterns form helper will dump $form_id and $form_state variables at the bottom of each page. Dump will always contain values from the latest form submission. This may be very helpful while writing your own patterns.'),
+    '#default_value' => variable_get('patterns_form_helper', FALSE),
+  );
+  
+  
   /* TODO: Outdated, disabled for now.
   $form['patterns_allow_publish'] = array(
     '#type' => 'checkbox',
