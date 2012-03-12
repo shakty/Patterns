@@ -100,9 +100,6 @@ function menu_patterns_prepare($action, $tag, &$data) {
   return patterns_results();
 }
 
-/*
- * 
- */
 function menu_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
   // taken from menu_load_links
   if ($tag == 'menu_item' && $action == PATTERNS_MODIFY && $form_id == 'menu_edit_item') {

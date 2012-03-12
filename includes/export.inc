@@ -37,9 +37,9 @@ function patterns_export($form, &$form_state) {
       'status'      => $status,
       'author'      => empty($author) ? '-' : $author,
       'version'     => empty($version) ? '-' : $version,
-      'description' => empty($description) ? '-' : 'No description', 
-    );  
-    $rows[$pid+1] = $row; // somehow we get (pid -1) in the submit handler 
+      'description' => empty($description) ? '-' : 'No description',
+    );
+    $rows[$pid+1] = $row; // somehow we get (pid -1) in the submit handler
   }
 
   $form['patterns'] = array(
@@ -106,7 +106,7 @@ function patterns_export_validate($form, &$form_state) {
   if (!isset($form_state['values']['patterns_table'])) {
     form_set_error('patterns_table', t('An error has occurred'));
   }
-  
+
   if (array_sum($form_state['values']['patterns_table']) === 0) {
     form_set_error('patterns_table', t('No pattern selected to export.'));
   }
@@ -125,7 +125,7 @@ function patterns_export_validate($form, &$form_state) {
   elseif (empty($form_state['values']['export_name'])) {
     $form_state['values']['export_name'] = 'exported_pattern';
   }
-  
+
   return TRUE;
 }
 

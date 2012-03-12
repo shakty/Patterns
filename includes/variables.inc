@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * @file
+ * A file containing the set of constant variables.
+ */
 define('PATTERNS_SUCCESS', 1);
 define('PATTERNS_WARN', 0);
 define('PATTERNS_ERR', -1);
