@@ -708,18 +708,18 @@ function _patterns_parser_retrieve_actions_from_include($include, $options, $sec
 }
 
 /**
- * Inserts the actions of a pattern into another one. 
+ * Inserts the actions of a pattern into another one.
  * Sections of the included patterns are not preserved, and all its actions
  * are appended at the end of the first parameter
- * 
+ *
  * @param array &$actions the including pattern, or a subset of actions of it
  * @param array $include the included pattern
- * @param array $options the include options for nested patterns included 
+ * @param array $options the include options for nested patterns included
  *  in the included patterns.
  * @param array $sections array containing the name of the sections,
- *  from which extract the actions. If NULL, all the sections will be 
+ *  from which extract the actions. If NULL, all the sections will be
  *  scanned.
- * 
+ *
  */
 function patterns_parser_include_pattern(&$actions, $include, $options = array(), $sections = NULL) {
   if (empty($include)) return $actions;
@@ -732,7 +732,7 @@ function patterns_parser_include_pattern(&$actions, $include, $options = array()
     return $actions;
   }
   // Success
-  $new_actions = patterns_parser_extract_all_actions($include, $options); 
+  $new_actions = patterns_parser_extract_all_actions($include, $options);
   $actions = array_merge($actions, $new_actions);
 }
 
@@ -750,7 +750,7 @@ function patterns_parser_include_pattern(&$actions, $include, $options = array()
 function patterns_parser_should_include_local($include, $options = array()) {
   // ATTACHED
   $options = _patterns_parser_merge_default_include_options($options);
-  
+
   if ($options['mode'] === PATTERNS_INCLUDE_ATTACHED) {
     if (!is_array($include['pattern'])) {
       if ($options['verbose']) {
@@ -943,13 +943,13 @@ function patterns_parser_extract_all_actions($pattern, $options, $sections = NUL
 /**
  * Extract all the values of the modules tag from a pattern and
  * returns them as an array.
- * 
+ *
  */
 function patterns_parser_extract_modules($pattern) {
   $modules = array();
-  if (!empty($pattern) && isset($pattern['modules'])) {   
-    $modules = (!is_array($pattern['modules'])) ? array($modules) 
-                                                : $pattern['modules'];  
+  if (!empty($pattern) && isset($pattern['modules'])) {
+    $modules = (!is_array($pattern['modules'])) ? array($modules)
+                                                : $pattern['modules'];
   }
   return $modules;
 }
