@@ -328,25 +328,22 @@ function node_patterns_params($action, $form_id, &$data = NULL, &$a) {
       $result = array($type);
     }
   else { // TODO: other cases, Node create&modify
+    // Hard-code fix
+    // debug function node_form in node.pages.inc
+    // to cover all the cases parametrically
+    $result = new stdClass();  
+    $result->uid = 1; 
+    $result->name = 'root';  
+    $result->type = 'article'; 
+    $result->language = 'und'; 
 
+
+    //  $result = array(array(
+    //    'bundle' => 'article',
+    //    'entity_type' => 'node',
+    ////    'field_name' => $data['field_name'],
+    //));
   }
-  
-  // Hard-code fix
-  // debug function node_form in node.pages.inc
-  // to cover all the cases parametrically
-  $result = new stdClass();  
-  $result->uid = 1; 
-  $result->name = 'root';  
-  $result->type = 'article'; 
-  $result->language = 'und'; 
-  
-  
-//  $result = array(array(
-//    'bundle' => 'article',
-//    'entity_type' => 'node',
-////    'field_name' => $data['field_name'],
-//));
-  
   return patterns_results($status, $msg, $result);
 }
 

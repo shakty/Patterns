@@ -19,7 +19,7 @@ class PatternsNodeTestCase extends PatternRunTestCase {
   public function testCreateModifyDelete() {
     $this->testCreate();
 //    $this->testModify();
-//    $this->testDelete();
+    $this->testDelete();
   }
 
   private function testCreate() {
@@ -52,7 +52,7 @@ class PatternsNodeTestCase extends PatternRunTestCase {
     parent::runFile('node_delete.yaml', 'Node (delete)', PatternsNodeTestCase::NODE_TESTS_DIR);
 
     // Expected messages.
-    $this->assertUniqueText(t('The Article Test Article has been removed.'));
+    $this->assertUniqueText(t('Article Test Article has been deleted.'));
 
     // The node should not exist at this point.
     $node_count = db_select('node', 'n')
