@@ -1,0 +1,16 @@
+info: 
+  title: Example Article creation
+  description: Creates an example article node
+  author: QSCience
+  version: 1.0
+  category: Content
+  core: 7.x
+  author_website: http://qlectives.eu/
+
+actions:
+  - create:
+      tag: node
+      type: article
+      title: Test Article
+      body: lorem ipsum ...
+
