@@ -18,7 +18,7 @@ class PatternsNodeTestCase extends PatternRunTestCase {
 
   public function testCreateModifyDelete() {
     $this->testCreate();
-//    $this->testModify();
+    $this->testModify();
     $this->testDelete();
   }
 
@@ -52,22 +52,31 @@ class PatternsNodeTestCase extends PatternRunTestCase {
     parent::runFile('node_delete.yaml', 'Node (delete)', PatternsNodeTestCase::NODE_TESTS_DIR);
 
     // Expected messages.
-    $this->assertUniqueText(t('Article Test Article has been deleted.'));
+    $this->assertUniqueText(t('Article Test Article2 has been deleted.'));
 
     // The node should not exist at this point.
     $node_count = db_select('node', 'n')
       ->fields('n', array('nid'))
       ->condition('type', 'article')
-      ->condition('title', 'Test Article')
+      ->condition('title', 'Test Article2')
       ->countQuery()->execute()->fetchField();
     $this->assertIdentical($node_count, '0', t('The node should not exist at this point.'));
-
   }
 
   private function testModify() {
     // Run the pattern.
+    parent::runFile('node_modify.yaml', 'Node (modify)', PatternsNodeTestCase::NODE_TESTS_DIR);
+
     // Expected messages.
+    $this->assertText(t('Article Test Article2 has been updated.'));
+
     // The node should exist with the right values.
+    $node_count = db_select('node', 'n')
+      ->fields('n', array('nid'))
+      ->condition('type', 'article')
+      ->condition('title', 'Test Article2')
+      ->countQuery()->execute()->fetchField();
+    $this->assertIdentical($node_count, '1', t('The node should exist at this point.'));
   }
 
 }

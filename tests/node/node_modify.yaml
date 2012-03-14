@@ -1,0 +1,17 @@
+info:
+  title: Example Article modification
+  description: Modifies an example article node
+  author: QSCience
+  version: 1.0
+  category: Content
+  core: 7.x
+  author_website: http://qlectives.eu/
+
+actions:
+  - modify:
+      tag: node
+      id: 1
+      type: article
+      title: Test Article2
+      body: lorem ipsum2 ...
+

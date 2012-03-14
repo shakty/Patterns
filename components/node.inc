@@ -129,10 +129,17 @@ function node_patterns_validate($action, $tag, &$data) {
 
   if ($tag == 'node') {
     if ($action !== PATTERNS_CREATE) {
-      $data['node'] = (object) node_load($data['nid']);
-      if (!$data['node']) {
+      $data['node'] = node_load($data['nid']);
+      if ($data['node'] === FALSE) {
         $status = PATTERNS_ERR;
         $msg = t('Cannot modify or delete a nonexistent Node.');
+      }
+      else{
+        $data['node'] = (object) $data['node'];
+        if ($action === PATTERNS_MODIFY && $data['type'] != $data['node']->type) {
+          $status = PATTERNS_ERR;
+          $msg = t("You can't change content type for already existing node.");
+        }
       }
     }
 
@@ -144,15 +151,12 @@ function node_patterns_validate($action, $tag, &$data) {
       $status = PATTERNS_ERR;
       $msg = t('"id" field is required.');
     }
-    elseif ($action === PATTERNS_MODIFY && $data['type'] != $data['node']->type) {
-      $status = PATTERNS_ERR;
-      $msg = t("You can't change content type for already existing node.");
-    }
-   // TODO: validate name field - should be valid/existing username
+  // TODO: validate name field - should be valid/existing username
   }
   elseif ($tag == 'content_type') {
     // TODO: check required fields for content types
   }
+
   return patterns_results($status, $msg, $result);
 }
 
@@ -254,7 +258,6 @@ function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
     $data['changed'] = time();
     $data['op'] = t('Save');
 
-    $data['node']->language = 'und'; // TODO
     $node = clone($data['node']);
 //    unset($node->body);
 //    unset($node->title);
@@ -282,7 +285,6 @@ function node_patterns_build($action, $form_id, &$data = NULL, &$a) {
     require_once('modules/node/node.pages.inc');
 
     $form = drupal_retrieve_form($form_id, $form_state);
-    //var_dump($form, $form_id, $node, $form_state);
     drupal_prepare_form($form_id, $form, $form_state);
 
     /*
@@ -327,16 +329,9 @@ function node_patterns_params($action, $form_id, &$data = NULL, &$a) {
       $type = $types->types[$data['type']];
       $result = array($type);
     }
-  else { // TODO: other cases, Node create&modify
-    // Hard-code fix
-    // debug function node_form in node.pages.inc
-    // to cover all the cases parametrically
-    $result = new stdClass();  
-    $result->uid = 1; 
-    $result->name = 'root';  
-    $result->type = 'article'; 
-    $result->language = 'und'; 
-
+  else { // other cases, Node create&modify
+    $data['node']->language = 'und';
+    $result = clone($data['node']);
 
     //  $result = array(array(
     //    'bundle' => 'article',

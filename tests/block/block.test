@@ -90,22 +90,7 @@ class PatternsBlockTestCase extends PatternRunTestCase {
   }
 
   private function testModify() {
-    $block = db_select('block', 'b')
-      ->fields('b')
-      ->condition('module', 'block')
-      ->condition('title', 'Test title');
-    $block->join('block_custom', 'bc', 'b.delta = bc.bid');
-    $block_count = $block->fields('bc')->execute()->fetchAll();
-    debug($block_count);
-
-    // The user block should provide an online block for two themes.
-    $block_count = db_select('block', 'b')
-      ->fields('b', array('bid'))
-      ->condition('module', 'user')
-      ->condition('delta', 'online')
-      ->countQuery()->execute()->fetchField();
-    $this->assertIdentical($block_count, '2', t('The user block should provide an online block.'));
-
+    // Run the pattern.
     parent::runFile('block_modify.yaml', 'Blocks (modify)', PatternsBlockTestCase::BLOCK_TESTS_DIR);
 
     // Expected messages.
