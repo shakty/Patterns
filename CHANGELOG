@@ -1,3 +1,8 @@
+7024:
+
+		- Check for "allow_url_fopen" in hook_requirement. Import from URL form is displayed if 
+				the option is disabled.
+
 7023:
 
 		- Whether refresh patterns from the database or not can be decided from

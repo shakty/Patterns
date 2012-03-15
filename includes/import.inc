@@ -97,7 +97,15 @@ function patterns_import_file($form, &$form_state) {
  * Display the import pattern url form
  */
 function patterns_import_url($form, &$form_state) {
-
+  
+  if (!ini_get('allow_url_fopen')) {
+    $form['import_url'] = array(
+    '#prefix' => '<strong>Feature disabled: </strong>',
+    '#markup' => t('directive "allow_url_fopen" must be enabled in your php configuration in order to use this feature.'),
+    );
+    return $form;
+   }
+  
   $def_dir = patterns_config_get_files_dir();
 
   $form['pattern_uri'] = array(

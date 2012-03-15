@@ -158,6 +158,16 @@ function patterns_requirements($phase) {
           'value'       => _get_file_phpdoc_version($path),
         );
       }
+      
+     if (!ini_get('allow_url_fopen')) {
+       $requirements['allow_url_fopen'] = array(
+          'title'       => t('Patterns import files from remote url'),
+          'description' => t('To import patterns directly from remote url \'allow_url_fopen\' must be enabled in your PHP.ini'),
+          'severity'    => REQUIREMENT_WARNING,
+          'value'       => t('Disabled'),
+        );
+     }
+     
     break;
   }
   return $requirements;
