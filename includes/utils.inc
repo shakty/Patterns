@@ -591,3 +591,12 @@ function patterns_utils_if_invalid_go_back($pattern = NULL,
 
   return $pattern;
 }
+
+/**
+ * Checks if current configuration of php enables open remote files
+ * for reading.
+ * 
+ */
+function patterns_utils_is_fopenurl_enabled() {
+  return ini_get('allow_url_fopen') ? TRUE : FALSE;
+}

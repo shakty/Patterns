@@ -241,6 +241,21 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
   public static function loadPattern($filename, $dir = 'patterns/') {
     return file_get_contents(drupal_get_path('module', 'patterns') . '/' . $dir . $filename);
   }
+  
+    /**
+   * Checks if during the Web execution fopenurl is enabled.
+   * 
+   * Notice: patterns_utils_is_fopenurl_enabled cannot be used
+   * because it returns the value for the cli.
+   * 
+   */
+  public function is_fopenurl_enabled() {
+    // View patterns list.
+    $this->drupalGet('admin/patterns/import/url');
+    $this->assertResponse(200);
+    return $this->assertNoText('Feature disabled', 'fopenurl is enabled');
+  }
+  
 
 }
 

@@ -100,6 +100,8 @@ function patterns_import_url($form, &$form_state) {
   
   if (!ini_get('allow_url_fopen')) {
     $form['import_url'] = array(
+    // The string 'Feature disabled' is checked inside the test directory
+    // do not change or change both
     '#prefix' => '<strong>Feature disabled: </strong>',
     '#markup' => t('directive "allow_url_fopen" must be enabled in your php configuration in order to use this feature.'),
     );
