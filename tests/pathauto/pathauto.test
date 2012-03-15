@@ -38,7 +38,7 @@ class PatternsPathautoTestCase extends PatternRunTestCase {
       ->condition('source', $source)
       ->condition('alias', $alias)
       ->countQuery()->execute()->fetchField();
-    $this->assertTrue($result, t('Create URL alias correctly'));
+    $this->assertTrue($result, t('Created URL alias correctly.'));
 
     //modify url alias
     parent::runFile('url_alias_modify.yaml', 'URLs aliases modify', PatternsPathautoTestCase::PATHAUTO_TESTS_DIR);
@@ -49,8 +49,8 @@ class PatternsPathautoTestCase extends PatternRunTestCase {
       ->fields('u', array('source', 'alias'))
       ->condition('pid', 1)
       ->execute()->fetchAll();
-    $this->assertEqual($result[0]->source, $sourceM, t('Modify alias source correctly.'));
-    $this->assertEqual($result[0]->alias, $aliasM, t('Modify alias correctly.'));
+    $this->assertEqual($result[0]->source, $sourceM, t('Modified alias source correctly.'));
+    $this->assertEqual($result[0]->alias, $aliasM, t('Modified alias correctly.'));
 
     //delete url alias
     parent::runFile('url_alias_delete.yaml', 'URLs aliases delete', PatternsPathautoTestCase::PATHAUTO_TESTS_DIR);
@@ -61,7 +61,7 @@ class PatternsPathautoTestCase extends PatternRunTestCase {
       ->condition('pid', 1)
       ->countQuery()->execute()->fetchField();
 
-    $this->assertFalse($result, t('delete alias correctly.'));
+    $this->assertFalse($result, t('Deleted alias correctly.'));
 
   }
 
@@ -89,9 +89,7 @@ class PatternsPathautoTestCase extends PatternRunTestCase {
     $this->assertEqual($update_action, 2, t('Update action set correctly.'));
     $this->assertEqual($verbose, 1, t('Verbose set correctly.'));
 
-    //test pattens setting
-
-    //
+    // Test pattens settings
     $tests = array(
       array('entity' => 'node', 'bundle' => 'page', 'language' => LANGUAGE_NONE, 'expected' => 'contentnode/[node:title]'),
       array('entity' => 'user', 'bundle' => 'user', 'language' => 'en', 'expected' => 'users/[user:name]'),

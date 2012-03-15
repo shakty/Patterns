@@ -30,15 +30,15 @@ class PatternsColorTestCase extends PatternRunTestCase {
     parent::runFile('color.yaml', 'Set theme color', PatternsCOLORTestCase::COLOR_TESTS_DIR);
     $palette = variable_get('color_' . $theme . '_palette');
 
-    $this->assertEqual($palette['bottom'], '#494949', t('Modify Color pattern changed palette bottom correctly'));
-    $this->assertEqual($palette['link'], '#494949', t('Modify Color pattern changed palette link correctly'));
-    $this->assertEqual($palette['top'], '#494949', t('Modify Color pattern changed palette top correctly'));
-    $this->assertEqual($palette['bg'], '#494949', t('Modify Color pattern changed palette bg correctly'));
-    $this->assertEqual($palette['sidebar'], '#494949', t('Modify Color pattern changed palette sidebar correctly'));
-    $this->assertEqual($palette['sidebarborders'], '#494949', t('Modify Color pattern changed palette sidebarborders correctly'));
-    $this->assertEqual($palette['footer'], '#494949', t('Modify Color pattern changed palette footer correctly'));
-    $this->assertEqual($palette['titleslogan'], '#494949', t('Modify Color pattern changed palette titleslogan correctly'));
-    $this->assertEqual($palette['text'], '#494949', t('Modify Color pattern changed palette text correctly'));
+    $this->assertEqual($palette['bottom'], '#494949', t('Modify Color pattern changed palette bottom correctly.'));
+    $this->assertEqual($palette['link'], '#494949', t('Modify Color pattern changed palette link correctly.'));
+    $this->assertEqual($palette['top'], '#494949', t('Modify Color pattern changed palette top correctly.'));
+    $this->assertEqual($palette['bg'], '#494949', t('Modify Color pattern changed palette bg correctly.'));
+    $this->assertEqual($palette['sidebar'], '#494949', t('Modify Color pattern changed palette sidebar correctly.'));
+    $this->assertEqual($palette['sidebarborders'], '#494949', t('Modify Color pattern changed palette sidebarborders correctly.'));
+    $this->assertEqual($palette['footer'], '#494949', t('Modify Color pattern changed palette footer correctly.'));
+    $this->assertEqual($palette['titleslogan'], '#494949', t('Modify Color pattern changed palette titleslogan correctly.'));
+    $this->assertEqual($palette['text'], '#494949', t('Modify Color pattern changed palette text correctly.'));
 
 
 

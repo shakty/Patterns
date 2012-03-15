@@ -57,7 +57,7 @@ class PatternsMenuTestCase extends PatternRunTestCase {
       ->condition('m.description', $descriptionM)
       ->execute()->fetchAll();
 
-    $this->assertEqual(count($result), 1, t('Modified menu item found'));
+    $this->assertEqual(count($result), 1, t('Modified menu item found.'));
 
     //Menu delete use nameM to delete verfication
     parent::runFile('menu_delete.yaml', 'Delete a menu', PatternsMenuTestCase::MENU_TESTS_DIR);
@@ -68,7 +68,7 @@ class PatternsMenuTestCase extends PatternRunTestCase {
       ->condition('m.description', $descriptionM)
       ->countQuery()->execute()->fetchField();
 
-    $this->assertEqual($result, 0, 'Menu link was deleted correctly');
+    $this->assertEqual($result, 0, 'Menu link was deleted correctly.');
 
   }
 

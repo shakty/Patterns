@@ -72,8 +72,8 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
     $taxo = $taxos[0];
 
     $this->assertEqual($taxo->vid, $vid, t('Modify Vocabulary pattern did no alter vid.'));
-    $this->assertNotEqual($taxo->name, $name, t('Modify Vocabulary pattern changed name correctly'));
-    $this->assertNotEqual($taxo->description, $descr, t('Modify Vocabulary pattern changed description correctly'));
+    $this->assertNotEqual($taxo->name, $name, t('Modify Vocabulary pattern changed name correctly.'));
+    $this->assertNotEqual($taxo->description, $descr, t('Modify Vocabulary pattern changed description correctly.'));
 
     // Delete VOCABULARY pattern
 
@@ -139,8 +139,8 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
 
     $this->assertEqual($t->vid, $vid, t('Modify Term pattern did no alter vid.'));
     $this->assertEqual($t->tid, $tid, t('Modify Term pattern did no alter tid.'));
-    $this->assertNotEqual($t->name, $name, t('Modify Term pattern changed name correctly'));
-    $this->assertNotEqual($t->description, $descr, t('Modify Term pattern changed description correctly'));
+    $this->assertNotEqual($t->name, $name, t('Modify Term pattern changed name correctly.'));
+    $this->assertNotEqual($t->description, $descr, t('Modify Term pattern changed description correctly.'));
 
     // DELETE Term pattern
 

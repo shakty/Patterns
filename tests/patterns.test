@@ -219,7 +219,7 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
         if ($path_parts['extension'] === 'yaml') {
           $file = file_get_contents($dir . $entry);
           if (empty($file)) {
-            $this->fail('Error while loading ' . $path_parts['filename']);
+            $this->fail(t('Error while loading ') . $path_parts['filename']); // TODO: proper t()
             continue;
           }
           call_user_func($callback, $file);
@@ -228,7 +228,7 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
       closedir($handle);
     }
     else {
-      $this->error('Error opening directory ' + $dir);
+      $this->error(t('Error opening directory ') + $dir); // TODO: proper t()
     }
   }
   /**
@@ -242,7 +242,7 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
     return file_get_contents(drupal_get_path('module', 'patterns') . '/' . $dir . $filename);
   }
   
-    /**
+  /**
    * Checks if during the Web execution fopenurl is enabled.
    * 
    * Notice: patterns_utils_is_fopenurl_enabled cannot be used
@@ -253,7 +253,8 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
     // View patterns list.
     $this->drupalGet('admin/patterns/import/url');
     $this->assertResponse(200);
-    return $this->assertNoText('Feature disabled', 'fopenurl is enabled');
+    // TODO: this text should not appear if and only if fopen is enabled for URLs.
+    return $this->assertNoText(t('Feature disabled:'), t('fopenurl is enabled.'));
   }
   
 

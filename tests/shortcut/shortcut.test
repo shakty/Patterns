@@ -44,7 +44,7 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
             ->condition('ss.title', 'new_set_fortest')
             ->execute()
             ->fetchAssoc();
-    $this->assertTrue($query_add_set, t('add a new set \'new_set_fortest\' works fine'));
+    $this->assertTrue($query_add_set, t('Adding a new set \'new_set_fortest\' works fine.'));
     $num = count($query_add_set);
     $this->assert('pass', $num);
     foreach ($query_add_set as $key => $value) {
@@ -60,7 +60,7 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
             ->condition('ml.link_path', 'admin/content')
             ->execute()
             ->fetchAssoc();
-    $this->assertTrue($query, t('add shorcut link works fine'));
+    $this->assertTrue($query, t('Adding shortcut link works fine.'));
     $num = count($query);
     $this->assert('pass', $num);
     foreach ( $query as $key => $value) {
@@ -77,7 +77,7 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
             ->condition('ssu.set_name', $query_add_set['set_name'])
             ->execute()
             ->fetchAssoc();
-    $this->assertTrue($query, t('Switch user\'s shortcut set works fine'));
+    $this->assertTrue($query, t('Switching user\'s shortcut set works fine.'));
     $num = count($query);
     $this->assert('pass',$num);
     foreach ( $query as $key => $value) {
@@ -98,7 +98,7 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
             ->condition('ss.set_name', $query_add_set['set_name'])
             ->execute()
             ->fetchAssoc();
-    $this->assertTrue($query, t('edit set works fine'));
+    $this->assertTrue($query, t('Editing set works fine.'));
     $num = count($query);
     $this->assert('pass', $num);
     foreach ( $query as $key => $value) {
@@ -113,9 +113,9 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
             ->condition('ss.set_name', $query_add_set['set_name'])
             ->execute()
             ->fetchAssoc();
-    $this->assertFalse($query, t('delete set works fine'));
+    $this->assertFalse($query, t('Deleting set works fine.'));
     $num = count($query);
     $this->assert('pass', $num);
 
-}
+  }
 }

@@ -53,8 +53,7 @@ function node_patterns_actions($data) {
 // returns arguments needed for the forms when processing automatically
 // $loop is set if we want to extract all values
 function node_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
-  // TODO: node
-  if ($tag == 'content_type' && $action == PATTERNS_MODIFY && $action == PATTERNS_MODIFY) {
+  if ($tag == 'content_type' && $action == PATTERNS_MODIFY) {
       $types = (object) _node_types_build();
       foreach (array_values($types->types) as $type) {
         return array($type);
