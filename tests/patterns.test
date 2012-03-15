@@ -228,7 +228,7 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
       closedir($handle);
     }
     else {
-      $this->error(t('Error opening directory ') + $dir); // TODO: proper t()
+      $this->error(t('Error opening directory ') . $dir); // TODO: proper t()
     }
   }
   /**

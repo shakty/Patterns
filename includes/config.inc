@@ -42,7 +42,7 @@ function patterns_config_settings($form, &$form_state) {
 
   $form['exec'] = array(
     '#type' => 'fieldset',
-    '#title' => t('File systems options'),
+    '#title' => t('File system options'),
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
@@ -71,7 +71,7 @@ function patterns_config_settings($form, &$form_state) {
 
   $form['fs'] = array(
     '#type' => 'fieldset',
-    '#title' => t('File systems options'),
+    '#title' => t('File system options'),
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
@@ -94,7 +94,7 @@ function patterns_config_settings($form, &$form_state) {
     '#type' => 'checkbox',
     '#title' => t('Scan for new patterns at every page reload'),
     '#description' => t('If selected, at every page reload on \'admin/patterns\' the directories will be scanned for new patterns. It increases loading time, but keeps the patterns database always up to date.'),
-    '#default_value' => variable_get('patterns_refresh_from_fs', FALSE),
+    '#default_value' => variable_get('patterns_refresh_from_fs', TRUE),
   );
 
   $form['fs']['patterns_update_db_from_fs'] = array(

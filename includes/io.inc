@@ -412,7 +412,7 @@ function _patterns_io_analyze_scandir_messages($messages = NULL) {
     drupal_set_message(t('Some invalid patterns were found: ') . '<br/>' . implode('<br/>', $messages['invalid']) . '<br/><br/>', 'warning');
   }
   if (!empty($messages['skipped'])) {
-    drupal_set_message(t('Patterns that are already enabled are not updated against changes in the file systems. Please verify the following ones: ') . '<br/>' . implode('<br/>', $messages['skipped']) . '<br/><br/>', 'warning');
+    drupal_set_message(t('Patterns that are already enabled are not updated against changes in the file system. Please verify the following ones: ') . '<br/>' . implode('<br/>', $messages['skipped']) . '<br/><br/>', 'warning');
   }
   if (!empty($messages['permission'])) {
     drupal_set_message(t('Some pattern files could not be open for reading. Please verify the permission of: ') . '<br/>' . implode('<br/>', $messages['permission']) . '<br/><br/>', 'warning');
@@ -428,7 +428,7 @@ function _patterns_io_analyze_scandir_messages($messages = NULL) {
 
 /**
  * Loads all the available patterns from the database.
- * It also check against the file systems, and, if the
+ * It also check against the file system, and, if the
  * patterns global configuration options allow it,
  * updates the database with the latest modifications.
  * Notice: enabled patterns will not be updated anyway.
