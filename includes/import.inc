@@ -469,7 +469,8 @@ function patterns_import_module($form, &$form_state) {
     $k = 1;
     $j = 0;
    }
-
+   
+   
    $i=0;
    while ($j<$k) {
     $j = $j+1;
@@ -495,9 +496,10 @@ function patterns_import_module($form, &$form_state) {
           // check if we get argument for the form and if we get them for
           // several runs, i.e. for extracting all data
           $loop = FALSE;
-          if (function_exists($module_name . "_patterns_get_arguments"))
-          $arguments = call_user_func_array($module_name . "_patterns_get_arguments", array($action, $tag, $my_form, &$loop));
-          else {
+          if (function_exists($module_name . "_patterns_get_arguments")) {
+            set_error_handler("patterns_import_module_error_handler", E_ERROR | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR);
+            $arguments = call_user_func_array($module_name . "_patterns_get_arguments", array($action, $tag, $my_form, &$loop));
+          } else {
            $arguments = array("");
           }
 
@@ -660,6 +662,18 @@ function patterns_form_alter(&$form, $form_state, $form_id) {
    $form['#submit'] = array();
    $form['#submit'][] = 'macro_record_macro';
   }
+}
+
+/**
+ * in case error happens and script gets halted
+ */
+function patterns_import_module_error_handler($errno, $errstr) {
+  variable_set('macro_enabled', FALSE);
+  variable_set('macro_submissions', array());
+  variable_set('patterns_import_module', FALSE);
+  restore_error_handler();
+  // normal error handler should take over from here
+  return FALSE;
 }
 
 /**
