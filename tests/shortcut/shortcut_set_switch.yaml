@@ -16,5 +16,5 @@ info:
 actions:
   - modify:
       tag: shortcut_set_user
-      user: admin
+      user: someone
       name: new_set_fortest
