@@ -14,5 +14,5 @@ info:
 actions:
   - delete:
       tag: shortcut_link
-      # the menu id is diffierent for everyone
-      menu_link_id: 405
+      set_name: new_set_fortest
+      link_title: link_nodadd
