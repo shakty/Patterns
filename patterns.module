@@ -66,11 +66,6 @@ module_load_include('inc', 'patterns', 'includes/theme');
 module_load_include('inc', 'patterns', 'includes/servers');
 // Add libraries for performing AJAX calls outside forms
 
-//drupal_add_js('misc/drupal.js');
-//drupal_add_library('system', 'drupal');
-//drupal_add_library('system', 'jquery.form');
-
-
 /**
  * @todo:
  * @ Enable components to analyze the current pattern for better validation
