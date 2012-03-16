@@ -451,7 +451,7 @@ function patterns_get_patterns($reset = TRUE, $verbose = TRUE) {
   $messages = array();
   $patterns = array();
   $patterns[PATTERNS_STATUS_OK] = array();
-  $patterns[PATTERNS_STATUS_REMOVED] = array();
+  $patterns[PATTERNS_STATUS_TRASHED] = array();
 
 
   foreach ($result as $pattern) {
@@ -471,7 +471,7 @@ function patterns_get_patterns($reset = TRUE, $verbose = TRUE) {
       $status = PATTERNS_STATUS_OK;
     }
     else {
-      $status = PATTERNS_STATUS_REMOVED;
+      $status = PATTERNS_STATUS_TRASHED;
     }
 
     $patterns[$status][$pattern->pid] = $pattern;

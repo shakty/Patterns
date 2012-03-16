@@ -19,7 +19,7 @@ define('PATTERNS_INFO', 'descr');
 define('PATTERNS_STATUS_OK', 0);        // installed, not enabled
 define('PATTERNS_STATUS_ENABLED', 1);   // installed, enabled
 define('PATTERNS_STATUS_INVALID', -1);  // invalid
-define('PATTERNS_STATUS_REMOVED', -5);  // removed
+define('PATTERNS_STATUS_TRASHED', -5);  // removed
 
 define('PATTERNS_INCLUDE_NEVER', 'never');
 define('PATTERNS_INCLUDE_FIRSTRUN', 'firstrun');

@@ -114,16 +114,35 @@ function shortcut_patterns_validate($action, $tag, &$data) {
   //for link's edit and delete.
   //these two form have the third parm:$shortcut_link, follow code provide the parm.
   if ($tag == 'shortcut_link') {
+    $set_name = '';
     if ($action == PATTERNS_MODIFY || $action == PATTERNS_DELETE) {
-      $shortcutlink = db_select('menu_links', 'ml')
-        //->fields('ml', array('menu_name','link_title', 'link_path', 'mlid'))
-        ->fields('ml')
-        ->condition('mlid', $data['menu_link_id'])
+      $set_name = db_select('shortcut_set', 'ss')
+        ->fields('ss', array('set_name'))
+        ->condition('title', $data['set_name'])
         ->execute()
-        ->fetchAssoc();
-        //follow line is for test
-        //drupal_set_message(t('the %acc is %mlid  dfldjdkfdld',array('%acc' =>$shortcutlink['link_title'],'%mlid' => $shortcutlink['mlid'])));
-      $data['shortcut_link_parm'] = $shortcutlink;
+        ->fetchField();
+      if ($set_name == FALSE) {
+        $status = PATTERNS_ERR;
+        $msg = 'Shortcut Error:there is no such name shortcut set!';
+        return patterns_results($status, $msg);
+      }
+      else {
+        $shortcutlink = db_select('menu_links', 'ml')
+          //->fields('ml', array('menu_name','link_title', 'link_path', 'mlid'))
+          ->fields('ml')
+          ->condition('menu_name', $set_name)
+          ->condition('link_title', $data['link_title'])
+          ->execute()
+          ->fetchAssoc();
+          //follow line is for test
+          //drupal_set_message(t('the %acc is %mlid  dfldjdkfdld',array('%acc' =>$shortcutlink['link_title'],'%mlid' => $shortcutlink['mlid'])));
+        if ($shortcutlink == FALSE) {
+          $status = PATTERNS_ERR;
+          $msg = 'Shortcut Error:there is no such name shortcut link!';
+          return patterns_results($status, $msg);
+        }
+        $data['shortcut_link_parm'] = $shortcutlink;
+      }
     }
   }
 
@@ -206,58 +225,18 @@ function shortcut_patterns_params($action, $form_id, &$data = NULL, &$a) {
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
 
+/**
+ * hook_patterns_get_arguments()
+ */
 function shortcut_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
-  if ($tag == "shortcut_set_user") {
-    $loop = TRUE;
-    $return = array();
-    $users = entity_load('user');
-    foreach ($users as $usr) {
-      array_push($return, array($usr));
-    }
-    return $return;
-  }
-  elseif ($tag == "shortcut_link") {
-    $links = db_select('menu_links', 'ml', array('fetch' => PDO::FETCH_ASSOC))
-    ->fields('ml')
-    ->execute()
-    ->fetchAll();
-    $loop = TRUE;
-    $return = array();
-    $i = 0;
-    foreach ($links as &$link) {
-      $i++;
-      if ($i > 20) break;
-      $link['options'] = unserialize($link['options']);
-      $link['href'] = "";
-      // to get rid of the notice
-      // Notice: Undefined index: href in menu_edit_item() (line 306 of /var/www/drupal-7.9/modules/menu/menu.admin.inc).
-      // should be ok, because it's only used in the description.
-      array_push($return, array($link));
-    }
-    return $return;
-  }
-  elseif ($tag == "shortcut_set") { // taken from shortcut_set_load
+  if ($tag == "shortcut_set") { 
     $loop = TRUE;
     $return = array();
     $sets = shortcut_sets();
-    foreach ($sets as $set) {
-      array_push($return, array($set));
+    foreach($sets as $set_name => $value) {
+      array_push($return, array($set_name => $value, shortcut_set_load($set_name)));
     }
     return $return;
-    $sets = db_select('shortcut_set', 'ss')
-      ->fields('ss')
-      //->condition('set_name', $set_name)
-      ->execute()
-      ->fetchObject();
-    if (!$sets) {
-      drupal_set_message(t("No shortcuts found."));
-      return array();
-    }
-    //echo var_dump($sets);
-    foreach ($sets as &$set) {
-        $set->links = menu_load_links($set['set_name']);
-    }
-    return array($sets);
   }
 }
 

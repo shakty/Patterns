@@ -19,7 +19,37 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
 
   public function setUp() {
     parent::setUp();
-    $this->admin_user = $this->drupalCreateUser(array('administer site configuration', 'access administration pages', 'administer patterns', 'administer shortcuts', 'switch shortcut sets', 'customize shortcut links'));
+    // Create a role with the given permission set, if any.
+    $rid = FALSE;
+    $permissions=array('administer site configuration', 'access administration pages', 'administer patterns', 'administer shortcuts', 'switch shortcut sets', 'customize shortcut links');
+    if ($permissions) {
+      $rid = $this->drupalCreateRole($permissions);
+      if (!$rid) {
+        return FALSE;
+      }
+    }
+
+    // Create a user assigned to that role.
+    $edit = array();
+    $edit['name']   = 'someone';
+    $edit['mail']   = $edit['name'] . '@example.com';
+    $edit['pass']   = user_password();
+    $edit['status'] = 1;
+    if ($rid) {
+      $edit['roles'] = array($rid => $rid);
+    }
+
+    $account = user_save(drupal_anonymous_user(), $edit);
+
+    $this->assertTrue(!empty($account->uid), t('User created with name %name and pass %pass', array('%name' => $edit['name'], '%pass' => $edit['pass'])), t('User login'));
+    if (empty($account->uid)) {
+      return FALSE;
+    }
+
+    // Add the raw password so that we can log in as this user.
+    $account->pass_raw = $edit['pass'];
+    $this->admin_user = $account;
+    //"someone" login 
     $this->drupalLogin($this->admin_user);
   }
 
@@ -28,11 +58,11 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
   *
   *    * add a new set 'new_set_fortest'
   *    * add a new shortcut link to the new set 'new_set_fortest'  which add before
-  *    * TODO edit the link, which add before
-  *    * TODO delete the link, which just edit
+  *    * edit the link, which add before
+  *    * switch set for user
+  *    * delete the link, which just edit
   *    * change the set "new_set_fortest" name to "newer_set_fortest"
   *    * delete the set "newer_set_fortest"
-  *    * TODO switch set for user
   */
 
   public function test_shortcut() {
@@ -46,9 +76,9 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
             ->fetchAssoc();
     $this->assertTrue($query_add_set, t('Adding a new set \'new_set_fortest\' works fine.'));
     $num = count($query_add_set);
-    $this->assert('pass', $num);
+    $this->assert('pass', 'the num of query db is '.$num);
     foreach ($query_add_set as $key => $value) {
-      $this->assert('pass', $value);
+      $this->assert('pass', $key.' is '.$value);
     }
 
     //for add a new shortcut link to the new set which add before
@@ -62,33 +92,57 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
             ->fetchAssoc();
     $this->assertTrue($query, t('Adding shortcut link works fine.'));
     $num = count($query);
-    $this->assert('pass', $num);
+    $this->assert('pass', 'the num of query db is '.$num);
     foreach ( $query as $key => $value) {
-      $this->assert('pass', $value);
+      $this->assert('pass', $key.' is '.$value);
+    }
+
+    //for edit the link, which add before
+    parent::runFile('shortcut_edit_link.yaml', 'edit a link of a shortcut set (modify)', PatternsShortcutTestCase::SHORTCUT_TESTS_DIR);
+    $query = db_select('menu_links', 'ml')
+            ->fields('ml', array('menu_name', 'mlid', 'link_path', 'link_title'))
+            ->condition('ml.menu_name', $query_add_set['set_name'])
+            ->condition('ml.link_title', 'link_nodadd')
+            ->condition('ml.link_path', 'node/add')
+            ->execute()
+            ->fetchAssoc();
+    $this->assertTrue($query, t('Edit shortcut link works fine.'));
+    $num = count($query);
+    $this->assert('pass', 'the num of query db is '.$num);
+    foreach ( $query as $key => $value) {
+      $this->assert('pass', $key.' is '.$value);
     }
 
     //for switch user's shortcut set
-    //TODO the user'name is diffierernt from each test.
-    /*
     parent::runFile('shortcut_set_switch.yaml', 'switch shortcut set for users (modify)', PatternsShortcutTestCase::SHORTCUT_TESTS_DIR);
+    $queryuser = db_select('users', 'u')
+            ->fields('u', array('uid'))
+            ->condition('u.name', 'someone')
+            ->execute()
+            ->fetchField();
     $query = db_select('shortcut_set_users', 'ssu')
             ->fields('ssu', array('set_name', 'uid'))
-            ->condition('ssu.uid', 1)
+            ->condition('ssu.uid', $queryuser)
             ->condition('ssu.set_name', $query_add_set['set_name'])
             ->execute()
             ->fetchAssoc();
     $this->assertTrue($query, t('Switching user\'s shortcut set works fine.'));
     $num = count($query);
-    $this->assert('pass',$num);
+    $this->assert('pass', 'the num of query db is '.$num);
     foreach ( $query as $key => $value) {
-      $this->assert('pass', $value);
+      $this->assert('pass', $key.' is '.$value);
     }
-    */
 
-    //for edit the link, which add before
-    //TODO the link's Id is diffierent from each PC.
     //for delete the link, which just edit
-    //TODO the link's Id is diffierent from each PC.
+    parent::runFile('shortcut_delete_link.yaml', 'delete a link from a shortcut set (modify)', PatternsShortcutTestCase::SHORTCUT_TESTS_DIR);
+    $query = db_select('menu_links', 'ml')
+            ->fields('ml', array('menu_name', 'mlid', 'link_path', 'link_title'))
+            ->condition('ml.menu_name', $query_add_set['set_name'])
+            ->condition('ml.link_title', 'link_nodadd')
+            ->condition('ml.link_path', 'node/add')
+            ->execute()
+            ->fetchAssoc();
+    $this->assertFalse($query, t('Delete shortcut link works fine.'));
 
     //for change the set "new_set_fortest" name to "newer_set_fortest"
     parent::runFile('shortcut_edit_set.yaml', 'edit the shortcut set name(modify)', PatternsShortcutTestCase::SHORTCUT_TESTS_DIR);
@@ -100,9 +154,9 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
             ->fetchAssoc();
     $this->assertTrue($query, t('Editing set works fine.'));
     $num = count($query);
-    $this->assert('pass', $num);
+    $this->assert('pass', 'the num of query db is '.$num);
     foreach ( $query as $key => $value) {
-      $this->assert('pass', $value);
+      $this->assert('pass', $key.' is '.$value);
     }
 
     //for delete the set, which add before
@@ -114,8 +168,5 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
             ->execute()
             ->fetchAssoc();
     $this->assertFalse($query, t('Deleting set works fine.'));
-    $num = count($query);
-    $this->assert('pass', $num);
-
   }
 }

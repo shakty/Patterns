@@ -575,6 +575,7 @@ function patterns_utils_if_invalid_go_back($pattern = NULL,
                                            $back = '/admin/patterns/',
                                            $options = array()) {
 
+  $id = $pattern; // store a reference to the original parameter
   if (isset($options['numeric'])) {
     if (!is_numeric($pattern)) {
       drupal_set_message(t('You must specify a valid id for the pattern.'));
@@ -585,7 +586,7 @@ function patterns_utils_if_invalid_go_back($pattern = NULL,
   $pattern = patterns_get_pattern($pattern);
 
   if (!$pattern) {
-    drupal_set_message(t('No pattern was found with the given id.'), 'error');
+    drupal_set_message(t('No pattern was found with the given id: %id', array('%id' => $id)), 'error');
     drupal_goto($back);
   }
 

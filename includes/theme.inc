@@ -80,7 +80,7 @@ function theme_patterns_list($args) {
   drupal_add_js('misc/drupal.js');
 
   $patterns = $args[PATTERNS_STATUS_OK];
-  $removed = $args[PATTERNS_STATUS_REMOVED];
+  $removed = $args[PATTERNS_STATUS_TRASHED];
 
   $patterns_title = '<div id="all_patterns_div"><h3>' . t('Available Patterns') . '</h3>';
 
@@ -104,7 +104,7 @@ function theme_patterns_list($args) {
     foreach ($patterns as $pid => $pattern) {
 
       $category = $pattern->info['category'] ? $pattern->info['category'] : t('Other');
-
+      
       $form['patterns'][$category][] = _patterns_pattern_build_row($pid, $pattern);
       $form['patterns'][$category] += array(
         '#type' => 'fieldset',
@@ -237,30 +237,44 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
   );
 
   $actions = array();
-
-  // Build Run/Re-Run/Update pattern links
-  if (!$pattern->status) {
-    $actions['run'] =  l(t('Run'), 'admin/patterns/enable/' . $pid);
+  
+  switch ($pattern->status) {
+    case PATTERNS_STATUS_ENABLED:
+      $actions['run'] = t('Re-Run');
+      break;
+    case PATTERNS_STATUS_INVALID:
+      $actions['run'] = t('Invalid!');
+      break;
+    case ($pattern->enabled >= $pattern->updated):
+      $actions['run'] = t('Run-Update');
+      break;
+    case PATTERNS_STATUS_OK:
+      // default
+      // no break
+    default:
+      $actions['run'] = t('Run');
+      break;       
   }
-  elseif ($pattern->enabled >= $pattern->updated) {
-    $actions['run'] =  l(t('Re-Run'), 'admin/patterns/enable/' . $pid);
+  
+  if (!in_array($pattern->status, array(PATTERNS_STATUS_INVALID, PATTERNS_STATUS_TRASHED))) {
+    $actions['run'] = l($actions['run'], 'admin/patterns/enable/' . $pid);
   }
-  else {
-    $actions['run'] = l(t('Run Update'), 'admin/patterns/enable/' . $pid);
-  }
-
+  
   // Edit Link
   $actions['edit'] = l(t('Edit'), 'admin/patterns/edit/' . $pid);
 
-  // Remove Link
-  //$actions['remove'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax'))));
-
-  // Remove Link
-  $actions['trash'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax'))));
-
-   // Remove Link
-  $actions['remove'] = l(t('Remove'), 'admin/patterns/remove/' . $pid);
-
+  if ($pattern->status != PATTERNS_STATUS_TRASHED) {
+    // Trash Link
+    $actions['trash'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax'))));
+  }
+  
+  if (!empty($pattern->file) && is_writable($pattern->file)) {
+    // Remove Link
+    $actions['remove'] = l(t('Remove'), 'admin/patterns/remove/' . $pid);
+  }
+  else {
+    $actions['remove'] = '-';
+  }
 
   // Not yet ready
   //Publish/Unpublish link
