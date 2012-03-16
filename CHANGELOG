@@ -1,6 +1,6 @@
 7026:
 
-		- Patterns are correctly identified by the file name now. Now ambiguity with extensions
+		- Patterns are correctly identified by the file name now. No more ambiguity with extensions
 
 7025:
 

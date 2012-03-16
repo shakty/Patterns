@@ -17,7 +17,9 @@ function patterns_install() {
  * Implements hook_uninstall().
  */
 function patterns_uninstall() {
-  // TODO: delete variables
+  $del = db_delete('variable')
+    ->condition('name', 'patterns_%', 'LIKE')
+    ->execute();
 }
 
 /**

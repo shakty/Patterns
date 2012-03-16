@@ -194,10 +194,11 @@ function patterns_config_get_paths() {
  *
  * @todo Convert this into pluggable system.
  */
-function patterns_config_get_file_types() {
-  $result = array('xml', 'php');
+function patterns_config_get_formats() {
+  $result = array(PATTERNS_FORMAT_XML, PATTERNS_FORMAT_PHP);
+  
   if (file_exists(libraries_get_path('spyc') . '/spyc.php')) {
-    $result[] = 'yaml';
+    $result[] = PATTERNS_FORMAT_YAML;
   }
   return $result;
 }

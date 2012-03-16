@@ -238,22 +238,17 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
 
   $actions = array();
   
-  switch ($pattern->status) {
-    case PATTERNS_STATUS_ENABLED:
-      $actions['run'] = t('Re-Run');
-      break;
-    case PATTERNS_STATUS_INVALID:
-      $actions['run'] = t('Invalid!');
-      break;
-    case ($pattern->enabled >= $pattern->updated):
-      $actions['run'] = t('Run-Update');
-      break;
-    case PATTERNS_STATUS_OK:
-      // default
-      // no break
-    default:
-      $actions['run'] = t('Run');
-      break;       
+  // PATTERNS_STATUS_OK:
+  $actions['run'] = t('Run');
+  
+  if ($pattern->status == PATTERNS_STATUS_ENABLED) {
+    $actions['run'] = t('Re-Run');
+  }
+  elseif ($pattern->status == PATTERNS_STATUS_INVALID) {
+    $actions['run'] = t('Invalid!');
+  }
+  elseif ($pattern->enabled >= $pattern->updated) {
+    $actions['run'] = t('Run-Update');
   }
   
   if (!in_array($pattern->status, array(PATTERNS_STATUS_INVALID, PATTERNS_STATUS_TRASHED))) {

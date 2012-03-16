@@ -84,7 +84,7 @@ function patterns_quickrun($form, &$form_state) {
   $form['format'] = array(
     '#type' => 'select',
     '#title' => t('Pattern syntax'),
-    '#options' => array_combine(patterns_config_get_file_types(), patterns_config_get_file_types()),
+    '#options' => array_combine(patterns_config_get_formats(), patterns_config_get_formats()),
     '#default_value' => $extension,
   );
 
@@ -199,8 +199,8 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
   // TODO: this form could be reused, see function patterns_enable_pattern().
   // Default
   $content = '# Pattern';
-  $extension = 'yaml';
-
+  $format = (empty($pattern->format)) ? PATTERNS_FORMAT_UNKNOWN
+                                      : $pattern->format;
   $title = t('Pattern File');
   $description = '';
   $validation = patterns_db_analyze_patterns_status($pattern->status);
@@ -218,13 +218,13 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
   $form['format'] = array(
     '#type' => 'select',
     '#title' => t('Pattern syntax'),
-    '#options' => array_combine(patterns_config_get_file_types(), patterns_config_get_file_types()),
-    '#default_value' => $extension,
+    '#options' => array_combine(patterns_config_get_formats(), patterns_config_get_formats()),
+    '#default_value' => $format,
+    '#description' => t('Pattern will be validated and run against this format.'),
   );
 
   if (!empty($pattern->file)) {
-    $extension = pathinfo($pattern->file, PATHINFO_EXTENSION);
-    if (file_exists($pattern->file)) {
+    if (file_exists($pattern->file) && is_readable($pattern->file)) {
       $content = file_get_contents($pattern->file);
     }
     else {

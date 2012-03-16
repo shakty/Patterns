@@ -199,7 +199,7 @@ function patterns_db_save_pattern($pattern, $path, $name, $format = NULL) {
                            'time' => time(),
                            'status' => $status,
     );
-    db_query("INSERT INTO {patterns} (name, format, status, file, updated, enabled, title, description, pattern) VALUES ( :name, :format, :status, :file, 0, :time, :title, :descr, :pattern)", $query_params);
+    db_query("INSERT INTO {patterns} (name, format, status, file, updated, enabled, title, description, pattern) VALUES ( :name, :format, :status, :file, :time, 0, :title, :descr, :pattern)", $query_params);
   }
 
   return TRUE;
