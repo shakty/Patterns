@@ -250,22 +250,22 @@ function patterns_menu() {
     'type' => MENU_LOCAL_TASK
   );
 
-  // Disable for Now.
-  // TODO Check publish/unpublish
+ 
+    $items['admin/patterns/publish'] = array(
+      'title' => 'Publish Pattern',
+      'page callback' => 'patterns_publish_pattern',
+      'access arguments' => array('administer patterns'),
+      'type' => MENU_CALLBACK
+    );
+    $items['admin/patterns/unpublish'] = array(
+      'title' => 'Unpublish Pattern',
+      'page callback' => 'patterns_unpublish_pattern',
+      'access arguments' => array('administer patterns'),
+      'type' => MENU_CALLBACK
+    );
 
-  //  $items['admin/patterns/publish'] = array(
-  //    'title' => 'Publish Pattern',
-  //    'page callback' => 'patterns_publish_pattern',
-  //    'access arguments' => array('administer patterns'),
-  //    'type' => MENU_CALLBACK
-  //  );
-  //  $items['admin/patterns/unpublish'] = array(
-  //    'title' => 'Unpublish Pattern',
-  //    'page callback' => 'patterns_unpublish_pattern',
-  //    'access arguments' => array('administer patterns'),
-  //    'type' => MENU_CALLBACK
-  //  );
-
+  // Disable for now  
+    
   //  $items['admin/patterns/server'] = array(
   //    'title' => 'Patterns Server',
   //    'page callback' => 'drupal_get_form',

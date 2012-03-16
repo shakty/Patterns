@@ -103,6 +103,19 @@ function patterns_config_settings($form, &$form_state) {
     '#description' => t('When enabled, patterns in the database will be automatically updated to the latest version found in the file system. If the pattern was already been enabled, it just display a warning, but it does not execute the update.'),
     '#default_value' => variable_get('patterns_update_db_from_fs', TRUE),
   );
+  
+  $form['publish'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Sharing options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['publish']['patterns_allow_publish'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable sharing of patterns'),
+    '#description' => t('If selected, patterns can be shared with others web sites.'),
+    '#default_value' => variable_get('patterns_allow_publish', TRUE),
+  );
 
   $form['other'] = array(
     '#type' => 'fieldset',

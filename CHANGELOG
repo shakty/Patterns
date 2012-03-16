@@ -1,3 +1,7 @@
+7027:
+
+		- Publish link added again in the interface
+
 7026:
 
 		- Patterns are correctly identified by the file name now. No more ambiguity with extensions

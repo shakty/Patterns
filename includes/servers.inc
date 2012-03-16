@@ -212,10 +212,11 @@ function patterns_feed_rearrange_data($feed) {
  * @param mixed $pid
  */
 function patterns_publish_pattern($pid) {
-  if (is_numeric($pid)) {
-    $result = db_query("UPDATE {patterns} SET public = 1 WHERE pid = :pid", array('pid' => $pid));
-  }
-  drupal_set_message(t('Pattern published. Only in the db.'));
+  
+  $pattern = patterns_utils_if_invalid_go_back($pid);
+  $result = db_query("UPDATE {patterns} SET public = 1 WHERE pid = :pid", array('pid' => $pid));
+  
+  drupal_set_message(t('Pattern %pattern was marked as public.', array('%pattern' => @$pattern->name)));
   drupal_goto('admin/patterns');
 }
 
@@ -224,9 +225,9 @@ function patterns_publish_pattern($pid) {
  * @param mixed $pid
  */
 function patterns_unpublish_pattern($pid) {
-  if (is_numeric($pid)) {
-    $result = db_query("UPDATE {patterns} SET public = 0 WHERE pid = :pid", array('pid' => $pid));
-  }
-  drupal_set_message(t('Pattern unpublished.'));
+  $pattern = patterns_utils_if_invalid_go_back($pid);
+  $result = db_query("UPDATE {patterns} SET public = 0 WHERE pid = :pid", array('pid' => $pid));
+  
+  drupal_set_message(t('Pattern %pattern was marked as private.', array('%pattern' => @$pattern->name)));
   drupal_goto('admin/patterns');
 }

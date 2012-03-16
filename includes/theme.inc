@@ -118,7 +118,7 @@ function theme_patterns_list($args) {
             t('Title'),
             t('Version'),
             t('Description'),
-          array('data' => t('Operations'), 'colspan' => 4),
+          array('data' => t('Operations'), 'colspan' => 5),
         ),
         // Ensure that the "Core" package fieldset comes first.
         //'#weight' => $package == 'Core' ? -10 : NULL,
@@ -154,7 +154,7 @@ function theme_patterns_list($args) {
             t('Title'),
             t('Version'),
             t('Description'),
-          array('data' => t('Operations'), 'colspan' => 4),
+          array('data' => t('Operations'), 'colspan' => 5),
         ),
         // Ensure that the "Core" package fieldset comes first.
         //'#weight' => $package == 'Core' ? -10 : NULL,
@@ -271,11 +271,13 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
     $actions['remove'] = '-';
   }
 
-  // Not yet ready
   //Publish/Unpublish link
-  //if (variable_get('patterns_allow_publish', FALSE)) {
-  //  $actions['publish'] = $pattern->public ? l(t('Unpublish'), 'admin/patterns/unpublish/' . $pid) : l(t('Publish'), 'admin/patterns/publish/' . $pid);
-  //}
+  if (variable_get('patterns_allow_publish', FALSE)) {
+    $actions['publish'] = ($pattern->public) ? t('Unpublish') : t('Publish');
+    if ($pattern->status != PATTERNS_STATUS_TRASHED) {
+      $actions['publish'] = $pattern->public ? l($actions['publish'], 'admin/patterns/unpublish/' . $pid) : l($actions['publish'], 'admin/patterns/publish/' . $pid);
+    }
+  }
 
   $form = array(
     '#tree' => TRUE,
