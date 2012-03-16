@@ -24,6 +24,7 @@ function patterns_uninstall() {
  * Implements hook_schema().
  */
 function patterns_schema() {
+  
   $schema['patterns'] = array(
     'description' => 'Stores patterns information.',
     'fields' => array(
@@ -39,7 +40,12 @@ function patterns_schema() {
         'default' => '',
         'description' => 'Machine readable name of this pattern.',
       ),
-
+      'format' => array(
+        'type' => 'varchar',
+        'length' => 10,
+        'default' => '',
+        'description' => 'Format of the patterns (XML, YAML, etc.).',
+       ),
       /*
        * STATUSES:
        *

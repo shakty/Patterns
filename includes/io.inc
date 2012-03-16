@@ -57,7 +57,7 @@ function patterns_load_xml($path, $local = TRUE) {
 }
 
 /**
- * @TODO
+ * @TODO Probably Validation should be removed from inside here
  */
 function patterns_load_string_xml($source) {
   $pattern = patterns_from_source($source);
@@ -320,20 +320,21 @@ function patterns_io_scan_directories($verbose = FALSE) {
   foreach ($patterns_paths as $path) {
     //debug($path);
     foreach (file_scan_directory($path, $mask, $no_mask) as $file) {
-
-      if (in_array($file->name, $existing)) {
+      $format = substr($file->filename, strlen($file->name) + 1);
+      
+      if (in_array($file->filename, $existing)) {
         if (!variable_get('patterns_update_db_from_fs', TRUE)) {
           continue;
         }
 
-        if (!patterns_db_is_pattern_updated($file->name)) {
+        if (!patterns_db_is_pattern_updated($file->filename)) {
           // the database is already updated to the most recent version
           continue;
         }
 
         if (!empty($enabled)) {
-          if (in_array($file->name, $enabled)) {
-            $messages['skipped'][] = $file->name;
+          if (in_array($file->filename, $enabled)) {
+            $messages['skipped'][] = $file->filename;
             continue; // Skip updating enabled patterns.
           }
         }
@@ -345,7 +346,7 @@ function patterns_io_scan_directories($verbose = FALSE) {
       }
 
       // Choose appropriate function based on the file extension: YAML or XML.
-      $func = 'patterns_load_' . substr($file->filename, strlen($file->name) + 1);
+      $func = 'patterns_load_' . $format;
 
       // Load and save pattern.
       if (!($pattern = $func($file->uri))) {
@@ -359,25 +360,25 @@ function patterns_io_scan_directories($verbose = FALSE) {
       }
 
       // If everything was fine save it to the database
-      $result = patterns_db_save_pattern($pattern, $file->uri, $file->name);
+      $result = patterns_db_save_pattern($pattern, $file->uri, $file->filename, $format);
 
-      if ($result && !in_array($file->name, $existing)) {
-        $messages['found'][] = $file->name;
+      if ($result && !in_array($file->filename, $existing)) {
+        $messages['found'][] = $file->filename;
         continue;
       }
 
-      if (!$result && !in_array($file->name, $existing)) {
-        $messages['error_found'][] = $file->name;
+      if (!$result && !in_array($file->filename, $existing)) {
+        $messages['error_found'][] = $file->filename;
         continue;
       }
 
-      if ($result && in_array($file->name, $existing)) {
-        $messages['updated'][] = $file->name;
+      if ($result && in_array($file->filename, $existing)) {
+        $messages['updated'][] = $file->filename;
         continue;
       }
 
-      if (!$result && in_array($file->name, $existing)) {
-        $messages['error_updated'][] = $file->name;
+      if (!$result && in_array($file->filename, $existing)) {
+        $messages['error_updated'][] = $file->filename;
         continue;
       }
 
@@ -407,6 +408,9 @@ function _patterns_io_analyze_scandir_messages($messages = NULL) {
   }
   if (!empty($messages['updated'])) {
     drupal_set_message(t('The following patterns were updated to the newest version found in the file system: ') . '<br/>' . implode('<br/>', $messages['updated']) . '<br/><br/>');
+  }
+  if (!empty($messages['errors'])) {
+    drupal_set_message(t('A generic error occurred while trying to load the following files: ') . '<br/>' . implode('<br/>', $messages['errors']) . '<br/><br/>', 'warning');
   }
   if (!empty($messages['invalid'])) {
     drupal_set_message(t('Some invalid patterns were found: ') . '<br/>' . implode('<br/>', $messages['invalid']) . '<br/><br/>', 'warning');

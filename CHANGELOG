@@ -1,3 +1,7 @@
+7026:
+
+		- Patterns are correctly identified by the file name now. Now ambiguity with extensions
+
 7025:
 
 		- Fixed inconsistencies in the removal process in the GUI. Removed patterns are still not

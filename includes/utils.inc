@@ -601,3 +601,35 @@ function patterns_utils_if_invalid_go_back($pattern = NULL,
 function patterns_utils_is_fopenurl_enabled() {
   return ini_get('allow_url_fopen') ? TRUE : FALSE;
 }
+
+/**
+ * Take as input an array representing the pattern code or the pattern as 
+ * extracted from the database and looks for the specified key.
+ * 
+ * In the following order returns:
+ * 
+ *  - the $value parameter, if not NULL
+ *  - the value of the key if found in the INFO section
+ *  - the value of the key if found in the first level of the array
+ *  - NULL or $fallback if the key is not found
+ * 
+ * 
+ * @param mixed $key the key to look for
+ * @param array $patterm the array to inspect
+ * @param mixed $value a default value for the key
+ * @param mixes $fallback to return instead of NULL, if no key is found
+ * 
+ */
+function patterns_utils_init_from_pattern($key, $pattern, $value = NULL, $fallback = NULL) {
+  if (!is_null($value)) return $value;
+  if (isset($pattern['info'])) {
+    if (isset($pattern['info'][$key])) {
+      return $pattern['info'][$key];
+    }
+  }
+  if (isset($pattern[$key])) {
+    return $pattern[$key];
+  }
+  return $fallback;
+}
+
