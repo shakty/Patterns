@@ -546,7 +546,7 @@ function _patterns_io_is_patterns_dir_ready($patterns_files_dir = '', $flag = FI
  *
  * @param string $content The content of the pattern to be saved.
  * @param string $name The name of the pattern file.
- * @param string $format
+ * @param string $format file format (notice: it is not the extension!)
  *   (optional) The format of the pattern. Defaults to 'yaml'.
  *
  * @return bool
@@ -572,9 +572,10 @@ function patterns_io_save_pattern($content = NULL, $name = NULL, $format = 'yaml
     drupal_set_message(t('Error: the pattern is not writable. Please check the file system permissions.'), 'error');
     return FALSE;
   }
-  $path =  $dir . '/' . $name . '.' . $format;
-  if (!file_unmanaged_save_data($content, $path, FILE_EXISTS_REPLACE)) {
-    drupal_set_message(t('Error: file could not be saved.'), 'error');
+  $path_original = $dir . '/' . $name;
+  $path = file_unmanaged_save_data($content, $path_original, FILE_EXISTS_REPLACE);
+  if (!$path) {
+    drupal_set_message(t('An error occurred while saving the file to %path. A file with the same name exists.', array('%path' => $path_original)), 'error');
     return FALSE;
   }
 
