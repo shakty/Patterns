@@ -86,7 +86,7 @@ function _patterns_db_get_pattern_array($pattern) {
  */
 function patterns_db_trash_pattern($pid) {
   $trashed = db_update('patterns')
-    ->fields(array('status' => PATTERNS_STATUS_REMOVED))
+    ->fields(array('status' => PATTERNS_STATUS_TRASHED))
     ->condition('pid', $pid)
     ->execute();
 
@@ -163,8 +163,8 @@ function patterns_db_save_pattern($pattern, $path, $name) {
   if (!empty($pattern_data)) {
 
     // TODO: how to update the status correctly? Improve!
-    if ($pattern_data['status'] == PATTERNS_STATUS_REMOVED) {
-      $status = PATTERNS_STATUS_REMOVED;
+    if ($pattern_data['status'] == PATTERNS_STATUS_TRASHED) {
+      $status = PATTERNS_STATUS_TRASHED;
     }
     elseif ($pattern_data['status'] == PATTERNS_STATUS_ENABLED) {
       if ($status == PATTERNS_STATUS_OK) {
@@ -446,7 +446,7 @@ function patterns_db_analyze_patterns_status($pattern) {
   if (!$pattern) return t('This pattern has not been validated yet.');
   if ($pattern->status >= 0) return t('This is a valid pattern');
   if ($pattern->status === PATTERNS_STATUS_INVALID) return t('This pattern is marked as NOT valid');
-  if ($pattern->status === PATTERNS_STATUS_REMOVED) return t('This pattern is marked as REMOVED.');
+  if ($pattern->status === PATTERNS_STATUS_TRASHED) return t('This pattern is marked as TRASHED.');
 
   return t('This pattern has not been validated yet.');
 }

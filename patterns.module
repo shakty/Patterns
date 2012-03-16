@@ -509,22 +509,22 @@ function patterns_enable_pattern_submit($form, &$form_state) {
  */
 function patterns_trash_pattern($form, &$form_state, $pid = NULL) {
 
-  $pattern = patterns_get_pattern($pid);
-  if (empty($pattern)) {
-    drupal_set_message(t('Pattern could not be moved into the trash bin.'), 'error');
-    $form_state['redirect'] = 'admin/patterns';
-    return $form;
-  }
+  $pattern = patterns_utils_if_invalid_go_back($pid);
 
   $form['pid'] = array(
     '#type' => 'value',
     '#value' => $pid,
   );
+  
+  $form['name'] = array(
+    '#type' => 'value',
+    '#value' => @$pattern->name,
+  );
 
 
   $disclaimer = t('Trashed patterns can be restored later on.');
 
-  return confirm_form($form, t('Proceed with removing pattern %pattern?', array('%pattern' => $pattern->title)), 'admin/patterns', $disclaimer);
+  return confirm_form($form, t('Proceed with moving pattern %pattern into the trash bin?', array('%pattern' => $pattern->title)), 'admin/patterns', $disclaimer);
 
 }
 
@@ -535,14 +535,15 @@ function patterns_trash_pattern($form, &$form_state, $pid = NULL) {
  */
 function patterns_trash_pattern_submit($form, &$form_state) {
   $pid = $form_state['values']['pid'];
-  print_r($form_state['values']);
+  $name = $form_state['values']['name'];
+  $id = (!empty($name)) ? $name : $pid;
   $result = patterns_db_trash_pattern($pid);
 
   if (!$result) {
-    drupal_set_message(t('Pattern could not be moved into the trash bin.'), 'error');
+    drupal_set_message(t('Pattern %id could not be moved into the trash bin.', array('%id' => $id)), 'error');
   }
   else {
-    drupal_set_message(t('Pattern successfully moved into the trash bin.'), 'status');
+    drupal_set_message(t('Pattern %id successfully moved into the trash bin.', array('%id' => $id)), 'status');
   }
 
   $form_state['redirect'] = 'admin/patterns';
@@ -560,20 +561,16 @@ function patterns_trash_pattern_submit($form, &$form_state) {
  */
 function patterns_remove_pattern($form, &$form_state, $pid = NULL) {
 
-  $pattern = patterns_get_pattern($pid);
-
-  if (empty($pattern)) {
-    $form['not_existing'] = array(
-      '#markup' => t('Invalid pattern ID for removal.') . ' ' . l(t('Cancel'), 'admin/patterns'),
-      '#prefix' => '<div id="important">',
-      '#suffix' => '<br/></div>',
-    );
-    return $form;
-  }
+  $pattern = patterns_utils_if_invalid_go_back($pid);
 
   $form['pid'] = array(
     '#type' => 'value',
     '#value' => $pid,
+  );
+  
+  $form['name'] = array(
+    '#type' => 'value',
+    '#value' => @$pattern->name,
   );
 
   $disclaimer = t('This operation cannot be undone. Are you sure?');
@@ -588,16 +585,17 @@ function patterns_remove_pattern($form, &$form_state, $pid = NULL) {
  */
 function patterns_remove_pattern_submit($form, &$form_state) {
   $pid = $form_state['values']['pid'];
-
+  $name = $form_state['values']['name'];
+  $id = (!empty($name)) ? $name : $pid;
   $result = patterns_db_remove_pattern($pid);
 
   //@TODO: Remove the file as well.
 
   if (!$result) {
-    drupal_set_message(t('Pattern could not be removed.'), 'error');
+    drupal_set_message(t('Pattern %id could not be removed.', array('%id' => $id)), 'error');
   }
   else {
-    drupal_set_message(t('Pattern was removed successfully.'), 'status');
+    drupal_set_message(t('Pattern %id was removed successfully.', array('%id' => $id)), 'status');
   }
   $form_state['redirect'] = 'admin/patterns';
 }
