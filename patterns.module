@@ -97,6 +97,16 @@ function patterns_menu() {
     'weight' => -10
   );
 
+  // MAIN ROUTES
+  
+  $items['admin/patterns/enable'] = array(
+    'title' => 'Enable Pattern',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('patterns_enable_pattern'),
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK
+  );
+  
   $items['admin/patterns/edit/%'] = array(
     'title' => 'Edit Pattern',
     'page callback' => 'patterns_edit_page',
@@ -112,6 +122,7 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_LOCAL_TASK
   );
+  
   $items['admin/patterns/export'] = array(
     'title' => 'Export',
     'page callback' => 'drupal_get_form',
@@ -127,14 +138,19 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
+  
+  // SETTINGS
 
-  $items['admin/patterns/enable'] = array(
-    'title' => 'Enable Pattern',
+  $items['admin/patterns/settings'] = array(
+    'title' => 'Settings',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('patterns_enable_pattern'),
+    'page arguments' => array('patterns_config_settings'),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10
   );
+  
+  // TRASH, RESTORE, REMOVE
 
   $items['admin/patterns/trash'] = array(
     'title' => 'Move Pattern to Recycle Bin',
@@ -143,14 +159,13 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
-
-//  $items['admin/patterns/trash/%'] = array(
-//    'title' => 'Move Pattern to Recycle Bin',
-//    'page callback' => 'patterns_db_trash_pattern',
-//    'page arguments' => array(3),
-//    'access arguments' => array('administer patterns'),
-//    'type' => MENU_CALLBACK
-//  );
+  
+  $items['admin/patterns/restore'] = array(
+    'title' => 'Restore a pattern from the recycle bin',
+    'page callback' => 'patterns_restore_pattern',
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK
+  );
 
   $items['admin/patterns/remove'] = array(
     'title' => 'Remove Pattern',
@@ -160,20 +175,13 @@ function patterns_menu() {
     'type' => MENU_CALLBACK
   );
 
-    $items['admin/patterns/refresh'] = array(
+  // UTILS
+  
+  $items['admin/patterns/refresh'] = array(
     'title' => 'Refresh Patterns',
     'page callback' => 'patterns_io_get_patterns_service',
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
-  );
-
-  $items['admin/patterns/settings'] = array(
-    'title' => 'Settings',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('patterns_config_settings'),
-    'access arguments' => array('administer patterns'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 10
   );
 
   $items['admin/patterns/validate'] = array(
@@ -203,7 +211,7 @@ function patterns_menu() {
   );
   */
 
-  // TODO: Check import.
+  // IMPORT
 
   $items['admin/patterns/import'] = array(
     'title' => 'Import',
@@ -212,15 +220,6 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_LOCAL_TASK
   );
-
-  // old
-  //  $items['admin/patterns/import'] = array(
-  //    'title' => 'Import',
-  //    'page callback' => 'drupal_get_form',
-  //    'page arguments' => array('patterns_import_source'),
-  //    'access arguments' => array('administer patterns'),
-  //    'type' => MENU_LOCAL_TASK
-  //  );
 
   $items['admin/patterns/import/source'] = array(
     'title' => 'Import Source Code',
@@ -250,19 +249,20 @@ function patterns_menu() {
     'type' => MENU_LOCAL_TASK
   );
 
+  // PUBLISH / UNPUBLISH
  
-    $items['admin/patterns/publish'] = array(
-      'title' => 'Publish Pattern',
-      'page callback' => 'patterns_publish_pattern',
-      'access arguments' => array('administer patterns'),
-      'type' => MENU_CALLBACK
-    );
-    $items['admin/patterns/unpublish'] = array(
-      'title' => 'Unpublish Pattern',
-      'page callback' => 'patterns_unpublish_pattern',
-      'access arguments' => array('administer patterns'),
-      'type' => MENU_CALLBACK
-    );
+  $items['admin/patterns/publish'] = array(
+    'title' => 'Publish Pattern',
+    'page callback' => 'patterns_publish_pattern',
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK
+  );
+  $items['admin/patterns/unpublish'] = array(
+    'title' => 'Unpublish Pattern',
+    'page callback' => 'patterns_unpublish_pattern',
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK
+  );
 
   // Disable for now  
     
@@ -493,6 +493,28 @@ function patterns_enable_pattern_submit($form, &$form_state) {
 
 
 /**
+ * Restores a previously trashed pattern.
+ * 
+ * Sets the pattern status in the database to PATTERNS_STATUS_OK
+ * 
+ * @param mixed $pid The ID of the Pattern to enable.
+ *
+ */
+function patterns_restore_pattern($pid = NULL) {
+
+  $pattern = patterns_utils_if_invalid_go_back($pid);
+  $result = patterns_db_restore_pattern($pid);
+  $params = array('%name' => @$pattern->name);
+  if ($result) {
+    drupal_set_message(t('Pattern %name was correctly restored from the trash bin.', $params));
+  }
+  else {
+    drupal_set_message(t('An error occurred. Patterns was unable to restore pattern %name from the trash bin.', $params), 'error');
+  }
+  drupal_goto('admin/patterns');
+}
+
+/**
  * Form constructor for the Patterns removing form.
  *
  * Creates a confirm_form to make sure the removing operation was intentional.
@@ -516,11 +538,8 @@ function patterns_trash_pattern($form, &$form_state, $pid = NULL) {
     '#value' => @$pattern->name,
   );
 
-
   $disclaimer = t('Trashed patterns can be restored later on.');
-
   return confirm_form($form, t('Proceed with moving pattern %pattern into the trash bin?', array('%pattern' => $pattern->title)), 'admin/patterns', $disclaimer);
-
 }
 
 /**

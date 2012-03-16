@@ -114,6 +114,7 @@ function theme_patterns_list($args) {
         '#theme' => 'patterns_patterns_fieldset',
         '#header' => array(
           array('data' => t('Enabled'), 'class' => array('checkbox')),
+            t('Format'),
             t('Name'),
             t('Title'),
             t('Version'),
@@ -150,6 +151,7 @@ function theme_patterns_list($args) {
         '#theme' => 'patterns_patterns_fieldset',
         '#header' => array(
           array('data' => t('Enabled'), 'class' => array('checkbox')),
+            t('Format'),
             t('Name'),
             t('Title'),
             t('Version'),
@@ -197,8 +199,10 @@ function theme_patterns_patterns_fieldset($variables) {
       $label .= ' for="' . $pattern['enable']['#id'] . '"';
     }
 
+    $row[] = drupal_render($pattern['format']);
+    
     $row[] = $label . '><strong>' . drupal_render($pattern['name']) . '</strong></label>';
-
+    
     $row[] = drupal_render($pattern['title']);
 
     $row[] = drupal_render($pattern['version']);
@@ -262,6 +266,9 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
     // Trash Link
     $actions['trash'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax'))));
   }
+  else {
+    $actions['trash'] = l(t('Restore'), 'admin/patterns/restore/' . $pid, array('attributes' => array('class' => array('use-ajax'))));
+  }
   
   if (!empty($pattern->file) && is_writable($pattern->file)) {
     // Remove Link
@@ -296,6 +303,10 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
 
   $title .= '<div id="pid-' . $pid . '-info" class="pattern-info">' . $author . '</div>';
 
+  $form['format'] = array(
+    '#markup' => $pattern->format,
+  );
+  
   $form['name'] = array(
     '#markup' => $pattern->name,
   );

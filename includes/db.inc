@@ -94,6 +94,23 @@ function patterns_db_trash_pattern($pid) {
 }
 
 /**
+ * Mark that pattern status as OK in the database.
+ *
+ * @param mixed $pid
+ *   The id of the pattern to remove.
+ * @return bool
+ *   TRUE on success, FALSE otherwise.
+ */
+function patterns_db_restore_pattern($pid) {
+  $ok = db_update('patterns')
+    ->fields(array('status' => PATTERNS_STATUS_OK))
+    ->condition('pid', $pid)
+    ->execute();
+
+  return ($ok == 1) ? TRUE : FALSE;
+}
+
+/**
  * Remove permanently a pattern from the database.
  *
  * @param mixed $pid
