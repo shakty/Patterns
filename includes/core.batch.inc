@@ -49,6 +49,49 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
     // by default this pattern should run included ?
     // this setting can be overwritten by the pattern file itself
 
+//    $actions  Array [2] 
+//  [0...1] 
+//    0 Array [1] 
+//      [0...0] 
+//        create  Array [3] 
+//          [0...2] 
+//            0 Array [3] 
+//              [0...2] 
+//                action  modules 
+//                0 forum 
+//                1 member  
+//            1 Array [5] 
+//              [0...4] 
+//                tag delete  
+//                action  modules 
+//                0 admin_menu  
+//                1 overlay 
+//                2 aggregator  
+//            tag actions 
+//    1 Array [1] 
+//      [0...0] 
+//        delete  Array [3] 
+//          [0...2] 
+//            0 Array [1] 
+//            1 Array [4] 
+//            tag actions 
+    
+    
+//    $actions  Array [1] 
+//  [0...0] 
+//    0 Array [1] 
+//      [0...0] 
+//        create  Array [5] 
+//          [0...4] 
+//            tag vocabulary  
+//            name  Another Vocabulary  
+//            machine_name  anothervoc  
+//            description Another Vocabulary, useless 
+//            hierarchy 0 
+    
+    
+    
+    
     $actions = patterns_parser_retrieve_actions_from_section($actions, $include_options);
 
     // This can happen if includes are disabled

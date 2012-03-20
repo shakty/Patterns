@@ -33,6 +33,7 @@ function patterns_rearrange_data($pattern) {
     }
     else {
       if ($value['tag'] == 'actions') {
+      //if (!in_array($value['tag'], array('info', 'modules'))) {
         $pattern[$key] = patterns_rearrange_data($value);
         $pattern[$key]['tag'] = 'actions';
 
@@ -66,7 +67,8 @@ function patterns_rearrange_data($pattern) {
 function _patterns_rearrange_data($data, $parent = '') {
   $numeric = array();
   $count = 0;
-
+  $header = $data['tag'];
+  
   foreach ($data as $key => $value) {
     if (isset($value['value'])) {
       if ($value['value'] == 'false') {
@@ -116,8 +118,12 @@ function _patterns_rearrange_data($data, $parent = '') {
       unset($data[$key]);
     }
   }
-
+  
   return $data;
+  
+//  // Workaround
+//  unset($data['tag']);
+//  return array($header => $data);
 }
 
 /**
