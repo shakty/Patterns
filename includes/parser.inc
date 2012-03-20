@@ -31,10 +31,13 @@ function patterns_locate_action($key, $actions_map) {
  * Check if pattern array or content from a file is valid.
  *
  * @param mixed $pattern Pattern array or content of a pattern file.
- *
+ * @param mixed $format The format of the file to validate against
+ * 
+ * 
+ * 
  * @return bool TRUE if valid, FALSE otherwise.
  */
-function patterns_validate_pattern($pattern) {
+function patterns_validate_pattern($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
   $scan = _patterns_scan_pattern($pattern);
   return _patterns_validate_patternscan($scan);
 }
@@ -164,6 +167,7 @@ function _patterns_scan_pattern($pattern) {
                   'include_scans' => array(),
   );
 
+  // TODO: it will take only arrays at the beginning
   if (!is_array($pattern)) {
     $pattern = patterns_parse_yaml($pattern); // TODO: other formats as well.
   }
