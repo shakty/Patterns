@@ -18,8 +18,7 @@ function patterns_editor($form_id, $pattern = array()) {
 
   $form = drupal_get_form($form_id, $pattern);
   $editor  = drupal_render($form);
-
-  if (!patterns_load_co2()) {
+  if (!patterns_load_co2($form['format']['#default_value'])) {
     $co2 = l(t('Codemirror'), 'http://codemirror.net/');
     $editor .= t('Install !co2 in sites/all/libraries/codemirror2 for advanced editing functionalities.', array('!co2' => $co2));
   }
@@ -487,21 +486,23 @@ function patterns_edit_submit($form, &$form_state) {
 /**
  * Adds the JavaScript files to load the Co2 Editing textarea.
  */
-function patterns_load_co2() {
+function patterns_load_co2($format = PATTERNS_FORMAT_YAML) {
   // Load the CodeMirror Editor if installed in the libraries folder
   $co2_path = libraries_get_path('codemirror2');
   if (!empty($co2_path) && file_exists($co2_path)) {
     $co2_js = $co2_path . '/lib/codemirror.js';
     $co2_css = $co2_path . '/lib/codemirror.css';
-    $co2_mode_yaml = $co2_path . '/mode/yaml/yaml.js';
     $co2_css_theme = $co2_path . '/theme/default.css';
-
 
     drupal_add_css($co2_css);
     drupal_add_css($co2_css_theme);
     drupal_add_js($co2_js);
-    drupal_add_js($co2_mode_yaml);
-
+    
+    if ($format !== PATTERNS_FORMAT_UNKNOWN) {
+      $co2_mode = $co2_path . '/mode/' . $format . '/' . $format . '.js';
+      drupal_add_js($co2_mode);
+    }
+    
     // Adding Pattern Customization for Co2
     drupal_add_css(drupal_get_path('module', 'patterns') . '/css/editor.css');
     drupal_add_js(drupal_get_path('module', 'patterns') . '/js/editor.js');
