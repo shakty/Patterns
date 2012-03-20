@@ -1,151 +1,9 @@
 <?php
+
 /**
  * @file
  * Functions related to parsing pattern files.
  */
-
-/**
- * Finds parts of an array based on a semi-compatible Xpath syntax.
- *
- * Returns an array of constructs that includes the references 'item' and
- * 'parent' from the matching values in the $data object along with extra keys
- * 'key' for the key of the current match and 'trace' for a full list of keys
- * until the root of the $data object.
- *
- * Loosely based off of Cake function Set::extract.
- *
- * @Note: Ensure this always only returns matches from a single level in the
- * array. Changes made to matches in different levels can possibly mess up the
- * above-level matches. To this end, you cannot change the keys of a current
- * match because the other matches cannot change their keys as well to sync with
- * the new parent array.
- * @TODO: Think of a solution for the above note (BROKEN RIGHT NOW).
- */
-function patterns_array_fetch($path, &$data, $context = NULL) {
-  if (!$context && (empty($data) || !is_array($data))) {
-    return array();
-  }
-  if ($path === '/') {
-    return $data;
-  }
-
-  // Construct our contexts object that allows us to traverse the array
-  if (!$context) {
-    $context = _patterns_array_context($data);
-  }
-
-  // Make our context actually a list of contexts
-  $context = array($context);
-
-  // Create a list of tokens based on the supplied path
-  $tokens = array_slice(preg_split('/(?<!=)\/(?![a-z]*\])/', $path), 1);
-
-  while (!empty($tokens)) {
-    $token = array_shift($tokens);
-
-    // TODO Implement better conditionals for each token
-    // Currently only supports element=value conditions
-    $conditions = array();
-    if (preg_match('/(=)(.*)/', $token, $m)) {
-      $conditions[$m[1]] = $m[2];
-      $token = substr($token, 0, strpos($token, $m[1]));
-    }
-
-    $matches = array();
-    foreach ($context as &$piece) {
-      if ($token === '..') {
-        $matches[] = &$piece['parent'];
-        continue;
-      }
-      $match = FALSE;
-      if (is_array($piece['item']) && ($token == '*' || array_key_exists($token, $piece['item']))) {
-        $i = 0;
-        while (isset($piece[$i])) {
-          if ($piece[$i]['key'] === $token) {
-            $matches[] = &$piece[$i];
-            break;
-          }
-          elseif ($token === '*') {
-            $matches[] = &$piece[$i];
-          }
-          $i++;
-        }
-      }
-      elseif ($token === '.') {
-        $matches[] = &$piece;
-      }
-    }
-
-    // Filter matches from the matches list based on our conditions
-    foreach ($conditions as $operator => $value) {
-      _patterns_array_filter($matches, $operator, $value);
-    }
-
-    // Update the context area to the next set of matches to dig into
-    $context = $matches;
-  }
-
-  // Return the list of matches containing references to their respective data objects
-  return $matches;
-}
-
-/**
- * Recurse through the values of a parsed xml file to create a
- * multi-dimensional representation of the data.
- */
-function _patterns_parse_tag($data, &$index = 0) {
-  $pattern = array();
-
-  while (isset($data[$index]) && $current = $data[$index]) {
-    $type = $current['type'];
-
-    if (!empty($current['attributes'])) {
-      foreach ((array) $current['attributes'] as $key => $value) {
-        $current[$key] = $value;
-      }
-    }
-
-    unset($current['type'], $current['level'], $current['attributes']);
-
-    if (isset($current['value']) && !trim($current['value']) && $current['value'] != "0") {
-      unset($current['value']);
-    }
-
-    switch ($type) {
-      case 'open':
-        $index++;
-        $current += _patterns_parse_tag($data, $index);
-        $pattern[] = $current;
-        break;
-      case 'close':
-        $index++;
-        return $pattern;
-        break;
-      case 'complete':
-        // In order to support more complex/non-standard features we can use serialized data
-        if (!empty($current['attributes']['serialized'])) {
-          $value = unserialize($current['value']);
-
-          if (isset($value)) {
-            $current['value'] = $value;
-          }
-        }
-
-        // If no value was specified, make sure an empty value is there
-        if (!isset($current['value'])) {
-          $current['value'] = '';
-        }
-
-        $pattern[] = $current;
-        break;
-    }
-
-    $index++;
-  }
-
-  return $pattern;
-}
-
 
 /**
  * Scan the actions_map array and return info about the file the action was coming
@@ -440,8 +298,26 @@ function _patterns_scan_pattern($pattern) {
  * Returns validation info about the pattern passed in the $_POST array.
  */
 function patterns_validate_service() {
+  
+  if (!isset($_POST['pattern'])) {
+    print t('No pattern found. Communication error.');
+    exit;
+  }
+  
+  if (!isset($_POST['format'])) {
+    print t('Cannot validate unknown pattern format');
+    exit;
+  }
+  
+  $pattern = $_POST['pattern'];
+  if ($_POST['format'] == PATTERNS_FORMAT_XML) {
+    $pattern = patterns_load_string_xml($_POST['pattern']);
+  }
+  
+//  $p = patterns_load_string_xml($_POST['pattern']);
+//  $p = patterns_parser_validate_xml_pattern($_POST['pattern']);
 
-  $scan = _patterns_scan_pattern($_POST['pattern']);
+  $scan = _patterns_scan_pattern($pattern);
 
   if (_patterns_validate_patternscan($scan)) {
     $count = count($scan['other_sections']) + $scan['info'] + $scan['modules'];
@@ -617,34 +493,6 @@ function _patterns_parser_analyze_pattern_name($name = NULL) {
   return $msgs;
 }
 
-/**
- * Validates an XML file.
- *
- * @TODO Doc.
- * TODO: test it
- * TODO: improve XML validator
- * Check that the xml was properly parsed and also that the
- */
-function patterns_parser_validate_xml_pattern($content) {
-
-  if (empty($content)) {
-    return FALSE;
-  }
-
-  // Add XML tag if missing.
-  if (strpos($content, '<?xml') !== 0) {
-    $content = '<?xml version="1.0" encoding="UTF-8"?>' . $content;
-  }
-
-  $parse = drupal_xml_parser_create($content);
-  $success = xml_parse_into_struct($parse, $content, $vals, $index);
-
-  if (!$success || !$vals || $vals[0]['tag'] != 'PATTERN' || $vals[1]['tag'] != 'INFO') {
-    return FALSE;
-  }
-
-  return TRUE;
-}
 
 
 /**

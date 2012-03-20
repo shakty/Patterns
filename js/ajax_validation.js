@@ -8,7 +8,7 @@ jQuery('document').ready( function() {
 		
 		var url = unescape(location.href).substring(0,idx + detect.length) + '/validate';
 		
-		function validate(textarea) {
+		function validate(textarea, format_selector) {
 			if (!textarea) return;
 		
 			var vp = document.getElementById('validate_pattern');
@@ -28,11 +28,17 @@ jQuery('document').ready( function() {
 						CO2editor.save();
 					}
 					
+					var format = (format_selector && format_selector.value) ? format_selector.value
+																			: 'unknown';
+					
 					jQuery.ajax({
 						type: 'POST',
 						url: url,
 						// TODO: This needs to be encoded.
-						data: 'pattern=' + textarea.value,
+						//data: 'pattern=' + textarea.value + '&format=' + format,
+						data: {pattern: textarea.value,
+							   format: format
+						},
 						success: function ( data, status, xhr ) {
 									document.getElementById('validation_result').innerHTML = '<strong>'+data+'</strong>';
 									//$('validation_result').replaceWith(data);
@@ -42,7 +48,9 @@ jQuery('document').ready( function() {
 			}
 		}
 		
-		validate(document.getElementById("edit-content"));
+		validate(document.getElementById("edit-content-db"),document.getElementById("edit-format-db"));
+		validate(document.getElementById("edit-content"),document.getElementById("edit-format"));
+		
 		
 	})();
 		
