@@ -274,7 +274,7 @@ function patterns_feed() {
  * Installs required modules for executing the pattern.
  *
  * @param array $modules
- * @TODO Doc.
+ *
  */
 function patterns_install_modules(&$modules) {
   $result = array('success' => TRUE);
@@ -301,6 +301,31 @@ function patterns_install_modules(&$modules) {
 }
 
 /**
+ * Disable the specified modules.
+ *
+ * @param array $modules
+ * @param boolean $deps if TRUE also all the modules dependent
+ * 	 will be disabled as well.
+ * 
+ */
+function patterns_disable_modules(&$modules, $deps = TRUE) {
+  $result = array('success' => TRUE);
+
+  if (empty($modules)) {
+    return $result;
+  }
+
+  require_once DRUPAL_ROOT . '/' . 'includes/install.inc';
+  module_disable($modules, TRUE);
+  system_rebuild_module_data();
+
+  $result['disabled_modules'] = $modules;
+
+  return $result;
+}
+
+
+/**
  * Checks if all the module dependencies are available.
  *
  * @param array $modules
@@ -318,8 +343,6 @@ function patterns_check_module_dependencies(&$modules, $update_list = FALSE) {
     return array();
   }
 
-  // Ste: was
-  //$modules_info = module_rebuild_cache();
   $modules_info = system_rebuild_module_data();
 
   $result = array();
@@ -328,6 +351,7 @@ function patterns_check_module_dependencies(&$modules, $update_list = FALSE) {
   foreach ($modules as $module) {
     $module = is_array($module) ? $module['value'] : $module;
     if (array_key_exists($module, $modules_info)) {
+    	
       // check also for module's dependencies
       foreach ($modules_info[$module]->info['dependencies'] as $dependency) {
         if (array_key_exists($dependency, $modules_info)) {
@@ -337,6 +361,9 @@ function patterns_check_module_dependencies(&$modules, $update_list = FALSE) {
           $result[] = $dependency;
         }
       }
+      
+      // Do not reinstall already installed modules
+      // unset(current($modules));
     }
     else {
       $result[] = $module;

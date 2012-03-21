@@ -703,10 +703,13 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
   $actions_map = array('patterns' => $infos, 'map' => NULL); // Fix this.
   ////////////////////////////////////////
 
-
-
   // Execute the Pattern using the selected mode.
-  return $fun($pattern, $params, $patterns_details, $actions_map);
+  $fun($pattern, $params, $patterns_details, $actions_map);
+  
+  // Disable the modules enabled just for executing the pattern
+  patterns_disable_modules($modules);
+  
+  return TRUE;
 }
 
 // @TODO: Take care patterns_invoke does not return any more the tagmodules index.

@@ -95,7 +95,7 @@ function _patterns_analyze_patternscan($patternscan) {
     $msgs[] = t('Pattern can contain only one \'modules\' section.');
   }
 
-  if ($patternscan['modules'] == 0 && count($patternscan['other_sections']) == 0) {
+  if (count($patternscan['other_sections']) == 0) {
     $msgs[] = t('Pattern does not contain any actions.');
   }
   
