@@ -683,9 +683,9 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
 
   $modules = $pattern_details['modules'];
 // Install modules, if necessary.
-  $results = patterns_install_modules($modules);
-  if (!$results['success']) { // TODO: handle properly.
-    drupal_set_message($results['error_message'], 'error');
+  $installed_modules = patterns_install_modules($modules);
+  if (!$installed_modules['success']) { 
+    drupal_set_message($installed_modules['error_message'], 'error');
     return FALSE;
   }
 
@@ -707,7 +707,9 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
   $fun($pattern, $params, $patterns_details, $actions_map);
   
   // Disable the modules enabled just for executing the pattern
-  patterns_disable_modules($modules);
+  if (!empty($installed_modules['installed'])) {
+  	patterns_disable_modules($installed_modules['installed']);
+  }
   
   return TRUE;
 }
