@@ -13,6 +13,10 @@ define('PATTERNS_SUCCESS', 1);
 define('PATTERNS_WARN', 0);
 define('PATTERNS_ERR', -1);
 
+define('PATTERNS_TAG', 'tag');
+define('PATTERNS_SECTION_INFO', 'info');
+define('PATTERNS_SECTION_MODULES', 'modules');
+
 define('PATTERNS_CREATE', 'create');
 define('PATTERNS_MODIFY', 'modify');
 define('PATTERNS_DELETE', 'delete');

@@ -32,32 +32,32 @@ function patterns_rearrange_data($pattern) {
       unset($pattern[$key]);
     }
     else {
-      if ($value['tag'] == 'actions') {
-      //if (!in_array($value['tag'], array('info', 'modules'))) {
-        $pattern[$key] = patterns_rearrange_data($value);
-        $pattern[$key]['tag'] = 'actions';
-
-        // The refactored version, introduced in 7.x.
-        // TODO: change _patterns_rearrange_data instead.
-        // TODO: this does not actually work yet.
-        $p = &$pattern[$key];
-        foreach ($p as $k => $v) {
-          if (is_string($k)) {
-            continue;
-          }
-          $tag = $v['tag'];
-          if (in_array($tag, array('create', 'modify', 'delete'))) {
-            unset($p[$k]['tag']);
-            $p[$k] = array($tag => $p);
-          }
-          else {
-            // TODO: Error reporting: invalid tag, none of {create, modify, delete}.
-          }
+      
+     if ($value['xml_tag'] == PATTERNS_SECTION_INFO) {
+        $pattern[PATTERNS_SECTION_INFO] = _patterns_rearrange_data($value);
+        unset($pattern[PATTERNS_SECTION_INFO]['xml_tag']);
+        unset($pattern[$key]); // TODO: unset in _patterns_rearrange_data
+     }
+     elseif ($value['xml_tag'] == PATTERNS_SECTION_MODULES) {
+        // TODO  
+     }
+     
+     // Normal section
+     else {
+        $section = $value['xml_tag']; 
+        $pattern[$section] = array();
+        unset($value['xml_tag']);
+        foreach($value as $action) { 
+          $tag = array('tag' => @$action['tag']); // TODO: check when this does not exist
+          $_action = $action['xml_tag']; // TODO: check that is a valid one and that exist
+          //$pattern[$section][] = array($_action => array_merge($tag, _patterns_rearrange_data($action)));
+          $_action_data = _patterns_rearrange_data($action);
+          unset($_action_data['xml_tag']);
+          $pattern[$section][] = array($_action => $_action_data);
         }
+        unset($pattern[$key]);
       }
-      else {
-        $pattern[$key] = _patterns_rearrange_data($value);
-      }
+     
     }
   }
 
@@ -67,7 +67,6 @@ function patterns_rearrange_data($pattern) {
 function _patterns_rearrange_data($data, $parent = '') {
   $numeric = array();
   $count = 0;
-  $header = $data['tag'];
   
   foreach ($data as $key => $value) {
     if (isset($value['value'])) {
@@ -81,23 +80,26 @@ function _patterns_rearrange_data($data, $parent = '') {
 
     if (is_numeric($key) && is_array($value) && count($value) == 2 && isset($value['tag']) && isset($value['value'])) {
       unset($data[$key]);
-      if (isset($data[$value['tag']])) {
-        $numeric[] = $value['tag'];
-        $data[$count++] = $data[$value['tag']];
+      if (isset($data[$value['xml_tag']])) {
+        $numeric[] = $value['xml_tag'];
+        $data[$count++] = $data[$value['xml_tag']];
         $data[$count++] = $value['value'];
-        unset($data[$value['tag']]);
+        unset($data[$value['xml_tag']]);
       }
       elseif (in_array($value['tag'], $numeric)) {
         $data[$count++] = $value['value'];
       }
       else {
-        $data[$value['tag']] = $value['value'];
+        $data[$value['xml_tag']] = $value['value'];
       }
     }
     elseif (is_numeric($key)) {
-      $tag = $value['tag'];
-      unset($value['tag']);
-      $data[$tag][] = _patterns_rearrange_data($value, $tag);
+      $tag = $value['xml_tag'];
+      unset($value['xml_tag']);
+      // was 
+      //$data[$tag][] = _patterns_rearrange_data($value, $tag);
+      $value = _patterns_rearrange_data($value, $tag);
+      $data[$tag] = $value['value'];
       unset($data[$key]);
     }
   }
@@ -120,10 +122,7 @@ function _patterns_rearrange_data($data, $parent = '') {
   }
   
   return $data;
-  
-//  // Workaround
-//  unset($data['tag']);
-//  return array($header => $data);
+ 
 }
 
 /**
@@ -226,6 +225,11 @@ function _patterns_parse_tag($data, &$index = 0) {
   while (isset($data[$index]) && $current = $data[$index]) {
     $type = $current['type'];
 
+    // Changing tag into xml_tag,
+    // otherwise it conflicts with the key 'tag' of the pattern
+    $current['xml_tag'] = $current['tag'];
+    unset($current['tag']);
+     
     if (!empty($current['attributes'])) {
       foreach ((array) $current['attributes'] as $key => $value) {
         $current[$key] = $value;

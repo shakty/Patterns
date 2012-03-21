@@ -50,19 +50,21 @@ function patterns_load_xml($path, $local = TRUE) {
  */
 function patterns_load_string_xml($source) {
   $pattern = patterns_parser_xml($source);
-  if (empty($pattern) || $pattern['tag'] != 'pattern') {
+  if (empty($pattern) || $pattern['xml_tag'] != 'pattern') {
     // TODO: Error reporting.
     return FALSE;
   }
-
+  
   // Rearrange the data in a nice way for each component.
   // Make sure actions are processed differently so order is preserved.
   $pattern = patterns_rearrange_data($pattern);
-  foreach ($pattern as $key => $values) {
-    $pattern[$values['tag']] = $values;
-    unset($pattern[$values['tag']]['tag']);
-    unset($pattern[$key]);
-  }
+  
+  
+//  foreach ($pattern as $key => $values) {
+//    $pattern[$values['xml_tag']] = $values;
+//    unset($pattern[$values['xml_tag']]['xml_tag']);
+//    unset($pattern[$key]);
+//  }
 
   if (!patterns_validate_pattern($pattern)) {
     return FALSE;
