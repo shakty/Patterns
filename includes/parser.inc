@@ -28,16 +28,46 @@ function patterns_locate_action($key, $actions_map) {
 
 
 /**
+ * Tries to parse a pattern according to the specified format.
+ * If succesfull returns the array representation of the pattern, if not
+ * returns FALSE;
+ * 
+ * @param mixed $pattern A string representation of the pattern, or a pattern 
+ *  array. In the latter case, the array is returned as it is, and the @param 
+ *  $format is ignored.
+ * @param mixed $format The format against which parse the pattern string.
+ * 
+ */
+function patterns_parser_parse($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
+    if (empty($pattern)) return FALSE;
+    if (is_array($pattern)) return $pattern;
+    
+    if ($format == PATTERNS_FORMAT_XML) {
+      return patterns_load_string_xml($pattern);
+    }
+    
+    if ($format == PATTERNS_FORMAT_YAML) {
+      return patterns_parse_yaml($pattern);
+    }
+    
+    // Cannot be PATTERNS_FORMAT_PHP
+    // otherwise should be an array
+    
+    return FALSE;
+}
+
+/**
  * Check if pattern array or content from a file is valid.
  *
  * @param mixed $pattern Pattern array or content of a pattern file.
- * @param mixed $format The format of the file to validate against
- * 
- * 
+ * @param mixed $format The format of the file to validate against.
  * 
  * @return bool TRUE if valid, FALSE otherwise.
  */
 function patterns_validate_pattern($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
+  $pattern = patterns_parser_parse($pattern, $format);
+  if (!$pattern) return FALSE;
+  
   $scan = _patterns_scan_pattern($pattern);
   return _patterns_validate_patternscan($scan);
 }
@@ -296,6 +326,8 @@ function _patterns_scan_pattern($pattern) {
   return $result;
 }
 
+
+
 /**
  * Callback of the url patterns/validate.
  *
@@ -313,14 +345,8 @@ function patterns_validate_service() {
     exit;
   }
   
-  $pattern = $_POST['pattern'];
-  if ($_POST['format'] == PATTERNS_FORMAT_XML) {
-    $pattern = patterns_load_string_xml($_POST['pattern']);
-  }
-  
-//  $p = patterns_load_string_xml($_POST['pattern']);
-//  $p = patterns_parser_validate_xml_pattern($_POST['pattern']);
-
+  $pattern = patterns_parser_parse($_POST['pattern'], $_POST['format']);
+    
   $scan = _patterns_scan_pattern($pattern);
 
   if (_patterns_validate_patternscan($scan)) {
