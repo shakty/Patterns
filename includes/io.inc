@@ -59,16 +59,11 @@ function patterns_load_string_xml($source) {
   // Make sure actions are processed differently so order is preserved.
   $pattern = patterns_rearrange_data($pattern);
   
-  
-//  foreach ($pattern as $key => $values) {
-//    $pattern[$values['xml_tag']] = $values;
-//    unset($pattern[$values['xml_tag']]['xml_tag']);
-//    unset($pattern[$key]);
-//  }
 
-  if (!patterns_validate_pattern($pattern)) {
-    return FALSE;
-  }
+// Not validate here.
+//  if (!patterns_validate_pattern($pattern)) {
+//    return FALSE;
+//  }
 
   return $pattern;
 }

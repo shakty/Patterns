@@ -39,7 +39,9 @@ function patterns_rearrange_data($pattern) {
         unset($pattern[$key]); // TODO: unset in _patterns_rearrange_data
      }
      elseif ($value['xml_tag'] == PATTERNS_SECTION_MODULES) {
-        // TODO  
+        $pattern[PATTERNS_SECTION_MODULES] = _patterns_rearrange_data($value);
+        unset($pattern[PATTERNS_SECTION_MODULES]['xml_tag']);
+        unset($pattern[$key]); // TODO: unset in _patterns_rearrange_data
      }
      
      // Normal section

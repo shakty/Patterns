@@ -95,7 +95,7 @@ function _patterns_analyze_patternscan($patternscan) {
     $msgs[] = t('Pattern can contain only one \'modules\' section.');
   }
 
-  if (count($patternscan['other_sections']) == 0) {
+  if ($patternscan['modules'] == 0 && count($patternscan['other_sections']) == 0) {
     $msgs[] = t('Pattern does not contain any actions.');
   }
   
@@ -355,10 +355,10 @@ function patterns_validate_service() {
   }
   
   $pattern = patterns_parser_parse($_POST['pattern'], $_POST['format']);
-    
+  
   $scan = _patterns_scan_pattern($pattern);
 
-  if (_patterns_validate_patternscan($scan)) {
+	if (_patterns_validate_patternscan($scan)) {
     $count = count($scan['other_sections']) + $scan['info'] + $scan['modules'];
     $out = t('This pattern is valid. !count sections found ->', array('!count' => $count)) . ' ';
 
