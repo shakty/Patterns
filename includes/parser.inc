@@ -265,7 +265,7 @@ function _patterns_scan_pattern($pattern) {
       }
 
       if (!is_array($data)) {
-        $result['generic_errors'][] = $data; 
+        $result['generic_errors'][] = $action . ': ' . $data; 
         continue;
       }
 
