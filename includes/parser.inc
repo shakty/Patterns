@@ -98,7 +98,12 @@ function _patterns_analyze_patternscan($patternscan) {
   if (count($patternscan['other_sections']) == 0) {
     $msgs[] = t('Pattern does not contain any actions.');
   }
-
+  
+  if (count($patternscan['generic_errors']) != 0) {
+    $msgs[] = t('Generic errors in the patterns were found. Probably a tag was misplaced. Please verify: %found',
+            array('%found' => implode(', ', $patternscan['generic_errors'])));
+  }
+  
   if (count($patternscan['invalid_actions']) != 0) {
     $invalidactions = array();
     foreach ($patternscan['invalid_actions'] as $key => $value) {
@@ -195,6 +200,7 @@ function _patterns_scan_pattern($pattern) {
                   'other_sections' => array(),
                   'contain_includes' => FALSE,
                   'include_scans' => array(),
+                  'generic_errors' => array(),
   );
 
   // TODO: it will take only arrays at the beginning
@@ -258,13 +264,16 @@ function _patterns_scan_pattern($pattern) {
         continue;
       }
 
+      if (!is_array($data)) {
+        $result['generic_errors'][] = $data; 
+        continue;
+      }
 
       // Make sure there is only one valid action in each array element.
       // NOTE: Having additional valid actions will work, but is discouraged,
       // and therefore undocumented.
       $found = FALSE;
 
-      // TODO: check if $data is an array.
       foreach ($data as $akey => $avalue) {
 
         if (!array_key_exists($akey, $valid_actions)) {

@@ -96,10 +96,13 @@ function _patterns_rearrange_data($data, $parent = '') {
     elseif (is_numeric($key)) {
       $tag = $value['xml_tag'];
       unset($value['xml_tag']);
-      // was 
-      //$data[$tag][] = _patterns_rearrange_data($value, $tag);
       $value = _patterns_rearrange_data($value, $tag);
-      $data[$tag] = $value['value'];
+      if (isset($value['value'])) {
+//        debug($value);
+//      }
+//      else {
+          $data[$tag] = $value['value'];
+      }
       unset($data[$key]);
     }
   }
