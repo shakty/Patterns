@@ -132,19 +132,6 @@ function patterns_config_settings($form, &$form_state) {
     '#default_value' => variable_get('patterns_form_helper', FALSE),
   );
 
-
-  /* TODO: Outdated, disabled for now.
-  $form['patterns_allow_publish'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Share your patterns'),
-    '#description' => t('When enabled, you will be able to "publish" selected patterns and make them available to other patterns users on the following URL: %url.', array('%url' => url(NULL, array('absolute' => TRUE)) . (variable_get('clean_url', 0) ? '' : '?q=') . 'patterns.xml')),
-    '#default_value' => variable_get('patterns_allow_publish', FALSE),
-  );
-   */
-
-  // Reload patterns while we are here and ensure the lists are up to date.
-  //patterns_get_patterns(TRUE);
-
   return system_settings_form($form);
 }
 

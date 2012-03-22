@@ -43,6 +43,9 @@ function patterns_parser_build_formats_index($reset = FALSE) {
 	if (!is_array($patterns_formats)) {
 		$patterns_formats = array();
 	}
+	
+	// Why is this not working ??
+	//$formats = module_invoke_all('patterns_parser');
 	$modules = module_implements('parser'); 
 	foreach ($modules as $module) {
     $parser = module_invoke($module, 'patterns_parser');
