@@ -6,6 +6,8 @@
 7029:
 
 		- Include directory refactoring
+		- The tag <modules> got a new semantic. It enables (if they are not) the modules 
+				just for the pattern execution, and then re-disables them (if they were so) 
 
 7028:
 
