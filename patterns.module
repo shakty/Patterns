@@ -57,10 +57,10 @@ module_load_include('inc', 'patterns', 'includes/utils');
 module_load_include('inc', 'patterns', 'includes/db');
 module_load_include('inc', 'patterns', 'includes/error');
 
-module_load_include('inc', 'patterns', 'includes/forms');
-module_load_include('inc', 'patterns', 'includes/export');
-module_load_include('inc', 'patterns', 'includes/editor');
-module_load_include('inc', 'patterns', 'includes/import');
+module_load_include('inc', 'patterns', 'includes/forms/forms');
+module_load_include('inc', 'patterns', 'includes/forms/export');
+module_load_include('inc', 'patterns', 'includes/forms/editor');
+module_load_include('inc', 'patterns', 'includes/forms/import');
 
 module_load_include('inc', 'patterns', 'includes/io');
 

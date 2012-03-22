@@ -4,106 +4,7 @@
  * Functions, forms related to the Patterns editor.
  */
 
-/**
- * Builds up a pattern editing environment. Loads additional javascript libraries,
- * and supplies AJAX validation on the fly.
- *
- * @param mixed $pattern
- * @return
- * @todo Doc.
-  */
-function patterns_editor($form_id, $pattern = array()) {
 
-  $pattern = patterns_get_pattern_obj($pattern);
-
-  $form = drupal_get_form($form_id, $pattern);
-  $editor  = drupal_render($form);
-  if (!patterns_load_co2($form['format']['#default_value'])) {
-    $co2 = l(t('Codemirror'), 'http://codemirror.net/');
-    $editor .= t('Install !co2 in sites/all/libraries/codemirror2 for advanced editing functionalities.', array('!co2' => $co2));
-  }
-
-  // Load the JS of for the ajax validation.
-  drupal_add_js(drupal_get_path('module', 'patterns') . '/js/ajax_validation.js');
-
-  return $editor;
-}
-
-/**
- * Form constructor for the Quick Run form.
- *
- * @see patterns_quickrun_submit()
- * @ingroup forms
- */
-function patterns_quickrun($form, &$form_state) {
-  
-  $content = '';
-
-  $form['important'] = array(
-    '#markup' => '<strong>Important!</strong> The quick run mode should be used only in development environment, for testing, or if you really know what you are doing.',
-    '#prefix' => '<div id="important">',
-    '#suffix' => '<hr><br/></div>',
-  );
-  
-  $options_mode = array(
-    'extend' => 'Extend',
-    'runover' => 'Run-Over',
-  );
-
-  // Add the execution options
-	$form = patterns_forms_get_execution_options($form);
-  
-  $form['validation_result'] = array(
-    '#markup' => 'This pattern has not been validated yet.',
-    '#prefix' => '<div id="validation_result">',
-    '#suffix' => '</div>',
-  );
-  
-	$form = patterns_forms_get_formats_selector($form);
-
-  $form['content'] = array(
-    '#type' => 'textarea',
-    '#title' => t('Pattern\'s code'),
-    '#rows' => 25,
-    '#default_value' => $content,
-  );
-
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Run'),
-  );
-
-  $form['validate'] = array(
-    '#prefix' => '<span style=\'margin-right:10px\'>',
-    '#markup' => "<a href='#' id='validate_pattern'>" . t('Validate') . "</a>",
-    '#suffix' => '</span> ',
-  );
-
-  $form['cancel'] = array(
-    '#markup' => l(t('Back'), 'admin/patterns'),
-  );
-
-  return $form;
-}
-
-/**
- * Form submission handler for patterns_quickrun().
- *
- * @see patterns_quickrun()
- */
-
-function patterns_quickrun_submit($form, $form_state) {
-
-  // Parse the content of the textarea
-  $pattern['pattern'] = patterns_parser_parse($form_state['values']['content'], $form_state['values']['format']); 
-
-  $pattern = patterns_get_pattern_obj($pattern);
-
-  $params['run-subpatterns'] = 'always'; // TODO
-  $params['quickrun'] = TRUE;
-
-  return patterns_start_engine($pattern, $params, $form_state['values']['mode']);
-}
 /**
  * Display the page for creating a new pattern.
  */
@@ -127,6 +28,33 @@ function patterns_editor_create_page($pid = NULL) {
   $out .= patterns_editor('patterns_edit', $pattern);
 
   return $out;
+}
+
+
+
+/**
+ * Builds up a pattern editing environment. Loads additional javascript libraries,
+ * and supplies AJAX validation on the fly.
+ *
+ * @param mixed $pattern
+ * @return
+ * @todo Doc.
+  */
+function patterns_editor($form_id, $pattern = array()) {
+
+  $pattern = patterns_get_pattern_obj($pattern);
+
+  $form = drupal_get_form($form_id, $pattern);
+  $editor  = drupal_render($form);
+  if (!patterns_load_co2($form['format']['#default_value'])) {
+    $co2 = l(t('Codemirror'), 'http://codemirror.net/');
+    $editor .= t('Install !co2 in sites/all/libraries/codemirror2 for advanced editing functionalities.', array('!co2' => $co2));
+  }
+
+  // Load the JS of for the ajax validation.
+  drupal_add_js(drupal_get_path('module', 'patterns') . '/js/ajax_validation.js');
+
+  return $editor;
 }
 
 /**
