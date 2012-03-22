@@ -61,16 +61,19 @@ module_load_include('inc', 'patterns', 'includes/forms/forms');
 module_load_include('inc', 'patterns', 'includes/forms/export');
 module_load_include('inc', 'patterns', 'includes/forms/editor');
 module_load_include('inc', 'patterns', 'includes/forms/import');
+module_load_include('inc', 'patterns', 'includes/forms/helper');
 
 module_load_include('inc', 'patterns', 'includes/parser');
 module_load_include('inc', 'patterns', 'includes/io');
 
+module_load_include('inc', 'patterns', 'includes/api/api');
 
 module_load_include('inc', 'patterns', 'includes/theme');
 
 // TODO: Check
 module_load_include('inc', 'patterns', 'includes/servers');
 // Add libraries for performing AJAX calls outside forms
+
 
 /**
  * @todo:
@@ -598,7 +601,11 @@ function patterns_remove_pattern_submit($form, &$form_state) {
  * @see patterns_execute_pattern_php()
  */
 function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
+  module_load_include('inc', 'patterns', 'includes/core/common.inc');
+  module_load_include('inc', 'patterns', 'includes/core/modules.inc');
+  module_load_include('inc', 'patterns', 'includes/core/token.inc');
   module_load_include('inc', 'patterns', 'includes/core/core.' . $mode);
+  
   $fun = 'patterns_execute_pattern_' . $mode;
 
   drupal_set_time_limit(0);  

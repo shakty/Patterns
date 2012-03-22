@@ -357,3 +357,19 @@ function patterns_locate_action($key, $actions_map) {
   $result['file'] = $actions_map['patterns'][$actions_map['map'][$key]['pid']]['file'];
   return $result;
 }
+
+/**
+ *
+ * @TODO Doc.
+ *
+ * @param unknown_type $b
+ */
+function patterns_executing($b = NULL) {
+  static $executing = FALSE;
+
+  if (is_bool($b)) {
+    $executing = $b;
+  }
+
+  return $executing;
+}

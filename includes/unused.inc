@@ -592,6 +592,150 @@ function patterns_array_fetch($path, &$data, $context = NULL) {
   return $matches;
 }
 
+// Moved here recently
+//////////////////////
+
+
+/**
+ * Executes default configuration for module during the module installation.
+ *
+ * This function should be called by other modules from within their
+ * hook_enable() implementation.
+ * Module should also provide modulename.config file containing PHP array
+ * with the actions that need to be executed.
+ *
+ * @param string $module
+ *   Name of the module calling the function.
+ * @return
+ * @TODO Doc.
+ */
+function patterns_execute_config($module) {
+
+  // since this function is called from hook_enable(), we need to ensure that
+  // it's executed only at module installation (first time module is enabled)
+  if (drupal_get_installed_schema_version($module) == SCHEMA_INSTALLED) {
+    return;
+  }
+
+  $path = drupal_get_path('module', $module) . '/' . $module . '.config';
+
+  if (file_exists($path)) {
+    require_once $path;
+
+    if (empty($actions)) {
+      return;
+    }
+
+    $pattern = new stdClass();
+    $pattern->title = t('Default configuration for @module module', array('@module' => $module));
+    $pattern->status = FALSE;
+    $pattern->pattern['actions'] = $actions;
+
+    return patterns_start_engine($pattern);
+  }
+}
+
+
+/**
+ * Helper function to create a context array based on the supplied object.
+ *
+ * Supplying a parent object will set the parent for this context.
+ * @TODO Doc.
+ */
+function _patterns_array_context(&$obj, &$current = NULL) {
+  // If a current context is set, use it's parent and key values
+  if (!($trace = $current['trace'])) {
+    $trace = array();
+  }
+  if (!($key = $current['key'])) {
+    $key = NULL;
+  }
+  if (!($parent = &$current['parent'])) {
+    $parent = NULL;
+  }
+  $context = array('trace' => $trace, 'key' => $key, 'item' => &$obj, 'parent' => &$parent);
+  $refs = array(&$context);
+
+  while (!empty($refs)) {
+    $ref = &$refs[0];
+    $parent = &$ref['item'];
+    array_splice($refs, 0, 1);
+
+    if (is_array($parent) && !empty($parent)) {
+      $i = 0;
+      foreach ($parent as $index => &$child) {
+        // TODO possible optimizations can be done here (with the parent trace)
+        $ref[$i] = array('trace' => _patterns_array_trace($ref), 'key' => $index, 'item' => &$child, 'parent' => &$ref);
+        array_unshift($refs, '');
+        $refs[0] = &$ref[$i++];
+      }
+    }
+  }
+
+  return $context;
+}
+
+/**
+ * Helper function to filter values of the list of matches.
+ * @TODO Doc.
+ */
+function _patterns_array_filter(&$matches, $operator, $value = NULL) {
+  for ($i = count($matches) - 1; $i >= 0; $i--) {
+    $match = &$matches[$i];
+
+    switch ($operator) {
+      case '=':
+        if ($match['item'] != $value) {
+          array_splice($matches, $i, 1);
+        }
+        break;
+    }
+  }
+}
+
+/**
+ * Helper function to create a list of parent keys given a context item.
+ * @TODO Doc.
+ */
+function _patterns_array_trace($obj) {
+  // Loop back up through the parents to fill in the trace value.
+  $up = &$obj;
+  $trace = array();
+  while (isset($up['parent'])) {
+    array_unshift($trace, $up['key']);
+    $up = &$up['parent'];
+  }
+
+  return $trace;
+}
+
+
+/**
+ * Helper function to flatter options, but keep the title/names in.
+ * @TODO Doc.
+ */
+function patterns_options_flatten($array, $reset = TRUE) {
+  static $return;
+
+  if ($reset) {
+    $return = array();
+  }
+
+  foreach ($array as $key => $value) {
+    if (is_object($value)) {
+      patterns_options_flatten($value->option, FALSE);
+    }
+    elseif (is_array($value)) {
+      patterns_options_flatten($value, FALSE);
+    }
+    else {
+      $return[$key] = $value;
+    }
+  }
+
+  return $return;
+}
+
 
 // Function which were originally commented
 ////////////////////////////////////////////

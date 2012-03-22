@@ -31,7 +31,7 @@ function patterns_yamlparser_requirements($phase) {
     $requirements['spyc'] = array(
       'title'       => t('Spyc library (YAML parser)'),
       'severity'    => REQUIREMENT_OK,
-      'value'       => _get_file_phpdoc_version($path),
+      'value'       => patterns_utils_get_phpdoc_version($path),
     );
   }
   
