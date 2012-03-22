@@ -331,22 +331,29 @@ function patterns_reformat_actions(&$actions) {
       }
       else {
           $newactions[] = array('action' => $akey, 'data' => $avalue);
-
-// experimental 08.03
-//                  if ($akey === PATTERNS_INCLUDE) {
-//          $included = _patterns_retrieve_actions_included_from_pattern($avalue);
-//          $reformated = patterns_reformat_actions($included);
-//          $newactions = array_merge($newactions, $reformated);
-//                  }
-
-      // Additional actions. Discouraged and undocumented.
-//        if ($found) {
-//          $result['extra_actions'][] = array('actionid' => $action, 'key' => $akey, 'value' => $avalue);
-//        }
-
-        //$found = TRUE;
       }
     }
   }
   $actions = $newactions;
+}
+
+/**
+ * Scan the actions_map array and return info about the file the action was coming
+ * from with the following info:
+ *
+ * - index of the action within the batch_set
+ * - title of the pattern
+ * - file of the pattern
+ *
+ * @param mixed $key The key of the action in the actions_map array.
+ * @param array $actions_map
+ *   Array containing information about of all the actions of the batch_set.
+ *
+ * @return array $result Concise description of the action.
+ */
+function patterns_locate_action($key, $actions_map) {
+  $result['key'] = $actions_map['map'][$key]['index'];
+  $result['title'] = $actions_map['patterns'][$actions_map['map'][$key]['pid']]['title'];
+  $result['file'] = $actions_map['patterns'][$actions_map['map'][$key]['pid']]['file'];
+  return $result;
 }

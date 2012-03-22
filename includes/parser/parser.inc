@@ -152,31 +152,16 @@ function patterns_parser_dump($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
     return $parse_function($pattern);
 }
 
-/**
- * Check if pattern array or content from a file is valid.
- *
- * @param mixed $pattern Pattern array or content of a pattern file.
- * @param mixed $format The format of the file to validate against.
- * 
- * @return bool TRUE if valid, FALSE otherwise.
- */
-function patterns_validate_pattern($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
-  $pattern = patterns_parser_parse($pattern, $format);
-  if (!$pattern) return FALSE;
-  
-  $scan = _patterns_scan_pattern($pattern);
-  return _patterns_validate_patternscan($scan);
-}
 
 /**
- * Analyze the result of a call to _patterns_scan_pattern, and check whether
+ * Analyze the result of a call to _patterns_parser_scan_pattern, and check whether
  * the pattern was valid.
  *
- * @param array $analysis Obtained from  _patterns_scan_pattern.
+ * @param array $analysis Obtained from  _patterns_parser_scan_pattern.
  *
  * @return TRUE if valid, FALSE otherwise
  */
-function _patterns_analyze_patternscan($patternscan) {
+function _patterns_parser_analyze_patternscan($patternscan) {
   $msgs = array();
 
   if ($patternscan['info'] == 0) {
@@ -233,7 +218,7 @@ function _patterns_analyze_patternscan($patternscan) {
   if (count($patternscan['include_scans']) > 0) {
     foreach ($patternscan['include_scans'] as $i) {
       //$msgs[] = print_r($patternscan['includes'], true);
-      $msgs = array_merge($msgs, _patterns_analyze_patternscan($i));
+      $msgs = array_merge($msgs, _patterns_parser_analyze_patternscan($i));
     }
   }
 
@@ -241,15 +226,15 @@ function _patterns_analyze_patternscan($patternscan) {
 }
 
 /**
- * Analyze the result of a call to _patterns_scan_pattern, and check whether
+ * Analyze the result of a call to _patterns_parser_scan_pattern, and check whether
  * the pattern was valid.
  *
- * @param array $analysis Obtained from  _patterns_scan_pattern.
+ * @param array $analysis Obtained from  _patterns_parser_scan_pattern.
  *
  * @return bool TRUE if valid, FALSE otherwise.
  */
-function _patterns_validate_patternscan($patternscan, $display_errors = FALSE) {
-  $analysis = _patterns_analyze_patternscan($patternscan);
+function _patterns_parser_validate_patternscan($patternscan, $display_errors = FALSE) {
+  $analysis = _patterns_parser_analyze_patternscan($patternscan);
   if (empty($analysis)) {
     return TRUE;
   }
@@ -269,7 +254,7 @@ function _patterns_validate_patternscan($patternscan, $display_errors = FALSE) {
  * @TODO Rewrite in an object oriented fashion
  *
  */
-function _patterns_scan_pattern($pattern) {
+function _patterns_parser_scan_pattern($pattern) {
   $generic_error = t('pattern not loaded correctly');
   $result = array(
                   'info' => 0,
@@ -298,7 +283,7 @@ function _patterns_scan_pattern($pattern) {
   // All the sections must be a non-empty array.
   // If a section is called 'include;
   // it means that we are including a new pattern
-  // and we apply _patterns_scan_pattern recursively.
+  // and we apply _patterns_parser_scan_pattern recursively.
 
   $valid_actions = patterns_actions();
   foreach ($pattern as $key => $value) {
@@ -379,7 +364,7 @@ function _patterns_scan_pattern($pattern) {
 
           // only if the pattern is hard-coded, then scan it
           if (is_array($avalue['pattern'])) {
-            $result['include_scans'][] = _patterns_scan_pattern($avalue['pattern']);
+            $result['include_scans'][] = _patterns_parser_scan_pattern($avalue['pattern']);
           }
           continue;
         }
@@ -411,7 +396,21 @@ function _patterns_scan_pattern($pattern) {
   return $result;
 }
 
-
+/**
+ * Check if pattern array or content from a file is valid.
+ *
+ * @param mixed $pattern Pattern array or content of a pattern file.
+ * @param mixed $format The format of the file to validate against.
+ * 
+ * @return bool TRUE if valid, FALSE otherwise.
+ */
+function patterns_validate_pattern($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
+  $pattern = patterns_parser_parse($pattern, $format);
+  if (!$pattern) return FALSE;
+  
+  $scan = _patterns_parser_scan_pattern($pattern);
+  return _patterns_parser_validate_patternscan($scan);
+}
 
 /**
  * Callback of the url patterns/validate.
@@ -437,9 +436,9 @@ function patterns_validate_service() {
     exit;
   }
   
-  $scan = _patterns_scan_pattern($pattern);
+  $scan = _patterns_parser_scan_pattern($pattern);
 
-	if (_patterns_validate_patternscan($scan)) {
+	if (_patterns_parser_validate_patternscan($scan)) {
     $count = count($scan['other_sections']) + $scan['info'] + $scan['modules'];
     $out = t('This pattern is valid. !count sections found ->', array('!count' => $count)) . ' ';
 
@@ -451,7 +450,7 @@ function patterns_validate_service() {
     }
   }
   else {
-    $errors = implode('<br/> ', _patterns_analyze_patternscan($scan));
+    $errors = implode('<br/> ', _patterns_parser_analyze_patternscan($scan));
     $out = t('This pattern is NOT valid.') . '<br/>' . $errors;
   }
 
@@ -471,9 +470,9 @@ function patterns_validate_service() {
  *   FALSE if there were errors (in which case the errors will be displayed).
  */
 function patterns_parser_get_pattern_details($pattern, $recursive = FALSE, &$pids = array()) {
-  $scan = _patterns_scan_pattern($pattern->pattern);
+  $scan = _patterns_parser_scan_pattern($pattern->pattern);
   // This will display errors if there are any.
-  if (!_patterns_validate_patternscan($scan, TRUE)) return FALSE;
+  if (!_patterns_parser_validate_patternscan($scan, TRUE)) return FALSE;
 
   $details = array();
 
@@ -920,30 +919,4 @@ function patterns_parser_extract_modules($pattern) {
                                                 : $pattern['modules'];
   }
   return $modules;
-}
-
-
-// Check if we still need the following
-
-
-
-/**
- * Scan the actions_map array and return info about the file the action was coming
- * from with the following info:
- *
- * - index of the action within the batch_set
- * - title of the pattern
- * - file of the pattern
- *
- * @param mixed $key The key of the action in the actions_map array.
- * @param array $actions_map
- *   Array containing information about of all the actions of the batch_set.
- *
- * @return array $result Concise description of the action.
- */
-function patterns_locate_action($key, $actions_map) {
-  $result['key'] = $actions_map['map'][$key]['index'];
-  $result['title'] = $actions_map['patterns'][$actions_map['map'][$key]['pid']]['title'];
-  $result['file'] = $actions_map['patterns'][$actions_map['map'][$key]['pid']]['file'];
-  return $result;
 }

@@ -197,9 +197,9 @@ function patterns_import_file_validate($form, &$form_state) {
  // TODO: PHP format
  if ($format == 'yaml') {
   // YAML
-  $patternscan = _patterns_scan_pattern($form_state['values']['content']);
-  if (!_patterns_validate_patternscan($patternscan)) {
-   $errors_on_scan = _patterns_analyze_patternscan($patternscan);
+  $patternscan = _patterns_parser_scan_pattern($form_state['values']['content']);
+  if (!_patterns_parser_validate_patternscan($patternscan)) {
+   $errors_on_scan = _patterns_parser_analyze_patternscan($patternscan);
    form_set_error('name', t('Error parsing the YAML file: ' . implode(', ', $errors_on_scan))); // TODO: proper t()
   }
  }
@@ -269,9 +269,9 @@ function patterns_import_validate($form, &$form_state) {
   }
   
  
-  $patternscan = _patterns_scan_pattern($pattern);
-  if (!_patterns_validate_patternscan($patternscan)) {
-    $errors_on_scan = _patterns_analyze_patternscan($patternscan);
+  $patternscan = _patterns_parser_scan_pattern($pattern);
+  if (!_patterns_parser_validate_patternscan($patternscan)) {
+    $errors_on_scan = _patterns_parser_analyze_patternscan($patternscan);
     form_set_error('name', t('Error parsing the YAML file: ' . implode(', ', $errors_on_scan))); // TODO: proper t()
   }
  
