@@ -1,5 +1,7 @@
 <?php
 
+define('PATTERNS_FORMAT_XML', 'xml');
+
 // Implements hook patterns_parser_add
 function patterns_xmlparser_patterns_parser() {
 	$parser = array();

@@ -13,9 +13,6 @@ define('PATTERNS_PARSER_LOAD', 'load');
 
 define('PATTERNS_FORMAT_UNKNOWN', 'unknown');
 
-define('PATTERNS_FORMAT_XML', 'xml');
-define('PATTERNS_FORMAT_PHP', 'php');
-
 define('PATTERNS_SUCCESS', 1);
 define('PATTERNS_WARN', 0);
 define('PATTERNS_ERR', -1);

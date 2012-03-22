@@ -1,5 +1,7 @@
 <?php
 
+define('PATTERNS_FORMAT_PHP', 'php');
+
 // Implements hook patterns_parser_add
 function patternsphpparser_patterns_parser() {
 	$parser = array();
