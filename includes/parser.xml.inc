@@ -19,7 +19,7 @@ function patterns_xmlparser_load($path, $local = TRUE) {
     return FALSE;
   }
 
-  return patterns_load_string_xml($xml);
+  return patterns_xmlparser_parse($xml);
 }
 
 /**
@@ -30,7 +30,6 @@ function patterns_xmlparser_load($path, $local = TRUE) {
  * @return array|bool
  *   The pattern structure, or FALSE.
  */
-// function patterns_from_source($xml) {
 function patterns_xmlparser_parse($xml) {
   $parse = drupal_xml_parser_create($xml);
   xml_parser_set_option($parse, XML_OPTION_CASE_FOLDING, 0);
@@ -54,6 +53,23 @@ function patterns_xmlparser_parse($xml) {
 
   return $pattern;
 }
+
+/**
+ * Takes an array representing a pattern and returns
+ * the XML representation of it.
+ * 
+ * @param array $pattern The pattern array to convert
+ * 	to XML.
+ */
+function patterns_xmlparser_to_file($pattern = NULL) {
+	if (is_null($pattern) || empty($pattern)) return FALSE;
+	
+	$xml = new SimpleXMLElement('<pattern/>');
+	array_walk_recursive($pattern, array ($xml, 'addChild'));
+	return $xml->asXML();
+}
+
+// Helping Functions
 
 function patterns_xmlparser_rearrange_data($pattern) {
   foreach ($pattern as $key => $value) {
@@ -219,12 +235,4 @@ function _patterns_xmlparser_parse_tag($data, &$index = 0) {
   }
 
   return $pattern;
-}
-
-function patterns_xmlparser_to_xml($pattern = NULL) {
-	if (is_null($pattern) || empty($pattern)) return FALSE;
-	
-	$xml = new SimpleXMLElement('<pattern/>');
-	array_walk_recursive($pattern, array ($xml, 'addChild'));
-	return $xml->asXML();
 }
