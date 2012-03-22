@@ -1,8 +1,12 @@
 <?php
 
-// Register the XML parser to Patterns
-patterns_parser_add(PATTERNS_FORMAT_XML, 'xmlparser');
-
+// Implements hook patterns_parser_add
+function patterns_xmlparser_patterns_parser() {
+	$parser = array();
+	$parser['format'] = PATTERNS_FORMAT_XML;
+	$parser['parser'] = 'patterns_xmlparser'; 
+	return $parser;  
+}
 
 /**
  * Loads an XML pattern file without validating.

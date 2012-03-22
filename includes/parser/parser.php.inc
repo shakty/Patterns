@@ -1,8 +1,13 @@
 <?php
 
-// Register the PHP parser to Patterns
-patterns_parser_add(PATTERNS_FORMAT_PHP, 'phpparser');
-
+// Implements hook patterns_parser_add
+function patternsphpparser_patterns_parser() {
+	$parser = array();
+	$parser['format'] = PATTERNS_FORMAT_PHP;
+	$parser['parser'] = 'patterns_phpparser'; 
+	//$parser['overwrite'] = TRUE; // default is TRUE
+	return $parser;  
+}
 
 /**
  * Loads and parases a YAML pattern from file.

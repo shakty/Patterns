@@ -1,7 +1,12 @@
 <?php
 
-// Register the YAML parser to Patterns
-patterns_parser_add(PATTERNS_FORMAT_YAML, 'yamlparser');
+// Implements hook patterns_parser_add
+function patterns_yamlparser_patterns_parser() {
+	$parser = array();
+	$parser['format'] = PATTERNS_FORMAT_YAML;
+	$parser['parser'] = 'patterns_yamlparser'; 
+	return $parser;  
+}
 
 
 /**
