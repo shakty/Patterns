@@ -47,9 +47,42 @@ function patterns_parser_parse($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
     }
     
     if ($format == PATTERNS_FORMAT_YAML) {
-      return patterns_parse_yaml($pattern);
+      return patterns_yamlparser_parse($pattern);
     }
     
+    // Cannot be PATTERNS_FORMAT_PHP
+    // otherwise should be an array
+    
+    return FALSE;
+}
+
+/**
+ * Tries to parse a pattern according to the specified format.
+ * If succesfull returns the array representation of the pattern, if not
+ * returns FALSE;
+ * 
+ * @param mixed $pattern A string representation of the pattern, or a pattern 
+ *  array. In the latter case, the array is returned as it is, and the @param 
+ *  $format is ignored.
+ * @param mixed $format The format against which parse the pattern string.
+ * 
+ */
+function patterns_parser_dump($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
+    if (empty($pattern)) return FALSE;
+    if (is_string($pattern)) return $pattern;
+    if (!is_array($pattern)) return FALSE;
+    
+    if ($format == PATTERNS_FORMAT_XML) {
+      return patterns_xmlparser_dump($pattern);
+    }
+    
+    if ($format == PATTERNS_FORMAT_YAML) {
+      return patterns_yamlparser_dump($pattern);
+    }
+    
+		if ($format == PATTERNS_FORMAT_PHP) {
+      return patterns_yamlparser_dump($pattern);
+    }
     // Cannot be PATTERNS_FORMAT_PHP
     // otherwise should be an array
     
@@ -164,19 +197,6 @@ function _patterns_validate_patternscan($patternscan, $display_errors = FALSE) {
 }
 
 /**
- * Parses a YAML pattern.
- *
- * @TODO: Check if we can use patterns_load_yaml instead.
- */
-function patterns_parse_yaml($pattern) {
-  if (!is_array($pattern)) {
-    require_once libraries_get_path('spyc') . '/spyc.php';
-    $pattern = Spyc::YAMLLoad($pattern);
-  }
-  return $pattern;
-}
-
-/**
  * Scans a pattern and returns a brief summary of its properties.
  *
  * @param $pattern
@@ -205,7 +225,7 @@ function _patterns_scan_pattern($pattern) {
 
   // TODO: it will take only arrays at the beginning
   if (!is_array($pattern)) {
-    $pattern = patterns_parse_yaml($pattern); // TODO: other formats as well.
+    $pattern = patterns_yamlparser_parse($pattern); // TODO: other formats as well.
   }
 
   if (empty($pattern)) {

@@ -1,5 +1,9 @@
 <?php
 
+// Add the PHP parser to Patterns
+patterns_parser_add(PATTERNS_FORMAT_XML, 'xmlparser');
+
+
 /**
  * Loads an XML pattern file without validating.
  *

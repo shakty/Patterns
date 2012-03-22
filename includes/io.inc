@@ -4,25 +4,6 @@
  * Functions related to input/output operations.
  */
 
-/**
- * Loads and validates a YAML pattern file.
- *
- * @param string $path The path of the pattern file.
- * @param bool $local
- *   (optional) TRUE if the pattern file is local. Defaults to TRUE.
- *
- * @return array|bool
- *   The pattern structure, or FALSE.
- */
-function patterns_load_yaml($path, $local = TRUE) {
-  if ($local && !file_exists($path)) {
-    return FALSE;
-  }
-
-  require_once libraries_get_path('spyc') . '/spyc.php';
-  return Spyc::YAMLLoad($path);
-}
-
 
 /**
  * Loads and validates a PHP pattern file.
