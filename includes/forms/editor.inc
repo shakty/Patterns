@@ -74,13 +74,6 @@ function patterns_edit_page($pid = NULL) {
   $info['Enabled'][] = t('Enabled:');
   $info['Enabled'][] = ($pattern->enabled) ? t('Yes') : t('No');
 
-//  $info['Edited'][] = t('Edited:');
-//
-//  $info['Edited'][] = (variable_get(PATTERNS_FAILED_EDIT) == '' ) ?
-//                                                                   t('Latest version of the pattern displayed.') :
-//                                                                   t('This is a NOT saved, edited version of the original pattern!!') ;
-
-
   $out = '<h6>Info</h6>';
   $out .= theme('table', array('rows' => $info, 'attributes' => array('class' => 'patterns-list')));
   $out .= patterns_editor('patterns_edit', $pattern);

@@ -86,7 +86,7 @@ function patterns_io_scan_directories($verbose = FALSE) {
   $messages['error_updated'] = array();
 
   // Get list of directories to scan for patterns.
-  $patterns_paths = patterns_config_get_paths();
+  $patterns_paths = patterns_path_get_patterns_dirs();
 
   // Get valid file extensions.
   $mask = '/.\.(' . implode('|', patterns_parser_get_formats()) . ')$/';

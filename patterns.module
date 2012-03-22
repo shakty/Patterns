@@ -52,6 +52,7 @@
 
 module_load_include('inc', 'patterns', 'includes/variables');
 module_load_include('inc', 'patterns', 'includes/config');
+module_load_include('inc', 'patterns', 'includes/path');
 module_load_include('inc', 'patterns', 'includes/utils');
 
 module_load_include('inc', 'patterns', 'includes/db');
@@ -266,6 +267,7 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
+  
   $items['admin/patterns/unpublish'] = array(
     'title' => 'Unpublish Pattern',
     'page callback' => 'patterns_unpublish_pattern',
@@ -273,6 +275,15 @@ function patterns_menu() {
     'type' => MENU_CALLBACK
   );
 
+// TODO: Build a proper info and help page  
+  
+  $items['admin/patterns/help'] = array(
+    'title' => 'Patterns Info and Help',
+//    'page callback' => 'patterns_unpublish_pattern',
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK
+  );
+  
   // Disable for now  
     
   //  $items['admin/patterns/server'] = array(
