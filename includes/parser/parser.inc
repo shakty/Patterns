@@ -6,29 +6,75 @@
  */
 
 /**
- * Scan the actions_map array and return info about the file the action was coming
- * from with the following info:
- *
- * - index of the action within the batch_set
- * - title of the pattern
- * - file of the pattern
- *
- * @param mixed $key The key of the action in the actions_map array.
- * @param array $actions_map
- *   Array containing information about of all the actions of the batch_set.
- *
- * @return array $result Concise description of the action.
+ * Register a new format and associate a parser to it.
+ * 
+ * It adds a new entry into the global array $patterns_formats.
+ * 
+ * E.g. patterns_parser_add('php', 'phpparser') will cause Patterns
+ * to call patterns_phpparser_parse() and patterns_phpparser_dump()
+ * for performing parsing operations with the PHP format. 
+ * 
+ * @param mixed $format A string with the name
+ * @param mixed $parser A string representing
+ * @param boolean $overwrite (optional) If TRUE, overwrites any
+ * 	other parser previously registered with the format.
+ * 
+ * @return bool TRUE if the format was correctly registered, 
+ *   FALSE otherwise.
  */
-function patterns_locate_action($key, $actions_map) {
-  $result['key'] = $actions_map['map'][$key]['index'];
-  $result['title'] = $actions_map['patterns'][$actions_map['map'][$key]['pid']]['title'];
-  $result['file'] = $actions_map['patterns'][$actions_map['map'][$key]['pid']]['file'];
-  return $result;
+function patterns_parser_add($format = NULL, $parser = NULL, $overwrite = TRUE) {
+	if (is_null($format) || is_null($parser)) return FALSE;
+	
+	static $patterns_formats;
+	if (!$overwrite && isset($patterns_formats[$format])) {
+		return FALSE;
+	}
+	
+	$patterns_formats[$format] = $parser;
+	return TRUE;
+}
+
+
+
+/**
+ * Checks wheter a parser is defined for a given format.
+ * 
+ * @param mixed $format A string representing the format
+ * 
+ * @return bool TRUE, if the parser is defined, FALSE otherwise.
+ */
+function patterns_parser_parser_exist($format = PATTERNS_FORMAT_UNKNOWN) {
+  if (empty($format) || $format == PATTERNS_FORMAT_UNKNOWN) return FALSE;
+  static $patterns_formats;  
+  if (!isset($patterns_formats[$format]) || empty($patterns_formats[$format])) {
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/**
+ * Checks whether a parser is defined for a given format, and returns
+ * the corresponding function name for the requested action.
+ * 
+ * @param mixed $format A string representing the format.
+ * @param mixed $action (optional) A string representing the desidered 
+ *   action to call. Default PATTERNS_PARSER_PARSE.
+ * 	
+ * 
+ * @return bool|mixed the function name if the parser exists, FALSE otherwise.
+ * 
+ */
+function patterns_parser_get_parser_function($format = PATTERNS_FORMAT_UNKNOWN, 
+																							$action = PATTERNS_PARSER_PARSE) {
+																								
+  if (!patterns_parser_parser_exist($format)) return FALSE;
+  static $patterns_formats;
+  return 'patterns_' . $patterns_formats[$format] . '_' . $action;
 }
 
 
 /**
- * Tries to parse a pattern according to the specified format.
+ * Tries to parse a pattern string according to the specified format.
  * If succesfull returns the array representation of the pattern, if not
  * returns FALSE;
  * 
@@ -42,18 +88,9 @@ function patterns_parser_parse($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
     if (empty($pattern)) return FALSE;
     if (is_array($pattern)) return $pattern;
     
-    if ($format == PATTERNS_FORMAT_XML) {
-      return patterns_xmlparser_parse($pattern);
-    }
+    $parse_function = patterns_parser_get_parser_function($format);
     
-    if ($format == PATTERNS_FORMAT_YAML) {
-      return patterns_yamlparser_parse($pattern);
-    }
-    
-    // Cannot be PATTERNS_FORMAT_PHP
-    // otherwise should be an array
-    
-    return FALSE;
+    return $parse_function($pattern);
 }
 
 /**
@@ -72,21 +109,9 @@ function patterns_parser_dump($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
     if (is_string($pattern)) return $pattern;
     if (!is_array($pattern)) return FALSE;
     
-    if ($format == PATTERNS_FORMAT_XML) {
-      return patterns_xmlparser_dump($pattern);
-    }
+    $parse_function = patterns_parser_get_parser_function($format, PATTERNS_PARSER_DUMP);
     
-    if ($format == PATTERNS_FORMAT_YAML) {
-      return patterns_yamlparser_dump($pattern);
-    }
-    
-		if ($format == PATTERNS_FORMAT_PHP) {
-      return patterns_yamlparser_dump($pattern);
-    }
-    // Cannot be PATTERNS_FORMAT_PHP
-    // otherwise should be an array
-    
-    return FALSE;
+    return $parse_function($pattern);
 }
 
 /**
@@ -859,4 +884,30 @@ function patterns_parser_extract_modules($pattern) {
                                                 : $pattern['modules'];
   }
   return $modules;
+}
+
+
+// Check if we still need the following
+
+
+
+/**
+ * Scan the actions_map array and return info about the file the action was coming
+ * from with the following info:
+ *
+ * - index of the action within the batch_set
+ * - title of the pattern
+ * - file of the pattern
+ *
+ * @param mixed $key The key of the action in the actions_map array.
+ * @param array $actions_map
+ *   Array containing information about of all the actions of the batch_set.
+ *
+ * @return array $result Concise description of the action.
+ */
+function patterns_locate_action($key, $actions_map) {
+  $result['key'] = $actions_map['map'][$key]['index'];
+  $result['title'] = $actions_map['patterns'][$actions_map['map'][$key]['pid']]['title'];
+  $result['file'] = $actions_map['patterns'][$actions_map['map'][$key]['pid']]['file'];
+  return $result;
 }

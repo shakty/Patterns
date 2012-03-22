@@ -6,34 +6,6 @@
 
 
 /**
- * Loads and validates a PHP pattern file.
- *
- * @param string $path The path of the pattern file.
- * @param bool $local
- *   (optional) TRUE if the pattern file is local. Defaults to TRUE.
- *
- * @return array|bool
- *   The pattern structure, or FALSE.
- */
-function patterns_load_php($path, $local = TRUE) {
-  if ($local && !file_exists($path)) {
-    return FALSE;
-  }
-  $pattern = array();
-
-  include($path);
-  // That should have declared a 'pattern' into current scope.
-
-  if (!patterns_validate_pattern($pattern)) {
-    // TODO: why not drupal_set_message?
-    trigger_error(t("Failed to evaluate a useful pattern from the input file %path. Pattern did not validate. May have been invalid syntax.", array('%path' => $path)), E_USER_WARNING);
-    return FALSE;
-  }
-  return $pattern;
-}
-
-
-/**
  * Menu callback, returns source code of the requested pattern
  * if the pattern is public.
  *
@@ -151,11 +123,12 @@ function patterns_io_scan_directories($verbose = FALSE) {
         continue;
       }
 
-      // Choose appropriate function based on the file extension: YAML or XML.
-      $func = 'patterns_load_' . $format;
+      // Choose appropriate function based on the file extension.
+      // Can be FALSE, if no parser is found.
+      $load_function = patterns_parser_get_parser_function($format, PATTERNS_PARSER_LOAD);
 
       // Load and save pattern.
-      if (!($pattern = $func($file->uri))) {
+      if (!$load_function || !($pattern = $load_function($file->uri))) {
         $messages['errors'][] = $file->filename;
         continue;
       }
@@ -406,8 +379,13 @@ function patterns_io_save_pattern($content = NULL, $name = NULL, $format = PATTE
   }
 
   // Load and save pattern.
-  $load_func = 'patterns_load_' . $format;
-  $pattern = $load_func($path);
+  $load_function = patterns_parser_get_parser_function($format, PATTERNS_PARSER_LOAD);
+  if (!$load_function) {
+  	drupal_set_message(t("Could not find a parser for ", array('%name' => $name)), 'error');
+    return FALSE;
+  }
+  
+  $pattern = $load_function($path);
   if (!$pattern) {
     drupal_set_message(t("Pattern '%name' could not be saved into the database. Make sure edited code is well-formed.", array('%name' => $name)), 'error');
     return FALSE;

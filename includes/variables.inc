@@ -1,8 +1,15 @@
 <?php
 /**
  * @file
- * A file containing the set of constant variables.
+ * A file containing a set of constants and variables.
+ * 
  */
+
+static $patterns_formats = array();
+
+define('PATTERNS_PARSER_PARSE', 'parse');
+define('PATTERNS_PARSER_DUMP', 'dump');
+define('PATTERNS_PARSER_LOAD', 'load');
 
 define('PATTERNS_FORMAT_UNKNOWN', 'unknown');
 define('PATTERNS_FORMAT_YAML', 'yaml');

@@ -1,6 +1,6 @@
 <?php
 
-// Add the PHP parser to Patterns
+// Register the YAML parser to Patterns
 patterns_parser_add(PATTERNS_FORMAT_YAML, 'yamlparser');
 
 

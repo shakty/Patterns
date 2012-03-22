@@ -1,6 +1,6 @@
 <?php
 
-// Add the PHP parser to Patterns
+// Register the PHP parser to Patterns
 patterns_parser_add(PATTERNS_FORMAT_PHP, 'phpparser');
 
 
@@ -22,7 +22,28 @@ function patterns_phpparser_load($path, $local = TRUE) {
     return FALSE;
   }
 
-  return patterns_xmlparser_parse($php);
+  return patterns_phpparser_parse($php);
+}
+
+/**
+ * @depracated
+ * 
+ */
+function patterns_phpparser_load_old($path, $local = TRUE) {
+  if ($local && !file_exists($path)) {
+    return FALSE;
+  }
+  $pattern = array();
+
+  include($path);
+  // That should have declared a 'pattern' into current scope.
+
+  if (!patterns_validate_pattern($pattern)) {
+    // TODO: why not drupal_set_message?
+    trigger_error(t("Failed to evaluate a useful pattern from the input file %path. Pattern did not validate. May have been invalid syntax.", array('%path' => $path)), E_USER_WARNING);
+    return FALSE;
+  }
+  return $pattern;
 }
 
 

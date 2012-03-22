@@ -1,6 +1,6 @@
 <?php
 
-// Add the PHP parser to Patterns
+// Register the XML parser to Patterns
 patterns_parser_add(PATTERNS_FORMAT_XML, 'xmlparser');
 
 
@@ -65,7 +65,7 @@ function patterns_xmlparser_parse($xml) {
  * @param array $pattern The pattern array to convert
  * 	to XML.
  */
-function patterns_xmlparser_to_file($pattern = NULL) {
+function patterns_xmlparser_dump($pattern = NULL) {
 	if (is_null($pattern) || empty($pattern)) return FALSE;
 	
 	$xml = new SimpleXMLElement('<pattern/>');
