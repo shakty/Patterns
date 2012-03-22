@@ -5,8 +5,8 @@ dependencies[] = libraries
 
 core = 7.x
 version = 7.x-1.x-dev
-build = 7027
-package = Site Setup
+build = 7030
+package = Patterns
 php = 5.2
 
 ; Test Files

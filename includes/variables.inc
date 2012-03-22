@@ -12,7 +12,7 @@ define('PATTERNS_PARSER_DUMP', 'dump');
 define('PATTERNS_PARSER_LOAD', 'load');
 
 define('PATTERNS_FORMAT_UNKNOWN', 'unknown');
-define('PATTERNS_FORMAT_YAML', 'yaml');
+
 define('PATTERNS_FORMAT_XML', 'xml');
 define('PATTERNS_FORMAT_PHP', 'php');
 

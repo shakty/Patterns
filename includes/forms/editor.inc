@@ -133,8 +133,7 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
       drupal_set_message(t('No valid pattern found in the database either.', 'ERR'));
     }
     else {
-      require_once libraries_get_path('spyc') . '/spyc.php';
-      $content = Spyc::YAMLDump($pattern->pattern);
+      $content = _patterns_editor_dump_from_db($pattern->pattern, $format);
     }
 
     $title = t('Pattern file recovered from the database');
@@ -144,8 +143,8 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
   else {
     // Pattern was updated in the file system. Show what was in the database
     if (patterns_db_is_pattern_updated($pattern)) {
-      require_once libraries_get_path('spyc') . '/spyc.php';
-      $db_content = Spyc::YAMLDump($pattern->pattern);
+      
+      $db_content = _patterns_editor_dump_from_db($pattern->pattern, $format);
 
       $form['db'] = array(
         '#type' => 'fieldset',
@@ -279,4 +278,21 @@ function patterns_load_co2($format = PATTERNS_FORMAT_YAML) {
     return TRUE;
   }
   return FALSE;
+}
+
+/**
+ * Helper function which returns the pattern dumped from the database, or
+ * an error string.
+ * 
+ * @param array $pattern The pattern to dump.
+ * @param mixed $format The format of the pattern array.
+ * 
+ * @return mixed $content A string representing the pattern or an error.
+ */
+function _patterns_editor_dump_from_db($pattern, $format) {
+  $content = patterns_parser_dump($pattern, $format);
+  if (!$content) {
+    $content = t('An error occurred while dumping the pattern in the database here.');
+  }  
+  return $content;
 }

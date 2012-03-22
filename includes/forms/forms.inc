@@ -4,6 +4,11 @@
  * Builds up a fieldset containing the options for executing a 
  * pattern. 
  * 
+ * @param array $form An array element representing a form. If specified,
+ *   the execution options are appended here.
+ * 
+ * @return array $form The form containing the pattern execution options
+ * .
  */
 function patterns_forms_get_execution_options($form = array()) {
 	
@@ -61,8 +66,21 @@ function patterns_forms_get_execution_options($form = array()) {
   return $form;
 }
 
+/**
+ * Builds a HTML select element with all the currently available 
+ * patterns formats.
+ * 
+ * @param array $form (optional) If specified, the select form is appended 
+ *   here. Default array().
+ * @param mixed $default (optional) The default value for the selector. 
+ *   Default PATTERNS_FORMAT_UNKNOWN.
+ *   
+ * @return array $form The form containing the select element.
+ *   
+ */
 function patterns_forms_get_formats_selector($form = array(), $default = PATTERNS_FORMAT_UNKNOWN) {
-	  
+
+  
 	$form['format'] = array(
     '#type' => 'select',
     '#title' => t('Pattern syntax'),

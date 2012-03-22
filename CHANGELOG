@@ -1,3 +1,16 @@
+7030:
+
+		- Dynamic Parsers allowed
+		- YAML Parser moved into a separate sub-module
+
+7029:
+
+		- Include directory refactoring
+
+7028:
+
+		- XML support enabled. Dumping is not available
+
 7027:
 
 		- Publish link added again in the interface
