@@ -89,7 +89,7 @@ function patterns_io_scan_directories($verbose = FALSE) {
   $patterns_paths = patterns_config_get_paths();
 
   // Get valid file extensions.
-  $mask = '/.\.(' . implode('|', patterns_config_get_formats()) . ')$/';
+  $mask = '/.\.(' . implode('|', patterns_parser_get_formats()) . ')$/';
 
   // Prepare list of files/folders to be excluded.
   // 'enabled' - Don't save enabled pattern backups.

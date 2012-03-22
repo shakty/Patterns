@@ -1,7 +1,11 @@
+7031:
+
+		- Patterns Example sub-module created.
+
 7030:
 
 		- Dynamic Parsers allowed
-		- YAML Parser moved into a separate sub-module
+		- XML, PHP and YAML Parser moved into a separate sub-modules
 
 7029:
 

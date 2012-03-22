@@ -62,12 +62,8 @@ module_load_include('inc', 'patterns', 'includes/forms/export');
 module_load_include('inc', 'patterns', 'includes/forms/editor');
 module_load_include('inc', 'patterns', 'includes/forms/import');
 
+module_load_include('inc', 'patterns', 'includes/parser');
 module_load_include('inc', 'patterns', 'includes/io');
-
-module_load_include('inc', 'patterns', 'includes/parser/parser');
-module_load_include('inc', 'patterns', 'includes/parser/parser.php');
-module_load_include('inc', 'patterns', 'includes/parser/parser.xml');
-//module_load_include('inc', 'patterns', 'includes/parser/parser.yaml');
 
 
 module_load_include('inc', 'patterns', 'includes/theme');

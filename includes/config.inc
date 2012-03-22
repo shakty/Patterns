@@ -160,9 +160,6 @@ function patterns_config_get_files_dir() {
  * Return a list of paths that will be scanned for pattern files.
  */
 function patterns_config_get_paths() {
-  // Why was this global?
-  // global $profile;
-  //$base_path = $_SERVER['DOCUMENT_ROOT'] . base_path();
 
   $patterns_paths = array(
     patterns_config_get_files_dir(), // must be first, in order not lose changes
@@ -177,30 +174,13 @@ function patterns_config_get_paths() {
 
   // Allow any module to include patterns too.
   foreach (module_invoke_all('patterns_directory') as $path) {
-    if (is_dir($path)) {
-      $patterns_paths[] = $path . '/patterns';
+    $path = (is_array($path)) ? $path : array($path);
+    foreach ($paths as $p) {     
+      if (is_dir($p) && is_readable($p)) {
+        $patterns_paths[] = $p ;
+      }
     }
   }
 
   return $patterns_paths;
-}
-
-
-/**
- * Return file extensions supported by the patterns module.
- *
- * @return array
- *   Array of supported file types.
- *
- * @todo Convert this into pluggable system.
- */
-function patterns_config_get_formats() {
-  $result = array(PATTERNS_FORMAT_UNKNOWN, 
-  								PATTERNS_FORMAT_XML, 
-  								PATTERNS_FORMAT_PHP);
-  
-  if (file_exists(libraries_get_path('spyc') . '/spyc.php')) {
-    $result[] = PATTERNS_FORMAT_YAML;
-  }
-  return $result;
 }

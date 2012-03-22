@@ -84,7 +84,7 @@ function patterns_forms_get_formats_selector($form = array(), $default = PATTERN
 	$form['format'] = array(
     '#type' => 'select',
     '#title' => t('Pattern syntax'),
-    '#options' => array_combine(patterns_config_get_formats(), patterns_config_get_formats()),
+    '#options' => array_combine(patterns_parser_get_formats(), patterns_parser_get_formats()),
     '#default_value' => $default,
   );
   

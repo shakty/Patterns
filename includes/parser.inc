@@ -68,7 +68,16 @@ function patterns_parser_build_formats_index($reset = TRUE) {
 	return $patterns_formats;
 }
 
-
+/**
+ * Returns an array of formats currently supported by 
+ * the patterns module.
+ *
+ * @return array Array of supported file types.
+ * 
+ */
+function patterns_parser_get_formats() {
+  return array_keys(patterns_parser_build_formats_index());
+}
 
 /**
  * Checks wheter a parser is defined for a given format.
