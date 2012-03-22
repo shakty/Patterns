@@ -43,7 +43,7 @@ function patterns_parser_parse($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
     if (is_array($pattern)) return $pattern;
     
     if ($format == PATTERNS_FORMAT_XML) {
-      return patterns_load_string_xml($pattern);
+      return patterns_xmlparser_parse($pattern);
     }
     
     if ($format == PATTERNS_FORMAT_YAML) {

@@ -502,6 +502,97 @@ function _patterns_modify_value(&$form) {
 }
 
 
+/**
+ * @file
+ * Functions related to parsing pattern files.
+ */
+
+/**
+ * Finds parts of an array based on a semi-compatible Xpath syntax.
+ *
+ * Returns an array of constructs that includes the references 'item' and
+ * 'parent' from the matching values in the $data object along with extra keys
+ * 'key' for the key of the current match and 'trace' for a full list of keys
+ * until the root of the $data object.
+ *
+ * Loosely based off of Cake function Set::extract.
+ *
+ * @Note: Ensure this always only returns matches from a single level in the
+ * array. Changes made to matches in different levels can possibly mess up the
+ * above-level matches. To this end, you cannot change the keys of a current
+ * match because the other matches cannot change their keys as well to sync with
+ * the new parent array.
+ * @TODO: Think of a solution for the above note (BROKEN RIGHT NOW).
+ */
+function patterns_array_fetch($path, &$data, $context = NULL) {
+  if (!$context && (empty($data) || !is_array($data))) {
+    return array();
+  }
+  if ($path === '/') {
+    return $data;
+  }
+
+  // Construct our contexts object that allows us to traverse the array
+  if (!$context) {
+    $context = _patterns_array_context($data);
+  }
+
+  // Make our context actually a list of contexts
+  $context = array($context);
+
+  // Create a list of tokens based on the supplied path
+  $tokens = array_slice(preg_split('/(?<!=)\/(?![a-z]*\])/', $path), 1);
+
+  while (!empty($tokens)) {
+    $token = array_shift($tokens);
+
+    // TODO Implement better conditionals for each token
+    // Currently only supports element=value conditions
+    $conditions = array();
+    if (preg_match('/(=)(.*)/', $token, $m)) {
+      $conditions[$m[1]] = $m[2];
+      $token = substr($token, 0, strpos($token, $m[1]));
+    }
+
+    $matches = array();
+    foreach ($context as &$piece) {
+      if ($token === '..') {
+        $matches[] = &$piece['parent'];
+        continue;
+      }
+      $match = FALSE;
+      if (is_array($piece['item']) && ($token == '*' || array_key_exists($token, $piece['item']))) {
+        $i = 0;
+        while (isset($piece[$i])) {
+          if ($piece[$i]['key'] === $token) {
+            $matches[] = &$piece[$i];
+            break;
+          }
+          elseif ($token === '*') {
+            $matches[] = &$piece[$i];
+          }
+          $i++;
+        }
+      }
+      elseif ($token === '.') {
+        $matches[] = &$piece;
+      }
+    }
+
+    // Filter matches from the matches list based on our conditions
+    foreach ($conditions as $operator => $value) {
+      _patterns_array_filter($matches, $operator, $value);
+    }
+
+    // Update the context area to the next set of matches to dig into
+    $context = $matches;
+  }
+
+  // Return the list of matches containing references to their respective data objects
+  return $matches;
+}
+
+
 // Function which were originally commented
 ////////////////////////////////////////////
 

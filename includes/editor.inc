@@ -188,13 +188,7 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
     '#value' => $pattern->pid
   );
 
-  $form['format'] = array(
-    '#type' => 'select',
-    '#title' => t('Pattern syntax'),
-    '#options' => array_combine(patterns_config_get_formats(), patterns_config_get_formats()),
-    '#default_value' => $format,
-    '#description' => t('Pattern will be validated and run against this format.'),
-  );
+	$form = patterns_forms_get_formats_selector($form, $format);
 
   if (!empty($pattern->file)) {
     if (file_exists($pattern->file) && is_readable($pattern->file)) {
@@ -296,54 +290,8 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
     '#markup' => l(t('Back'), 'admin/patterns'),
   );
 
-  //$content = variable_get(PATTERNS_FAILED_EDIT,file_get_contents($pattern->file));
-
-//   if ($pattern->enabled) {
-//    $form['enable'] = array(
-//      '#type' => 'markup',
-//      '#value' => l(t('Undo update changes to the state when you enabled the pattern.'), 'admin/patterns/revert/'. $pid, array(), drupal_get_destination())
-//    );
-//  }
-
-
-//    '#ajax' => array(
-//      'callback' => 'patterns_validate_service',
-//      'wrapper' => 'replace_textfield_div',
-//      'effect' => 'fade',
-//     ),
-//  );
-
-//  $form['submit'] = array(
-//    '#type' => 'button',
-//    '#validate' => array(),
-//    '#submit' => array('patterns_edit_submit_drop_mod'),
-//    '#value' => t('Drop Modifications'),
-//  );
-
-  // CHECK THIS
-//  $form['submit'] = array(
-//    '#type' => 'submit',
-//    '#submit' => array('patterns_edit_submit_save');
-//    '#value' => t('Save Modifications'),
-//  );
-
-//  $form['run'] = array(
-//    '#prefix' => '<a href='.url('admin/patterns/enable/'.$pattern->pid).'>',
-//    '#type' => 'button',
-//    '#value' =>  t('Run saved pattern'),
-//    '#suffix' => '</a>',
-//  );
-
   return $form;
 }
-
-//function patterns_edit_validate_save($form, &$form_state) {
-//  return true;
-//}
-//
-//function patterns_edit_submit_save($form, &$form_state) {
-//  drupal_goto('admin/patterns/enable/'.$pattern->pid);
-//}
 
 /**
  * Form validation handler for patterns_edit_form().
@@ -373,8 +321,6 @@ function patterns_edit_submit($form, &$form_state) {
   $format = $form_state['values']['format'];
 
   patterns_io_save_pattern($content, $name, $format);
-
-  //variable_set(PATTERNS_FAILED_EDIT,$form_state['values']['content']);
 }
 
 

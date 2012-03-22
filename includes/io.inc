@@ -23,50 +23,6 @@ function patterns_load_yaml($path, $local = TRUE) {
   return Spyc::YAMLLoad($path);
 }
 
-/**
- * Loads an XML pattern file without validating.
- *
- * @param string $path The path of the pattern file.
- * @param bool $local
- *   (optional) TRUE if the pattern file is local. Defaults to TRUE.
- *
- * @return array|bool
- *   The pattern structure, or FALSE.
- */
-function patterns_load_xml($path, $local = TRUE) {
-  if ($local && !file_exists($path)) {
-    return FALSE;
-  }
-
-  if (!$xml = file_get_contents($path)) {
-    return FALSE;
-  }
-
-  return patterns_load_string_xml($xml);
-}
-
-/**
- * @TODO Probably Validation should be removed from inside here
- */
-function patterns_load_string_xml($source) {
-  $pattern = patterns_parser_xml($source);
-  if (empty($pattern) || $pattern['xml_tag'] != 'pattern') {
-    // TODO: Error reporting.
-    return FALSE;
-  }
-  
-  // Rearrange the data in a nice way for each component.
-  // Make sure actions are processed differently so order is preserved.
-  $pattern = patterns_rearrange_data($pattern);
-  
-
-// Not validate here.
-//  if (!patterns_validate_pattern($pattern)) {
-//    return FALSE;
-//  }
-
-  return $pattern;
-}
 
 /**
  * Loads and validates a PHP pattern file.
