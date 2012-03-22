@@ -349,7 +349,7 @@ function patterns_validate_service() {
     exit;
   }
   
-  if (!isset($_POST['format'])) {
+  if (!isset($_POST['format']) || $_POST['format'] == PATTERNS_FORMAT_UNKNOWN) {
     print t('Cannot validate unknown pattern format');
     exit;
   }

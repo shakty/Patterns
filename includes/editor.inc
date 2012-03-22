@@ -36,21 +36,13 @@ function patterns_editor($form_id, $pattern = array()) {
  * @ingroup forms
  */
 function patterns_quickrun($form, &$form_state) {
-  // TODO: this form could be reused, see function patterns_enable_pattern().
-  // Default
-  $content = "# Pattern\n";
-  $extension = 'yaml';
+  
+  $content = '';
 
   $form['important'] = array(
     '#markup' => '<strong>Important!</strong> The quick run mode should be used only in development environment, for testing, or if you really know what you are doing.',
     '#prefix' => '<div id="important">',
     '#suffix' => '<hr><br/></div>',
-  );
-
-  $form['validation_result'] = array(
-    '#markup' => 'This pattern has not been validated yet.',
-    '#prefix' => '<div id="validation_result">',
-    '#suffix' => '</div>',
   );
   
   $options_mode = array(
@@ -58,35 +50,16 @@ function patterns_quickrun($form, &$form_state) {
     'runover' => 'Run-Over',
   );
 
-  $form['execution'] = array(
-    '#type' => 'radios',
-    '#title' => t('Execution mode:'),
-    '#description' => t('Extend mode can only add new feature to your web-site, Run-over can also delete. At the moment \'Extend\' is the only mode permitted.'),
-    '#options' => $options_mode,
-    '#default_value' => 'extend',
-    '#disabled' => 'true',
+  // Add the execution options
+	$form = patterns_forms_get_execution_options($form);
+  
+  $form['validation_result'] = array(
+    '#markup' => 'This pattern has not been validated yet.',
+    '#prefix' => '<div id="validation_result">',
+    '#suffix' => '</div>',
   );
-
-  $options_run_mode = array(
-    'batch' => 'Batch',
-    'php' => 'PHP',
-  );
-
-  $form['mode'] = array(
-    '#type' => 'radios',
-    '#title' => t('Running mode:'),
-    '#description' => t('Batch mode uses the Batch API provided by Drupal thus providing intermediate feedback about the progress. PHP will only return when every action has been processed (or there has been an error), which is easier to debug.'),
-    '#options' => $options_run_mode,
-    '#default_value' => variable_get('patterns_default_running_mode', 'batch'),
-    '#element_validate' => array('patterns_mode_validate'),
-  );
-
-  $form['format'] = array(
-    '#type' => 'select',
-    '#title' => t('Pattern syntax'),
-    '#options' => array_combine(patterns_config_get_formats(), patterns_config_get_formats()),
-    '#default_value' => $extension,
-  );
+  
+	$form = patterns_forms_get_formats_selector($form);
 
   $form['content'] = array(
     '#type' => 'textarea',
@@ -122,7 +95,7 @@ function patterns_quickrun($form, &$form_state) {
 function patterns_quickrun_submit($form, $form_state) {
 
   // Parse the content of the textarea
-  $pattern['pattern'] = patterns_parse_yaml($form_state['values']['content']); // TODO: other formats as well
+  $pattern['pattern'] = patterns_parser_parse($form_state['values']['content'], $form_state['values']['format']); 
 
   $pattern = patterns_get_pattern_obj($pattern);
 
