@@ -1,7 +1,7 @@
 <?php
 
 // Must be included here and not in the .module file
-module_load_include('inc', 'patterns', 'includes/core.common');
+module_load_include('inc', 'patterns', 'includes/core/core.common');
 
 /**
  * @file
@@ -73,7 +73,7 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
       'title' => t('Processing pattern %pattern', array('%pattern' => $info['title'])),
       'progress_message' => $progress,
       'operations' => array(),
-      'file' =>  drupal_get_path('module', 'patterns') . '/includes/core.batch.inc',
+      'file' =>  drupal_get_path('module', 'patterns') . '/includes/core/core.batch.inc',
       'finished' => 'patterns_batch_finish',
       'init_message' => t('Initializing section "%section" (%cur_sec/%tot_sec)', array(
                           '%section' => $section,
@@ -115,7 +115,7 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
 function patterns_batch_action($action, $data, $place, $actions_map, $section, &$context) {
 
   // Since we are in the batch, we need to load some things once more.
-  module_load_include('inc', 'patterns', 'includes/core.common');
+  module_load_include('inc', 'patterns', 'includes/core/core.common');
   patterns_load_components();
 
   // Nothing to do if there is no action
