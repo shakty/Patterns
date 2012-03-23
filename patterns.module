@@ -70,7 +70,8 @@ module_load_include('inc', 'patterns', 'includes/io');
 
 module_load_include('inc', 'patterns', 'includes/api/api');
 
-module_load_include('inc', 'patterns', 'includes/theme');
+module_load_include('inc', 'patterns', 'theme/theme');
+module_load_include('inc', 'patterns', 'theme/theme.modules');
 
 // TODO: Check
 module_load_include('inc', 'patterns', 'includes/feed');
@@ -297,18 +298,22 @@ function patterns_menu() {
   // This items were already commented.
   /////////////////////////////////////////////////////
 
-  //     $items[] = array('path' => 'admin/patterns/configure',
-  //       'title' => t('Configure Pattern'),
-  //       'callback' => 'drupal_get_form',
-  //       'callback arguments' => array('patterns_configure_pattern'),
-  //       'type' => MENU_CALLBACK
-  //     );
+  $items['admin/patterns/modules'] = array(
+    'title' => 'Pattern Modules',
+    'page callback' => 'patterns_modules_page',
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK
+  );
+  
+  
+// Not ready
 
-  //     $items[] = array('path' => 'admin/patterns/info',
-  //       'title' => t('Pattern Details'),
-  //       'callback' => 'patterns_info',
-  //       'type' => MENU_CALLBACK
-  //     );
+//   $items['admin/patterns/info'] = array(
+//     'title' => t('Pattern Details'),
+//     'callback' => 'patterns_info',
+//     'access arguments' => array('administer patterns'),
+//     'type' => MENU_CALLBACK
+//   );
 
   //     $items[] = array('path' => 'admin/patterns/disable',
   //       'access' => user_access('administer patterns'),
@@ -317,13 +322,6 @@ function patterns_menu() {
   //       'callback arguments' => array('patterns_disable_pattern'),
   //       'type' => MENU_CALLBACK
   //     );
-
-  //  $items['admin/patterns/modules'] = array(
-  //    'title' => 'Pattern Modules',
-  //    'page callback' => 'patterns_modules_page',
-  //    'access arguments' => array('administer patterns'),
-  //    'type' => MENU_CALLBACK
-  //  );
 
   //     $items[] = array('path' => 'admin/patterns/revert',
   //       'access' => user_access('administer patterns'),
