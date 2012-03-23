@@ -64,6 +64,7 @@ module_load_include('inc', 'patterns', 'includes/forms/quickrun');
 module_load_include('inc', 'patterns', 'includes/forms/editor');
 module_load_include('inc', 'patterns', 'includes/forms/import');
 module_load_include('inc', 'patterns', 'includes/forms/helper');
+module_load_include('inc', 'patterns', 'includes/forms/info');
 
 module_load_include('inc', 'patterns', 'includes/parser');
 module_load_include('inc', 'patterns', 'includes/io');
@@ -276,11 +277,18 @@ function patterns_menu() {
     'type' => MENU_CALLBACK
   );
 
-// TODO: Build a proper info and help page  
+  // UTILITY  
   
-  $items['admin/patterns/help'] = array(
-    'title' => 'Patterns Info and Help',
-//    'page callback' => 'patterns_unpublish_pattern',
+  $items['admin/patterns/info'] = array(
+    'title' => 'Info About the Patterns Module',
+    'page callback' => 'patterns_info_page',
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_LOCAL_TASK
+  );
+  
+  $items['admin/patterns/check'] = array(
+    'title' => 'Pattern Modules',
+    'page callback' => 'patterns_modules_page',
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
@@ -298,13 +306,6 @@ function patterns_menu() {
 
   // This items were already commented.
   /////////////////////////////////////////////////////
-
-  $items['admin/patterns/check'] = array(
-    'title' => 'Pattern Modules',
-    'page callback' => 'patterns_modules_page',
-    'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
-  );
   
   
 // Not ready

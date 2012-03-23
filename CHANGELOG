@@ -1,3 +1,8 @@
+7036:
+
+		- Added an Info page, which displays general information about
+				the status of the Patterns module as a whole.
+
 7035:
 
 		- Fixed bugs in importing new patterns.

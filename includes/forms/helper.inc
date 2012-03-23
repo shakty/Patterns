@@ -18,3 +18,4 @@ function patterns_form_helper($form, $form_state) {
 
   return $form;
 }
+

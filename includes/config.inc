@@ -22,51 +22,6 @@ function patterns_permission() {
   );
 }
 
-
-/**
- * Implements hook_help().
- */
-function patterns_help($section, $arg = NULL) {
-  $output = '';
-  
-  switch ($section) {
-    case 'admin/patterns':
-
-
-      $dirs = patterns_path_get_patterns_dirs();
-
-      foreach ($dirs as $key => $value) {
-        $dirs[$key] = array(($key+1), $value);
-      }
-      
-      $form['pd'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Patterns Directories'),
-        '#collapsible' => TRUE,
-        '#collapsed' => FALSE,
-      );
-      
-      $form['pd']['dirs'] = array (
-        '#markup' => theme('table', array('rows' => $dirs, 'attributes' => array('class' => 'patterns-list'))),
-      );
-      
-      $form['cd'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Patterns Components Directories'),
-        '#collapsible' => TRUE,
-        '#collapsed' => FALSE,
-      );
-      
-      $form['cd']['dirs'] = array (
-        '#markup' => 'TODO',
-      );
-      
-      $output = drupal_render($form);
-      break;
-  }
-  return $output;
-}
-
 /**
  * Display the pattern settings form.
  * @TODO proper doc.
