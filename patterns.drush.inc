@@ -532,7 +532,7 @@ function patterns_execute_pattern_drush($pattern, $params = array()) {
  */
 function patterns_batch_actions_drush($action, $place, $actions_map, &$context) {
 
-  patterns_load_components();
+  patterns_io_load_components();
 
   // Nothing to do if there is no action
   if (empty($action)) {

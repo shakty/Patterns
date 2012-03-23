@@ -364,7 +364,7 @@ function patterns_import_module($form, &$form_state) {
 
   // need to load components to be able to check
   // TODO: refactor: this does something very similar to patterns_get_tagmodules_index
-  patterns_load_components();
+  patterns_io_load_components();
   foreach ( module_implements('patterns') as $module)
     array_push($modules_with_components, $module);
 

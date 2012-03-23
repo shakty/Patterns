@@ -387,7 +387,7 @@ function patterns_list() {
   // Load the the pattern handlers from compontents directory
   // or from modules which implement hook_patterns().
   if (variable_get('patterns_refresh_components', TRUE)) {
-    patterns_load_components();
+    patterns_io_load_components();
   }
   
   // Load the patterns from database.
@@ -453,7 +453,7 @@ function patterns_mode_validate($element, &$form_state, $form) {
 function patterns_enable_pattern_submit($form, &$form_state) {
   $pid = $form_state['values']['pid'];
 
-  patterns_load_components();
+  patterns_io_load_components();
   $pattern = patterns_get_pattern($pid);
 
   patterns_start_engine($pattern, $form_state['values'], $form_state['values']['mode']);

@@ -93,7 +93,7 @@ function patterns_execute_pattern_php($pattern, $params, $patterns_details, $act
  */
 function patterns_php_action($action, $data, $place, $actions_map) {
 
-  patterns_load_components(); // TODO: move this out of here?
+  patterns_io_load_components(); // TODO: move this out of here?
 
   // Nothing to do if there is no action
   if (empty($data) || empty($action)) {

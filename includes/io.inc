@@ -23,11 +23,9 @@ function patterns_io_get_pattern_service($pattern) {
     drupal_goto('admin/patterns');
   }
 
+  // TODO: handling correctly different formats
   $content_type = 'text/plain';
-//  if (substr($pattern->file, -4) == '.xml') {
-//    $content_type = 'text/xml';
-//  }
-
+  
   drupal_add_http_header('Content-Type', $content_type . '; charset=utf-8');
   print file_get_contents($pattern->file);
   exit;
@@ -37,7 +35,7 @@ function patterns_io_get_pattern_service($pattern) {
  * Loads the Patterns handlers (component) from the filesystem,
  * if they are not already loaded.
  */
-function patterns_load_components() {
+function patterns_io_load_components() {
   static $loaded = FALSE;
 
   if ($loaded) {
