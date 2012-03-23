@@ -27,9 +27,9 @@ function patterns_list_patterns_2 ($patterns, $form = array(), $options = array(
         // Ensure that the "Core" package fieldset comes first.
         //'#weight' => $package == 'Core' ? -10 : NULL,
       );
-    }
   }
 }
+
 
 
 function patterns_get_patterns_links ($pattern = NULL, $options = NULL) {
