@@ -157,4 +157,3 @@ function patterns_utils_init_from_pattern($key, $pattern, $value = NULL, $fallba
   }
   return $fallback;
 }
-

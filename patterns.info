@@ -1,5 +1,5 @@
 name = Patterns
-description = Enables extremely simple adding/removing features to your site with minimal to no configuration.
+description = Enables simple adding/removing features to your site with minimal to no configuration.
 dependencies[] = token
 dependencies[] = libraries
 

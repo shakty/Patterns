@@ -1,5 +1,5 @@
 name = Patterns Components
-description = A collection of components (drivers) to communicate with Drupal forms 
+description = A collection of components (drivers) to communicate with Drupal forms. 
 dependencies[] = patterns
 
 core = 7.x

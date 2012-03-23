@@ -1,4 +1,4 @@
-name = PHPParser
+name = PHP Parser
 description = PHP Parser for Patterns files. 
 dependencies[] = patterns
 dependencies[] = libraries

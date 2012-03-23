@@ -1,4 +1,4 @@
-name = XMLParser
+name = XML Parser
 description = XML Parser for Patterns files. 
 dependencies[] = patterns
 dependencies[] = libraries
