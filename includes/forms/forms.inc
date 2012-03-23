@@ -83,8 +83,10 @@ function patterns_forms_get_formats_selector($form = array(), $default = PATTERN
   $descr = (is_null($descr)) ? t('Pattern will be validated and run against this format.') : t($descr);
   $formats = array(PATTERNS_FORMAT_UNKNOWN => PATTERNS_FORMAT_UNKNOWN);
   $available_formats = patterns_parser_get_formats();
-  $formats = array_merge($formats, array_combine($available_formats, $available_formats));
-	
+  if (!empty($available_formats)) {
+    $formats = array_merge($formats, array_combine($available_formats, $available_formats));
+  }
+  
   $form['format'] = array(
     '#type' => 'select',
     '#title' => t('Pattern syntax'),
