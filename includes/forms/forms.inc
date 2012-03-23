@@ -78,14 +78,19 @@ function patterns_forms_get_execution_options($form = array()) {
  * @return array $form The form containing the select element.
  *   
  */
-function patterns_forms_get_formats_selector($form = array(), $default = PATTERNS_FORMAT_UNKNOWN) {
+function patterns_forms_get_formats_selector($form = array(), $default = PATTERNS_FORMAT_UNKNOWN, $descr = NULL) {
 
-  
-	$form['format'] = array(
+  $descr = (is_null($descr)) ? t('Pattern will be validated and run against this format.') : t($descr);
+  $formats = array(PATTERNS_FORMAT_UNKNOWN => PATTERNS_FORMAT_UNKNOWN);
+  $available_formats = patterns_parser_get_formats();
+  $formats = array_merge($formats, array_combine($available_formats, $available_formats));
+	
+  $form['format'] = array(
     '#type' => 'select',
     '#title' => t('Pattern syntax'),
-    '#options' => array_combine(patterns_parser_get_formats(), patterns_parser_get_formats()),
+    '#options' => $formats,
     '#default_value' => $default,
+	  '#description' => t('Pattern will be validated and run against this format.'),
   );
   
   return $form;

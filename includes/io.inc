@@ -218,7 +218,7 @@ function _patterns_io_analyze_scandir_messages($messages = NULL) {
  *
  * @return array The array of available patterns.
  */
-function patterns_get_patterns($reset = TRUE, $verbose = TRUE) {
+function patterns_io_get_patterns($reset = TRUE, $verbose = TRUE) {
 
   if ($reset || !variable_get('patterns_loaded', FALSE)) {
     // Updates the patterns in the database
@@ -274,7 +274,7 @@ function patterns_get_patterns($reset = TRUE, $verbose = TRUE) {
 function patterns_io_get_patterns_service($type = 'ajax') {
 
   if ($type == 'ajax') {
-    $patterns = patterns_get_patterns();
+    $patterns = patterns_io_get_patterns();
     $output = '<div id="all_patterns_div"><strong>' . t('last update:') . '</strong>' . date(DATE_RFC822);
     $output .= theme('patterns_list', $patterns);
     $output .= '</div>';

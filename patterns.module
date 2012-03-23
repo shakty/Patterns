@@ -391,7 +391,7 @@ function patterns_list() {
   }
   
   // Load the patterns from database.
-  $patterns = patterns_get_patterns(variable_get('patterns_refresh_from_fs', TRUE));
+  $patterns = patterns_io_get_patterns(variable_get('patterns_refresh_from_fs', TRUE));
 
   $output .= theme('patterns_list', $patterns);
 

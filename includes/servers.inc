@@ -186,7 +186,7 @@ function patterns_feed() {
     return drupal_not_found();
   }
 
-  $patterns = variable_get('patterns_allow_publish', FALSE) ? patterns_get_patterns() : array();
+  $patterns = variable_get('patterns_allow_publish', FALSE) ? patterns_io_get_patterns() : array();
 
   foreach ($patterns as $pattern) {
     if (!$pattern->public) {

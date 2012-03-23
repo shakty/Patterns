@@ -153,7 +153,7 @@ function drush_patterns_run($pattern_file, $pattern_name = '') {
   }
 
   // makes sure the most recent version is loaded. who wants an old pattern?
-  $patterns = patterns_get_patterns();
+  $patterns = patterns_io_get_patterns();
 
   if ($name) {
     $result = drush_patterns_enable($name, $subpattern_mode);
@@ -296,7 +296,7 @@ function drush_patterns_enable($id, $subpattern_mode = 'first-update') {
  * patterns list command callback.
  */
 function drush_patterns_list() {
-  $patterns = patterns_get_patterns();
+  $patterns = patterns_io_get_patterns();
 
   $pipe = array();
   $rows[] = array(dt('Id'), dt('Name'), dt('Title'), dt('Status'), dt('Version'));

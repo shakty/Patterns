@@ -22,13 +22,15 @@ function patterns_import_source($form, &$form_state) {
     '#required' => TRUE,
   );
   
-  $form['format'] = array(
-    '#type' => 'select',
-    '#title' => t('Pattern syntax'),
-    '#options' => array_combine(patterns_config_get_formats(), patterns_config_get_formats()),
-    '#default_value' => PATTERNS_FORMAT_UNKNOWN,
-    '#description' => t('Pattern will be validated and run against this format.'),
-  );
+  $form = patterns_forms_get_formats_selector($form);
+  
+//  $form['format'] = array(
+//    '#type' => 'select',
+//    '#title' => t('Pattern syntax'),
+//    '#options' => array_combine(patterns_config_get_formats(), patterns_config_get_formats()),
+//    '#default_value' => PATTERNS_FORMAT_UNKNOWN,
+//    '#description' => t('Pattern will be validated and run against this format.'),
+//  );
   
   $form['validation_result'] = array(
     '#markup' => 'This pattern has not been validated yet.',

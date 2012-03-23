@@ -292,7 +292,7 @@ function patterns_db_load_pattern_from_name($name = NULL) {
  *
  * @return array An array of all available patterns objects.
  *
- * @see patterns_get_patterns()
+ * @see patterns_io_get_patterns()
  */
 function patterns_db_get_patterns($fields = array()) {
   if (!empty($fields)) {
