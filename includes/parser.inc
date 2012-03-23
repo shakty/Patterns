@@ -72,11 +72,14 @@ function patterns_parser_build_formats_index($reset = TRUE) {
  * Returns an array of formats currently supported by 
  * the patterns module.
  *
+ * @param bool $reset (optional) If FALSE, it does not rebuild the index
+ *   of available formats.
+ * 
  * @return array Array of supported file types.
  * 
  */
-function patterns_parser_get_formats() {
-  return array_keys(patterns_parser_build_formats_index());
+function patterns_parser_get_formats($reset = TRUE) {
+  return array_keys(patterns_parser_build_formats_index($reset));
 }
 
 /**

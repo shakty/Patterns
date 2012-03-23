@@ -92,7 +92,7 @@ function patterns_forms_get_formats_selector($form = array(), $default = PATTERN
     '#title' => t('Pattern syntax'),
     '#options' => $formats,
     '#default_value' => $default,
-	  '#description' => t('Pattern will be validated and run against this format.'),
+	  '#description' => $descr,
   );
   
   return $form;

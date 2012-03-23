@@ -87,13 +87,13 @@ function patterns_io_scan_directories($verbose = FALSE) {
 
   // Get valid file extensions.
   $mask = '/.\.(' . implode('|', patterns_parser_get_formats()) . ')$/';
-
+  
   // Prepare list of files/folders to be excluded.
   // 'enabled' - Don't save enabled pattern backups.
   $no_mask = array('.', '..', 'CVS', '.svn', '.git', '.bzr', 'enabled');
 
   foreach ($patterns_paths as $path) {
-    //debug($path);
+ 
     foreach (file_scan_directory($path, $mask, $no_mask) as $file) {
       $format = substr($file->filename, strlen($file->name) + 1);
       
@@ -358,6 +358,13 @@ function patterns_io_save_pattern($content = NULL, $name = NULL, $format = PATTE
     drupal_set_message(t('Error: the pattern is not writable. Please check the file system permissions.'), 'error');
     return FALSE;
   }
+  
+  // Check if the file has a valid extension 
+  // and in case add the format at the end
+  if (!_patterns_io_file_has_valid_extension($name)) {
+    $name = $name . '.' . $format;
+  }
+  
   $path_original = $dir . '/' . $name;
   
   if (is_null($original)) {
@@ -398,4 +405,27 @@ function patterns_io_save_pattern($content = NULL, $name = NULL, $format = PATTE
 
 function patterns_io_remove_pattern($path) {
   // @TODO
+}
+
+/**
+ * Checks whether the extension of the specified file name 
+ * matches one of the currently available parser formats.
+ * 
+ * 
+ * @param mixed $file String representing a file name.
+ * @param array $formats (optional) The array of valid formats, 
+ *   against which checking the file extension. If NULL, rebuilds 
+ *   the index of currently available formats.
+ *   
+ * @return bool Boolean. TRUE, if the extension matches an available
+ *   parser.
+ */
+function _patterns_io_file_has_valid_extension ($file = NULL, $formats = NULL) {
+  if (is_null($file)) return FALSE;
+  if (is_null($formats)) {
+    $formats = patterns_parser_get_formats();
+  }
+  
+  $ext = pathinfo($file, PATHINFO_EXTENSION);
+  return (in_array($ext, $formats)) ? TRUE : FALSE;
 }

@@ -22,13 +22,12 @@ function patterns_list_patterns_2 ($patterns, $form = array(), $options = array(
             t('Title'),
             t('Version'),
             t('Description'),
-          array('data' => t('Operations'), 'colspan' => 7),
-        ),
-        // Ensure that the "Core" package fieldset comes first.
-        //'#weight' => $package == 'Core' ? -10 : NULL,
-      );
+            array('data' => t('Operations'), 'colspan' => 7),
+          ),
+          // Ensure that the "Core" package fieldset comes first.
+          //'#weight' => $package == 'Core' ? -10 : NULL,
+        );
     }
-  }
 }
 
 
