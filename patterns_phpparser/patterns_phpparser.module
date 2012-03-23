@@ -3,7 +3,7 @@
 define('PATTERNS_FORMAT_PHP', 'php');
 
 // Implements hook patterns_parser_add
-function patternsphpparser_patterns_parser() {
+function patterns_phpparser_patterns_parser() {
 	$parser = array();
 	$parser['format'] = PATTERNS_FORMAT_PHP;
 	$parser['parser'] = 'patterns_phpparser'; 
