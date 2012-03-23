@@ -148,7 +148,7 @@ function patterns_config_settings($form, &$form_state) {
     '#type' => 'checkbox',
     '#title' => t('Enable sharing of patterns'),
     '#description' => t('If selected, patterns can be shared with others web sites.'),
-    '#default_value' => variable_get('patterns_allow_publish', TRUE),
+    '#default_value' => variable_get('patterns_allow_publish', PATTERNS_ALLOW_PUBLISH_DEFAULT),
   );
 
   $form['other'] = array(

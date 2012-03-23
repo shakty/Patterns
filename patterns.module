@@ -73,8 +73,8 @@ module_load_include('inc', 'patterns', 'includes/api/api');
 module_load_include('inc', 'patterns', 'includes/theme');
 
 // TODO: Check
+module_load_include('inc', 'patterns', 'includes/feed');
 module_load_include('inc', 'patterns', 'includes/servers');
-// Add libraries for performing AJAX calls outside forms
 
 
 /**
@@ -201,24 +201,24 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
+  
+  // SERVICES
+ 
+  $items['patterns/patterns.xml'] = array(
+    'title' => 'Published Patterns',
+    'page callback' => 'patterns_feed',
+    'access arguments' => array('get patterns'),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK
+  );
 
-  $items['admin/patterns/get'] = array(
+  $items['patterns/get'] = array(
     'title' => 'Download Pattern Source',
     'page callback' => 'patterns_io_get_pattern_service',
     'access arguments' => array('get patterns'),
     'access callback' => TRUE,
     'type' => MENU_CALLBACK
   );
-
-  /*
-   * TODO: outdated, disabled for now.
-  $items['patterns.xml'] = array(
-    'title' => 'Published Patterns',
-    'page callback' => 'patterns_feed',
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK
-  );
-  */
 
   // IMPORT
 

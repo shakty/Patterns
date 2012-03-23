@@ -50,3 +50,5 @@ define('PATTERNS_EXPORT_MODE_FULL', 'full');
 define('PATTERNS_EXPORT_MODE_ACTIONS', 'actions');
 define('PATTERNS_EXPORT_MODE_ID', 'id');
 define('PATTERNS_EXPORT_MODE_NAME', 'name');
+
+define('PATTERNS_ALLOW_PUBLISH_DEFAULT', TRUE);
