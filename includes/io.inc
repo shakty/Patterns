@@ -289,7 +289,7 @@ function patterns_io_get_patterns_service($type = 'ajax') {
  */
 function _patterns_io_check_htaccess() {
 
-  $path = patterns_config_get_files_dir();
+  $path = patterns_path_get_files_dir();
 
   if (!is_file($path . '/.htaccess')) {
     $content = '# Prevent downloading site patterns
@@ -308,7 +308,7 @@ function _patterns_io_is_patterns_dir_ready($patterns_files_dir = '', $flag = FI
 
   // TODO: keep pattern_files_dir in a separate location. Warning: defining a constant creates an error.
   if (empty($patterns_files_dir)) {
-    $patterns_files_dir = patterns_config_get_files_dir(); // TODO: move this out for performance
+    $patterns_files_dir = patterns_path_get_files_dir(); // TODO: move this out for performance
   }
   return (file_prepare_directory($patterns_files_dir, $flag)) ? TRUE : FALSE;
 }
@@ -352,7 +352,7 @@ function patterns_io_save_pattern($content = NULL, $name = NULL, $format = PATTE
   }
   
   if (is_null($dir)) {
-    $dir = patterns_config_get_files_dir();
+    $dir = patterns_path_get_files_dir();
   }
   if (!file_prepare_directory($dir, FILE_CREATE_DIRECTORY)) {
     drupal_set_message(t('Error: the pattern is not writable. Please check the file system permissions.'), 'error');

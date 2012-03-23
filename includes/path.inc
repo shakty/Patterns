@@ -15,7 +15,7 @@
  * We do not use directly variable_get because it had some issues with the batch
  *
  */
-function patterns_config_get_files_dir() {
+function patterns_path_get_files_dir() {
   return drupal_realpath('public://') . "/patterns/";
 }
 
@@ -25,7 +25,7 @@ function patterns_config_get_files_dir() {
 function patterns_path_get_patterns_dirs() {
 
   $patterns_paths = array(
-    patterns_config_get_files_dir(), // must be first, in order not lose changes
+    patterns_path_get_files_dir(), // must be first, in order not lose changes
     variable_get('patterns_save_file', 'sites/all/patterns/'),
     drupal_get_path('module', 'patterns') . '/patterns/',
   );
@@ -55,7 +55,7 @@ function patterns_path_get_patterns_dirs() {
 function patterns_path_get_components_dirs() {
 
   $patterns_paths = array(
-    patterns_config_get_files_dir(), // must be first, in order not lose changes
+    patterns_path_get_files_dir(), // must be first, in order not lose changes
     variable_get('patterns_save_file', 'sites/all/patterns/'),
     drupal_get_path('module', 'patterns') . '/patterns/',
   );

@@ -280,9 +280,10 @@ function patterns_menu() {
   // UTILITY  
   
   $items['admin/patterns/info'] = array(
-    'title' => 'Info About the Patterns Module',
+    'title' => 'Info',
     'page callback' => 'patterns_info_page',
     'access arguments' => array('administer patterns'),
+  	'weight' => 15,
     'type' => MENU_LOCAL_TASK
   );
   

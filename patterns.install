@@ -4,8 +4,11 @@
  * @file
  * Installation file for Patterns.
  */
-require_once 'includes/config.inc';
-require_once 'includes/io.inc';
+
+module_load_include('inc', 'patterns', 'includes/variables');
+module_load_include('inc', 'patterns', 'includes/config');
+module_load_include('inc', 'patterns', 'includes/path');
+module_load_include('inc', 'patterns', 'includes/io');
 
 /**
  * Implements hook_install().
@@ -132,7 +135,7 @@ function patterns_requirements($phase) {
   if (!_patterns_io_is_patterns_dir_ready()) {
       $requirements['pdir'] = array(
         'title'       => t('Patterns files dir writable'),
-        'description' => t("Patterns folder doesn't exist or is not writable: !path", array('!path' => patterns_config_get_files_dir())),
+        'description' => t("Patterns folder doesn't exist or is not writable: !path", array('!path' => patterns_path_get_files_dir())),
         'severity'    => REQUIREMENT_WARNING,
         'value'       => 'Not writable',
       );

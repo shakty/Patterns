@@ -13,7 +13,7 @@
  */
 function patterns_import_source($form, &$form_state) {
 
-  $def_dir = patterns_config_get_files_dir();
+  $def_dir = patterns_path_get_files_dir();
 
   $form['name'] = array(
     '#type' => 'textfield',
@@ -69,7 +69,7 @@ function patterns_import_source($form, &$form_state) {
  */
 function patterns_import_file($form, &$form_state) {
 
-  $def_dir = patterns_config_get_files_dir();
+  $def_dir = patterns_path_get_files_dir();
 
   $form['#attributes']['enctype'] = 'multipart/form-data';
 
@@ -132,7 +132,7 @@ function patterns_import_url($form, &$form_state) {
     return $form;
    }
   
-  $def_dir = patterns_config_get_files_dir();
+  $def_dir = patterns_path_get_files_dir();
 
   $form['pattern_uri'] = array(
     '#type' => 'textfield',
@@ -182,8 +182,8 @@ function _patterns_import_file_validate($form, &$form_state) {
   $destination = $form_state['values']['destination'];
   
   // If not automatically returns
-  _patterns_imports_check_dirs($destination);
-  _patterns_imports_check_name($form_state['values']['name']);
+  _patterns_import_check_dirs($destination);
+  _patterns_import_check_name($form_state['values']['name']);
 
   $uri = $form_state['values']['pattern_uri'];
 
@@ -236,8 +236,8 @@ function patterns_import_validate($form, &$form_state) {
   $destination = $form_state['values']['destination'];
   
   // If not automatically returns
-  _patterns_imports_check_dirs($destination);
-  _patterns_imports_check_name($form_state['values']['name']);
+  _patterns_import_check_dirs($destination);
+  _patterns_import_check_name($form_state['values']['name']);
   
   // Retreiving the format 
   if (isset($form_state['values']['format']) && $form_state['values']['format'] != PATTERNS_FORMAT_UNKNOWN) {
@@ -638,7 +638,7 @@ function patterns_import_module($form, &$form_state) {
 
   // show pattern import form
   if ($step >= 3) {
-   $def_dir = patterns_config_get_files_dir();
+   $def_dir = patterns_path_get_files_dir();
 
    if (!isset($yaml))
    $yaml = $form_state['values']['content'];
@@ -752,7 +752,7 @@ function patterns_import_module_ajax_module_forms_callback($form, $form_state) {
 /**
  * Helper function to be called in one of the import validation handlers.
  */
-function _patterns_imports_check_dirs($dir = NULL) {
+function _patterns_import_check_dirs($dir = NULL) {
  // Check Patterns Directory
  if (!_patterns_io_is_patterns_dir_ready($dir, FILE_CREATE_DIRECTORY)) {
   $message = t("Destination folder does not exist or is not writable: %path<br />", array('%path' => $dir)); // TODO: move this out for performance
@@ -766,7 +766,7 @@ function _patterns_imports_check_dirs($dir = NULL) {
 /**
  * Helper function to be called in one of the import validation handlers.
  */
-function _patterns_imports_check_name($name = '') {
+function _patterns_import_check_name($name = '') {
  // Name Validation
  $errors_on_name = _patterns_parser_analyze_pattern_name($name);
  if (!empty($errors_on_name)) {
@@ -794,7 +794,7 @@ function _patterns_imports_check_name($name = '') {
 function patterns_import_build_import_form_state($name = NULL, $pattern = NULL, $dest = NULL) {
   if (is_null($name) || is_null($pattern)) return FALSE;
   if (is_null($dest)) {
-    $dest = patterns_config_get_files_dir();
+    $dest = patterns_path_get_files_dir();
   }
 
   $form = array();
