@@ -186,9 +186,11 @@ function patterns_batch_finish($success, $results, $operations) {
   }
   else {
     $pattern = reset($info);
-    drupal_set_message(t('Section "@section" of pattern "@pattern" ran with errors. Check the error messages to get more details.', array('@pattern' => $pattern['title'],
-                                                                                                                                        '@section' => $section,
-    )));
+    drupal_set_message(t('Section "@section" of pattern "@pattern" ran with errors. 
+      Check the error messages to get more details.', 
+      array('@pattern' => $pattern['title'], '@section' => $section,
+           )),
+     'error');
     drupal_set_message($results['error_message'], 'error');
   }
   // TODO: check
