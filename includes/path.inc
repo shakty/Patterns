@@ -38,7 +38,7 @@ function patterns_path_get_patterns_dirs() {
   // Allow any module to include patterns too.
   foreach (module_invoke_all('patterns_directory') as $path) {
     $path = (is_array($path)) ? $path : array($path);
-    foreach ($paths as $p) {     
+    foreach ($path as $p) {     
       if (is_dir($p) && is_readable($p)) {
         $patterns_paths[] = $p ;
       }

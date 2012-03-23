@@ -201,12 +201,10 @@ function patterns_menu() {
     'type' => MENU_CALLBACK
   );
 
-  // TODO: Check admin/patterns/get
-  // TODO: permission
-
   $items['admin/patterns/get'] = array(
     'title' => 'Download Pattern Source',
-    'page callback' => 'patterns_get_source',
+    'page callback' => 'patterns_io_get_pattern_service',
+    'access arguments' => array('get patterns'),
     'access callback' => TRUE,
     'type' => MENU_CALLBACK
   );

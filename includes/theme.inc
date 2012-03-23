@@ -279,7 +279,7 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
   }
 
   //Publish/Unpublish link
-  if (variable_get('patterns_allow_publish', FALSE)) {
+  if (variable_get('patterns_allow_publish', TRUE)) {
     $actions['publish'] = ($pattern->public) ? t('Unpublish') : t('Publish');
     if ($pattern->status != PATTERNS_STATUS_TRASHED) {
       $actions['publish'] = $pattern->public ? l($actions['publish'], 'admin/patterns/unpublish/' . $pid) : l($actions['publish'], 'admin/patterns/publish/' . $pid);

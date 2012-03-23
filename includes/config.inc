@@ -15,6 +15,9 @@ function patterns_permission() {
     'administer patterns' => array(
       'title' => t('administer patterns'),
     ),
+    'get patterns' => array(
+      'title' => t('get patterns'),
+    ),
     // TODO: More detailed set of permissions.
   );
 }
@@ -27,7 +30,7 @@ function patterns_help($section, $arg = NULL) {
   $output = '';
   
   switch ($section) {
-    case 'admin/patterns/help':
+    case 'admin/patterns/':
 
 
       $dirs = patterns_path_get_patterns_dirs();

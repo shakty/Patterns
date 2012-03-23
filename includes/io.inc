@@ -12,22 +12,21 @@
  * @param integer $pid
  *   The ID of the Pattern to be displayed.
  */
-function patterns_get_source($pid) {
-  if (!is_numeric($pid)) {
-    exit;
-  }
+function patterns_io_get_pattern_service($pattern) {
+  
 
-  $pattern = patterns_get_pattern($pid);
+  $pattern = patterns_utils_if_invalid_go_back($pattern);
 
   // Make sure pattern is public (published).
   if (!$pattern->public) {
-    exit;
+    drupal_set_message(t('Pattern %name is not public.', array('%name' => $pattern->name)), 'error');
+    drupal_goto('admin/patterns');
   }
 
   $content_type = 'text/plain';
-  if (substr($pattern->file, -4) == '.xml') {
-    $content_type = 'text/xml';
-  }
+//  if (substr($pattern->file, -4) == '.xml') {
+//    $content_type = 'text/xml';
+//  }
 
   drupal_add_http_header('Content-Type', $content_type . '; charset=utf-8');
   print file_get_contents($pattern->file);
