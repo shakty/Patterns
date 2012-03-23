@@ -30,7 +30,7 @@ function patterns_help($section, $arg = NULL) {
   $output = '';
   
   switch ($section) {
-    case 'admin/patterns/':
+    case 'admin/patterns':
 
 
       $dirs = patterns_path_get_patterns_dirs();
