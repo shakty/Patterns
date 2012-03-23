@@ -1,3 +1,8 @@
+7032:
+
+		- Fixed several bugs related to updated function names.
+		- TODO: check simple tests
+
 7031:
 
 		- Patterns Example sub-module created.
