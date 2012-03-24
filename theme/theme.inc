@@ -114,11 +114,12 @@ function theme_patterns_list($args) {
         '#theme' => 'patterns_patterns_fieldset',
         '#header' => array(
           array('data' => t('Enabled'), 'class' => array('checkbox')),
+            t('Format'),
             t('Name'),
             t('Title'),
             t('Version'),
             t('Description'),
-          array('data' => t('Operations'), 'colspan' => 4),
+          array('data' => t('Operations'), 'colspan' => 7),
         ),
         // Ensure that the "Core" package fieldset comes first.
         //'#weight' => $package == 'Core' ? -10 : NULL,
@@ -150,11 +151,12 @@ function theme_patterns_list($args) {
         '#theme' => 'patterns_patterns_fieldset',
         '#header' => array(
           array('data' => t('Enabled'), 'class' => array('checkbox')),
+            t('Format'),
             t('Name'),
             t('Title'),
             t('Version'),
             t('Description'),
-          array('data' => t('Operations'), 'colspan' => 4),
+          array('data' => t('Operations'), 'colspan' => 7),
         ),
         // Ensure that the "Core" package fieldset comes first.
         //'#weight' => $package == 'Core' ? -10 : NULL,
@@ -197,8 +199,10 @@ function theme_patterns_patterns_fieldset($variables) {
       $label .= ' for="' . $pattern['enable']['#id'] . '"';
     }
 
+    $row[] = drupal_render($pattern['format']);
+    
     $row[] = $label . '><strong>' . drupal_render($pattern['name']) . '</strong></label>';
-
+    
     $row[] = drupal_render($pattern['title']);
 
     $row[] = drupal_render($pattern['version']);
@@ -236,52 +240,8 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
     'links' => array(),
   );
 
-  $actions = array();
+  $actions = patterns_get_patterns_links($pattern);
   
-  switch ($pattern->status) {
-    case PATTERNS_STATUS_ENABLED:
-      $actions['run'] = t('Re-Run');
-      break;
-    case PATTERNS_STATUS_INVALID:
-      $actions['run'] = t('Invalid!');
-      break;
-    case ($pattern->enabled >= $pattern->updated):
-      $actions['run'] = t('Run-Update');
-      break;
-    case PATTERNS_STATUS_OK:
-      // default
-      // no break
-    default:
-      $actions['run'] = t('Run');
-      break;       
-  }
-  
-  if (!in_array($pattern->status, array(PATTERNS_STATUS_INVALID, PATTERNS_STATUS_TRASHED))) {
-    $actions['run'] = l($actions['run'], 'admin/patterns/enable/' . $pid);
-  }
-  
-  // Edit Link
-  $actions['edit'] = l(t('Edit'), 'admin/patterns/edit/' . $pid);
-
-  if ($pattern->status != PATTERNS_STATUS_TRASHED) {
-    // Trash Link
-    $actions['trash'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax'))));
-  }
-  
-  if (!empty($pattern->file) && is_writable($pattern->file)) {
-    // Remove Link
-    $actions['remove'] = l(t('Remove'), 'admin/patterns/remove/' . $pid);
-  }
-  else {
-    $actions['remove'] = '-';
-  }
-
-  // Not yet ready
-  //Publish/Unpublish link
-  //if (variable_get('patterns_allow_publish', FALSE)) {
-  //  $actions['publish'] = $pattern->public ? l(t('Unpublish'), 'admin/patterns/unpublish/' . $pid) : l(t('Publish'), 'admin/patterns/publish/' . $pid);
-  //}
-
   $form = array(
     '#tree' => TRUE,
   );
@@ -299,6 +259,10 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
 
   $title .= '<div id="pid-' . $pid . '-info" class="pattern-info">' . $author . '</div>';
 
+  $form['format'] = array(
+    '#markup' => $pattern->format,
+  );
+  
   $form['name'] = array(
     '#markup' => $pattern->name,
   );

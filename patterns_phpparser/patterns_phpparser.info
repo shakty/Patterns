@@ -1,0 +1,9 @@
+name = PHP Parser
+description = PHP Parser for Patterns files. 
+dependencies[] = patterns
+dependencies[] = libraries
+
+core = 7.x
+version = 7.x-1.x-dev
+package = Patterns
+php = 5.2

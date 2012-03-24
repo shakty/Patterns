@@ -1,7 +1,7 @@
 <?php
 
 // Must be included here and not in the .module file
-module_load_include('inc', 'patterns', 'includes/core.common');
+module_load_include('inc', 'patterns', 'includes/core/core.common');
 
 /**
  * @file
@@ -93,7 +93,7 @@ function patterns_execute_pattern_php($pattern, $params, $patterns_details, $act
  */
 function patterns_php_action($action, $data, $place, $actions_map) {
 
-  patterns_load_components(); // TODO: move this out of here?
+  patterns_io_load_components(); // TODO: move this out of here?
 
   // Nothing to do if there is no action
   if (empty($data) || empty($action)) {

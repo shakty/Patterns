@@ -4,228 +4,6 @@
  * Functions related to input/output operations.
  */
 
-/**
- * Loads and validates a YAML pattern file.
- *
- * @param string $path The path of the pattern file.
- * @param bool $local
- *   (optional) TRUE if the pattern file is local. Defaults to TRUE.
- *
- * @return array|bool
- *   The pattern structure, or FALSE.
- */
-function patterns_load_yaml($path, $local = TRUE) {
-  if ($local && !file_exists($path)) {
-    return FALSE;
-  }
-
-  require_once libraries_get_path('spyc') . '/spyc.php';
-  return Spyc::YAMLLoad($path);
-}
-
-//function patterns_load_string_yaml($source) {
-//  // loading yaml from source doesn't preserve line breaks
-//  // so we need to save it as a file first
-//  $path = file_directory_temp() . '/import.yaml';
-//  file_save_data($source, $path, FILE_EXISTS_REPLACE);
-//  $pattern = patterns_load_yaml($path);
-//  unlink($path);
-//
-//  return $pattern;
-//}
-
-/**
- * Loads an XML pattern file without validating.
- *
- * @param string $path The path of the pattern file.
- * @param bool $local
- *   (optional) TRUE if the pattern file is local. Defaults to TRUE.
- *
- * @return array|bool
- *   The pattern structure, or FALSE.
- */
-function patterns_load_xml($path, $local = TRUE) {
-  if ($local && !file_exists($path)) {
-    return FALSE;
-  }
-
-  if (!$xml = file_get_contents($path)) {
-    return FALSE;
-  }
-
-  return patterns_load_string_xml($xml);
-}
-
-/**
- * @TODO
- */
-function patterns_load_string_xml($source) {
-  $pattern = patterns_from_source($source);
-  if (empty($pattern) || $pattern['tag'] != 'pattern') {
-    // TODO: Error reporting.
-    return FALSE;
-  }
-
-  // Rearrange the data in a nice way for each component.
-  // Make sure actions are processed differently so order is preserved.
-  $pattern = patterns_rearrange_data($pattern);
-  foreach ($pattern as $key => $values) {
-    $pattern[$values['tag']] = $values;
-    unset($pattern[$values['tag']]['tag']);
-    unset($pattern[$key]);
-  }
-
-  if (!patterns_validate_pattern($pattern)) {
-    return FALSE;
-  }
-
-  return $pattern;
-}
-
-/**
- * Loads and validates a PHP pattern file.
- *
- * @param string $path The path of the pattern file.
- * @param bool $local
- *   (optional) TRUE if the pattern file is local. Defaults to TRUE.
- *
- * @return array|bool
- *   The pattern structure, or FALSE.
- */
-function patterns_load_php($path, $local = TRUE) {
-  if ($local && !file_exists($path)) {
-    return FALSE;
-  }
-  $pattern = array();
-
-  include($path);
-  // That should have declared a 'pattern' into current scope.
-
-  if (!patterns_validate_pattern($pattern)) {
-    // TODO: why not drupal_set_message?
-    trigger_error(t("Failed to evaluate a useful pattern from the input file %path. Pattern did not validate. May have been invalid syntax.", array('%path' => $path)), E_USER_WARNING);
-    return FALSE;
-  }
-  return $pattern;
-}
-
-/**
- * Creates a pattern from an XML data source.
- *
- * @param string $xml The XML string of the data source.
- *
- * @return array|bool
- *   The pattern structure, or FALSE.
- */
-
-function patterns_from_source($xml) {
-  $parse = drupal_xml_parser_create($xml);
-  xml_parser_set_option($parse, XML_OPTION_CASE_FOLDING, 0);
-
-  if (!xml_parse_into_struct($parse, $xml, $vals, $index)) {
-    // TODO: Report parsing or other error.
-    return FALSE;
-  }
-
-  // Create a multi-dimensional array representing the XML structure.
-  $pattern = current(_patterns_parse_tag($vals));
-
-  return $pattern;
-}
-
-function patterns_rearrange_data($pattern) {
-  foreach ($pattern as $key => $value) {
-    if (is_string($key)) {
-      unset($pattern[$key]);
-    }
-    else {
-      if ($value['tag'] == 'actions') {
-        $pattern[$key] = patterns_rearrange_data($value);
-        $pattern[$key]['tag'] = 'actions';
-
-        // The refactored version, introduced in 7.x.
-        // TODO: change _patterns_rearrange_data instead.
-        // TODO: this does not actually work yet.
-        $p = &$pattern[$key];
-        foreach ($p as $k => $v) {
-          if (is_string($k)) {
-            continue;
-          }
-          $tag = $v['tag'];
-          if (in_array($tag, array('create', 'modify', 'delete'))) {
-            unset($p[$k]['tag']);
-            $p[$k] = array($tag => $p);
-          }
-          else {
-            // TODO: Error reporting: invalid tag, none of {create, modify, delete}.
-          }
-        }
-      }
-      else {
-        $pattern[$key] = _patterns_rearrange_data($value);
-      }
-    }
-  }
-
-  return $pattern;
-}
-
-function _patterns_rearrange_data($data, $parent = '') {
-  $numeric = array();
-  $count = 0;
-
-  foreach ($data as $key => $value) {
-    if (isset($value['value'])) {
-      if ($value['value'] == 'false') {
-        $value['value'] = FALSE;
-      }
-      elseif ($value['value'] == 'true') {
-        $value['value'] = TRUE;
-      }
-    }
-
-    if (is_numeric($key) && is_array($value) && count($value) == 2 && isset($value['tag']) && isset($value['value'])) {
-      unset($data[$key]);
-      if (isset($data[$value['tag']])) {
-        $numeric[] = $value['tag'];
-        $data[$count++] = $data[$value['tag']];
-        $data[$count++] = $value['value'];
-        unset($data[$value['tag']]);
-      }
-      elseif (in_array($value['tag'], $numeric)) {
-        $data[$count++] = $value['value'];
-      }
-      else {
-        $data[$value['tag']] = $value['value'];
-      }
-    }
-    elseif (is_numeric($key)) {
-      $tag = $value['tag'];
-      unset($value['tag']);
-      $data[$tag][] = _patterns_rearrange_data($value, $tag);
-      unset($data[$key]);
-    }
-  }
-
-  foreach ($data as $key => $value) {
-    if (is_array($value) && count($value) == 1 && $value[0]) {
-      $data[$key] = $data[$key][0];
-    }
-  }
-
-  // This workaround enables us to define numeric keys in XML by
-  // prefixing the number with single character. E.g <n0>value</n0>
-  // will result in 0 => 'value' (first character of the key will be removed).
-  if (isset($data['_numeric_keys'])) {
-    unset($data['_numeric_keys']);
-    foreach ($data as $key => $value) {
-      $data[substr($key, 1)] = $value;
-      unset($data[$key]);
-    }
-  }
-
-  return $data;
-}
 
 /**
  * Menu callback, returns source code of the requested pattern
@@ -234,23 +12,20 @@ function _patterns_rearrange_data($data, $parent = '') {
  * @param integer $pid
  *   The ID of the Pattern to be displayed.
  */
-function patterns_get_source($pid) {
-  if (!is_numeric($pid)) {
-    exit;
-  }
+function patterns_io_get_pattern_service($pattern) {
+  
 
-  $pattern = patterns_get_pattern($pid);
+  $pattern = patterns_utils_if_invalid_go_back($pattern);
 
   // Make sure pattern is public (published).
   if (!$pattern->public) {
-    exit;
+    drupal_set_message(t('Pattern %name is not public.', array('%name' => $pattern->name)), 'error');
+    drupal_goto('admin/patterns');
   }
 
+  // TODO: handling correctly different formats
   $content_type = 'text/plain';
-  if (substr($pattern->file, -4) == '.xml') {
-    $content_type = 'text/xml';
-  }
-
+  
   drupal_add_http_header('Content-Type', $content_type . '; charset=utf-8');
   print file_get_contents($pattern->file);
   exit;
@@ -260,7 +35,7 @@ function patterns_get_source($pid) {
  * Loads the Patterns handlers (component) from the filesystem,
  * if they are not already loaded.
  */
-function patterns_load_components() {
+function patterns_io_load_components() {
   static $loaded = FALSE;
 
   if ($loaded) {
@@ -308,32 +83,33 @@ function patterns_io_scan_directories($verbose = FALSE) {
   $messages['error_updated'] = array();
 
   // Get list of directories to scan for patterns.
-  $patterns_paths = patterns_config_get_paths();
+  $patterns_paths = patterns_path_get_patterns_dirs();
 
   // Get valid file extensions.
-  $mask = '/.\.(' . implode('|', patterns_config_get_file_types()) . ')$/';
-
+  $mask = '/.\.(' . implode('|', patterns_parser_get_formats()) . ')$/';
+  
   // Prepare list of files/folders to be excluded.
   // 'enabled' - Don't save enabled pattern backups.
   $no_mask = array('.', '..', 'CVS', '.svn', '.git', '.bzr', 'enabled');
 
   foreach ($patterns_paths as $path) {
-    //debug($path);
+ 
     foreach (file_scan_directory($path, $mask, $no_mask) as $file) {
-
-      if (in_array($file->name, $existing)) {
+      $format = substr($file->filename, strlen($file->name) + 1);
+      
+      if (in_array($file->filename, $existing)) {
         if (!variable_get('patterns_update_db_from_fs', TRUE)) {
           continue;
         }
 
-        if (!patterns_db_is_pattern_updated($file->name)) {
+        if (!patterns_db_is_pattern_updated($file->filename)) {
           // the database is already updated to the most recent version
           continue;
         }
 
         if (!empty($enabled)) {
-          if (in_array($file->name, $enabled)) {
-            $messages['skipped'][] = $file->name;
+          if (in_array($file->filename, $enabled)) {
+            $messages['skipped'][] = $file->filename;
             continue; // Skip updating enabled patterns.
           }
         }
@@ -344,11 +120,12 @@ function patterns_io_scan_directories($verbose = FALSE) {
         continue;
       }
 
-      // Choose appropriate function based on the file extension: YAML or XML.
-      $func = 'patterns_load_' . substr($file->filename, strlen($file->name) + 1);
+      // Choose appropriate function based on the file extension.
+      // Can be FALSE, if no parser is found.
+      $load_function = patterns_parser_get_parser_function($format, PATTERNS_PARSER_LOAD);
 
       // Load and save pattern.
-      if (!($pattern = $func($file->uri))) {
+      if (!$load_function || !($pattern = $load_function($file->uri))) {
         $messages['errors'][] = $file->filename;
         continue;
       }
@@ -359,25 +136,25 @@ function patterns_io_scan_directories($verbose = FALSE) {
       }
 
       // If everything was fine save it to the database
-      $result = patterns_db_save_pattern($pattern, $file->uri, $file->name);
+      $result = patterns_db_save_pattern($pattern, $file->uri, $file->filename, $format);
 
-      if ($result && !in_array($file->name, $existing)) {
-        $messages['found'][] = $file->name;
+      if ($result && !in_array($file->filename, $existing)) {
+        $messages['found'][] = $file->filename;
         continue;
       }
 
-      if (!$result && !in_array($file->name, $existing)) {
-        $messages['error_found'][] = $file->name;
+      if (!$result && !in_array($file->filename, $existing)) {
+        $messages['error_found'][] = $file->filename;
         continue;
       }
 
-      if ($result && in_array($file->name, $existing)) {
-        $messages['updated'][] = $file->name;
+      if ($result && in_array($file->filename, $existing)) {
+        $messages['updated'][] = $file->filename;
         continue;
       }
 
-      if (!$result && in_array($file->name, $existing)) {
-        $messages['error_updated'][] = $file->name;
+      if (!$result && in_array($file->filename, $existing)) {
+        $messages['error_updated'][] = $file->filename;
         continue;
       }
 
@@ -407,6 +184,9 @@ function _patterns_io_analyze_scandir_messages($messages = NULL) {
   }
   if (!empty($messages['updated'])) {
     drupal_set_message(t('The following patterns were updated to the newest version found in the file system: ') . '<br/>' . implode('<br/>', $messages['updated']) . '<br/><br/>');
+  }
+  if (!empty($messages['errors'])) {
+    drupal_set_message(t('A generic error occurred while trying to load the following files: ') . '<br/>' . implode('<br/>', $messages['errors']) . '<br/><br/>', 'warning');
   }
   if (!empty($messages['invalid'])) {
     drupal_set_message(t('Some invalid patterns were found: ') . '<br/>' . implode('<br/>', $messages['invalid']) . '<br/><br/>', 'warning');
@@ -438,7 +218,7 @@ function _patterns_io_analyze_scandir_messages($messages = NULL) {
  *
  * @return array The array of available patterns.
  */
-function patterns_get_patterns($reset = TRUE, $verbose = TRUE) {
+function patterns_io_get_patterns($reset = TRUE, $verbose = TRUE) {
 
   if ($reset || !variable_get('patterns_loaded', FALSE)) {
     // Updates the patterns in the database
@@ -494,7 +274,7 @@ function patterns_get_patterns($reset = TRUE, $verbose = TRUE) {
 function patterns_io_get_patterns_service($type = 'ajax') {
 
   if ($type == 'ajax') {
-    $patterns = patterns_get_patterns();
+    $patterns = patterns_io_get_patterns();
     $output = '<div id="all_patterns_div"><strong>' . t('last update:') . '</strong>' . date(DATE_RFC822);
     $output .= theme('patterns_list', $patterns);
     $output .= '</div>';
@@ -509,7 +289,7 @@ function patterns_io_get_patterns_service($type = 'ajax') {
  */
 function _patterns_io_check_htaccess() {
 
-  $path = patterns_config_get_files_dir();
+  $path = patterns_path_get_files_dir();
 
   if (!is_file($path . '/.htaccess')) {
     $content = '# Prevent downloading site patterns
@@ -528,61 +308,94 @@ function _patterns_io_is_patterns_dir_ready($patterns_files_dir = '', $flag = FI
 
   // TODO: keep pattern_files_dir in a separate location. Warning: defining a constant creates an error.
   if (empty($patterns_files_dir)) {
-    $patterns_files_dir = patterns_config_get_files_dir(); // TODO: move this out for performance
+    $patterns_files_dir = patterns_path_get_files_dir(); // TODO: move this out for performance
   }
   return (file_prepare_directory($patterns_files_dir, $flag)) ? TRUE : FALSE;
 }
 
 
 /**
- * Saves a pattern.
+ * Saves a pattern string or array into the database AND in the file system.
  *
- * Replaces the pattern if it already exists. Produces error messages if the
- * pattern could not be saved.
+ * Updates the same file to the newer version, but does not replace an existing
+ * file (e.g. if we are moving a file to a new location).
+ * 
+ * Produces error messages if the pattern could not be saved.
  *
- * @param string $content The content of the pattern to be saved.
- * @param string $name The name of the pattern file.
- * @param string $format
- *   (optional) The format of the pattern. Defaults to 'yaml'.
- *
+ * @param mixed $content The content of the pattern to be saved. Can be a string the
+ *  or an array represeting the pattern. In the latter case @param $original 
+ *  can be contain the string. If @param $original is missing the pattern is 
+ *  saved as a PHP array.
+ * @param mixed $name The name of the pattern file.
+ * @param mixed $format file format (notice: it is not the extension!)
+ *   (optional) The format of the pattern. Defaults to PATTERNS_FORMAT_YAML.
+ * @param mixed $dir the destination directory
+ * @param mixed $original the string representation of the pattern. Optional.
+ * 
  * @return bool
  *   TRUE on success, FALSE otherwise.
- *
- * @TODO: Move $format as an element of pattern, a column in the DB.
+ *   
+ * TODO: if content is array and original is null, dump the array into the 
+ *  correct original file
  *
  */
-function patterns_io_save_pattern($content = NULL, $name = NULL, $format = 'yaml', $dir = NULL) {
+function patterns_io_save_pattern($content = NULL, $name = NULL, $format = PATTERNS_FORMAT_YAML, $dir = NULL, $original = NULL) {
 
   if (is_null($name)) {
     drupal_set_message(t('Cannot save pattern with \'NULL\' identifier.'), 'error');
     return FALSE;
   }
-  if (!patterns_validate_pattern($content)) {
+  
+  if (!patterns_validate_pattern($content, $format)) {
     drupal_set_message(t("Pattern '%name' could not be saved. Make sure edited code is well-formed.", array('%name' => $name)), 'error');
     return FALSE;
   }
+  
   if (is_null($dir)) {
-    $dir = patterns_config_get_files_dir();
+    $dir = patterns_path_get_files_dir();
   }
   if (!file_prepare_directory($dir, FILE_CREATE_DIRECTORY)) {
     drupal_set_message(t('Error: the pattern is not writable. Please check the file system permissions.'), 'error');
     return FALSE;
   }
-  $path =  $dir . '/' . $name . '.' . $format;
-  if (!file_unmanaged_save_data($content, $path, FILE_EXISTS_REPLACE)) {
-    drupal_set_message(t('Error: file could not be saved.'), 'error');
+  
+  // Check if the file has a valid extension 
+  // and in case add the format at the end
+  if (!_patterns_io_file_has_valid_extension($name)) {
+    $name = $name . '.' . $format;
+  }
+  
+  $path_original = $dir . '/' . $name;
+  
+  if (is_null($original)) {
+    if (is_array($content)) {
+       $original = print_r($content, true); 
+    }
+    else {
+      $original = $content;
+    }
+  }
+
+  $path = file_unmanaged_save_data($original, $path_original, FILE_EXISTS_REPLACE);
+  if (!$path) {
+    drupal_set_message(t('An error occurred while saving the file to %path. A file with the same name exists.', array('%path' => $path_original)), 'error');
     return FALSE;
   }
 
   // Load and save pattern.
-  $load_func = 'patterns_load_' . $format;
-  $pattern = $load_func($path);
+  $load_function = patterns_parser_get_parser_function($format, PATTERNS_PARSER_LOAD);
+  if (!$load_function) {
+  	drupal_set_message(t("Could not find a parser for ", array('%name' => $name)), 'error');
+    return FALSE;
+  }
+  
+  $pattern = $load_function($path);
   if (!$pattern) {
     drupal_set_message(t("Pattern '%name' could not be saved into the database. Make sure edited code is well-formed.", array('%name' => $name)), 'error');
     return FALSE;
   }
 
-  patterns_db_save_pattern($pattern, $path, $name);
+  patterns_db_save_pattern($pattern, $path, $name, $format);
   drupal_set_message(t('Pattern %name was saved in %path.', array('%name' => $name,
                                                                   '%path' => $path,
   )));
@@ -592,4 +405,27 @@ function patterns_io_save_pattern($content = NULL, $name = NULL, $format = 'yaml
 
 function patterns_io_remove_pattern($path) {
   // @TODO
+}
+
+/**
+ * Checks whether the extension of the specified file name 
+ * matches one of the currently available parser formats.
+ * 
+ * 
+ * @param mixed $file String representing a file name.
+ * @param array $formats (optional) The array of valid formats, 
+ *   against which checking the file extension. If NULL, rebuilds 
+ *   the index of currently available formats.
+ *   
+ * @return bool Boolean. TRUE, if the extension matches an available
+ *   parser.
+ */
+function _patterns_io_file_has_valid_extension ($file = NULL, $formats = NULL) {
+  if (is_null($file)) return FALSE;
+  if (is_null($formats)) {
+    $formats = patterns_parser_get_formats();
+  }
+  
+  $ext = pathinfo($file, PATHINFO_EXTENSION);
+  return (in_array($ext, $formats)) ? TRUE : FALSE;
 }

@@ -15,7 +15,14 @@ class PatternsPrivilegesTestCase extends DrupalWebTestCase {
 
   public function setUp() {
     // Enable any modules required for the tests.
-    parent::setUp('patterns');
+    parent::setUp(
+      'patterns',
+      'patterns_components',
+      'patterns_yamlparser',
+      'patterns_xmlparser',
+      'patterns_phpparser'
+    );
+    
     // TODO: how to ensure that Spyc is installed?
 
     // Create users.

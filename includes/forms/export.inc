@@ -120,7 +120,7 @@ function patterns_export_validate($form, &$form_state) {
   }
 
   if ($form_state['values']['to'] === PATTERNS_EXPORT_TO_DB) {
-    _patterns_imports_check_name($form_state['values']['export_name']);
+    _patterns_import_check_name($form_state['values']['export_name']);
   }
   elseif (empty($form_state['values']['export_name'])) {
     $form_state['values']['export_name'] = 'exported_pattern';
@@ -139,7 +139,7 @@ function patterns_export_submit($form, &$form_state) {
   @$patterns = patterns_db_get_patterns();
 
   $filename = $form_state['values']['export_name'];
-  $path = patterns_config_get_files_dir();
+  $path = patterns_path_get_files_dir();
 
   $zip_flag = ($form_state['values']['to'] === PATTERNS_EXPORT_TO_ZIP) ? TRUE : FALSE;
 

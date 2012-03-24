@@ -1,7 +1,7 @@
 <?php
 
 // Must be included here and not in the .module file
-module_load_include('inc', 'patterns', 'includes/core.common');
+module_load_include('inc', 'patterns', 'includes/core/core.common');
 
 /**
  * @file
@@ -48,7 +48,7 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
   foreach ($sections as $section => $actions) {
     // by default this pattern should run included ?
     // this setting can be overwritten by the pattern file itself
-
+    
     $actions = patterns_parser_retrieve_actions_from_section($actions, $include_options);
 
     // This can happen if includes are disabled
@@ -73,7 +73,7 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
       'title' => t('Processing pattern %pattern', array('%pattern' => $info['title'])),
       'progress_message' => $progress,
       'operations' => array(),
-      'file' =>  drupal_get_path('module', 'patterns') . '/includes/core.batch.inc',
+      'file' =>  drupal_get_path('module', 'patterns') . '/includes/core/core.batch.inc',
       'finished' => 'patterns_batch_finish',
       'init_message' => t('Initializing section "%section" (%cur_sec/%tot_sec)', array(
                           '%section' => $section,
@@ -115,8 +115,10 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
 function patterns_batch_action($action, $data, $place, $actions_map, $section, &$context) {
 
   // Since we are in the batch, we need to load some things once more.
-  module_load_include('inc', 'patterns', 'includes/core.common');
-  patterns_load_components();
+  module_load_include('inc', 'patterns', 'includes/core/core.common');
+  module_load_include('inc', 'patterns', 'includes/core/core.modules');
+  module_load_include('inc', 'patterns', 'includes/core/core.token');
+  patterns_io_load_components();
 
   // Nothing to do if there is no action
   if (empty($data) || empty($action)) {
@@ -184,9 +186,11 @@ function patterns_batch_finish($success, $results, $operations) {
   }
   else {
     $pattern = reset($info);
-    drupal_set_message(t('Section "@section" of pattern "@pattern" ran with errors. Check the error messages to get more details.', array('@pattern' => $pattern['title'],
-                                                                                                                                        '@section' => $section,
-    )));
+    drupal_set_message(t('Section "@section" of pattern "@pattern" ran with errors. 
+      Check the error messages to get more details.', 
+      array('@pattern' => $pattern['title'], '@section' => $section,
+           )),
+     'error');
     drupal_set_message($results['error_message'], 'error');
   }
   // TODO: check

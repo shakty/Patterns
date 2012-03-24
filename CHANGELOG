@@ -1,3 +1,60 @@
+7037:
+
+		- All necessary files are correctly included in the .install file
+
+7036:
+
+		- Added an Info page, which displays general information about
+				the status of the Patterns module as a whole.
+
+7035:
+
+		- Fixed bugs in importing new patterns.
+		- Extension is automatically added to saved files, if missing.
+
+7034:
+
+		- Theme directory moved outside includes.
+		- Modules page per pattern restored
+
+7033:
+
+		- XML Patterns feed restored
+
+7032:
+
+		- Fixed several bugs related to updated function names.
+		- TODO: check simple tests
+
+7031:
+
+		- Patterns Example sub-module created.
+
+7030:
+
+		- Dynamic Parsers allowed
+		- XML, PHP and YAML Parser moved into a separate sub-modules
+
+7029:
+
+		- Include directory refactoring
+		- The tag <modules> got a new semantic. It enables (if they are not) the modules 
+				just for the pattern execution, and then re-disables them (if they were so) 
+
+7028:
+
+		- XML support enabled. Dumping is not available
+
+7027:
+
+		- Publish link added again in the interface
+		- Patterns can be restored from the trash bin
+		- Format is displayed in the GUI
+
+7026:
+
+		- Patterns are correctly identified by the file name now. No more ambiguity with extensions
+
 7025:
 
 		- Fixed inconsistencies in the removal process in the GUI. Removed patterns are still not

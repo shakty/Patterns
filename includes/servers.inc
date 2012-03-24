@@ -49,7 +49,7 @@ function patterns_import_server($form, &$form_state) {
         '#type' => 'checkbox',
         '#title' => $pattern['title'],
         '#description' => $pattern['description'],
-        '#disabled' => in_array($pattern['file_type'], patterns_config_get_file_types()) ? FALSE : TRUE,
+        '#disabled' => in_array($pattern['file_type'], patterns_config_get_formats()) ? FALSE : TRUE,
       );
     }
   }
@@ -174,48 +174,16 @@ function patterns_import_server_submit($form, &$form_state) {
 
 }
 
-function patterns_feed_rearrange_data($feed) {
-  unset($feed['tag']);
-  foreach ($feed as $key => $section) {
-    $tag = $section['tag'];
-    if ($tag == 'pattern') {
-      unset($section['tag']);
-      if (!isset($section['value'])) {
-        foreach ($section as $t) {
-          if ($t['tag'] == 'pid') {
-            $pid = $t['value'];
-            break;
-          }
-        }
-        $result[$pid] = patterns_feed_rearrange_data($section);
-      }
-      else {
-        $result[$tag] = $section['value'];
-      }
-    }
-    else {
-      unset($section['tag']);
-      if (!isset($section['value'])) {
-        $result[$tag] = patterns_feed_rearrange_data($section);
-      }
-      else {
-        $result[$tag] = $section['value'];
-      }
-    }
-  }
-  return $result;
-}
-
-
 /**
  * @TODO Not really doing anything for now.
  * @param mixed $pid
  */
 function patterns_publish_pattern($pid) {
-  if (is_numeric($pid)) {
-    $result = db_query("UPDATE {patterns} SET public = 1 WHERE pid = :pid", array('pid' => $pid));
-  }
-  drupal_set_message(t('Pattern published. Only in the db.'));
+  
+  $pattern = patterns_utils_if_invalid_go_back($pid);
+  $result = db_query("UPDATE {patterns} SET public = 1 WHERE pid = :pid", array('pid' => $pid));
+  
+  drupal_set_message(t('Pattern %pattern was marked as public.', array('%pattern' => @$pattern->name)));
   drupal_goto('admin/patterns');
 }
 
@@ -224,9 +192,9 @@ function patterns_publish_pattern($pid) {
  * @param mixed $pid
  */
 function patterns_unpublish_pattern($pid) {
-  if (is_numeric($pid)) {
-    $result = db_query("UPDATE {patterns} SET public = 0 WHERE pid = :pid", array('pid' => $pid));
-  }
-  drupal_set_message(t('Pattern unpublished.'));
+  $pattern = patterns_utils_if_invalid_go_back($pid);
+  $result = db_query("UPDATE {patterns} SET public = 0 WHERE pid = :pid", array('pid' => $pid));
+  
+  drupal_set_message(t('Pattern %pattern was marked as private.', array('%pattern' => @$pattern->name)));
   drupal_goto('admin/patterns');
 }

@@ -1,0 +1,8 @@
+name = Patterns Examples
+description = A collection of examples of patterns files. Requires at least one valid patterns parser module must be enabled.
+dependencies[] = patterns
+
+core = 7.x
+version = 7.x-1.x-dev
+package = Patterns
+php = 5.2

@@ -94,6 +94,23 @@ function patterns_db_trash_pattern($pid) {
 }
 
 /**
+ * Mark that pattern status as OK in the database.
+ *
+ * @param mixed $pid
+ *   The id of the pattern to remove.
+ * @return bool
+ *   TRUE on success, FALSE otherwise.
+ */
+function patterns_db_restore_pattern($pid) {
+  $ok = db_update('patterns')
+    ->fields(array('status' => PATTERNS_STATUS_OK))
+    ->condition('pid', $pid)
+    ->execute();
+
+  return ($ok == 1) ? TRUE : FALSE;
+}
+
+/**
  * Remove permanently a pattern from the database.
  *
  * @param mixed $pid
@@ -118,34 +135,16 @@ function patterns_db_remove_pattern($pid) {
  *   The new path where the file has just been saved or read from.
  * @param mixed $name
  *   The name of the pattern file without the extension.
- * @TODO Check for success.
+ * @param mixed $format the format of the pattern (YAML, XML, etc.)
  */
-function patterns_db_save_pattern($pattern, $path, $name) {
+function patterns_db_save_pattern($pattern, $path, $name, $format = NULL) {
 
-  // TODO: title, description, etc. are actually mandatory fields
-  //       in the database, so handle them accordingly.
-  // Try to parse the array in two different formats.
-  if (isset($pattern['info'])) {
-    $title = $pattern['info']['title'];
-    $description = $pattern['info']['description'];
-    $author = $pattern['info']['author'];
-  }
-  else {
-
-    if (isset($pattern['title'])) {
-      $title = $pattern['title'];
-    }
-
-    if (isset($pattern['description'])) {
-      $description = $pattern['description'];
-    }
-
-    if (isset($pattern['author'])) {
-      $author = $pattern['author'];
-    }
-  }
-
+  $title        = patterns_utils_init_from_pattern('title', $pattern);
+  $description  = patterns_utils_init_from_pattern('description', $pattern);
+  $format       = patterns_utils_init_from_pattern('format', $pattern, $format, PATTERNS_FORMAT_YAML);  
+  
   // Check if it is valid pattern
+  // TODO: validate different formats
   if (patterns_validate_pattern($pattern)) {
     $status = PATTERNS_STATUS_OK;
   }
@@ -156,6 +155,7 @@ function patterns_db_save_pattern($pattern, $path, $name) {
   $pattern_data = db_select('patterns', 'p')
                     ->fields('p', array('pid', 'file', 'updated', 'status'))
                     ->condition('p.name', $name)
+                    ->condition('p.format', $format)
                     ->execute()
                     ->fetchAssoc();
 
@@ -209,13 +209,14 @@ function patterns_db_save_pattern($pattern, $path, $name) {
     // Note: time() != REQUEST_TIME since it's a long process.
     $query_params = array( 'name' => $name,
                            'pattern' => serialize($pattern),
+                           'format' => $format,
                            'title' => $title,
                            'file' => $path,
                            'descr' => $description,
                            'time' => time(),
                            'status' => $status,
     );
-    db_query("INSERT INTO {patterns} (name, status, file, updated, enabled, title, description, pattern) VALUES ( :name, :status, :file, :time, 0, :title, :descr, :pattern)", $query_params);
+    db_query("INSERT INTO {patterns} (name, format, status, file, updated, enabled, title, description, pattern) VALUES ( :name, :format, :status, :file, :time, 0, :title, :descr, :pattern)", $query_params);
   }
 
   return TRUE;
@@ -291,7 +292,7 @@ function patterns_db_load_pattern_from_name($name = NULL) {
  *
  * @return array An array of all available patterns objects.
  *
- * @see patterns_get_patterns()
+ * @see patterns_io_get_patterns()
  */
 function patterns_db_get_patterns($fields = array()) {
   if (!empty($fields)) {
@@ -309,10 +310,10 @@ function patterns_db_get_patterns($fields = array()) {
 }
 
 /**
- * Returns the array of patterns array that are currently enabled.
+ * Returns the array of patterns loaded from the database.
  *
- * It is possible to specify which fields to return with the fields
- * parameter, that can be either a string or an array.
+ * It is possible to specify which fields to return with the $fields
+ * parameter, that can be either a string or an array of strings.
  *
  * If found, pattern code inside each pattern object is
  * automatically unserialized.

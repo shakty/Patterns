@@ -1,11 +1,25 @@
 <?php
 /**
  * @file
- * A file containing the set of constant variables.
+ * A file containing a set of constants and variables.
+ * 
  */
+
+static $patterns_formats = array();
+
+define('PATTERNS_PARSER_PARSE', 'parse');
+define('PATTERNS_PARSER_DUMP', 'dump');
+define('PATTERNS_PARSER_LOAD', 'load');
+
+define('PATTERNS_FORMAT_UNKNOWN', 'unknown');
+
 define('PATTERNS_SUCCESS', 1);
 define('PATTERNS_WARN', 0);
 define('PATTERNS_ERR', -1);
+
+define('PATTERNS_TAG', 'tag');
+define('PATTERNS_SECTION_INFO', 'info');
+define('PATTERNS_SECTION_MODULES', 'modules');
 
 define('PATTERNS_CREATE', 'create');
 define('PATTERNS_MODIFY', 'modify');
@@ -36,3 +50,5 @@ define('PATTERNS_EXPORT_MODE_FULL', 'full');
 define('PATTERNS_EXPORT_MODE_ACTIONS', 'actions');
 define('PATTERNS_EXPORT_MODE_ID', 'id');
 define('PATTERNS_EXPORT_MODE_NAME', 'name');
+
+define('PATTERNS_ALLOW_PUBLISH_DEFAULT', TRUE);

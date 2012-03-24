@@ -13,13 +13,21 @@
  */
 function patterns_import_source($form, &$form_state) {
 
-  $def_dir = patterns_config_get_files_dir();
+  $def_dir = patterns_path_get_files_dir();
 
   $form['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Pattern Identifier'),
-    '#description' => t('Machine readable name for the pattern. The actual title should be included in the pattern itself.'),
+    '#description' => t('The new name of the pattern file. If the extension is missing it will be automatically added.'),
     '#required' => TRUE,
+  );
+  
+  $form = patterns_forms_get_formats_selector($form);
+  
+  $form['validation_result'] = array(
+    '#markup' => 'This pattern has not been validated yet.',
+    '#prefix' => '<div id="validation_result"><strong>',
+    '#suffix' => '</strong></div>',
   );
 
   $form['content'] = array(
@@ -37,10 +45,16 @@ function patterns_import_source($form, &$form_state) {
     '#default_value' => $def_dir,
     '#required' => TRUE,
   );
-
+  
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Import')
+  );
+  
+  $form['validate'] = array(
+    '#prefix' => '<span style=\'margin-right:10px\'>',
+    '#markup' => "<a href='#' id='validate_pattern'>" . t('Validate') . "</a>",
+    '#suffix' => '</span> ',
   );
 
   // ? Double array ?
@@ -55,7 +69,7 @@ function patterns_import_source($form, &$form_state) {
  */
 function patterns_import_file($form, &$form_state) {
 
-  $def_dir = patterns_config_get_files_dir();
+  $def_dir = patterns_path_get_files_dir();
 
   $form['#attributes']['enctype'] = 'multipart/form-data';
 
@@ -69,8 +83,13 @@ function patterns_import_file($form, &$form_state) {
   $form['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Pattern Identifier'),
-    '#description' => t('Machine readable name for the pattern. The actual title should be included in the pattern itself.'),
+    '#description' => t('The new name of the pattern file. If the extension is missing it will be automatically added.'),
     '#required' => TRUE
+  );
+  
+  $form = patterns_forms_get_formats_selector($form,
+                                              PATTERNS_FORMAT_UNKNOWN,
+                                              'If unknown, it will be determined by the extension.'
   );
 
   // TODO: transform in a FILE form
@@ -81,13 +100,18 @@ function patterns_import_file($form, &$form_state) {
     '#default_value' => $def_dir,
     '#required' => TRUE,
   );
+  
+  $form['local'] = array(
+    '#type' => 'hidden',
+    '#value' => TRUE,
+  );
 
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Import')
   );
 
-  //$form['#validate'][] = 'patterns_import_validate';
+  $form['#validate'][] = 'patterns_import_validate';
   $form['#submit'][] = 'patterns_import_submit';
 
   return $form;
@@ -108,7 +132,7 @@ function patterns_import_url($form, &$form_state) {
     return $form;
    }
   
-  $def_dir = patterns_config_get_files_dir();
+  $def_dir = patterns_path_get_files_dir();
 
   $form['pattern_uri'] = array(
     '#type' => 'textfield',
@@ -120,8 +144,13 @@ function patterns_import_url($form, &$form_state) {
   $form['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Pattern Identifier'),
-    '#description' => t('Machine readable name for the pattern. The actual title should be included in the pattern itself.'),
+    '#description' => t('The new name of the pattern file. If the extension is missing it will be automatically added.'),
     '#required' => TRUE
+  );
+  
+  $form = patterns_forms_get_formats_selector($form,
+                                              PATTERNS_FORMAT_UNKNOWN,
+                                              'If unknown, it will be determined by the extension.'
   );
 
   $form['destination'] = array(
@@ -148,155 +177,184 @@ function patterns_import_url($form, &$form_state) {
 /**
  * Validate handler for file importing
  */
-function patterns_import_file_validate($form, &$form_state) {
+function _patterns_import_file_validate($form, &$form_state) {
 
- $destination = $form_state['values']['destination'];
+  $destination = $form_state['values']['destination'];
+  
+  // If not automatically returns
+  _patterns_import_check_dirs($destination);
+  _patterns_import_check_name($form_state['values']['name']);
 
- // If not automatically returns
- _patterns_imports_check_dirs($destination);
- _patterns_imports_check_name($form_state['values']['name']);
+  $uri = $form_state['values']['pattern_uri'];
 
- $uri = $form_state['values']['pattern_uri'];
+  $format = (isset($form_state['values']['format']) && $form_state['values']['format'] != PATTERNS_FORMAT_UNKNOWN) 
+      ? $form_state['values']['format'] 
+      : pathinfo($uri, PATHINFO_EXTENSION);
 
- // arg must be a string with a space separated list of allowed extensions.
- $validators = array('file_validate_extensions' => array('xml yaml'));
-
- if ($file = file_save_upload('pattern_uri', $validators)) {
-  $form_state['values']['content'] = file_get_contents($file->uri); // was $file->filepath
-  $form_state['pattern_uri'] = $file;
-  $form_state['pattern_uri']->destination = $destination;
- }
- else {
-
+  if ($file = file_save_upload('pattern_uri', $validators)) {
+    $form_state['values']['content'] = file_get_contents($file->uri);
+    $form_state['pattern_uri'] = $file;
+    $form_state['pattern_uri']->destination = $destination;
+  }
+  else {
+  
   form_set_error('pattern_uri', t('Failed to retrieve the pattern specified: %uri. Check your file and try again. Notice: only yaml and xml files are accepted', array('%uri' => $uri)));
-  return FALSE;
- }
-
- $format = pathinfo($form_state['pattern_uri']->uri, PATHINFO_EXTENSION);
-
- // TODO: PHP format
- if ($format == 'yaml') {
-  // YAML
-  $patternscan = _patterns_scan_pattern($form_state['values']['content']);
-  if (!_patterns_validate_patternscan($patternscan)) {
-   $errors_on_scan = _patterns_analyze_patternscan($patternscan);
-   form_set_error('name', t('Error parsing the YAML file: ' . implode(', ', $errors_on_scan))); // TODO: proper t()
+    return FALSE;
   }
- }
- else { // XML or other
-  if (!patterns_parser_validate_xml_pattern($form_state['values']['content'])) {
-   form_set_error('xmlsource', t('Error parsing the XML, please check your syntax and try again.'));
+  
+  $format = pathinfo($form_state['pattern_uri']->uri, PATHINFO_EXTENSION);
+  
+  $formats = patterns_parser_build_formats_index();
+  
+  if (!in_array($format, $formats)) {
+     form_set_error('format', t('The pattern format seems to be invalid.'));
+     return FALSE;
   }
- }
-
- // TODO: Check what happens with different formats.
- $form_state['values']['format'] = $format;
-
- return TRUE;
+  
+  // Parse
+  $pattern = patterns_parser_parse($form_state['values']['content'], $format);
+  
+  if (!$pattern) {
+     form_set_error('content', t('Pattern could not parsed. Please make sure it is well formed.'));
+     return FALSE;
+  } 
+  
+ 
+  $patternscan = _patterns_parser_scan_pattern($pattern);
+  if (!_patterns_parser_validate_patternscan($patternscan)) {
+    $errors_on_scan = _patterns_parser_analyze_patternscan($patternscan);
+    form_set_error('name', t('Error parsing the YAML file: ' . implode(', ', $errors_on_scan))); // TODO: proper t()
+  }
+  
+  return TRUE;
 }
 
 function patterns_import_validate($form, &$form_state) {
 
- $format = 'yaml';
-
- $destination = $form_state['values']['destination'];
-
- // If not automatically returns
- _patterns_imports_check_dirs($destination);
- _patterns_imports_check_name($form_state['values']['name']);
-
- if (!isset($form_state['values']['content'])) { // It is not an import_source
-  $uri = $form_state['values']['pattern_uri'];
-
-  if (empty($uri)) {
-   form_set_error('pattern_uri', t('Invalid file or url provided.'));
-   return FALSE;
+  $format = $form_state['values']['format'];
+  
+  $destination = $form_state['values']['destination'];
+  
+  // If not automatically returns
+  _patterns_import_check_dirs($destination);
+  _patterns_import_check_name($form_state['values']['name']);
+  
+  // Retreiving the format 
+  if (isset($form_state['values']['format']) && $form_state['values']['format'] != PATTERNS_FORMAT_UNKNOWN) {
+    $format = $form_state['values']['format']; 
   }
-
-  $format = pathinfo($uri, PATHINFO_EXTENSION);
-  $validators = array(); // filter out the extension
-
-  // Remote File
-  if (stripos($uri, 'http://') == 1) {
-   if (!ini_get('allow_url_fopen')) {
-    form_set_error('url', t('allow_url_fopen must be enabled in your php configuration in order to use this feature.'));
-    return FALSE;
-   }
-   // Only YAML and XML extension accepted for remote files
-   $validators = array('file_validate_extensions' => array('xml', 'yaml'));
+  elseif (isset($_FILES['files']['name']['pattern_uri'])) { 
+    $format = pathinfo($_FILES['files']['name']['pattern_uri'], PATHINFO_EXTENSION);
   }
-
-  if ($content = file_get_contents($uri)) {
-   $form_state['values']['content'] = $content;
+  elseif (isset($form_state['values']['pattern_uri'])) { 
+    $format = pathinfo($form_state['values']['pattern_uri'], PATHINFO_EXTENSION);
   }
   else {
-   form_set_error('pattern_uri', t('Failed to retrieve the pattern specified: %uri. Check your file and try again. Notice: only yaml and xml files are accepted', array('%uri' => $uri)));
-   return FALSE;
+    $format = PATTERNS_FORMAT_UNKNOWN;
+  }  
+
+  if (!patterns_parser_parser_exists($format)) {
+     form_set_error('format', t('The pattern format seems to be invalid.'));
+     return FALSE;
   }
- }
+  
+  // Safety assign
+  $form_state['values']['format'] = $format; 
+  
+  // FILE or URI
+  if (!isset($form_state['values']['content'])) {
 
- //  // Name Validation
- //  $name = $form_state['values']['name'];
- //  $errors_on_name = _patterns_parser_analyze_pattern_name($name);
- //  if (!empty($errors_on_name)){
- //    form_set_error('name', t('Errors on the name of the pattern: ' . implode(', ', $errors_on_name)));
- //    return FALSE;
- //  }
- //
- //  if ($obj = patterns_db_load_pattern_from_name($name)) {
- //    form_set_error('name', t('A pattern file with the same name already exists: !name', array('!name' => $name)));
- //    return FALSE;
- //  }
-
- // FORMAT Validation
- if ($format == 'yaml') {
-  // YAML
-  $patternscan = _patterns_scan_pattern($form_state['values']['content']);
-  if (!_patterns_validate_patternscan($patternscan)) {
-   $errors_on_scan = _patterns_analyze_patternscan($patternscan);
-   form_set_error('name', t('Error parsing the YAML file: ' . implode(', ', $errors_on_scan))); // TODO: proper t()
+    $err_file = FALSE;
+    // Local
+    if (isset($form_state['values']['local'])) {
+      $validators = array('file_validate_extensions' => array(implode(' ', patterns_parser_get_formats(FALSE))));
+      if ($file = file_save_upload('pattern_uri', $validators)) {
+        $form_state['values']['content'] = file_get_contents($file->uri);
+        $form_state['pattern_uri'] = $file;
+        $form_state['pattern_uri']->destination = $destination;
+      }
+      else {
+        $err_file = TRUE;
+      }
+    }
+    // Remote File
+    else {
+    
+      if (!ini_get('allow_url_fopen')) {
+        form_set_error('url', t('allow_url_fopen must be enabled in your php configuration in order to use this feature.'));
+        return FALSE;
+      }
+      
+      if ($content = file_get_contents($form_state['values']['pattern_uri'])) {
+        $form_state['values']['content'] = $content;
+      }
+      else {
+        $err_file = TRUE;
+      }
+    }
+    
+    if ($err_file) {
+      form_set_error('pattern_uri', t('Failed to retrieve the pattern specified: %uri. Check your file and try again.', array('%uri' => $form_state['values']['pattern_uri'])));
+      return FALSE;
+    }
   }
- }
- else { // XML or other
-  if (!patterns_parser_validate_xml_pattern($form_state['values']['content'])) {
-   form_set_error('xmlsource', t('Error parsing the XML, please check your syntax and try again.'));
+  // End FILE or URI
+  
+  
+  
+  // Parse
+  $pattern = patterns_parser_parse($form_state['values']['content'], $format);
+  
+  if (!$pattern) {
+     form_set_error('content', t('Pattern could not parsed. Please make sure it is well formed.'));
+     return FALSE;
+  } 
+  
+ 
+  $patternscan = _patterns_parser_scan_pattern($pattern);
+  if (!_patterns_parser_validate_patternscan($patternscan)) {
+    $errors_on_scan = _patterns_parser_analyze_patternscan($patternscan);
+    form_set_error('name', t('Error parsing the YAML file: ' . implode(', ', $errors_on_scan))); // TODO: proper t()
   }
- }
+ 
 
- // TODO: Check what happens with different formats
- $form_state['values']['format'] = $format;
-
- return TRUE;
+  // We save here the parsed pattern
+  $form_state['values']['pattern'] = $pattern;
+  
+  
+  return TRUE;
 
 }
 
 function patterns_import_submit($form, &$form_state) {
 
- $success = FALSE;
- $name = $form_state['values']['name'];
-
- if (!empty($name)) {
-  $content = $form_state['values']['content'];
-  $format = (isset($form_state['values']['format'])) ? $form_state['values']['format'] : 'yaml';
-
-
-  // What is this?
-  //    if (isset($form_state['pattern_file'])) {
-  //      $success = file_copy($form_state['pattern_file']->filepath, $form_state['pattern_file']->destination);
-  //    }
-  //else
+  $success = FALSE;
+  $name = $form_state['values']['name'];
+  
+  $format = (isset($form_state['values']['format'])) ? $form_state['values']['format'] : PATTERNS_FORMAT_UNKNOWN;
+  
+  $content = (isset($form_state['values']['pattern'])) ? $form_state['values']['pattern']
+                                                      : $form_state['values']['content'];
+  
   if (!empty($content)) {
-   $success = patterns_io_save_pattern($content, $name, $format, $form_state['values']['destination']);
+    $success = patterns_io_save_pattern($content, 
+                                        $name, 
+                                        $format, 
+                                        $form_state['values']['destination'], 
+                                        $form_state['values']['content']
+    );
   }
- }
-
- if ($success) {
-  drupal_set_message(t('Pattern successfully imported.'));
- }
- else {
-  drupal_set_message(t('File couldn\'t be saved on the server. Import failed.'), 'error');
- }
- $form_state['redirect'] = 'admin/patterns';
+  
+  if ($success) {
+    $link = l('here', 'admin/patterns/edit/' . $name);
+    $msg = t('Pattern %name successfully imported. ', array('%name' => $name));
+    $msg.= t('Click ') . $link . t(' to view it.'); 
+    drupal_set_message($msg);
+  }
+  else {
+    drupal_set_message(t('File %name could not be saved on the server. Import failed.', array('%name' => $name)), 'error');
+  }
+  $form_state['redirect'] = 'admin/patterns';
 }
 
 
@@ -348,7 +406,7 @@ function patterns_import_module($form, &$form_state) {
 
   // need to load components to be able to check
   // TODO: refactor: this does something very similar to patterns_get_tagmodules_index
-  patterns_load_components();
+  patterns_io_load_components();
   foreach ( module_implements('patterns') as $module)
     array_push($modules_with_components, $module);
 
@@ -580,7 +638,7 @@ function patterns_import_module($form, &$form_state) {
 
   // show pattern import form
   if ($step >= 3) {
-   $def_dir = patterns_config_get_files_dir();
+   $def_dir = patterns_path_get_files_dir();
 
    if (!isset($yaml))
    $yaml = $form_state['values']['content'];
@@ -694,7 +752,7 @@ function patterns_import_module_ajax_module_forms_callback($form, $form_state) {
 /**
  * Helper function to be called in one of the import validation handlers.
  */
-function _patterns_imports_check_dirs($dir = NULL) {
+function _patterns_import_check_dirs($dir = NULL) {
  // Check Patterns Directory
  if (!_patterns_io_is_patterns_dir_ready($dir, FILE_CREATE_DIRECTORY)) {
   $message = t("Destination folder does not exist or is not writable: %path<br />", array('%path' => $dir)); // TODO: move this out for performance
@@ -708,7 +766,7 @@ function _patterns_imports_check_dirs($dir = NULL) {
 /**
  * Helper function to be called in one of the import validation handlers.
  */
-function _patterns_imports_check_name($name = '') {
+function _patterns_import_check_name($name = '') {
  // Name Validation
  $errors_on_name = _patterns_parser_analyze_pattern_name($name);
  if (!empty($errors_on_name)) {
@@ -736,7 +794,7 @@ function _patterns_imports_check_name($name = '') {
 function patterns_import_build_import_form_state($name = NULL, $pattern = NULL, $dest = NULL) {
   if (is_null($name) || is_null($pattern)) return FALSE;
   if (is_null($dest)) {
-    $dest = patterns_config_get_files_dir();
+    $dest = patterns_path_get_files_dir();
   }
 
   $form = array();
