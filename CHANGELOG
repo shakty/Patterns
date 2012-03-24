@@ -1,3 +1,6 @@
+7040:		- Fixed bug drush installation of YAML Parser together with Patterns
+		- Parser scan detached from parser
+
 7039:
 
 		- Parser validates correctly all types of included patterns

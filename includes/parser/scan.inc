@@ -22,11 +22,11 @@
  * @TODO Expand this function to include much more detailed validation.
  * @TODO Rewrite in an object oriented fashion
  * 
- * @see _patterns_parser_scan_action
- * @see _patterns_parser_analyze_patternscan
+ * @see _patterns_scan_action
+ * @see _patterns_scan_analyze_patternscan
  *
  */
-function _patterns_parser_scan_pattern($pattern, $include = FALSE) {
+function patterns_scan_pattern($pattern, $include = FALSE) {
   $generic_error = t('pattern not loaded correctly');
   $result = array(
                   'info' => 0,
@@ -55,7 +55,7 @@ function _patterns_parser_scan_pattern($pattern, $include = FALSE) {
   // All the sections must be a non-empty array.
   // If a section is called 'include;
   // it means that we are including a new pattern
-  // and we apply _patterns_parser_scan_pattern recursively.
+  // and we apply patterns_scan_pattern recursively.
 
   foreach ($pattern as $section_name => $section) {
 	
@@ -72,13 +72,13 @@ function _patterns_parser_scan_pattern($pattern, $include = FALSE) {
     }
 
     // SECTIONS or ACTIONS (if it is an include)
-    if (!_patterns_parser_scan_is_section($section)) {
+    if (!_patterns_scan_is_section($section)) {
     	if (!$include) {
     		$result['generic_errors'][] = $section_name ;
     		continue;
     	}
     	
-    	$result = _patterns_parser_scan_action($section, $result);
+    	$result = _patterns_scan_action($section, $result);
     	continue;
     }
     
@@ -109,7 +109,7 @@ function _patterns_parser_scan_pattern($pattern, $include = FALSE) {
     		// Incremente the count of valid actions
 				$section_info[$action_name] = $section_info[$action_name]+1;
     	}
-			$result = _patterns_parser_scan_action($action, $result);    
+			$result = _patterns_scan_action($action, $result);    
     }
 
     $section_info_str = '(' . PATTERNS_CREATE . ':' . $section_info[PATTERNS_CREATE] . ', ' .
@@ -125,10 +125,10 @@ function _patterns_parser_scan_pattern($pattern, $include = FALSE) {
 }
 
 /**
- * Analyze the result of a call to _patterns_parser_scan_pattern, and check whether
+ * Analyze the result of a call to patterns_scan_pattern, and check whether
  * the pattern was valid.
  *
- * @param array $analysis Obtained from  _patterns_parser_scan_pattern.
+ * @param array $analysis Obtained from  patterns_scan_pattern.
  * @param bool $include (optional) If TRUE, it means that the pattern 
  *   to scan is an include, and a laxer scan is performed. E.g. 
  *   Info section can be missing, actions can be outside of a section.
@@ -136,7 +136,7 @@ function _patterns_parser_scan_pattern($pattern, $include = FALSE) {
  *   
  * @return TRUE if valid, FALSE otherwise
  */
-function _patterns_parser_analyze_patternscan($patternscan, $include = FALSE) {
+function _patterns_scan_analyze_patternscan($patternscan, $include = FALSE) {
   $msgs = array();
 
   if ($patternscan['info'] == 0 && !$include) {
@@ -193,7 +193,7 @@ function _patterns_parser_analyze_patternscan($patternscan, $include = FALSE) {
   if (count($patternscan['include_scans']) > 0) {
     foreach ($patternscan['include_scans'] as $i) {
       //$msgs[] = print_r($patternscan['includes'], true);
-      $msgs = array_merge($msgs, _patterns_parser_analyze_patternscan($i, TRUE));
+      $msgs = array_merge($msgs, _patterns_scan_analyze_patternscan($i, TRUE));
     }
   }
 
@@ -201,15 +201,15 @@ function _patterns_parser_analyze_patternscan($patternscan, $include = FALSE) {
 }
 
 /**
- * Analyze the result of a call to _patterns_parser_scan_pattern, and check whether
+ * Analyze the result of a call to patterns_scan_pattern, and check whether
  * the pattern was valid.
  *
- * @param array $analysis Obtained from  _patterns_parser_scan_pattern.
+ * @param array $analysis Obtained from  patterns_scan_pattern.
  *
  * @return bool TRUE if valid, FALSE otherwise.
  */
-function _patterns_parser_validate_patternscan($patternscan, $display_errors = FALSE) {
-  $analysis = _patterns_parser_analyze_patternscan($patternscan);
+function _patterns_scan_validate_patternscan($patternscan, $display_errors = FALSE) {
+  $analysis = _patterns_scan_analyze_patternscan($patternscan);
   if (empty($analysis)) {
     return TRUE;
   }
@@ -229,12 +229,12 @@ function _patterns_parser_validate_patternscan($patternscan, $display_errors = F
  * 
  * @return Boolean TRUE if the array is a section
  * 
- * @see _patterns_parser_scan_is_action
+ * @see _patterns_scan_is_action
  */
-function _patterns_parser_scan_is_section($section = NULL) {
+function _patterns_scan_is_section($section = NULL) {
 	if (is_null($section)) return FALSE;
 	$action = array_pop($section);
-	return _patterns_parser_scan_is_action($action);
+	return _patterns_scan_is_action($action);
 }
 
 /**
@@ -247,9 +247,9 @@ function _patterns_parser_scan_is_section($section = NULL) {
  * 
  * @return Boolean TRUE if the array is an action
  * 
- * @see _patterns_parser_scan_is_section
+ * @see _patterns_scan_is_section
  */
-function _patterns_parser_scan_is_action($action = NULL) {
+function _patterns_scan_is_action($action = NULL) {
 	if (is_null($action)) return FALSE;
 	if (!is_array($action)) return FALSE;
 	return patterns_parser_is_valid_action_name(key($action));
@@ -269,11 +269,11 @@ function _patterns_parser_scan_is_action($action = NULL) {
  *   
  * @return array $result The results of the scan.
  * 
- * @see _patterns_parser_scan_pattern
- * @see _patterns_parser_analyze_patternscan
+ * @see patterns_scan_pattern
+ * @see _patterns_scan_analyze_patternscan
  * 
  */
-function _patterns_parser_scan_action($action, $result = array()) {
+function _patterns_scan_action($action, $result = array()) {
 	
 	$key = key($action);
 	$action = current($action);
@@ -316,7 +316,7 @@ function _patterns_parser_scan_action($action, $result = array()) {
 	
 	  // only if the pattern is hard-coded, then scan it
 	  if (is_array($action['pattern'])) {
-	    $result['include_scans'][] = _patterns_parser_scan_pattern($action['pattern'], TRUE);
+	    $result['include_scans'][] = patterns_scan_pattern($action['pattern'], TRUE);
 	  }
 	  return $result;
 	}

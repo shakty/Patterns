@@ -30,9 +30,9 @@ class PatternsParserTestCase extends PatternRunTestCase {
   }
 
   private function basic_checks($pattern) {
-    $scan = _patterns_parser_scan_pattern($pattern);
+    $scan = patterns_scan_pattern($pattern);
     $this->assertNotNull($scan, t('Pattern file loaded and scanned.'));
-    $analysis = _patterns_parser_analyze_patternscan($scan);
+    $analysis = _patterns_scan_analyze_patternscan($scan);
     $this->assertNotNull($analysis, t('Pattern-scan was analyzed successfully.'));
     return $analysis;
   }

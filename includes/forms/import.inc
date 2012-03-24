@@ -173,62 +173,6 @@ function patterns_import_url($form, &$form_state) {
   return $form;
 }
 
-
-/**
- * Validate handler for file importing
- */
-function _patterns_import_file_validate($form, &$form_state) {
-
-  $destination = $form_state['values']['destination'];
-
-  // If not automatically returns
-  _patterns_import_check_dirs($destination);
-  _patterns_import_check_name($form_state['values']['name']);
-
-  $uri = $form_state['values']['pattern_uri'];
-
-  $format = (isset($form_state['values']['format']) && $form_state['values']['format'] != PATTERNS_FORMAT_UNKNOWN)
-      ? $form_state['values']['format']
-      : pathinfo($uri, PATHINFO_EXTENSION);
-
-  if ($file = file_save_upload('pattern_uri', $validators)) {
-    $form_state['values']['content'] = file_get_contents($file->uri);
-    $form_state['pattern_uri'] = $file;
-    $form_state['pattern_uri']->destination = $destination;
-  }
-  else {
-
-  form_set_error('pattern_uri', t('Failed to retrieve the pattern specified: %uri. Check your file and try again. Notice: only yaml and xml files are accepted', array('%uri' => $uri)));
-    return FALSE;
-  }
-
-  $format = pathinfo($form_state['pattern_uri']->uri, PATHINFO_EXTENSION);
-
-  $formats = patterns_parser_build_formats_index();
-
-  if (!in_array($format, $formats)) {
-     form_set_error('format', t('The pattern format seems to be invalid.'));
-     return FALSE;
-  }
-
-  // Parse
-  $pattern = patterns_parser_parse($form_state['values']['content'], $format);
-
-  if (!$pattern) {
-     form_set_error('content', t('Pattern could not parsed. Please make sure it is well formed.'));
-     return FALSE;
-  }
-
-
-  $patternscan = _patterns_parser_scan_pattern($pattern);
-  if (!_patterns_parser_validate_patternscan($patternscan)) {
-    $errors_on_scan = _patterns_parser_analyze_patternscan($patternscan);
-    form_set_error('name', t('Error parsing the YAML file: ' . implode(', ', $errors_on_scan))); // TODO: proper t()
-  }
-
-  return TRUE;
-}
-
 function patterns_import_validate($form, &$form_state) {
 
   $destination = $form_state['values']['destination'];
@@ -309,9 +253,9 @@ function patterns_import_validate($form, &$form_state) {
   }
 
 
-  $patternscan = _patterns_parser_scan_pattern($pattern);
-  if (!_patterns_parser_validate_patternscan($patternscan)) {
-    $errors_on_scan = _patterns_parser_analyze_patternscan($patternscan);
+  $patternscan = patterns_scan_pattern($pattern);
+  if (!_patterns_scan_validate_patternscan($patternscan)) {
+    $errors_on_scan = _patterns_scan_analyze_patternscan($patternscan);
     form_set_error('name', t('Error parsing the YAML file: ' . implode(', ', $errors_on_scan))); // TODO: proper t()
   }
 

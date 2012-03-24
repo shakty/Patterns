@@ -246,8 +246,8 @@ function patterns_validate_pattern($pattern, $format = PATTERNS_FORMAT_UNKNOWN) 
   $pattern = patterns_parser_parse($pattern, $format);
   if (!$pattern) return FALSE;
 
-  $scan = _patterns_parser_scan_pattern($pattern);
-  return _patterns_parser_validate_patternscan($scan);
+  $scan = patterns_scan_pattern($pattern);
+  return _patterns_scan_validate_patternscan($scan);
 }
 
 /**
@@ -274,9 +274,9 @@ function patterns_validate_service() {
     exit;
   }
 
-  $scan = _patterns_parser_scan_pattern($pattern);
+  $scan = patterns_scan_pattern($pattern);
 
-	if (_patterns_parser_validate_patternscan($scan)) {
+	if (_patterns_scan_validate_patternscan($scan)) {
     $count = count($scan['other_sections']) + $scan['info'] + $scan['modules'];
     $out = t('This pattern is valid. !count sections found ->', array('!count' => $count)) . ' ';
 
@@ -288,7 +288,7 @@ function patterns_validate_service() {
     }
   }
   else {
-    $errors = implode('<br/> ', _patterns_parser_analyze_patternscan($scan));
+    $errors = implode('<br/> ', _patterns_scan_analyze_patternscan($scan));
     $out = t('This pattern is NOT valid.') . '<br/>' . $errors;
   }
 
@@ -308,9 +308,9 @@ function patterns_validate_service() {
  *   FALSE if there were errors (in which case the errors will be displayed).
  */
 function patterns_parser_get_pattern_details($pattern, $recursive = FALSE, &$pids = array()) {
-  $scan = _patterns_parser_scan_pattern($pattern->pattern);
+  $scan = patterns_scan_pattern($pattern->pattern);
   // This will display errors if there are any.
-  if (!_patterns_parser_validate_patternscan($scan, TRUE)) return FALSE;
+  if (!_patterns_scan_validate_patternscan($scan, TRUE)) return FALSE;
 
   $details = array();
 
