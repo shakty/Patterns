@@ -66,7 +66,7 @@ module_load_include('inc', 'patterns', 'includes/forms/import');
 module_load_include('inc', 'patterns', 'includes/forms/helper');
 module_load_include('inc', 'patterns', 'includes/forms/info');
 
-module_load_include('inc', 'patterns', 'includes/parser');
+module_load_include('inc', 'patterns', 'includes/parser/parser');
 module_load_include('inc', 'patterns', 'includes/io');
 
 module_load_include('inc', 'patterns', 'includes/api/api');
