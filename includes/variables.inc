@@ -7,6 +7,9 @@
 
 static $patterns_formats = array();
 
+define('PATTERNS_UPDATES', 'patterns_updates');
+define('PATTERNS_FIRST_INSTALL', 'patterns_first_install');
+
 define('PATTERNS_PARSER_PARSE', 'parse');
 define('PATTERNS_PARSER_DUMP', 'dump');
 define('PATTERNS_PARSER_LOAD', 'load');

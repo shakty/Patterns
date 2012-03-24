@@ -70,13 +70,15 @@ module_load_include('inc', 'patterns', 'includes/feed');
 module_load_include('inc', 'patterns', 'includes/servers');
 
 
+module_load_include('inc', 'patterns', 'includes/forms/first_install');
+
+
 /**
  * @todo:
  * @ Enable components to analyze the current pattern for better validation
  * @ Allow module version restricting
  * @ Put in functionality to auto-download modules (and the correct version)
  * @ Enable backups before running patterns and reverting back to those backups
- * @ Implement a progress meter
  * @ Enable interactive actions by allowing patterns to resume from a saved position
  * @ Allow resuming failed patterns
  * @ Create a Pattern class (?) check performance
@@ -89,12 +91,28 @@ module_load_include('inc', 'patterns', 'includes/servers');
 function patterns_menu() {
   $items = array();
 
+  $first_install = variable_get(PATTERNS_FIRST_INSTALL, TRUE);
+  if ($first_install) {
+  	module_load_include('inc', 'patterns', 'includes/forms/first_install');
+
+  	$items['admin/patterns'] = array(
+	    'title' => 'Patterns',
+	    'description' => 'Patterns was just installed or important updates have been found',
+	    'page callback' => 'patterns_first_install_page',
+	    'access arguments' => array('administer patterns')
+  	);
+  	
+  	return $items;
+  }
+  
+  
   $items['admin/patterns'] = array(
     'title' => 'Patterns',
     'description' => 'Administer patterns available for your site',
     'page callback' => 'patterns_list',
     'access arguments' => array('administer patterns')
   );
+  
   $items['admin/patterns/list'] = array(
     'title' => 'List',
     'type' => MENU_DEFAULT_LOCAL_TASK,
@@ -300,13 +318,6 @@ function patterns_menu() {
 
 
 // Not ready
-
-//   $items['admin/patterns/info'] = array(
-//     'title' => t('Pattern Details'),
-//     'callback' => 'patterns_info',
-//     'access arguments' => array('administer patterns'),
-//     'type' => MENU_CALLBACK
-//   );
 
   //     $items[] = array('path' => 'admin/patterns/disable',
   //       'access' => user_access('administer patterns'),
@@ -879,3 +890,15 @@ function patterns_install_modules_in_pattern($pattern) {
   }
   return TRUE;
 }
+
+function patterns_check_local_updates() {
+	
+	  $updates = variable_get(PATTERNS_UPDATES, array());
+	  
+	  if (!empty($updates) && is_array($updates)) {
+	  	foreach($updates as $update) {
+	  		module_invoke_all($update);
+	  	}
+	  }
+}
+
