@@ -88,7 +88,11 @@ function patterns_xmlparser_dump($pattern = NULL) {
 	// function call to convert array to xml
 	patterns_xmlparser_array_to_xml($pattern, $xml);
 	
-	return $xml->asXML();
+	// Use the DOMDcoument to format it nicely and indent it
+	$doc = dom_import_simplexml($xml)->ownerDocument;
+	$doc->preserveWhiteSpace = false;
+	$doc->formatOutput = true;
+	return $doc->saveXML();
 }
 
 // Helping Functions

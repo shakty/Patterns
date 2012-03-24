@@ -231,8 +231,6 @@ function _patterns_import_file_validate($form, &$form_state) {
 
 function patterns_import_validate($form, &$form_state) {
 
-  $format = $form_state['values']['format'];
-
   $destination = $form_state['values']['destination'];
 
   // If not automatically returns

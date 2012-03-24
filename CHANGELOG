@@ -1,3 +1,6 @@
+7038:
+		- XML Parser Dump works correctly
+
 7037:
 
 		- All necessary files are correctly included in the .install file
