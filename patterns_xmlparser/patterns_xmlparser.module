@@ -64,6 +64,7 @@ function patterns_xmlparser_parse($xml) {
   return $pattern;
 }
 
+
 /**
  * Takes an array representing a pattern and returns
  * the XML representation of it.
@@ -71,7 +72,7 @@ function patterns_xmlparser_parse($xml) {
  * @param array $pattern The pattern array to convert
  * 	to XML.
  */
-function patterns_xmlparser_dump($pattern = NULL) {
+function patterns_xmlparser_dump_old($pattern = NULL) {
 	if (is_null($pattern) || empty($pattern)) return FALSE;
 	
 	$xml = new SimpleXMLElement('<pattern/>');
@@ -79,7 +80,36 @@ function patterns_xmlparser_dump($pattern = NULL) {
 	return $xml->asXML();
 }
 
+function patterns_xmlparser_dump($pattern = NULL) {
+	if (is_null($pattern) || empty($pattern)) return FALSE;
+		
+	$xml = new SimpleXMLElement("<pattern/>");
+	
+	// function call to convert array to xml
+	patterns_xmlparser_array_to_xml($pattern, $xml);
+	
+	return $xml->asXML();
+}
+
 // Helping Functions
+
+// function defination to convert array to xml
+function patterns_xmlparser_array_to_xml($array, &$xml) {
+  foreach ($array as $key => $value) {
+    if (is_array($value)) {
+    	if (!is_numeric($key)) {
+      	$subnode = $xml->addChild("$key");
+        patterns_xmlparser_array_to_xml($value, $subnode);
+      }
+      else {
+      	patterns_xmlparser_array_to_xml($value, $xml);
+      }
+    }
+    else {
+    	$xml->addChild("$key","$value");
+    }
+  }
+}
 
 function patterns_xmlparser_rearrange_data($pattern) {
   foreach ($pattern as $key => $value) {

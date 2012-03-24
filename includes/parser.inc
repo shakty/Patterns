@@ -58,7 +58,7 @@ function patterns_parser_build_formats_index($reset = TRUE) {
 
 		// If the parser already exists and we are not
 		// allowed to overwrite it, contintue
-    if (!$ow && patterns_parser_parser_exists($format, FALSE)) {
+    if (!$ow && patterns_parser_exists($format, FALSE)) {
     	continue;
     }						
     												 
@@ -83,13 +83,24 @@ function patterns_parser_get_formats($reset = TRUE) {
 }
 
 /**
+ * Checks whether there is at least one parser currently enabled.
+ *  
+ * @return Boolean TRUE if there is at least one parser available.
+ * 
+ */
+function patterns_parser_ready() {
+	$formats = patterns_parser_get_formats();
+  return (empty($formats)) ? FALSE : TRUE;
+}
+
+/**
  * Checks wheter a parser is defined for a given format.
  * 
  * @param mixed $format A string representing the format
  * 
  * @return bool TRUE, if the parser is defined, FALSE otherwise.
  */
-function patterns_parser_parser_exists($format = PATTERNS_FORMAT_UNKNOWN, $reset = TRUE) {
+function patterns_parser_exists($format = PATTERNS_FORMAT_UNKNOWN, $reset = TRUE) {
   if (empty($format) || $format == PATTERNS_FORMAT_UNKNOWN) return FALSE;
   
   $patterns_formats = patterns_parser_build_formats_index($reset);
@@ -115,7 +126,7 @@ function patterns_parser_parser_exists($format = PATTERNS_FORMAT_UNKNOWN, $reset
 function patterns_parser_get_parser_function($format = PATTERNS_FORMAT_UNKNOWN, 
 																							$action = PATTERNS_PARSER_PARSE) {
 																								
-  if (!patterns_parser_parser_exists($format)) return FALSE;
+  if (!patterns_parser_exists($format)) return FALSE;
   $patterns_formats = patterns_parser_build_formats_index();
   return $patterns_formats[$format] . '_' . $action;
 }

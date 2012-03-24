@@ -6,6 +6,18 @@
 
 function patterns_export($form, &$form_state) {
 
+	$form = array();
+	
+	if (!patterns_parser_ready()) {
+		$form['noparser'] = array (
+			'#markup' => t('No parser found. Impossible to continue. Please enable at least one valid Patterns parser first.'),
+			'#prefix' => '<strong>',
+			'#suffix' => '</strong',
+		);			
+		
+		return $form;
+	}
+	
   $header = array(
     'category' => array('data' => t('category'), 'field' => 'n.category', 'sort' => 'asc'),
     'name' => array('data' => 'name', 'field' => 'n.name'),
@@ -50,7 +62,6 @@ function patterns_export($form, &$form_state) {
 
   $form['patterns']['patterns_table'] = array(
     '#type' => 'tableselect',
-    '#prefix' => '<div>' . t('For now, only YAML patterns can be selected and exported') . '</div>',
     '#header' => $header,
     '#options' => $rows,
     '#empty' => t('No Patterns'),
@@ -77,7 +88,6 @@ function patterns_export($form, &$form_state) {
     '#default_value' => PATTERNS_EXPORT_TO_FILE,
   );
 
-
   $form['export_name'] = array(
     '#type' => 'textfield',
     '#title' => t('Name of the exported pattern file'),
@@ -85,9 +95,22 @@ function patterns_export($form, &$form_state) {
     '#default_value' => t('exported_pattern') . '_' . strval(time()),
   );
 
+	$default = defined(PATTERNS_FORMAT_XML) ? PATTERNS_FORMAT_XML
+																					: defined(PATTERNS_FORMAT_YAML) 
+																					? PATTERNS_FORMAT_YAML
+																					: defined(PATTERNS_FORMAT_PHP)
+																					? PATTERNS_FORMAT_PHP
+																					: '';
+																																					 
+  $form = patterns_forms_get_formats_selector($form, 
+  																						PATTERNS_FORMAT_XML, // Tentative
+  																						'Export all selected patterns in this format.',
+  																						FALSE
+  );
+  
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Download')
+    '#value' => t('Export')
   );
 
   $form['#submit'][] = 'patterns_export_submit';
@@ -119,13 +142,17 @@ function patterns_export_validate($form, &$form_state) {
     form_set_error('to', t('Please select a valid action for the export'));
   }
 
+  if (!patterns_parser_exists($form_state['values']['format'])) {
+  	form_set_error('format', t('The pattern format seems to be invalid.'));
+  }
+  
   if ($form_state['values']['to'] === PATTERNS_EXPORT_TO_DB) {
     _patterns_import_check_name($form_state['values']['export_name']);
   }
   elseif (empty($form_state['values']['export_name'])) {
     $form_state['values']['export_name'] = 'exported_pattern';
   }
-
+  
   return TRUE;
 }
 
@@ -137,10 +164,10 @@ function patterns_export_validate($form, &$form_state) {
 function patterns_export_submit($form, &$form_state) {
   // Load the patterns from database.
   @$patterns = patterns_db_get_patterns();
-
+	$path = patterns_path_get_files_dir();
+  
+  $format 	= $form_state['values']['format'];
   $filename = $form_state['values']['export_name'];
-  $path = patterns_path_get_files_dir();
-
   $zip_flag = ($form_state['values']['to'] === PATTERNS_EXPORT_TO_ZIP) ? TRUE : FALSE;
 
   if ($zip_flag) {
@@ -156,12 +183,10 @@ function patterns_export_submit($form, &$form_state) {
     $export = patterns_utils_generate_info_section($filename, 'Exported');
   }
 
-  // Load SPYC
-  require_once libraries_get_path('spyc') . '/spyc.php';
 
   $count = 0; // count how many patterns will be exported
   $errors = array();
-  // concatenate yaml files to a single file or zip all files
+  // concatenate files to a single file or zip all files
   foreach ($form_state['values']['patterns_table'] as $pid) {
     if (!is_int($pid)) {
       $pattern = patterns_get_pattern($pid);
@@ -171,9 +196,9 @@ function patterns_export_submit($form, &$form_state) {
         continue;
       }
 
-      if (substr($pattern->file, -4) != "yaml") {
-        continue;
-      }
+      //if (substr($pattern->file, -4) != "yaml") {
+      //  continue;
+      //}
 
       if (empty($pattern->pattern)) {
         $errors[] = patterns_utils_toString($pattern);
@@ -181,7 +206,7 @@ function patterns_export_submit($form, &$form_state) {
       }
 
       if ($zip_flag) {
-        $zip->addFromString($pattern->name . '.yaml', Spyc::YAMLDump($pattern->pattern));
+        $zip->addFromString($pattern->name, patterns_parser_parse($pattern->pattern, $format));
       }
       else {
         $included = _patterns_export_include_pattern($pattern, $form_state['values']['mode']);
@@ -214,13 +239,15 @@ function patterns_export_submit($form, &$form_state) {
     return;
   }
 
+  // Removed for now
   // Add an header to the exported pattern
-  $file  = "# Patterns exported: " . $count . " \n";
-  $file .= "# Date and time: " . date('r') . "\n\n";
-  $file .= Spyc::YAMLDump($export);
+  // $file  = "# Patterns exported: " . $count . " \n";
+  // $file .= "# Date and time: " . date('r') . "\n\n";
+  //debug($export);
+  $file = patterns_parser_dump($export, $format);
 
   if ($form_state['values']['to'] === PATTERNS_EXPORT_TO_DB) {
-    patterns_io_save_pattern($file, $filename, 'yaml', $path);
+    patterns_io_save_pattern($file, $filename, $format, $path);
     drupal_goto('admin/patterns/export/');
   }
   else {

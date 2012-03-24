@@ -74,14 +74,17 @@ function patterns_forms_get_execution_options($form = array()) {
  *   here. Default array().
  * @param mixed $default (optional) The default value for the selector. 
  *   Default PATTERNS_FORMAT_UNKNOWN.
+ * @param bool $unknown (optional) If TRUE PATTERNS_FORMAT_UNKNOWN is added
+ *   to the 'available' formats. Default TRUE. 
  *   
  * @return array $form The form containing the select element.
  *   
  */
-function patterns_forms_get_formats_selector($form = array(), $default = PATTERNS_FORMAT_UNKNOWN, $descr = NULL) {
+function patterns_forms_get_formats_selector($form = array(), $default = PATTERNS_FORMAT_UNKNOWN, $descr = NULL, $unknown = TRUE) {
 
   $descr = (is_null($descr)) ? t('Pattern will be validated and run against this format.') : t($descr);
-  $formats = array(PATTERNS_FORMAT_UNKNOWN => PATTERNS_FORMAT_UNKNOWN);
+  $formats = ($unknown) ? array(PATTERNS_FORMAT_UNKNOWN => PATTERNS_FORMAT_UNKNOWN)
+  											: array();
   $available_formats = patterns_parser_get_formats();
   if (!empty($available_formats)) {
     $formats = array_merge($formats, array_combine($available_formats, $available_formats));

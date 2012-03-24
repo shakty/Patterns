@@ -253,7 +253,7 @@ function patterns_import_validate($form, &$form_state) {
     $format = PATTERNS_FORMAT_UNKNOWN;
   }  
 
-  if (!patterns_parser_parser_exists($format)) {
+  if (!patterns_parser_exists($format)) {
      form_set_error('format', t('The pattern format seems to be invalid.'));
      return FALSE;
   }
