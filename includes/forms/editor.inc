@@ -109,7 +109,7 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
     '#value' => $pattern->pid
   );
 
-	$form = patterns_forms_get_formats_selector($form, $format);
+  $form = patterns_forms_get_formats_selector($form, $format);
 
   if (!empty($pattern->file)) {
     if (file_exists($pattern->file) && is_readable($pattern->file)) {
@@ -136,7 +136,7 @@ function patterns_edit($form, &$form_state, $pattern, $full = TRUE) {
   else {
     // Pattern was updated in the file system. Show what was in the database
     if (patterns_db_is_pattern_updated($pattern)) {
-      
+
       $db_content = _patterns_editor_dump_from_db($pattern->pattern, $format);
 
       $form['db'] = array(
@@ -258,12 +258,12 @@ function patterns_load_co2($format = PATTERNS_FORMAT_YAML) {
     drupal_add_css($co2_css);
     drupal_add_css($co2_css_theme);
     drupal_add_js($co2_js);
-    
+
     if ($format !== PATTERNS_FORMAT_UNKNOWN) {
       $co2_mode = $co2_path . '/mode/' . $format . '/' . $format . '.js';
       drupal_add_js($co2_mode);
     }
-    
+
     // Adding Pattern Customization for Co2
     drupal_add_css(drupal_get_path('module', 'patterns') . '/css/editor.css');
     drupal_add_js(drupal_get_path('module', 'patterns') . '/js/editor.js');
@@ -276,16 +276,16 @@ function patterns_load_co2($format = PATTERNS_FORMAT_YAML) {
 /**
  * Helper function which returns the pattern dumped from the database, or
  * an error string.
- * 
+ *
  * @param array $pattern The pattern to dump.
  * @param mixed $format The format of the pattern array.
- * 
+ *
  * @return mixed $content A string representing the pattern or an error.
  */
 function _patterns_editor_dump_from_db($pattern, $format) {
   $content = patterns_parser_dump($pattern, $format);
   if (!$content) {
     $content = t('An error occurred while dumping the pattern in the database here.');
-  }  
+  }
   return $content;
 }

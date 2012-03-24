@@ -7,52 +7,52 @@
 
 /**
  * Register all available patterns parsers and returns an associative
- * array. 
- * 
- * Invokes all the modules implementing <hook_patterns_parser>. 
- * 
+ * array.
+ *
+ * Invokes all the modules implementing <hook_patterns_parser>.
+ *
  * Modules implenting such hook are expected to return an associative
  * array of the type:
- * 
+ *
  * 	$parser = array();
  *	$parser['format'] = 'php;
- *	$parser['parser'] = 'patterns_phpparser'; 
+ *	$parser['parser'] = 'patterns_phpparser';
  *	$parser['overwrite'] = TRUE; // (Optional) Default is TRUE
- * 
- * Patterns will then call 
- *  - <patterns_phpparser_parse()> 
+ *
+ * Patterns will then call
+ *  - <patterns_phpparser_parse()>
  *  - <patterns_phpparser_dump()>
  *  - <patterns_phpparser_load()>
- *  
- * for performing parsing operations with the PHP format. 
- * 
+ *
+ * for performing parsing operations with the PHP format.
+ *
  * @param bool $reset (optional) If TRUE, forces to rebuild the index.
- * 
- * @return array $patterns_formats The associative array of 
+ *
+ * @return array $patterns_formats The associative array of
  * 	 available parsers.
- * 
+ *
  */
 function patterns_parser_build_formats_index($reset = TRUE) {
-	
+
 	static $patterns_formats;
 	if (!$reset) {
 		return $patterns_formats;
 	}
-	
+
 	if (!is_array($patterns_formats)) {
 		$patterns_formats = array();
 	}
-	
-	$modules = module_implements('patterns_parser'); 
+
+	$modules = module_implements('patterns_parser');
 	foreach ($modules as $module) {
     $parser = module_invoke($module, 'patterns_parser');
     if (!is_array($parser) || !isset($parser['parser']) || !isset($parser['format'])) {
     	continue;
     }
-    
+
     $format = $parser['format'];
     $parser = $parser['parser'];
-    
+
     $ow = (isset($parser['overwrite'])) ? isset($parser['overwrite'])
     																		: TRUE; // overwrite by default
 
@@ -60,23 +60,23 @@ function patterns_parser_build_formats_index($reset = TRUE) {
 		// allowed to overwrite it, contintue
     if (!$ow && patterns_parser_exists($format, FALSE)) {
     	continue;
-    }						
-    												 
+    }
+
 		$patterns_formats[$format] = $parser;
 	}
-	
+
 	return $patterns_formats;
 }
 
 /**
- * Returns an array of formats currently supported by 
+ * Returns an array of formats currently supported by
  * the patterns module.
  *
  * @param bool $reset (optional) If FALSE, it does not rebuild the index
  *   of available formats.
- * 
+ *
  * @return array Array of supported file types.
- * 
+ *
  */
 function patterns_parser_get_formats($reset = TRUE) {
   return array_keys(patterns_parser_build_formats_index($reset));
@@ -95,16 +95,16 @@ function patterns_parser_ready() {
 
 /**
  * Checks wheter a parser is defined for a given format.
- * 
+ *
  * @param mixed $format A string representing the format
- * 
+ *
  * @return bool TRUE, if the parser is defined, FALSE otherwise.
  */
 function patterns_parser_exists($format = PATTERNS_FORMAT_UNKNOWN, $reset = TRUE) {
   if (empty($format) || $format == PATTERNS_FORMAT_UNKNOWN) return FALSE;
-  
+
   $patterns_formats = patterns_parser_build_formats_index($reset);
-  
+
   if (!isset($patterns_formats[$format]) || empty($patterns_formats[$format])) {
     return FALSE;
   }
@@ -114,19 +114,20 @@ function patterns_parser_exists($format = PATTERNS_FORMAT_UNKNOWN, $reset = TRUE
 /**
  * Checks whether a parser is defined for a given format, and returns
  * the corresponding function name for the requested action.
- * 
+ *
  * @param mixed $format A string representing the format.
- * @param mixed $action (optional) A string representing the desidered 
+ * @param mixed $action (optional) A string representing the desidered
  *   action to call. Default PATTERNS_PARSER_PARSE.
- * 	
- * 
+ *
+ *
  * @return bool|mixed the function name if the parser exists, FALSE otherwise.
- * 
+ *
  */
-function patterns_parser_get_parser_function($format = PATTERNS_FORMAT_UNKNOWN, 
+function patterns_parser_get_parser_function($format = PATTERNS_FORMAT_UNKNOWN,
 																							$action = PATTERNS_PARSER_PARSE) {
 																								
   if (!patterns_parser_exists($format)) return FALSE;
+  
   $patterns_formats = patterns_parser_build_formats_index();
   return $patterns_formats[$format] . '_' . $action;
 }
@@ -136,53 +137,53 @@ function patterns_parser_get_parser_function($format = PATTERNS_FORMAT_UNKNOWN,
  * Tries to parse a pattern string according to the specified format.
  * If succesfull returns the array representation of the pattern, if not
  * returns FALSE;
- * 
- * @param mixed $pattern A string representation of the pattern, or a pattern 
- *  array. In the latter case, the array is returned as it is, and the @param 
+ *
+ * @param mixed $pattern A string representation of the pattern, or a pattern
+ *  array. In the latter case, the array is returned as it is, and the @param
  *  $format is ignored.
  * @param mixed $format The format against which parse the pattern string.
- * 
+ *
  * @return bool|array The parsed pattern or FALSE.
- * 
+ *
  */
 function patterns_parser_parse($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
     if (empty($pattern)) return FALSE;
     if (is_array($pattern)) return $pattern;
-    
+
     $parse_function = patterns_parser_get_parser_function($format);
     if (!$parse_function) {
     	return FALSE;
     }
-    
+
     return $parse_function($pattern);
 }
 
 /**
- * Tries to dump an array representing a pattern to a string, according to 
+ * Tries to dump an array representing a pattern to a string, according to
  * the specified format.
- * 
+ *
  * If succesfull returns the array representation of the pattern, if not
  * returns FALSE;
- * 
- * @param mixed $pattern A string representation of the pattern, or a pattern 
- *  array. In the latter case, the array is returned as it is, and the @param 
+ *
+ * @param mixed $pattern A string representation of the pattern, or a pattern
+ *  array. In the latter case, the array is returned as it is, and the @param
  *  $format is ignored.
- *  
+ *
  * @param mixed $format The format against which parse the pattern string.
- * 
+ *
  * @return bool|mixed The string representation of the pattern or FALSE.
- * 
+ *
  */
 function patterns_parser_dump($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
     if (empty($pattern)) return FALSE;
     if (is_string($pattern)) return $pattern;
     if (!is_array($pattern)) return FALSE;
-    
+
     $dump_function = patterns_parser_get_parser_function($format, PATTERNS_PARSER_DUMP);
     if (!$dump_function) {
       return FALSE;
     }
-    
+
     return $dump_function($pattern);
 }
 
@@ -190,21 +191,21 @@ function patterns_parser_dump($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
  * Tries to load a pattern from a file according to the specified format.
  * If succesfull returns the array representation of the pattern, if not
  * returns FALSE;
- * 
+ *
  * @param mixed $path The path to the pattern file
  * @param mixed $format The format against which parse the loaded pattern.
- * 
+ *
  * @return bool|array The parsed pattern or FALSE.
- * 
+ *
  */
 function patterns_parser_load($path, $format = PATTERNS_FORMAT_UNKNOWN) {
     if (empty($pattern)) return FALSE;
-    
+
     $load_function = patterns_parser_get_parser_function($format, PATTERNS_PARSER_LOAD);
     if (!$load_function) {
       return FALSE;
     }
-    
+
     return $load_function($path);
 }
 
@@ -235,12 +236,12 @@ function _patterns_parser_analyze_patternscan($patternscan) {
   if (count($patternscan['other_sections']) == 0) {
     $msgs[] = t('Pattern does not contain any actions.');
   }
-  
+
   if (count($patternscan['generic_errors']) != 0) {
     $msgs[] = t('Generic errors in the patterns were found. Probably a tag was misplaced. Please verify: %found',
             array('%found' => implode(', ', $patternscan['generic_errors'])));
   }
-  
+
   if (count($patternscan['invalid_actions']) != 0) {
     $invalidactions = array();
     foreach ($patternscan['invalid_actions'] as $key => $value) {
@@ -382,7 +383,7 @@ function _patterns_parser_scan_pattern($pattern) {
       }
 
       if (!is_array($data)) {
-        $result['generic_errors'][] = $action . ': ' . $data; 
+        $result['generic_errors'][] = $action . ': ' . $data;
         continue;
       }
 
@@ -457,13 +458,13 @@ function _patterns_parser_scan_pattern($pattern) {
  *
  * @param mixed $pattern Pattern array or content of a pattern file.
  * @param mixed $format The format of the file to validate against.
- * 
+ *
  * @return bool TRUE if valid, FALSE otherwise.
  */
 function patterns_validate_pattern($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
   $pattern = patterns_parser_parse($pattern, $format);
   if (!$pattern) return FALSE;
-  
+
   $scan = _patterns_parser_scan_pattern($pattern);
   return _patterns_parser_validate_patternscan($scan);
 }
@@ -474,24 +475,24 @@ function patterns_validate_pattern($pattern, $format = PATTERNS_FORMAT_UNKNOWN) 
  * Returns validation info about the pattern passed in the $_POST array.
  */
 function patterns_validate_service() {
-  
+
   if (!isset($_POST['pattern'])) {
     print t('No pattern found. Communication error.');
     exit;
   }
-  
+
   if (!isset($_POST['format']) || $_POST['format'] == PATTERNS_FORMAT_UNKNOWN) {
     print t('Cannot validate unknown pattern format');
     exit;
   }
-  
+
   $pattern = patterns_parser_parse($_POST['pattern'], $_POST['format']);
-  
+
   if (!$pattern) {
-  	print t('Patterns could not be parsed. Please check pattern format.');
+    print t('Patterns could not be parsed. Please check pattern format.');
     exit;
   }
-  
+
   $scan = _patterns_parser_scan_pattern($pattern);
 
 	if (_patterns_parser_validate_patternscan($scan)) {
@@ -767,8 +768,8 @@ function patterns_parser_include_pattern(&$actions, $include, $options = array()
  * it also takes that into consideration, otherwise uses the default
  * include settings.
  *
- *  @see patterns_parser_should_include
- *  @see _patterns_parser_merge_default_include_options
+ *  @see patterns_parser_should_include()
+ *  @see _patterns_parser_merge_default_include_options()
  */
 function patterns_parser_should_include_local($include, $options = array()) {
   // ATTACHED

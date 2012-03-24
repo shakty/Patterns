@@ -11,7 +11,7 @@
  * @ingroup forms
  */
 function patterns_quickrun($form, &$form_state) {
-  
+
   $content = '';
 
   $form['important'] = array(
@@ -19,22 +19,22 @@ function patterns_quickrun($form, &$form_state) {
     '#prefix' => '<div id="important">',
     '#suffix' => '<hr><br/></div>',
   );
-  
+
   $options_mode = array(
     'extend' => 'Extend',
     'runover' => 'Run-Over',
   );
 
   // Add the execution options
-	$form = patterns_forms_get_execution_options($form);
-  
+  $form = patterns_forms_get_execution_options($form);
+
   $form['validation_result'] = array(
     '#markup' => 'This pattern has not been validated yet.',
     '#prefix' => '<div id="validation_result">',
     '#suffix' => '</div>',
   );
-  
-	$form = patterns_forms_get_formats_selector($form);
+
+  $form = patterns_forms_get_formats_selector($form);
 
   $form['content'] = array(
     '#type' => 'textarea',
@@ -70,7 +70,7 @@ function patterns_quickrun($form, &$form_state) {
 function patterns_quickrun_submit($form, $form_state) {
 
   // Parse the content of the textarea
-  $pattern['pattern'] = patterns_parser_parse($form_state['values']['content'], $form_state['values']['format']); 
+  $pattern['pattern'] = patterns_parser_parse($form_state['values']['content'], $form_state['values']['format']);
 
   $pattern = patterns_get_pattern_obj($pattern);
 

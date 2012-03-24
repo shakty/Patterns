@@ -141,8 +141,8 @@ function patterns_db_save_pattern($pattern, $path, $name, $format = NULL) {
 
   $title        = patterns_utils_init_from_pattern('title', $pattern);
   $description  = patterns_utils_init_from_pattern('description', $pattern);
-  $format       = patterns_utils_init_from_pattern('format', $pattern, $format, PATTERNS_FORMAT_YAML);  
-  
+  $format       = patterns_utils_init_from_pattern('format', $pattern, $format, PATTERNS_FORMAT_YAML);
+
   // Check if it is valid pattern
   // TODO: validate different formats
   if (patterns_validate_pattern($pattern)) {

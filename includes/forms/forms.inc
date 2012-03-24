@@ -1,24 +1,28 @@
 <?php
+/**
+ * @file
+ * Patterns forms.
+ */
 
 /**
- * Builds up a fieldset containing the options for executing a 
- * pattern. 
- * 
+ * Builds up a fieldset containing the options for executing a
+ * pattern.
+ *
  * @param array $form An array element representing a form. If specified,
  *   the execution options are appended here.
- * 
- * @return array $form The form containing the pattern execution options
- * .
+ *
+ * @return array $form The form containing the pattern execution options.
+ *
  */
 function patterns_forms_get_execution_options($form = array()) {
-	
-	$form['options'] = array(
+
+  $form['options'] = array(
 	    '#type' => 'fieldset',
 	    '#title' => t('Options'),
 	    '#collapsible' => TRUE,
 	    '#collapsed' => TRUE,
 	);
-	
+
   $options_mode = array(
     'extend' => t('Extend'),
     'runover' => t('Run-Over'),
@@ -62,23 +66,23 @@ function patterns_forms_get_execution_options($form = array()) {
     '#options' => $options,
     '#default_value' => patterns_get_include_mode(),
   );
-	  
+
   return $form;
 }
 
 /**
- * Builds a HTML select element with all the currently available 
+ * Builds a HTML select element with all the currently available
  * patterns formats.
- * 
- * @param array $form (optional) If specified, the select form is appended 
+ *
+ * @param array $form (optional) If specified, the select form is appended
  *   here. Default array().
- * @param mixed $default (optional) The default value for the selector. 
+ * @param mixed $default (optional) The default value for the selector.
  *   Default PATTERNS_FORMAT_UNKNOWN.
  * @param bool $unknown (optional) If TRUE PATTERNS_FORMAT_UNKNOWN is added
  *   to the 'available' formats. Default TRUE. 
  *   
  * @return array $form The form containing the select element.
- *   
+ *
  */
 function patterns_forms_get_formats_selector($form = array(), $default = PATTERNS_FORMAT_UNKNOWN, $descr = NULL, $unknown = TRUE) {
 
@@ -89,7 +93,7 @@ function patterns_forms_get_formats_selector($form = array(), $default = PATTERN
   if (!empty($available_formats)) {
     $formats = array_merge($formats, array_combine($available_formats, $available_formats));
   }
-  
+
   $form['format'] = array(
     '#type' => 'select',
     '#title' => t('Pattern syntax'),
@@ -97,7 +101,7 @@ function patterns_forms_get_formats_selector($form = array(), $default = PATTERN
     '#default_value' => $default,
 	  '#description' => $descr,
   );
-  
+
   return $form;
 }
 

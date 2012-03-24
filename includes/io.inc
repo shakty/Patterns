@@ -13,7 +13,7 @@
  *   The ID of the Pattern to be displayed.
  */
 function patterns_io_get_pattern_service($pattern) {
-  
+
 
   $pattern = patterns_utils_if_invalid_go_back($pattern);
 
@@ -25,7 +25,7 @@ function patterns_io_get_pattern_service($pattern) {
 
   // TODO: handling correctly different formats
   $content_type = 'text/plain';
-  
+
   drupal_add_http_header('Content-Type', $content_type . '; charset=utf-8');
   print file_get_contents($pattern->file);
   exit;
@@ -87,16 +87,16 @@ function patterns_io_scan_directories($verbose = FALSE) {
 
   // Get valid file extensions.
   $mask = '/.\.(' . implode('|', patterns_parser_get_formats()) . ')$/';
-  
+
   // Prepare list of files/folders to be excluded.
   // 'enabled' - Don't save enabled pattern backups.
   $no_mask = array('.', '..', 'CVS', '.svn', '.git', '.bzr', 'enabled');
 
   foreach ($patterns_paths as $path) {
- 
+
     foreach (file_scan_directory($path, $mask, $no_mask) as $file) {
       $format = substr($file->filename, strlen($file->name) + 1);
-      
+
       if (in_array($file->filename, $existing)) {
         if (!variable_get('patterns_update_db_from_fs', TRUE)) {
           continue;
@@ -319,23 +319,23 @@ function _patterns_io_is_patterns_dir_ready($patterns_files_dir = '', $flag = FI
  *
  * Updates the same file to the newer version, but does not replace an existing
  * file (e.g. if we are moving a file to a new location).
- * 
+ *
  * Produces error messages if the pattern could not be saved.
  *
  * @param mixed $content The content of the pattern to be saved. Can be a string the
- *  or an array represeting the pattern. In the latter case @param $original 
- *  can be contain the string. If @param $original is missing the pattern is 
+ *  or an array represeting the pattern. In the latter case @param $original
+ *  can be contain the string. If @param $original is missing the pattern is
  *  saved as a PHP array.
  * @param mixed $name The name of the pattern file.
  * @param mixed $format file format (notice: it is not the extension!)
  *   (optional) The format of the pattern. Defaults to PATTERNS_FORMAT_YAML.
  * @param mixed $dir the destination directory
  * @param mixed $original the string representation of the pattern. Optional.
- * 
+ *
  * @return bool
  *   TRUE on success, FALSE otherwise.
- *   
- * TODO: if content is array and original is null, dump the array into the 
+ *
+ * TODO: if content is array and original is null, dump the array into the
  *  correct original file
  *
  */
@@ -345,12 +345,12 @@ function patterns_io_save_pattern($content = NULL, $name = NULL, $format = PATTE
     drupal_set_message(t('Cannot save pattern with \'NULL\' identifier.'), 'error');
     return FALSE;
   }
-  
+
   if (!patterns_validate_pattern($content, $format)) {
     drupal_set_message(t("Pattern '%name' could not be saved. Make sure edited code is well-formed.", array('%name' => $name)), 'error');
     return FALSE;
   }
-  
+
   if (is_null($dir)) {
     $dir = patterns_path_get_files_dir();
   }
@@ -358,18 +358,18 @@ function patterns_io_save_pattern($content = NULL, $name = NULL, $format = PATTE
     drupal_set_message(t('Error: the pattern is not writable. Please check the file system permissions.'), 'error');
     return FALSE;
   }
-  
-  // Check if the file has a valid extension 
+
+  // Check if the file has a valid extension
   // and in case add the format at the end
   if (!_patterns_io_file_has_valid_extension($name)) {
     $name = $name . '.' . $format;
   }
-  
+
   $path_original = $dir . '/' . $name;
-  
+
   if (is_null($original)) {
     if (is_array($content)) {
-       $original = print_r($content, true); 
+       $original = print_r($content, TRUE);
     }
     else {
       $original = $content;
@@ -385,10 +385,10 @@ function patterns_io_save_pattern($content = NULL, $name = NULL, $format = PATTE
   // Load and save pattern.
   $load_function = patterns_parser_get_parser_function($format, PATTERNS_PARSER_LOAD);
   if (!$load_function) {
-  	drupal_set_message(t("Could not find a parser for ", array('%name' => $name)), 'error');
+    drupal_set_message(t("Could not find a parser for ", array('%name' => $name)), 'error');
     return FALSE;
   }
-  
+
   $pattern = $load_function($path);
   if (!$pattern) {
     drupal_set_message(t("Pattern '%name' could not be saved into the database. Make sure edited code is well-formed.", array('%name' => $name)), 'error');
@@ -408,24 +408,24 @@ function patterns_io_remove_pattern($path) {
 }
 
 /**
- * Checks whether the extension of the specified file name 
+ * Checks whether the extension of the specified file name
  * matches one of the currently available parser formats.
- * 
- * 
+ *
+ *
  * @param mixed $file String representing a file name.
- * @param array $formats (optional) The array of valid formats, 
- *   against which checking the file extension. If NULL, rebuilds 
+ * @param array $formats (optional) The array of valid formats,
+ *   against which checking the file extension. If NULL, rebuilds
  *   the index of currently available formats.
- *   
+ *
  * @return bool Boolean. TRUE, if the extension matches an available
  *   parser.
  */
-function _patterns_io_file_has_valid_extension ($file = NULL, $formats = NULL) {
+function _patterns_io_file_has_valid_extension($file = NULL, $formats = NULL) {
   if (is_null($file)) return FALSE;
   if (is_null($formats)) {
     $formats = patterns_parser_get_formats();
   }
-  
+
   $ext = pathinfo($file, PATHINFO_EXTENSION);
   return (in_array($ext, $formats)) ? TRUE : FALSE;
 }

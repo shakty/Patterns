@@ -179,10 +179,10 @@ function patterns_import_server_submit($form, &$form_state) {
  * @param mixed $pid
  */
 function patterns_publish_pattern($pid) {
-  
+
   $pattern = patterns_utils_if_invalid_go_back($pid);
   $result = db_query("UPDATE {patterns} SET public = 1 WHERE pid = :pid", array('pid' => $pid));
-  
+
   drupal_set_message(t('Pattern %pattern was marked as public.', array('%pattern' => @$pattern->name)));
   drupal_goto('admin/patterns');
 }
@@ -194,7 +194,7 @@ function patterns_publish_pattern($pid) {
 function patterns_unpublish_pattern($pid) {
   $pattern = patterns_utils_if_invalid_go_back($pid);
   $result = db_query("UPDATE {patterns} SET public = 0 WHERE pid = :pid", array('pid' => $pid));
-  
+
   drupal_set_message(t('Pattern %pattern was marked as private.', array('%pattern' => @$pattern->name)));
   drupal_goto('admin/patterns');
 }

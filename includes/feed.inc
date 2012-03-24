@@ -1,8 +1,12 @@
 <?php
+/**
+ * @file
+ * Patterns feed functions.
+ */
 
 /**
  * Prints XML feed of published (public) patterns.
- * 
+ *
  */
 function patterns_feed() {
   global $base_url;
@@ -12,7 +16,7 @@ function patterns_feed() {
   }
 
   $items = '';
-  
+
   $patterns = patterns_io_get_patterns(FALSE, FALSE);
   $patterns = $patterns[PATTERNS_STATUS_OK];
   foreach ($patterns as $pattern) {

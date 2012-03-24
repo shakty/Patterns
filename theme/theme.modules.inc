@@ -1,13 +1,17 @@
-<?php 
+<?php
+/**
+ * @file
+ * Patterns modules page theme functions.
+ */
 
 /**
  * Lists the modules used by a particular pattern.
- * 
+ *
  * @TODO Doc.
  */
 function patterns_modules_page($pid) {
   $pattern = patterns_utils_if_invalid_go_back($pid);
-  
+
   drupal_set_title($pattern->title . ' ' . t('(Pattern Modules)'));
 
   $modules = isset($pattern->pattern['modules']) ? $pattern->pattern['modules'] : array();
@@ -48,11 +52,11 @@ function patterns_modules_page($pid) {
     $rows = array(
       array(
         'data' => array(
-          array( 
-            'data' => t('No extra modules are required to run this pattern.'), 
+          array(
+            'data' => t('No extra modules are required to run this pattern.'),
             'colspan' => '4',
-     ))));  
-    
+     ))));
+
   }
 
   $header = array(t('Name'), t('Available'), t('Enabled'), t('Pattern Action'));
