@@ -122,9 +122,16 @@ function patterns_xmlparser_rearrange_data($pattern) {
         unset($pattern[PATTERNS_SECTION_MODULES]['xml_tag']);
         unset($pattern[$key]); // TODO: unset in _patterns_xmlparser_rearrange_data
      	}
-
+     	
       // Normal section
       else {
+      	
+	      // There is no section, directly actions
+	      // TODO: Check here
+				if (isset($value['tag'])) {
+					$value = array($value);
+				}
+      	
         $section = $value['xml_tag'];
         $pattern[$section] = array();
         unset($value['xml_tag']);
