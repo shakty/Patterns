@@ -489,7 +489,7 @@ function patterns_validate_service() {
   $pattern = patterns_parser_parse($_POST['pattern'], $_POST['format']);
 
   if (!$pattern) {
-    print t('Patterns could not be parsed. Please check pattern format.');
+    print t('Pattern could not be parsed. Please check pattern format.');
     exit;
   }
 

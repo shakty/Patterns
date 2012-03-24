@@ -64,22 +64,6 @@ function patterns_xmlparser_parse($xml) {
   return $pattern;
 }
 
-
-/**
- * Takes an array representing a pattern and returns
- * the XML representation of it.
- *
- * @param array $pattern The pattern array to convert
- * 	to XML.
- */
-function patterns_xmlparser_dump_old($pattern = NULL) {
-	if (is_null($pattern) || empty($pattern)) return FALSE;
-
-	$xml = new SimpleXMLElement('<pattern/>');
-	array_walk_recursive($pattern, array ($xml, 'addChild'));
-	return $xml->asXML();
-}
-
 function patterns_xmlparser_dump($pattern = NULL) {
 	if (is_null($pattern) || empty($pattern)) return FALSE;
 		
@@ -109,7 +93,13 @@ function patterns_xmlparser_array_to_xml($array, &$xml) {
       	patterns_xmlparser_array_to_xml($value, $xml);
       }
     }
+    elseif (!empty($key) && $key == 'tag') {
+    	$xml->addAttribute("$key","$value");
+    }
     else {
+    	if (is_numeric($key) || empty($key)) {
+    		$key = 'value';
+    	}
     	$xml->addChild("$key","$value");
     }
   }
@@ -122,28 +112,34 @@ function patterns_xmlparser_rearrange_data($pattern) {
     }
     else {
 
-     if ($value['xml_tag'] == PATTERNS_SECTION_INFO) {
+    	if ($value['xml_tag'] == PATTERNS_SECTION_INFO) {
         $pattern[PATTERNS_SECTION_INFO] = _patterns_xmlparser_rearrange_data($value);
         unset($pattern[PATTERNS_SECTION_INFO]['xml_tag']);
         unset($pattern[$key]); // TODO: unset in _patterns_xmlparser_rearrange_data
-     }
-     elseif ($value['xml_tag'] == PATTERNS_SECTION_MODULES) {
+     	}
+     	elseif ($value['xml_tag'] == PATTERNS_SECTION_MODULES) {
         $pattern[PATTERNS_SECTION_MODULES] = _patterns_xmlparser_rearrange_data($value);
         unset($pattern[PATTERNS_SECTION_MODULES]['xml_tag']);
         unset($pattern[$key]); // TODO: unset in _patterns_xmlparser_rearrange_data
-     }
+     	}
 
-     // Normal section
-     else {
+      // Normal section
+      else {
         $section = $value['xml_tag'];
         $pattern[$section] = array();
         unset($value['xml_tag']);
         foreach($value as $action) {
           $tag = array('tag' => @$action['tag']); // TODO: check when this does not exist
           $_action = $action['xml_tag']; // TODO: check that is a valid one and that exist
-          //$pattern[$section][] = array($_action => array_merge($tag, _patterns_xmlparser_rearrange_data($action)));
-          $_action_data = _patterns_xmlparser_rearrange_data($action);
-          unset($_action_data['xml_tag']);
+          
+          if ($_action == PATTERNS_INCLUDE) {
+          	// Lets reparse the whole included pattern
+        		$_action_data = array('pattern' => patterns_xmlparser_rearrange_data($value[0][0]));
+     			}
+          else {
+          	$_action_data = _patterns_xmlparser_rearrange_data($action);
+          	unset($_action_data['xml_tag']);
+          }
           $pattern[$section][] = array($_action => $_action_data);
         }
         unset($pattern[$key]);
