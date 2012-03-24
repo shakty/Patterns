@@ -4,6 +4,9 @@
  * Theme related functions, hooks.
  */
 
+module_load_include('inc', 'patterns', 'theme/common');
+module_load_include('inc', 'patterns', 'theme/modules');
+
 /**
  * Implements hook_theme().
  */

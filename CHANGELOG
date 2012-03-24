@@ -1,3 +1,7 @@
+7041:
+
+		- Patterns removal from the file systems works as well
+
 7040:		- Fixed bug drush installation of YAML Parser together with Patterns
 		- Parser scan detached from parser
 

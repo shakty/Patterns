@@ -403,9 +403,60 @@ function patterns_io_save_pattern($content = NULL, $name = NULL, $format = PATTE
   return TRUE;
 }
 
-function patterns_io_remove_pattern($path) {
-  // @TODO
+/**
+ * Removes a pattern both from the file system and the database.
+ * 
+ * @param mixed $pattern_orig A pattern object, an array representing
+ *  the pattern object, a numeric id or alphanumeric name of
+ *  the pattern as it is in the database 
+ * @param bool $verbose (optional) If TRUE notify the users a failure.
+ *   Default FALSE.
+ *  
+ * @return Boolean TRUE, if removal from the file system and the 
+ *   database is successful 
+ */
+function patterns_io_remove_pattern($pattern_orig, $verbose = TRUE) {
+  
+	// Retrieve
+	$pattern = _patterns_db_get_pattern($pattern_orig);
+	
+	if (!$pattern) {
+		if ($verbose) {
+			drupal_set_message(t('Impossible to retrieve specified pattern: %pattern.', array('%pattern' => $pattern_orig)), 'error');
+		}
+		return FALSE;
+	}
+	
+	// Check permissions
+	$file = $pattern->file;
+	if (!is_writable($file)) {
+		if ($verbose) {
+			drupal_set_message(t('Do not have permission to delete file %pattern. Aborting.', array('%pattern' => $file)), 'error');
+		}
+		return FALSE;
+	}
+	
+	// Delete from FS
+	$result = unlink($file);	
+	if (!$result) {
+		if ($verbose) {
+			drupal_set_message(t('An error occurred while deleting  %pattern.', array('%pattern' => $file)), 'error');
+		}
+		return FALSE;
+	}
+	
+  $result = patterns_db_remove_pattern($pattern->pid);
+  
+  if ($result) {
+  	if ($verbose) {
+  		drupal_set_message(t('Pattern %pattern was removed succesfully.', array('%pattern' => $pattern_orig)), 'error');
+  	}
+  }
+  
+  return $result;
 }
+
+
 
 /**
  * Checks whether the extension of the specified file name

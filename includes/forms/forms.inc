@@ -4,6 +4,13 @@
  * Patterns forms.
  */
 
+module_load_include('inc', 'patterns', 'includes/forms/export');
+module_load_include('inc', 'patterns', 'includes/forms/quickrun');
+module_load_include('inc', 'patterns', 'includes/forms/editor');
+module_load_include('inc', 'patterns', 'includes/forms/import');
+module_load_include('inc', 'patterns', 'includes/forms/helper');
+module_load_include('inc', 'patterns', 'includes/forms/info');
+
 /**
  * Builds up a fieldset containing the options for executing a
  * pattern.

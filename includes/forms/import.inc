@@ -272,9 +272,13 @@ function patterns_import_submit($form, &$form_state) {
 
   $success = FALSE;
   $name = $form_state['values']['name'];
-
   $format = (isset($form_state['values']['format'])) ? $form_state['values']['format'] : PATTERNS_FORMAT_UNKNOWN;
 
+	// Add the extension if missing or invalid
+	if (!_patterns_io_file_has_valid_extension($name)) {
+    $name = $name . '.' . $format;
+  }
+  
   $content = (isset($form_state['values']['pattern'])) ? $form_state['values']['pattern']
                                                       : $form_state['values']['content'];
 
