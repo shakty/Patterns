@@ -1,5 +1,7 @@
 <?php
 
+module_load_include('inc', 'patterns', 'includes/utils');
+
 /**
  * @file
  * Installation file for PYaml.
