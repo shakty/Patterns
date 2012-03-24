@@ -123,32 +123,26 @@ function patterns_xmlparser_rearrange_data($pattern) {
         unset($pattern[$key]); // TODO: unset in _patterns_xmlparser_rearrange_data
      	}
      	
-      // Normal section
+      // Section / Actions
       else {
       	
-	      // There is no section, directly actions
-	      // TODO: Check here
+	      // There is no section, just actions
 				if (isset($value['tag'])) {
-					$value = array($value);
+					$pattern[] = _patterns_xmlparser_process_action($value);
+					unset($pattern[$key]);
+					continue;
 				}
       	
+				// Process the section
         $section = $value['xml_tag'];
         $pattern[$section] = array();
         unset($value['xml_tag']);
+      	
+      	
+      	// Build actions
         foreach($value as $action) {
-          $tag = array('tag' => @$action['tag']); // TODO: check when this does not exist
-          $_action = $action['xml_tag']; // TODO: check that is a valid one and that exist
-          
-          if ($_action == PATTERNS_INCLUDE) {
-          	// Lets reparse the whole included pattern
-        		$_action_data = array('pattern' => patterns_xmlparser_rearrange_data($value[0][0]));
-     			}
-          else {
-          	$_action_data = _patterns_xmlparser_rearrange_data($action);
-          	unset($_action_data['xml_tag']);
-          }
-          $pattern[$section][] = array($_action => $_action_data);
-        }
+          $pattern[$section][] = _patterns_xmlparser_process_action($action);
+        }  
         unset($pattern[$key]);
       }
 
@@ -156,6 +150,22 @@ function patterns_xmlparser_rearrange_data($pattern) {
   }
 
   return $pattern;
+}
+
+function _patterns_xmlparser_process_action($action = NULL) {
+	if (is_null($action)) return array();
+	$tag = array('tag' => @$action['tag']); // TODO: check when this does not exist
+  $_action = $action['xml_tag']; // TODO: check that is a valid one and that exist
+          
+  if ($_action == PATTERNS_INCLUDE) {
+  	// Lets reparse the whole included pattern
+    $_action_data = array('pattern' => patterns_xmlparser_rearrange_data($action[0]));
+  }
+  else {
+  	$_action_data = _patterns_xmlparser_rearrange_data($action);
+    unset($_action_data['xml_tag']);
+  }
+  return array($_action => $_action_data);
 }
 
 function _patterns_xmlparser_rearrange_data($data, $parent = '') {
