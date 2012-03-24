@@ -95,15 +95,22 @@ function patterns_export($form, &$form_state) {
     '#default_value' => t('exported_pattern') . '_' . strval(time()),
   );
 
-	$default = defined(PATTERNS_FORMAT_XML) ? PATTERNS_FORMAT_XML
-																					: defined(PATTERNS_FORMAT_YAML) 
-																					? PATTERNS_FORMAT_YAML
-																					: defined(PATTERNS_FORMAT_PHP)
-																					? PATTERNS_FORMAT_PHP
-																					: '';
+	if (defined('PATTERNS_FORMAT_XML')) {
+		$default = PATTERNS_FORMAT_XML;
+	}
+	elseif (defined('PATTERNS_FORMAT_YAML')) { 
+		$default = PATTERNS_FORMAT_YAML; 
+	}
+	elseif (defined('PATTERNS_FORMAT_PHP')) { 
+		$default = PATTERNS_FORMAT_PHP; 
+	}
+	else {
+		$default = '';
+	}
+								
 																																					 
   $form = patterns_forms_get_formats_selector($form, 
-  																						PATTERNS_FORMAT_XML, // Tentative
+  																						$default, // Tentative
   																						'Export all selected patterns in this format.',
   																						FALSE
   );
