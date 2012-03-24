@@ -34,6 +34,6 @@ function patterns_yamlparser_requirements($phase) {
       'value'       => patterns_utils_get_phpdoc_version($path),
     );
   }
-  
+
   return $requirements;
 }

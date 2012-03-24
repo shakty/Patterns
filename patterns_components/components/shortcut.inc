@@ -229,11 +229,11 @@ function shortcut_patterns_params($action, $form_id, &$data = NULL, &$a) {
  * hook_patterns_get_arguments()
  */
 function shortcut_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
-  if ($tag == "shortcut_set") { 
+  if ($tag == "shortcut_set") {
     $loop = TRUE;
     $return = array();
     $sets = shortcut_sets();
-    foreach($sets as $set_name => $value) {
+    foreach ($sets as $set_name => $value) {
       array_push($return, array($set_name => $value, shortcut_set_load($set_name)));
     }
     return $return;

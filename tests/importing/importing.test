@@ -64,12 +64,12 @@ class PatternsImportTestCase extends PatternRunTestCase {
 
     $name = 'Test_Import_From_URL';
     $destination = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/tests/importing/imported/';
-    
+
     if (!$this->is_fopenurl_enabled()) {
       $this->pass(t('Import from URL test skipped because \'allow_url_fopen\' is disabled.'));
       return;
     }
-    
+
     // Fill the form.
     $edit = array();
 

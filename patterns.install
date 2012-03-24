@@ -29,7 +29,7 @@ function patterns_uninstall() {
  * Implements hook_schema().
  */
 function patterns_schema() {
-  
+
   $schema['patterns'] = array(
     'description' => 'Stores patterns information.',
     'fields' => array(
@@ -50,7 +50,7 @@ function patterns_schema() {
         'length' => 10,
         'default' => '',
         'description' => 'Format of the patterns (XML, YAML, etc.).',
-       ),
+      ),
       /*
        * STATUSES:
        *
@@ -137,29 +137,29 @@ function patterns_requirements($phase) {
         'title'       => t('Patterns files dir writable'),
         'description' => t("Patterns folder doesn't exist or is not writable: !path", array('!path' => patterns_path_get_files_dir())),
         'severity'    => REQUIREMENT_WARNING,
-        'value'       => 'Not writable',
+        'value'       => t('Not writable'),
       );
     }
     else {
       $requirements['pdir'] = array(
         'title'       => t('Patterns files dir'),
         'severity'    => REQUIREMENT_OK,
-        'value'       => 'Writable',
+        'value'       => t('Writable'),
       );
     }
 
   switch ($phase) {
     case 'runtime':
-      
-     if (!ini_get('allow_url_fopen')) {
-       $requirements['allow_url_fopen'] = array(
+
+      if (!ini_get('allow_url_fopen')) {
+        $requirements['allow_url_fopen'] = array(
           'title'       => t('Patterns import files from remote URL'),
           'description' => t('To import patterns directly from remote URL \'allow_url_fopen\' must be enabled in your PHP configuration.'),
           'severity'    => REQUIREMENT_WARNING,
           'value'       => t('Disabled'),
         );
-     }
-     
+      }
+ 
     break;
   }
   return $requirements;

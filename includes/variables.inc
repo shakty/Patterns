@@ -2,7 +2,7 @@
 /**
  * @file
  * A file containing a set of constants and variables.
- * 
+ *
  */
 
 static $patterns_formats = array();

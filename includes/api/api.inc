@@ -1,8 +1,8 @@
 <?php
 /*
  * @file
- * 
- * Api for writing pattern files.
+ *
+ * API for writing pattern files.
  *
  */
 

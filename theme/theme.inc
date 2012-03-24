@@ -104,7 +104,7 @@ function theme_patterns_list($args) {
     foreach ($patterns as $pid => $pattern) {
 
       $category = $pattern->info['category'] ? $pattern->info['category'] : t('Other');
-      
+
       $form['patterns'][$category][] = _patterns_pattern_build_row($pid, $pattern);
       $form['patterns'][$category] += array(
         '#type' => 'fieldset',
@@ -200,9 +200,9 @@ function theme_patterns_patterns_fieldset($variables) {
     }
 
     $row[] = drupal_render($pattern['format']);
-    
+
     $row[] = $label . '><strong>' . drupal_render($pattern['name']) . '</strong></label>';
-    
+
     $row[] = drupal_render($pattern['title']);
 
     $row[] = drupal_render($pattern['version']);
@@ -241,7 +241,7 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
   );
 
   $actions = patterns_get_patterns_links($pattern);
-  
+
   $form = array(
     '#tree' => TRUE,
   );
@@ -262,7 +262,7 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
   $form['format'] = array(
     '#markup' => $pattern->format,
   );
-  
+
   $form['name'] = array(
     '#markup' => $pattern->name,
   );

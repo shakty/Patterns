@@ -112,7 +112,7 @@ function patterns_menu() {
   );
 
   // MAIN ROUTES
-  
+
   $items['admin/patterns/enable'] = array(
     'title' => 'Enable Pattern',
     'page callback' => 'drupal_get_form',
@@ -120,7 +120,7 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
-  
+
   $items['admin/patterns/edit/%'] = array(
     'title' => 'Edit Pattern',
     'page callback' => 'patterns_edit_page',
@@ -136,7 +136,7 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_LOCAL_TASK
   );
-  
+
   $items['admin/patterns/export'] = array(
     'title' => 'Export',
     'page callback' => 'drupal_get_form',
@@ -152,7 +152,7 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
-  
+
   // SETTINGS
 
   $items['admin/patterns/settings'] = array(
@@ -163,7 +163,7 @@ function patterns_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
   );
-  
+
   // TRASH, RESTORE, REMOVE
 
   $items['admin/patterns/trash'] = array(
@@ -173,7 +173,7 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
-  
+
   $items['admin/patterns/restore'] = array(
     'title' => 'Restore a pattern from the recycle bin',
     'page callback' => 'patterns_restore_pattern',
@@ -190,7 +190,7 @@ function patterns_menu() {
   );
 
   // UTILS
-  
+
   $items['admin/patterns/refresh'] = array(
     'title' => 'Refresh Patterns',
     'page callback' => 'patterns_io_get_patterns_service',
@@ -204,9 +204,9 @@ function patterns_menu() {
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
-  
+
   // SERVICES
- 
+
   $items['patterns/patterns.xml'] = array(
     'title' => 'Published Patterns',
     'page callback' => 'patterns_feed',
@@ -262,14 +262,14 @@ function patterns_menu() {
   );
 
   // PUBLISH / UNPUBLISH
- 
+
   $items['admin/patterns/publish'] = array(
     'title' => 'Publish Pattern',
     'page callback' => 'patterns_publish_pattern',
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
-  
+
   $items['admin/patterns/unpublish'] = array(
     'title' => 'Unpublish Pattern',
     'page callback' => 'patterns_unpublish_pattern',
@@ -277,8 +277,8 @@ function patterns_menu() {
     'type' => MENU_CALLBACK
   );
 
-  // UTILITY  
-  
+  // UTILITY
+
   $items['admin/patterns/info'] = array(
     'title' => 'Info',
     'page callback' => 'patterns_info_page',
@@ -286,16 +286,16 @@ function patterns_menu() {
   	'weight' => 15,
     'type' => MENU_LOCAL_TASK
   );
-  
+
   $items['admin/patterns/check'] = array(
     'title' => 'Pattern Modules',
     'page callback' => 'patterns_modules_page',
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
   );
-  
-  // Disable for now  
-    
+
+  // Disable for now
+
   //  $items['admin/patterns/server'] = array(
   //    'title' => 'Patterns Server',
   //    'page callback' => 'drupal_get_form',
@@ -307,8 +307,8 @@ function patterns_menu() {
 
   // This items were already commented.
   /////////////////////////////////////////////////////
-  
-  
+
+
 // Not ready
 
 //   $items['admin/patterns/info'] = array(
@@ -344,7 +344,7 @@ function patterns_list() {
 
   drupal_add_css(drupal_get_path('module', 'patterns') . '/css/patterns.css');
   drupal_add_js(drupal_get_path('module', 'patterns') . '/js/patterns.js');
-  
+
   $form['commands'] = array(
     '#type' => 'fieldset',
     '#title' => 'Commands'
@@ -391,7 +391,7 @@ function patterns_list() {
   if (variable_get('patterns_refresh_components', TRUE)) {
     patterns_io_load_components();
   }
-  
+
   // Load the patterns from database.
   $patterns = patterns_io_get_patterns(variable_get('patterns_refresh_from_fs', TRUE));
 
@@ -432,7 +432,7 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
 
   // Add the execution options
   $form = patterns_forms_get_execution_options($form);
-  
+
   $disclaimer = t('Please be sure to backup your site before running a pattern. Patterns are not guaranteed to be reversible in case they do not execute well or if unforeseen side effects occur.');
 
   return confirm_form($form, t('Proceed with running pattern %pattern?', array('%pattern' => $pattern->title)), 'admin/patterns', $disclaimer);
@@ -466,9 +466,9 @@ function patterns_enable_pattern_submit($form, &$form_state) {
 
 /**
  * Restores a previously trashed pattern.
- * 
+ *
  * Sets the pattern status in the database to PATTERNS_STATUS_OK
- * 
+ *
  * @param mixed $pid The ID of the Pattern to enable.
  *
  */
@@ -504,7 +504,7 @@ function patterns_trash_pattern($form, &$form_state, $pid = NULL) {
     '#type' => 'value',
     '#value' => $pid,
   );
-  
+
   $form['name'] = array(
     '#type' => 'value',
     '#value' => @$pattern->name,
@@ -553,7 +553,7 @@ function patterns_remove_pattern($form, &$form_state, $pid = NULL) {
     '#type' => 'value',
     '#value' => $pid,
   );
-  
+
   $form['name'] = array(
     '#type' => 'value',
     '#value' => @$pattern->name,
@@ -616,11 +616,11 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
   module_load_include('inc', 'patterns', 'includes/core/core.modules');
   module_load_include('inc', 'patterns', 'includes/core/core.token');
   module_load_include('inc', 'patterns', 'includes/core/core.' . $mode);
-  
+
   $fun = 'patterns_execute_pattern_' . $mode;
 
-  drupal_set_time_limit(0);  
-  
+  drupal_set_time_limit(0);
+
   if (!isset($params['quickrun']) || !$params['quickrun']) {
     if (!is_object($pattern)) {
       $pattern = patterns_get_pattern($pattern);
@@ -657,7 +657,7 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
   $modules = $pattern_details['modules'];
 // Install modules, if necessary.
   $installed_modules = patterns_install_modules($modules);
-  if (!$installed_modules['success']) { 
+  if (!$installed_modules['success']) {
     drupal_set_message($installed_modules['error_message'], 'error');
     return FALSE;
   }
@@ -678,12 +678,12 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
 
   // Execute the Pattern using the selected mode.
   $fun($pattern, $params, $patterns_details, $actions_map);
-  
+
   // Disable the modules enabled just for executing the pattern
   if (!empty($installed_modules['installed'])) {
   	patterns_disable_modules($installed_modules['installed']);
   }
-  
+
   return TRUE;
 }
 

@@ -48,7 +48,7 @@ function patterns_execute_pattern_batch($pattern, $params, $patterns_details, $a
   foreach ($sections as $section => $actions) {
     // by default this pattern should run included ?
     // this setting can be overwritten by the pattern file itself
-    
+
     $actions = patterns_parser_retrieve_actions_from_section($actions, $include_options);
 
     // This can happen if includes are disabled
@@ -186,8 +186,8 @@ function patterns_batch_finish($success, $results, $operations) {
   }
   else {
     $pattern = reset($info);
-    drupal_set_message(t('Section "@section" of pattern "@pattern" ran with errors. 
-      Check the error messages to get more details.', 
+    drupal_set_message(t('Section "@section" of pattern "@pattern" ran with errors.
+      Check the error messages to get more details.',
       array('@pattern' => $pattern['title'], '@section' => $section,
            )),
      'error');

@@ -6,16 +6,16 @@ define('PATTERNS_FORMAT_PHP', 'php');
 function patterns_phpparser_patterns_parser() {
 	$parser = array();
 	$parser['format'] = PATTERNS_FORMAT_PHP;
-	$parser['parser'] = 'patterns_phpparser'; 
+	$parser['parser'] = 'patterns_phpparser';
 	//$parser['overwrite'] = TRUE; // default is TRUE
-	return $parser;  
+	return $parser;
 }
 
 /**
  * Loads and parases a YAML pattern from file.
  *
  * @param string $path The path to the pattern file.
- * @param bool $local (optional) TRUE if the pattern 
+ * @param bool $local (optional) TRUE if the pattern
  *   file is local. Defaults to TRUE.
  *
  * @return array|bool The pattern structure, or FALSE.
@@ -34,7 +34,7 @@ function patterns_phpparser_load($path, $local = TRUE) {
 
 /**
  * @depracated
- * 
+ *
  */
 function patterns_phpparser_load_old($path, $local = TRUE) {
   if ($local && !file_exists($path)) {
@@ -55,17 +55,17 @@ function patterns_phpparser_load_old($path, $local = TRUE) {
 
 
 /**
- * Parses a string containing a PHP array and returns 
+ * Parses a string containing a PHP array and returns
  * the array.
- * 
+ *
  * @param array $pattern The pattern string to convert array.
- * 
+ *
  */
 function patterns_phpparser_parse($pattern = NULL) {
 	if (is_null($pattern)) return FALSE;
 	if (is_array($pattern)) return $pattern;
   if (!is_string($pattern)) return FALSE;
-  	
+
   $outout = array();
   parse_str($pattern, $output);
   return $output;
@@ -74,10 +74,10 @@ function patterns_phpparser_parse($pattern = NULL) {
 /**
  * Converts an array representing a pattern into a YAML string.
  *
- * @param array $pattern The pattern to convert into a YAML string	
+ * @param array $pattern The pattern to convert into a YAML string
  */
 function patterns_phpparser_dump($pattern = NULL) {
 	if (is_null($pattern) || !is_array($pattern)) return FALSE;
-	
+
   return print_r($pattern, TRUE);
 }

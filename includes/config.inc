@@ -71,7 +71,7 @@ function patterns_config_settings($form, &$form_state) {
     '#description' => t('By default, patterns files will be saved and loaded from here.'),
     '#default_value' => variable_get('patterns_save_file', 'sites/all/patterns/'),
   );
-  
+
   $form['fs']['patterns_refresh_components'] = array(
     '#type' => 'checkbox',
     '#title' => t('Updates the patterns component at every page reload'),
@@ -92,7 +92,7 @@ function patterns_config_settings($form, &$form_state) {
     '#description' => t('When enabled, patterns in the database will be automatically updated to the latest version found in the file system. If the pattern was already been enabled, it just display a warning, but it does not execute the update.'),
     '#default_value' => variable_get('patterns_update_db_from_fs', TRUE),
   );
-  
+
   $form['publish'] = array(
     '#type' => 'fieldset',
     '#title' => t('Sharing options'),
