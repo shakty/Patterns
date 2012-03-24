@@ -1,3 +1,7 @@
+7039:
+
+		- Parser validates correctly all types of included patterns
+
 7038:
 		- XML Parser Dump works correctly
 

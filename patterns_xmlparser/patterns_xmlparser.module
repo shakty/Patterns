@@ -158,8 +158,13 @@ function _patterns_xmlparser_process_action($action = NULL) {
   $_action = $action['xml_tag']; // TODO: check that is a valid one and that exist
           
   if ($_action == PATTERNS_INCLUDE) {
-  	// Lets reparse the whole included pattern
-    $_action_data = array('pattern' => patterns_xmlparser_rearrange_data($action[0]));
+  	// If the pattern is included by reference add it
+  	// immediately, otherwise reparse the whole included pattern
+  	$inclusion = $action[0]['value'];
+  	if (is_array($inclusion)) {
+  		$inclusion =  patterns_xmlparser_rearrange_data($action[0]);
+  	}
+    $_action_data = array('pattern' => $inclusion);
   }
   else {
   	$_action_data = _patterns_xmlparser_rearrange_data($action);

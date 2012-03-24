@@ -378,7 +378,9 @@ function _patterns_parser_scan_pattern($pattern, $include = FALSE) {
     }
     
     // SECTIONS: invalid
-    if (!is_array($section)) {
+    // included patterns can be just the name or the id 
+    // of the pattern
+    if (!is_array($section) && !$include) {
       // If the YAML is not loaded correctly you get 0.
       $result['empties'][] = ($section_name === 0) ? $generic_error 
       																						 : $section_name;
