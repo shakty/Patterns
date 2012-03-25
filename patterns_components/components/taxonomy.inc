@@ -8,7 +8,7 @@
 
 // Return an error string only in case of error, otherwise modify $data
 
-function taxonomy_patterns($data) {
+function taxonomy_patterns($data = NULL) {
 
   $actions['vocabulary'] = array(
     PATTERNS_INFO 	=> t('Create/Modify/Delete Taxonomy Vocabularies'),
@@ -17,9 +17,11 @@ function taxonomy_patterns($data) {
     PATTERNS_DELETE => array('taxonomy_vocabulary_confirm_delete'),
     PATTERNS_FILES 	=> array('modules/taxonomy/taxonomy.admin.inc'),
     PATTERNS_EXPORT => array(
-    											PATTERNS_EXPORT_ALL => 'function1',
+    											PATTERNS_EXPORT_ALL => 'taxonomy_patterns_export_all_vocs',
 													'Option 1' => 'export_generic_node',	
-													'Single Vocabulary' => 'export_single_node',
+													'Single Vocabulary' => array('callback' => 'taxonomy_patterns_export_single_vocabulary',
+																											 'arguments' => array('1', '2', '3'),
+    											),
 											 ),
   );
 
@@ -54,6 +56,19 @@ function taxonomy_patterns_actions($data) {
     'taxonomy_form_term' => t('Taxonomy: Add or edit a term to a vocabulary'),
     'taxonomy_vocabulary_confirm_delete' => t('Taxonomy: Delete a vocabulary'),
   );
+}
+
+
+function taxonomy_patterns_export_all_vocs($args = NULL) {
+	$info = taxonomy_patterns();
+	$form_id = $info['vocabulary'][PATTERNS_MODIFY];
+	$out = patterns_api_add_section('vocabularies');
+	$vocs = taxonomy_get_vocabularies();
+	foreach ($vocabulary as $param) {
+  	$out[] = patterns_api_extract_actions($form_id, $param, PATTERNS_MODIFY);
+  }
+  return $out;
+	
 }
 
 // returns arguments needed for the forms when processing automatically

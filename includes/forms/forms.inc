@@ -113,6 +113,27 @@ function patterns_forms_get_formats_selector($form = array(), $default = PATTERN
   return $form;
 }
 
+/**
+ * Returns a default format, according to the 
+ * available parsers. In the following order returns:
+ * YAML, XML, PHP, ''.  
+ * 
+ * @return mixed String A default value for a form selector
+ */
+function patterns_forms_get_default_format() {
+	
+	if (defined('PATTERNS_FORMAT_YAML')) { 
+		return PATTERNS_FORMAT_YAML; 
+	}
+	if (defined('PATTERNS_FORMAT_XML')) {
+		return PATTERNS_FORMAT_XML;
+	}
+	if (defined('PATTERNS_FORMAT_PHP')) { 
+		return PATTERNS_FORMAT_PHP; 
+	}
+	
+	return '';
+}
 
 function patterns_forms_parser_ready($form = array(), $parser = NULL) {
 	if (!patterns_parser_ready()) {

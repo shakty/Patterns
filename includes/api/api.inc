@@ -1,5 +1,6 @@
 <?php
-/*
+
+/**
  * @file
  *
  * API for writing pattern files.
@@ -7,19 +8,148 @@
  */
 
 /**
- * @see patterns_api_build_tagmodules_index
+ * Returns an array containing all the reserved words
+ * for a Patterns.
  * 
- * Enter description here ...
- * @param unknown_type $tag_name
- * @param unknown_type $data
- * @param unknown_type $id
+ * Such words are not allowed to be used as a section heading.
+ * 
+ * @return Array
+ *   The array of reserved words.
  */
-function patterns_api_build_tagmodules_index($tag_name = NULL, $id = NULL) {
-	return patterns_get_tagmodules_index($tag_name, NULL, $id);
+function patterns_api_reserved_words() {
+	return array(
+		PATTERNS_TAG,
+		PATTERNS_SECTION_INFO,
+		PATTERNS_SECTION_MODULES,
+		PATTERNS_CREATE,
+		PATTERNS_MODIFY,
+		PATTERNS_DELETE,
+		PATTERNS_INCLUDE,
+	);
 }
 
-function patterns_api_extract($form, $args = array()) {
+/**
+ * Tells whether a string is a Patterns reserved word
+ * 
+ * @param mixed $word
+ * 	 The string to check.
+ * 
+ * @return Boolean,
+ *   TRUE, if it is a reserved word
+ */
+function patterns_api_is_reserved_word($word = NULL) {
+	if (is_null($word)) return FALSE;
+	return (in_array($word, patterns_api_reserved_words())) ? TRUE
+																													: FALSE;
+}
 
+/**
+ * @see patterns_get_tagmodules_index
+ * @see patterns_api_build_moduletags_index
+ * 
+ */
+function patterns_api_build_tagmodules_index($tag = NULL, $data = NULL, $key = NULL) {
+	return patterns_get_tagmodules_index($tag, NULL, $key);
+}
+/**
+ * Builds up an associative array of modules and exposed tags.
+ * 
+ * @param mixed $module
+ *   (optional) If set, only information about this specific module is returned.
+ *   Defaults NULL.
+ * @param mixed $key (optional) If set, only the values for that key 
+ * 	 from all modules are returned. E.g. (PATTERNS_CREATE, PATTERNS_MODIFY, etc.)
+ * 	 Defaults NULL. 
+ *
+ * @return array $moduletags The tagmodules index built according to the parameters.
+ * 
+ * @see patterns_api_build_tagmodules_index
+ */
+function patterns_api_build_moduletags_index($module = NULL, $data = NULL, $key = NULL) {
+	 static $moduletags;
+
+  // Index not yet built
+  if (empty($moduletags)) {
+  
+    $moduletags = array();
+    foreach (module_implements('patterns') as $component) {
+      $tags = module_invoke($component, 'patterns', $data);
+      $moduletags[$component] = $tags;
+    }
+  }
+
+  // Part of tag
+  if (!is_null($module) && !is_null($key)) {
+    return $moduletags[$module][$key];  
+  }
+  // Full tag
+  if (!is_null($module)) {
+    return $moduletags[$module];
+  }
+  
+  // All the values of key=$key from all tags
+	if (!is_null($key)) {
+		$out = array();
+		foreach ($moduletags as $module => $value) {
+			if (isset($value[$key])) {
+				$out[$module] = $value[$key];
+			} 
+		}
+    return $out;
+  }
+  
+  // All values from all tags
+  return $moduletags;
+}
+
+
+/**
+ * Checks whether a string is a valid component name.
+ * 
+ * @param mixed $component 
+ * 	 The string with the name of the component
+ * 
+ * @return Boolean 
+ * 	 TRUE, if the string is a valid component name
+ * 
+ * @see patterns_api_build_moduletags_index
+ */
+function patterns_api_is_valid_component_name($component = NULL) {
+	if (is_null($component)) return FALSE;
+	$idx = patterns_api_build_moduletags_index();
+	return (isset($idx[$component])) ? TRUE : FALSE;
+}
+
+/**
+ * Initializes an empty section in a pattern file.
+ * 
+ * Checks whether the section name is valid before adding it.
+ * 
+ * @param mixed $section
+ * 	 A string representing the pattern name
+ * @param array $pattern (optional)
+ *   The associative array representing a pattern
+ * @param Bool $ow (optional)
+ * 	 If TRUE, an existing section with the same name will be 
+ * 	 overwritten. Defaults FALSE. 
+ */
+function patterns_api_add_section($section = NULL, &$pattern = array(), $ow = FALSE) {
+	if (is_null($section)) return FALSE;
+	if (patterns_api_is_reserved_word($section)) return FALSE;
+	if (isset($pattern[$section]) && !$ow) return FALSE;
+	
+	$pattern[$section] = array();
+	return $pattern;
+}
+
+/**
+ * Extract the current state of a form.
+ * Enter description here ...
+ * @param unknown_type $form
+ * @param unknown_type $args
+ * @param unknown_type $action
+ */
+function patterns_api_extract_actions($form, $args = array(), $action = PATTERNS_MODIFY) {
 
 	// Move this inside the Macro module
 	// Macro should check that only one user is using that
@@ -31,11 +161,17 @@ function patterns_api_extract($form, $args = array()) {
 	$form_state['build_info']['args'] = $args;
 	drupal_form_submit($form, $form_state);
 	
-	// TODO CleanUp
+	$result = macro_get_macro();
 	
-	return macro_get_macro_yaml();
-           
-  
+	variable_set('macro_enabled', FALSE);
+	
+	$out = array();
+	foreach ($result as $a) {
+		$out[] = array ($action => $a);	
+	}
+	
+	
+	return $out;
 }
 
 /**
