@@ -22,7 +22,20 @@ function patterns_first_install_page() {
 
 function patterns_first_install($form, &$form_state) {
 	
-	$intro = 'This is the first time you installed patterns. ';
+	$intro = 'This is the first time you installed patterns. The Patterns module is built to bypass this bottleneck by managing and automating site configuration. Site configuration is stored in YAML, XML, or PHP files called Patterns. These files have a structure which is easy to read, modify, manage, and share.They are portable, reusable, and extensible. 
+	They can be executed manually or as a part of an automated web site deployment. There are main modules introduced as follow:
+	System module - It provides basic but extensible functionality for use by other modules and themes. 
+	User module - It allows users with proper permissions to manage user roles (used to classify users) and permissions associated with those roles.
+	Menu module - It is a hierarchical collection of links, which can be within or external to the site, generally used for navigation.
+	Blocks module - They are the boxes visible in the sidebar(s) of your Drupal website.
+	Field module - Custom data fields can be defined for entity types. The field data can be storing, loading, editing, and rendering.
+    Taxonomy module - It allows you to classify the content of your website.
+	Node module - The Node module manages the creation, editing, deletion, settings, and display of the main site content.
+	Pathauto module - Pathauto provides a mechanism for modules to automatically generate aliases for the content they manage.
+	Toolbar module - Toolbar module displays links to top-level administration menu items and links from other modules at the top of the screen.
+	Shortcut module - It allows users to create sets of shortcut links to commonly-visited pages of the site.
+	Color module - It allows users with the Administer site configuration permission to quickly and easily change the color scheme of themes that have been built to be compatible with it.';
+	
 	$intro.= 'This page gives you a brief guide to the main functionalities of Patterns and settings. TODO check which parsers are enabled, if components are enabled, path to drush, and other settings.';
 	
 	$form = array();
