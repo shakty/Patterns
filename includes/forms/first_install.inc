@@ -7,8 +7,10 @@
 
 function patterns_first_install_page() {
 	
-
+	module_load_include('inc', 'patterns', 'includes/forms/modules');
 	
+
+	//return patterns_forms_submodules();
 	
 	
 	//$form['#submit'] = 'patterns_first_install_submit';
@@ -24,8 +26,6 @@ function patterns_first_install($form, &$form_state) {
 	
 	$intro = 'This is the first time you installed patterns. ';
 	$intro.= 'This page gives you a brief guide to the main functionalities of Patterns and settings. TODO check which parsers are enabled, if components are enabled, path to drush, and other settings.';
-	
-	$form = array();
 	
 	$form['welcome'] = array (
     '#type' => 'fieldset',

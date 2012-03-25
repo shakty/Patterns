@@ -28,6 +28,7 @@ define('PATTERNS_CREATE', 'create');
 define('PATTERNS_MODIFY', 'modify');
 define('PATTERNS_DELETE', 'delete');
 define('PATTERNS_INCLUDE', 'include');
+define('PATTERNS_EXPORT', 'export');
 
 define('PATTERNS_FILES', 'files');
 define('PATTERNS_INFO', 'descr');

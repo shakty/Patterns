@@ -172,6 +172,7 @@ function theme_patterns_list($args) {
 
 
 // Theming freely inspired by the Install Modules interface
+// in /modules/system/system.admin.inc
 // theme_system_modules_fieldset
 // _system_modules_build_row
 

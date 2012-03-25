@@ -6,6 +6,25 @@
  *
  */
 
+function patterns_api_extract($form, $args = array()) {
+
+
+	// Move this inside the Macro module
+	// Macro should check that only one user is using that
+	$form_state = array();
+	$form_state['values'] = array();
+	variable_set('macro_submissions', array());
+
+	
+	$form_state['build_info']['args'] = $args;
+	drupal_form_submit($form, $form_state);
+	
+	// TODO CleanUp
+	
+	return macro_get_macro_yaml();
+           
+  
+}
 
 /**
  * Helper function to create the associative array of returned values from

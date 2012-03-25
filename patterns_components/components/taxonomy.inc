@@ -11,11 +11,16 @@
 function taxonomy_patterns($data) {
 
   $actions['vocabulary'] = array(
-    PATTERNS_INFO => t('Create/Modify/Delete Taxonomy Vocabularies'),
+    PATTERNS_INFO 	=> t('Create/Modify/Delete Taxonomy Vocabularies'),
     PATTERNS_CREATE => array('taxonomy_form_vocabulary'),
     PATTERNS_MODIFY => array('taxonomy_form_vocabulary'),
     PATTERNS_DELETE => array('taxonomy_vocabulary_confirm_delete'),
-    PATTERNS_FILES => array('modules/taxonomy/taxonomy.admin.inc'),
+    PATTERNS_FILES 	=> array('modules/taxonomy/taxonomy.admin.inc'),
+    PATTERNS_EXPORT => array(
+    											PATTERNS_EXPORT_ALL => 'function1',
+													'Option 1' => 'export_generic_node',	
+													'Single Vocabulary' => 'export_single_node',
+											 ),
   );
 
   $actions['term'] = array(

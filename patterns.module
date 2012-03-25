@@ -84,6 +84,7 @@ module_load_include('inc', 'patterns', 'includes/forms/first_install');
  * @ Create a Pattern class (?) check performance
  */
 
+//variable_set(PATTERNS_FIRST_INSTALL, TRUE);
 
 /**
  * Implements hook_menu().

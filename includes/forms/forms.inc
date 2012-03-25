@@ -5,6 +5,7 @@
  */
 
 module_load_include('inc', 'patterns', 'includes/forms/export');
+module_load_include('inc', 'patterns', 'includes/forms/extract');
 module_load_include('inc', 'patterns', 'includes/forms/quickrun');
 module_load_include('inc', 'patterns', 'includes/forms/editor');
 module_load_include('inc', 'patterns', 'includes/forms/import');
@@ -110,5 +111,14 @@ function patterns_forms_get_formats_selector($form = array(), $default = PATTERN
   );
 
   return $form;
+}
+
+
+function patterns_forms_parser_ready($form = array(), $parser = NULL) {
+	if (!patterns_parser_ready()) {
+		$forms['noparser'] = array (
+			'#markup' => t('Warning: no valid parser found. Please enable some of the from the interface'),
+		);
+	}
 }
 
