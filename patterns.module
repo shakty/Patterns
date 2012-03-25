@@ -73,6 +73,8 @@ module_load_include('inc', 'patterns', 'includes/servers');
 module_load_include('inc', 'patterns', 'includes/forms/first_install');
 
 
+
+
 /**
  * @todo:
  * @ Enable components to analyze the current pattern for better validation
@@ -764,22 +766,19 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
  * uses caching, unless a specific tag is being looked up.
  *
  * @param string $tag_name
- *   (optional) If set, only information about this specific tag is returned
- *   and the cache will be refreshed. Defaults to NULL.
+ *   (optional) If set, only information about this specific tag is returned.
+ *   Defaults NULL.
  * @param array $data
  *   (optional) The data of the pattern. If $tag_name was set, $data must be
- *   set as well. Defaults to NULL.
- * @param integer $id
- *   (optional) If set, only this particular bit of information is returned. Defaults to NULL.
- *   Allowed values for $id are: 'descr', PATTERNS_CREATE, PATTERNS_MODIFY,
- *   PATTERNS_DELETE, and 'files'.
- *
- * @Note The return type has changed. It used to be an array of tag => module now
- * you get the info with $tag['module'].
+ *   set as well. Defaults NULL.
+ * @param integer $key (optional) If set, only the values from that key are returned. 
+ *   E.g. (PATTERNS_CREATE, PATTERNS_MODIFY, etc.) 
  *
  * @return array $tag_modules The tag_modules index built according to the parameters.
+ * 
+ * TODO: Do we still need the $data parameter ? Probably not.
  */
-function patterns_get_tagmodules_index($tag_name = NULL, $data = NULL, $id = NULL) {
+function patterns_get_tagmodules_index_old($tag_name = NULL, $data = NULL, $id = NULL) {
   static $tag_modules;
 
   // Index not yet built or $tag_name is set.
@@ -808,6 +807,52 @@ function patterns_get_tagmodules_index($tag_name = NULL, $data = NULL, $id = NUL
   else {
     return $tag_modules[$tag_name][$id];
   }
+}
+
+function patterns_get_tagmodules_index($tag_name = NULL, $data = NULL, $key = NULL) {
+  static $tag_modules;
+
+  // Index not yet built
+  if (empty($tag_modules)) {
+  
+    $tag_modules = array();
+    // Get a list of tags and their modules.
+    // TODO: Optimize: if $tag_name is set, and $tag_modules is not empty, look
+    // for only the modules that we have seen before implement the tag.
+    foreach (module_implements('patterns') as $module) {
+      $tags = module_invoke($module, 'patterns', $data);
+      foreach ($tags as $tag => $value) {
+        // Add the reference to the module within the information which each
+        // module is already returning
+        $value['module'] = $module;
+        $tag_modules[$tag] = $value;
+      }
+    }
+  }
+
+  // Part of tag
+  if (!is_null($tag_name) && !is_null($key)) {
+    return $tag_modules[$tag_name][$key];  
+  }
+  // Full tag
+  if (!is_null($tag_name)) {
+    return $tag_modules[$tag_name];
+  }
+  
+  // All the values of key=$key from all tags
+	if (!is_null($key)) {
+		$out = array();
+		foreach ($tag_modules as $tag => $value) {
+			if (isset($value[$key])) {
+				$out[$value['module']] = $value[$key];
+				debug($out);
+			} 
+		}
+    return $out;
+  }
+  
+  // All values from all tags
+  return $tag_modules;
 }
 
 /**

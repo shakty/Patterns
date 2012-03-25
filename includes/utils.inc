@@ -5,6 +5,11 @@
  */
 
 
+function patterns_utils_is_macro_enabled(){
+  $list = module_list();
+  return (isset($list["macro"])) ? TRUE : FALSE;
+}
+
 /**
  * Checks a pattern identifier (numeric or alphanumeric) and if it not
  * valid displays an error message and redirect the user to the specified page.

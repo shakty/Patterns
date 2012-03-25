@@ -6,6 +6,18 @@
  *
  */
 
+/**
+ * @see patterns_api_build_tagmodules_index
+ * 
+ * Enter description here ...
+ * @param unknown_type $tag_name
+ * @param unknown_type $data
+ * @param unknown_type $id
+ */
+function patterns_api_build_tagmodules_index($tag_name = NULL, $id = NULL) {
+	return patterns_get_tagmodules_index($tag_name, NULL, $id);
+}
+
 function patterns_api_extract($form, $args = array()) {
 
 
