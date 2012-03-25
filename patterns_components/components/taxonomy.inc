@@ -31,8 +31,15 @@ function taxonomy_patterns($data = NULL) {
     PATTERNS_MODIFY => array('taxonomy_form_term'),
     PATTERNS_DELETE => array('taxonomy_term_confirm_delete'),
     PATTERNS_FILES => array('modules/taxonomy/taxonomy.admin.inc'),
+    PATTERNS_EXPORT => array(
+    											PATTERNS_EXPORT_ALL => 'taxonomy_patterns_export_all_terms',	
+													'Single Term' => array('callback' => 'taxonomy_patterns_export_single_vocabulary',
+																								 'arguments' => 'taxonomy_patterns_get_terms_args',
+    											),
+											 ),
   );
-
+	
+	/*
   $actions['vocabulary_extract_all']  = array(
     PATTERNS_INFO => t('Create/Modify/Delete Taxonomy Vocabularies'),
     PATTERNS_MODIFY => array('taxonomy_form_vocabulary'),
@@ -44,7 +51,8 @@ function taxonomy_patterns($data = NULL) {
     PATTERNS_MODIFY => array('taxonomy_form_term'),
     PATTERNS_FILES => array('modules/taxonomy/taxonomy.admin.inc'),
   );
-
+	*/
+  
   return $actions;
 
 }

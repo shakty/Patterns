@@ -123,6 +123,50 @@ function patterns_extract($form, &$form_state) {
 
 }
 
+function _patterns_extract_add_ajax_to_options (&$form) {
+	if (!isset($form['options'])) return FALSE;
+	if (!isset($form['module'])) return FALSE;
+	
+	$module = $form['module'];
+	$idx_module = $module . '_forms-wrapper';
+	$form['module_forms_container'] = array(
+    '#type' => 'fieldset',
+    '#prefix' => '<div id="' . $idx_module . '">',
+    '#suffix' => '</div>',
+  );
+	
+	$form['options'] += array(
+    '#ajax' => array(
+     'wrapper' => $idx_module,
+     'callback' => 'patterns_import_module_ajax_module_forms_callback',
+    ),
+  ); 
+	  
+/*
+   
+   $form['module_forms_container']['checkall'] = array(
+  	'#type' => 'checkboxes',
+    '#attributes' => array('onclick' => 'checkUncheckAll(this);'),
+    '#options' => array('UnCheckAll' => "Select / Unselect all"),
+  );
+   
+   // javascript for the check / uncheck all function
+  drupal_add_js("function checkUncheckAll(theElement) {
+        var theForm = theElement.form, z = 0;
+        for(z=0; z<theForm.length;z++){
+          if (theForm[z].type == 'checkbox' && theForm[z].name != 'checkall'){
+            theForm[z].checked = theElement.checked;
+          }
+        }
+      }
+    ", 'inline');
+
+*/
+
+	 return TRUE;
+}
+
+
 function patterns_extract_page1($form, &$form_state) {
 	 
 	$tm_index = patterns_api_build_tagmodules_index(null, null, PATTERNS_EXPORT);
@@ -133,7 +177,7 @@ function patterns_extract_page1($form, &$form_state) {
 	    '#title' => 'Components with automatic extraction enabled',
 	);
 	
-  foreach ($tm_index as $module => $options) {
+  foreach ($tm_index as $module => $tags) {
   	
   	$form['ext'][$module] = array (
 	    '#type' => 'fieldset',
@@ -141,16 +185,26 @@ function patterns_extract_page1($form, &$form_state) {
   		'#collapsible' => TRUE,
   		'#collapsed' => FALSE, // TODO set to TRUE after debugging
 	  );
+	  
+	  $form['ext'][$module]['module'] = array(
+	    '#type' => 'hidden',
+	  	'#default_value' => $module,
+	  ); 
+	  
 	  $form['ext'][$module]['options'] = array(
 	    '#type' => 'radios',
 	    '#title' => t('Extraction options'),
-	    '#options' => array_keys($options),
-	   // '#ajax' => array(
-	   //  'wrapper' => 'module_forms-wrapper',
-	   //   'callback' => 'patterns_import_module_ajax_module_forms_callback',
-	   // ),
+	    '#options' => array_combine(array_keys($tags), array_keys($tags)),
 	    //'#disabled' => $step < 2 ? FALSE : TRUE, // disable when chosen
 	  ); 
+
+	  // TODO: loop here
+	  //foreach ($tags as $tag) {		
+	  //}
+	  
+	  //_patterns_extract_add_ajax_to_options($form['ext'][$module]);
+	  
+	  
 	  $form['ext']['module'] = array(
 	    '#type' => 'hidden',
 	  	'#default_value' => $module,
@@ -241,34 +295,21 @@ function patterns_extract_page2_old($form, &$form_state) {
 function patterns_extract_page2($form, &$form_state) {
 	
 
+	$pattern = patterns_api_add_info_section();
+	
+	// Sets the category for the info
+  // category: " . $modules_with_components[$form_state['values']['module']]
 
-   // creating info section of yaml pattern file
-   $yaml = "# YAML " . $modules_with_components[$form_state['values']['module']] . " Pattern\n" .
-          "\n" .
-          "info:\n" .
-          "  title: #please add a title\n" .
-          "  description: " .
-          "automatically generated Pattern file";
+	$exports = patterns_api_build_moduletags_index($form_state['values']['module'], null, PATTERNS_EXPORT);
+	$func = $exports[$form_state['values']['options']];
+	
+	$sections = call_user_func_array($func, array());
 
-   global $user;
-   global $base_root;
-   // TODO: get core version
-   $yaml .= "\n" .
-          "  author: " . $user->name . "\n" .
-          "  category: " . $modules_with_components[$form_state['values']['module']] . "\n" .
-          "  version: 1.0\n" .
-          "  core: x.y\n" .
-          "  author_email: " . $user->mail . "\n" .
-          "  author_website: " . $base_root . "\n" .
-          "\n" .
-          "actions:\n" .
-          "";
-   // concatenating the actions
-   $yaml .= $yaml_content[PATTERNS_CREATE];
-   $yaml .= $yaml_content[PATTERNS_MODIFY];
-   $yaml .= $yaml_content[PATTERNS_DELETE];
-   
-   return $form;
+	$pattern = array_merge($info, $sections);
+	
+	debug($pattern);
+	
+  return $form;
 }
 
 function patterns_extract_page4($form, &$form_state) {
@@ -414,13 +455,10 @@ function patterns_extract_visualize_step_process($step) {
   return FALSE;
 }
 
-
-
-/*
 function patterns_import_module_ajax_module_forms_callback($form, $form_state) {
   return $form['module_forms_container'];
 }
-*/
+
 
 /**
  * Forms to create a yaml file based on a module
@@ -431,7 +469,7 @@ function patterns_import_module_ajax_module_forms_callback($form, $form_state) {
  * From this, yaml file gets generated
  */
 
-function patterns_import_module_old($form, &$form_state) {
+function patterns_extract_old($form, &$form_state) {
 
   $list = module_list();
   if (!isset($list["macro"])) {

@@ -78,6 +78,8 @@ function patterns_api_build_moduletags_index($module = NULL, $data = NULL, $key 
     }
   }
 
+  debug($moduletags);
+  
   // Part of tag
   if (!is_null($module) && !is_null($key)) {
     return $moduletags[$module][$key];  
@@ -119,6 +121,41 @@ function patterns_api_is_valid_component_name($component = NULL) {
 	$idx = patterns_api_build_moduletags_index();
 	return (isset($idx[$component])) ? TRUE : FALSE;
 }
+
+
+/**
+ * Adds / Replaces an Info section to a pattern. 
+ * 
+ * Missing properties are options are automatically filled in with
+ * standard values.
+ * 
+ * @param array $info (optional)
+ * 	 An associative array of properties for the info section.
+ * @param array $pattern (optional)
+ *   An array representing a pattern file.
+ * @param Bool $ow (optional)
+ *   If TRUE, overwrites existing Info sections.
+ */
+function patterns_api_add_info_section($info = array(), &$pattern = array(), $ow = FALSE) {
+	if (isset($pattern[PATTERNS_SECTION_INFO]) && !$ow) return FALSE;
+	
+  global $user;
+  global $base_root;
+  
+  $pattern[PATTERNS_SECTION_INFO] = array();
+
+  $pattern[PATTERNS_SECTION_INFO]['title']          = (isset($info['title'])) ? $info['title'] : 'Untitled Pattern';
+  $pattern[PATTERNS_SECTION_INFO]['category']       = (isset($info['category'])) ? $info['author'] : 'General';
+  $pattern[PATTERNS_SECTION_INFO]['description']    = (isset($info['description'])) ? $info['description'] : 'No description';
+  $pattern[PATTERNS_SECTION_INFO]['version']    		= (isset($info['version'])) ? $info['version'] : '1.0';
+  $pattern[PATTERNS_SECTION_INFO]['core']           = (isset($info['core'])) ? $info['core'] : 'x.y';
+  $pattern[PATTERNS_SECTION_INFO]['author']         = (isset($info['author'])) ? $info['author'] : $user->name;
+  $pattern[PATTERNS_SECTION_INFO]['author_email']   = (isset($info['author_email'])) ? $info['author_email'] : $user->mail;
+  $pattern[PATTERNS_SECTION_INFO]['author_website'] = (isset($info['author_website'])) ? $info['author_website'] : $base_root;
+
+  return $pattern;
+}
+
 
 /**
  * Initializes an empty section in a pattern file.
