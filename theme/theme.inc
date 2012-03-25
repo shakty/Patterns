@@ -27,6 +27,10 @@ function patterns_theme() {
     'patterns_patterns_fieldset' => array(
       'render element' => 'form',
     ),
+    'patterns_extract_table' => array(
+      'render element' => 'form',
+     // 'file' => 'simpletest.pages.inc',
+    ),
   );
 }
 

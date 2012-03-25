@@ -31,6 +31,7 @@ define('PATTERNS_INCLUDE', 'include');
 
 define('PATTERNS_EXPORT', 'export');
 define('PATTERNS_EXPORT_ALL', 'All');
+define('PATTERNS_EXTRACT_ALL', 'extract_all');
 
 define('PATTERNS_FILES', 'files');
 define('PATTERNS_INFO', 'descr');

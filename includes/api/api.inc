@@ -78,7 +78,7 @@ function patterns_api_build_moduletags_index($module = NULL, $data = NULL, $key 
     }
   }
 
-  debug($moduletags);
+  //debug($moduletags);
   
   // Part of tag
   if (!is_null($module) && !is_null($key)) {

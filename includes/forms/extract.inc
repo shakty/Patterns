@@ -46,6 +46,9 @@ function _patterns_extract_check_step(&$form_state, $validation = FALSE) {
  	
 	$step = FALSE;
 	
+//	if (isset($form_state['values'][PATTERNS_EXTRACT_ALL])) {
+//    $step = 4;
+//  }
 	if (isset($form_state['values']['content'])) {
     $step = 4;
   }
@@ -72,7 +75,7 @@ function _patterns_extract_if_invalid_step_goback($step = 0,
 				                                          $options = array()) {
  	
 	
-  if ($step < 1 || $step > 4) {
+  if ($step < 1 || $step > 5) {
   	drupal_set_message(t('Extraction could not proceed to the next step. Step %id not found.', array('%id' => $step)), 'error');
   	drupal_goto($back);
   }
@@ -112,7 +115,7 @@ function patterns_extract($form, &$form_state) {
      '#value' => $step,
   );
 	
-  debug($step);
+  //debug($step);
   
   drupal_add_js('misc/ajax.js');
   $name = isset($form_state['values']['name']) ?  $form_state['values']['name'] : 'name not set';
@@ -172,13 +175,53 @@ function patterns_extract_page1($form, &$form_state) {
 	$tm_index = patterns_api_build_tagmodules_index(null, null, PATTERNS_EXPORT);
 	
   $form = array ();
+   	
   $form['ext'] = array (
-	    '#type' => 'fieldset',
-	    '#title' => 'Components with automatic extraction enabled',
+		'#type' => 'fieldset',
+	  '#title' => 'Components with automatic extraction enabled',
 	);
 	
   foreach ($tm_index as $module => $tags) {
-  	
+
+  	/*
+    $form['ext'][$module] = array(
+    	'#type' => 'fieldset',
+	    '#title' => $module,
+  		'#collapsible' => TRUE,
+  		'#collapsed' => FALSE, // TODO set to TRUE after debugging
+    );
+    
+       // show all forms as checkboxes
+   $form['ext'][$module]['module_forms'] = array(
+      '#type' => 'checkboxes',
+      '#multiple' => TRUE,
+      '#options' => array_keys($tags),
+      '#size' => count($options, COUNT_RECURSIVE),
+      //'#title' => $module,
+      //'#default_value' => isset($form_state['values']['module_forms']) ? $form_state['values']['module_forms'] : array(),
+      //'#disabled' => $step < 3 ? FALSE : TRUE,
+   );
+
+   
+    
+   foreach ($tags as $tag => $forms) {
+	   $form['ext'][$module]['module_forms'][$tag] = array(
+	      '#type' => 'checkboxes',
+	      '#multiple' => TRUE,
+	      '#options' => $forms,
+	      //'#size' => count($options, COUNT_RECURSIVE),
+	      '#title' => $tag,
+	      //'#default_value' => isset($form_state['values']['module_forms']) ? $form_state['values']['module_forms'] : array(),
+	      //'#disabled' => $step < 3 ? FALSE : TRUE,
+	   );
+   }
+	 
+  }
+ */
+
+  
+  
+  
   	$form['ext'][$module] = array (
 	    '#type' => 'fieldset',
 	    '#title' => $module,
@@ -191,16 +234,44 @@ function patterns_extract_page1($form, &$form_state) {
 	  	'#default_value' => $module,
 	  ); 
 	  
+	  
 	  $form['ext'][$module]['options'] = array(
 	    '#type' => 'radios',
 	    '#title' => t('Extraction options'),
 	    '#options' => array_combine(array_keys($tags), array_keys($tags)),
 	    //'#disabled' => $step < 2 ? FALSE : TRUE, // disable when chosen
 	  ); 
-
-	  // TODO: loop here
-	  //foreach ($tags as $tag) {		
-	  //}
+	 
+	  
+	  
+	  foreach ($tags as $tag => $forms) {
+			/*
+	  	$form['ext'][$module][$tag] = array(
+	    	'#type' => 'fieldset',
+	    	'#title' => $tag,
+	  		//'#collapsible' => TRUE,
+  			//'#collapsed' => FALSE, // TODO set to TRUE after debugging
+	    	//'#options' => array_combine(array_keys($tags), array_keys($tags)),
+	    	//'#disabled' => $step < 2 ? FALSE : TRUE, // disable when chosen
+	 	 	);
+	  */
+	  	$form['ext'][$module][$tag]['tag'] = array(
+	    	'#type' => 'hidden',
+	  		'#default_value' => $tag,
+	  	); 
+	  	
+	  	$form['ext'][$module][$tag]['options'][$tag] = array(
+	      '#type' => 'radios',
+	  		'#title' => $tag,
+	    	'#options' => array_combine(array_keys($forms), array_keys($forms)),
+	  		'#states' => array(
+		     	 'visible' => array(   // action to take.
+		        ':input[name="options"]' => array('value' => $tag),
+		      ),
+	  		),
+	  	);
+	  }
+	   
 	  
 	  //_patterns_extract_add_ajax_to_options($form['ext'][$module]);
 	  
@@ -209,15 +280,15 @@ function patterns_extract_page1($form, &$form_state) {
 	    '#type' => 'hidden',
 	  	'#default_value' => $module,
 	  ); 
+	  
   }
+  
   
   $form = patterns_forms_get_formats_selector($form,
   																						patterns_forms_get_default_format(),
   																						'Extract data in this format',
   																						FALSE
   );
-  
-  // TODO: add extract all from all
   
   $form['submit'] = array(
   	'#type' => 'submit',
@@ -292,6 +363,27 @@ function patterns_extract_page2_old($form, &$form_state) {
    return $form;
 }
 
+function patterns_extract_all($form, &$form_state) {
+	
+
+	$pattern = patterns_api_add_info_section();
+	
+	// Sets the category for the info
+  // category: " . $modules_with_components[$form_state['values']['module']]
+
+	$exports = patterns_api_build_moduletags_index($form_state['values']['module'], null, PATTERNS_EXPORT);
+	$func = $exports[$form_state['values']['options']];
+	
+	$sections = call_user_func_array($func, array());
+
+	$pattern = array_merge($info, $sections);
+	
+	//debug($pattern);
+	
+  return $form;
+}
+
+
 function patterns_extract_page2($form, &$form_state) {
 	
 
@@ -307,7 +399,7 @@ function patterns_extract_page2($form, &$form_state) {
 
 	$pattern = array_merge($info, $sections);
 	
-	debug($pattern);
+	//debug($pattern);
 	
   return $form;
 }
@@ -416,7 +508,7 @@ function _patterns_extract_validate_step1($form, &$form_state) {
 		return FALSE;
 	} 
 	$module = $form_state['values']['module'];
-	if (!patterns_api_is_valid_component_name($module)) {
+	if (empty($module) || !patterns_api_is_valid_component_name($module)) {
 		form_set_error('ext', t('No valid module selected.'));
 		return FALSE;
 	}
