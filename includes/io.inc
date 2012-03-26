@@ -369,7 +369,7 @@ function patterns_io_save_pattern($content = NULL, $name = NULL, $format = PATTE
 
   if (is_null($original)) {
     if (is_array($content)) {
-       $original = print_r($content, TRUE);
+       $original = patterns_parser_dump($content, $format); // not correct, should dump
     }
     else {
       $original = $content;
@@ -392,6 +392,7 @@ function patterns_io_save_pattern($content = NULL, $name = NULL, $format = PATTE
   $pattern = $load_function($path);
   if (!$pattern) {
     drupal_set_message(t("Pattern '%name' could not be saved into the database. Make sure edited code is well-formed.", array('%name' => $name)), 'error');
+    // TODO: unlink the file
     return FALSE;
   }
 

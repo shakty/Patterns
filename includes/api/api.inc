@@ -186,14 +186,18 @@ function patterns_api_add_section($section = NULL, &$pattern = array(), $ow = FA
  * @param unknown_type $args
  * @param unknown_type $action
  */
-function patterns_api_extract_actions($form, $args = array(), $action = PATTERNS_MODIFY) {
+function patterns_api_extract_actions($form, $args = array(), $tag = NULL, $action = PATTERNS_MODIFY) {
 
+	
+	set_error_handler("patterns_import_module_error_handler", E_ERROR | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR);
 	// Move this inside the Macro module
 	// Macro should check that only one user is using that
 	$form_state = array();
 	$form_state['values'] = array();
+	variable_set('patterns_extract_actions', TRUE);
+	variable_set('macro_enabled', TRUE);
 	variable_set('macro_submissions', array());
-
+	$args = (!is_array($args)) ? array($args) : $args;
 	
 	$form_state['build_info']['args'] = $args;
 	drupal_form_submit($form, $form_state);
@@ -201,14 +205,44 @@ function patterns_api_extract_actions($form, $args = array(), $action = PATTERNS
 	$result = macro_get_macro();
 	
 	variable_set('macro_enabled', FALSE);
+	variable_set('patterns_extract_actions', FALSE);
 	
-	$out = array();
-	foreach ($result as $a) {
-		$out[] = array ($action => $a);	
+	if (!empty($result) || !is_null($tag)){
+		$out = array();
+		foreach ($result as $entry) {
+			$a = $entry['values'];
+			$out[] = array ($action => array_merge(array('tag' => $tag), $a));	
+		}
+		$result = $out;
 	}
 	
-	
-	return $out;
+	return $result;
+}
+
+/**
+ * Implementation of hook_form_alter().
+ * needed for deactivating actual submission of the forms when submitting, i.e.
+ * we only want to know what gets submitted without the submission getting
+ * processed
+ */
+function patterns_form_alter(&$form, $form_state, $form_id) {
+  // Add the record callback on submit and delete all others
+  if ($form_id != 'macro_import_macro' && variable_get('macro_enabled', FALSE) && variable_get('patterns_extract_actions', FALSE)) {
+   $form['#submit'] = array();
+   $form['#submit'][] = 'macro_record_macro';
+  }
+}
+
+/**
+ * in case error happens and script gets halted
+ */
+function patterns_import_module_error_handler($errno, $errstr) {
+  variable_set('macro_enabled', FALSE);
+  variable_set('macro_submissions', array());
+  variable_set('patterns_extract_actions', FALSE);
+  restore_error_handler();
+  // normal error handler should take over from here
+  return FALSE;
 }
 
 /**

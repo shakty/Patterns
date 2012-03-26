@@ -346,6 +346,8 @@ function patterns_menu() {
  */
 function patterns_list() {
 
+	drupal_add_js('misc/ajax.js');
+	  
   drupal_add_css(drupal_get_path('module', 'patterns') . '/css/patterns.css');
   drupal_add_js(drupal_get_path('module', 'patterns') . '/js/patterns.js');
 

@@ -26,17 +26,17 @@ function taxonomy_patterns($data = NULL) {
   );
 
   $actions['term'] = array(
-    PATTERNS_INFO => t('Create/Modify/Delete Taxonomy Terms'),
+    PATTERNS_INFO 	=> t('Create/Modify/Delete Taxonomy Terms'),
     PATTERNS_CREATE => array('taxonomy_form_term'),
     PATTERNS_MODIFY => array('taxonomy_form_term'),
     PATTERNS_DELETE => array('taxonomy_term_confirm_delete'),
-    PATTERNS_FILES => array('modules/taxonomy/taxonomy.admin.inc'),
-    PATTERNS_EXPORT => array(
-    											PATTERNS_EXPORT_ALL => 'taxonomy_patterns_export_all_terms',	
-													'Single Term' => array('callback' => 'taxonomy_patterns_export_single_vocabulary',
-																								 'arguments' => 'taxonomy_patterns_get_terms_args',
-    											),
-											 ),
+    PATTERNS_FILES 	=> array('modules/taxonomy/taxonomy.admin.inc'),
+    //PATTERNS_EXPORT => array(
+    //											PATTERNS_EXPORT_ALL => 'taxonomy_patterns_export_all_terms',	
+		//											'Single Term' => array('callback' => 'taxonomy_patterns_export_single_vocabulary',
+		//																						 'arguments' => 'taxonomy_patterns_get_terms_args',
+    //											),
+		//									 ),
   );
 	
 	/*
@@ -67,14 +67,15 @@ function taxonomy_patterns_actions($data) {
 }
 
 
-function taxonomy_patterns_export_all_vocs($args = NULL) {
+function taxonomy_patterns_export_all_vocs($args = NULL, &$result = NULL) {
 	$info = taxonomy_patterns();
-	$form_id = $info['vocabulary'][PATTERNS_MODIFY];
-	$out = patterns_api_add_section('vocabularies');
+	$form_id = current($info['vocabulary'][PATTERNS_MODIFY]);
 	$vocs = taxonomy_get_vocabularies();
-	foreach ($vocabulary as $param) {
-  	$out[] = patterns_api_extract_actions($form_id, $param, PATTERNS_MODIFY);
+	$out = array();
+	foreach ($vocs as $param) {
+  	$out = array_merge($out, patterns_api_extract_actions($form_id, $param, 'vocabulary', PATTERNS_MODIFY));
   }
+  
   return $out;
 	
 }

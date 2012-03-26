@@ -193,7 +193,7 @@ function patterns_batch_finish($success, $results, $operations) {
      'error');
     drupal_set_message($results['error_message'], 'error');
   }
-  // TODO: check
-  //unset($_SESSION['patterns_batch_info']);
+  
+  unset($_SESSION['patterns_batch_info']);
   drupal_flush_all_caches();
 }

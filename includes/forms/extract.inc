@@ -16,18 +16,21 @@ function _patterns_extract_goto($form, &$form_state, $step) {
 			return patterns_extract_page2($form, $form_state);
   	//}
   }	
-
-	// FORM SELECTED
   
+	// FORM SELECTED
+	/*  
   if ( $step == 3 && !isset($form_state['values']['content'])) {
   	return patterns_extract_page3($form, $form_state);
   }
 
   // show pattern import form
-  if ($step >= 3) {
+  if ($step = 4) {
 		return patterns_extract_page4($form, $form_state);
   }
-
+  */
+  
+  // step > 5 Continue, submit form
+  return $form;
 }
 
 /**
@@ -46,10 +49,10 @@ function _patterns_extract_check_step(&$form_state, $validation = FALSE) {
  	
 	$step = FALSE;
 	
-//	if (isset($form_state['values'][PATTERNS_EXTRACT_ALL])) {
-//    $step = 4;
-//  }
-	if (isset($form_state['values']['content'])) {
+	if (isset($form_state['values']['all']) && $form_state['values']['all'] == 0) {
+    $step = 6; // EXTRACT ALL
+  }
+	elseif (isset($form_state['values']['content'])) {
     $step = 4;
   }
 	elseif (isset($form_state['values']['module_forms'])) {
@@ -74,8 +77,8 @@ function _patterns_extract_if_invalid_step_goback($step = 0,
 				                                          $back = '/admin/patterns/extract',
 				                                          $options = array()) {
  	
-	
-  if ($step < 1 || $step > 5) {
+	// TODO: Adjust
+  if ($step < 1 || $step > 10) {
   	drupal_set_message(t('Extraction could not proceed to the next step. Step %id not found.', array('%id' => $step)), 'error');
   	drupal_goto($back);
   }
@@ -93,18 +96,6 @@ function _patterns_extract_if_invalid_step_goback($step = 0,
  */
 
 function patterns_extract($form, &$form_state) {
-
-	/*
-	// Not for now. To move into the API
-	 	 
-	if (!patterns_utils_is_macro_enabled()) {
-  	drupal_set_message(t('You need to enable the macro module for the import from module function. You can get it <a href="@url">here</a>.',
-      array('@url' => url('http://drupal.org/project/macro/'))), 'error');
-    return;
-  }
-  
-	*/
-	
  	
  	$step = _patterns_extract_check_step($form_state);
 	_patterns_extract_if_invalid_step_goback($step);
@@ -117,7 +108,7 @@ function patterns_extract($form, &$form_state) {
 	
   //debug($step);
   
-  drupal_add_js('misc/ajax.js');
+  //drupal_add_js('misc/ajax.js');
   $name = isset($form_state['values']['name']) ?  $form_state['values']['name'] : 'name not set';
   
   patterns_io_load_components();
@@ -126,101 +117,49 @@ function patterns_extract($form, &$form_state) {
 
 }
 
-function _patterns_extract_add_ajax_to_options (&$form) {
-	if (!isset($form['options'])) return FALSE;
-	if (!isset($form['module'])) return FALSE;
-	
-	$module = $form['module'];
-	$idx_module = $module . '_forms-wrapper';
-	$form['module_forms_container'] = array(
-    '#type' => 'fieldset',
-    '#prefix' => '<div id="' . $idx_module . '">',
-    '#suffix' => '</div>',
-  );
-	
-	$form['options'] += array(
-    '#ajax' => array(
-     'wrapper' => $idx_module,
-     'callback' => 'patterns_import_module_ajax_module_forms_callback',
-    ),
-  ); 
-	  
-/*
-   
-   $form['module_forms_container']['checkall'] = array(
-  	'#type' => 'checkboxes',
-    '#attributes' => array('onclick' => 'checkUncheckAll(this);'),
-    '#options' => array('UnCheckAll' => "Select / Unselect all"),
-  );
-   
-   // javascript for the check / uncheck all function
-  drupal_add_js("function checkUncheckAll(theElement) {
-        var theForm = theElement.form, z = 0;
-        for(z=0; z<theForm.length;z++){
-          if (theForm[z].type == 'checkbox' && theForm[z].name != 'checkall'){
-            theForm[z].checked = theElement.checked;
-          }
-        }
-      }
-    ", 'inline');
-
-*/
-
-	 return TRUE;
-}
 
 
 function patterns_extract_page1($form, &$form_state) {
-	 
+
+	
 	$tm_index = patterns_api_build_tagmodules_index(null, null, PATTERNS_EXPORT);
 	
-  $form = array ();
+	if (count($tm_index) == 0) {
+		  drupal_set_message(t('The components currently installed do not allow automatic extraction of the configuration of the web site'), 'error');
+			
+			$form['disabled'] = array (
+				'#markup' => l(t('Click here to back'), 'admin/patterns'),
+			);
+				
+		return $form;
+	}
+	
+	 $form['all'] = array (
+		'#type' => 'fieldset',
+	  '#title' => 'Options',
+  	'#collapsible' => TRUE,
+    '#collapsed' => FALSE, // TODO set to TRUE after debugging
+	);
+	
+	$form['all']['all'] = array (
+		'#type' => 'fieldset',
+	  '#title' => 'I want to extract configuration from single components (Experimental)',
+  	'#type' => 'checkbox',
+	);
    	
   $form['ext'] = array (
 		'#type' => 'fieldset',
 	  '#title' => 'Components with automatic extraction enabled',
+  	'#collapsible' => TRUE,
+    '#collapsed' => TRUE, // TODO set to TRUE after debugging
+  	'#states' => array(
+		     	 'visible' => array(   // action to take.
+		        ':input[name="all"]' => array('checked' => TRUE),
+		      ),
+	  		),
 	);
 	
   foreach ($tm_index as $module => $tags) {
-
-  	/*
-    $form['ext'][$module] = array(
-    	'#type' => 'fieldset',
-	    '#title' => $module,
-  		'#collapsible' => TRUE,
-  		'#collapsed' => FALSE, // TODO set to TRUE after debugging
-    );
-    
-       // show all forms as checkboxes
-   $form['ext'][$module]['module_forms'] = array(
-      '#type' => 'checkboxes',
-      '#multiple' => TRUE,
-      '#options' => array_keys($tags),
-      '#size' => count($options, COUNT_RECURSIVE),
-      //'#title' => $module,
-      //'#default_value' => isset($form_state['values']['module_forms']) ? $form_state['values']['module_forms'] : array(),
-      //'#disabled' => $step < 3 ? FALSE : TRUE,
-   );
-
-   
-    
-   foreach ($tags as $tag => $forms) {
-	   $form['ext'][$module]['module_forms'][$tag] = array(
-	      '#type' => 'checkboxes',
-	      '#multiple' => TRUE,
-	      '#options' => $forms,
-	      //'#size' => count($options, COUNT_RECURSIVE),
-	      '#title' => $tag,
-	      //'#default_value' => isset($form_state['values']['module_forms']) ? $form_state['values']['module_forms'] : array(),
-	      //'#disabled' => $step < 3 ? FALSE : TRUE,
-	   );
-   }
-	 
-  }
- */
-
-  
-  
   
   	$form['ext'][$module] = array (
 	    '#type' => 'fieldset',
@@ -239,28 +178,17 @@ function patterns_extract_page1($form, &$form_state) {
 	    '#type' => 'radios',
 	    '#title' => t('Extraction options'),
 	    '#options' => array_combine(array_keys($tags), array_keys($tags)),
-	    //'#disabled' => $step < 2 ? FALSE : TRUE, // disable when chosen
 	  ); 
-	 
-	  
 	  
 	  foreach ($tags as $tag => $forms) {
-			/*
-	  	$form['ext'][$module][$tag] = array(
-	    	'#type' => 'fieldset',
-	    	'#title' => $tag,
-	  		//'#collapsible' => TRUE,
-  			//'#collapsed' => FALSE, // TODO set to TRUE after debugging
-	    	//'#options' => array_combine(array_keys($tags), array_keys($tags)),
-	    	//'#disabled' => $step < 2 ? FALSE : TRUE, // disable when chosen
-	 	 	);
-	  */
+
 	  	$form['ext'][$module][$tag]['tag'] = array(
 	    	'#type' => 'hidden',
 	  		'#default_value' => $tag,
 	  	); 
 	  	
-	  	$form['ext'][$module][$tag]['options'][$tag] = array(
+	  	//$form['ext'][$module][$tag]['options'][$tag] = array(
+	  	$form['ext'][$module][$tag]['options'] = array(
 	      '#type' => 'radios',
 	  		'#title' => $tag,
 	    	'#options' => array_combine(array_keys($forms), array_keys($forms)),
@@ -281,8 +209,7 @@ function patterns_extract_page1($form, &$form_state) {
 	  	'#default_value' => $module,
 	  ); 
 	  
-  }
-  
+  }  
   
   $form = patterns_forms_get_formats_selector($form,
   																						patterns_forms_get_default_format(),
@@ -299,77 +226,48 @@ function patterns_extract_page1($form, &$form_state) {
   return $form;
 }
 
-function patterns_extract_page2_old($form, &$form_state) {
-	   // now get the forms and save them into $actions
-   $module_name = $form_state['values']['module'];
-   
-   // first check if user might want to import from all
-   if ($module_name != $import_from_all_string) {
-    $actions = call_user_func($module_name . "_patterns", NULL);
-   }
-   else {
-    $actions = array();
-    foreach ($modules_with_components as $module) {
-     if ($module == $import_from_all_string) continue;
-     $actions = array_merge($actions, call_user_func($module . "_patterns", NULL));
-    }
-
-   }
-
-   // get all the forms
-   $module_form_ids = array();
-   $files = array();
-   foreach ($actions as $entry) {
-    $files = array_merge(isset($entry[PATTERNS_FILES]) ?  $entry[PATTERNS_FILES] : array(), $files);
-   }
-
-   // build array of forms for showing as checkboxes
-   // current output per form: <tag> : <descr> '<action>' : <myform>
-   $options = array();
-   $counter = 0;
-   foreach ($actions as $tag => $entry) {
-    $descr = $entry[PATTERNS_INFO];
-    foreach ($entry as $action => $forms) {
-     if ($action != PATTERNS_INFO && $action != PATTERNS_FILES && $action != PATTERNS_CREATE && $action != PATTERNS_DELETE) {
-      foreach ($forms as $my_form) {
-       $key = "o" . $counter;
-       $options = array_merge($options, array($key => $tag . ": " . $descr . " '" . $action . "': " . $my_form));
-       $counter++;
-      }
-     }
-    }
-   }
-
-   // show all forms as checkboxes
-   $form['module_forms_container']['module_forms'] = array(
-      '#type' => 'checkboxes',
-      '#multiple' => TRUE,
-      '#options' => $options,
-      '#size' => count($options, COUNT_RECURSIVE),
-      '#title' => t('Which forms should be inspected?'),
-      '#default_value' => isset($form_state['values']['module_forms']) ? $form_state['values']['module_forms'] : array(),
-      //'#disabled' => $step < 3 ? FALSE : TRUE,
-   );
-   
-   $form['submit'] = array(
-      '#type' => 'submit',
-      '#value' => t('Import')
-   );
-   $form['#validate'][] = 'patterns_extract_validate';
-   $form['#submit'][] = 'patterns_import_submit';
-   
-     // Not for now
-  
-   return $form;
-}
-
-function patterns_extract_all($form, &$form_state) {
+function patterns_extract_submit($form, &$form_state) {
 	
+	$tm_index = patterns_api_build_tagmodules_index();
+	$format = $form_state['values']['format'];
 
-	$pattern = patterns_api_add_info_section();
+	// TODO: Loop here and create a modules section
 	
 	// Sets the category for the info
   // category: " . $modules_with_components[$form_state['values']['module']]
+	$pattern = patterns_api_add_info_section();
+	$sections = patterns_extract_php($tm_index);
+	foreach($sections as $s => $values) {
+		$pattern[$s] = $values;
+	} 
+	//$pattern = array_merge($info, $sections);
+	
+	//if (patterns_validate_pattern($pattern, ))
+	
+	//$parsed = patterns_parser_parse($pattern, $format);
+	drupal_set_message(print_r($pattern, true));
+	
+	if ($parsed) {
+		drupal_set_message('Pattern succesfully extracted');
+	}
+	
+	$result = patterns_io_save_pattern($pattern, 'IMPORTED.yaml', $format);
+	
+	if ($result) {
+		drupal_set_message('Pattern succesfully imported');
+	}
+	
+	
+	//patterns_extract_batch($tm_index);
+	
+	
+	
+	$form_state['redirect'] = 'admin/patterns/extract';
+	/*
+	// Only extract all for now
+	
+	$pattern = patterns_api_add_info_section();
+	
 
 	$exports = patterns_api_build_moduletags_index($form_state['values']['module'], null, PATTERNS_EXPORT);
 	$func = $exports[$form_state['values']['options']];
@@ -379,8 +277,121 @@ function patterns_extract_all($form, &$form_state) {
 	$pattern = array_merge($info, $sections);
 	
 	//debug($pattern);
+	*/
+}
+function patterns_extract_php($tagmodules) {
+
+	$result = array();
+	foreach ($tagmodules as $tag => $values) {
+		if (!isset($values[PATTERNS_EXPORT])) {
+	  		continue;
+	  }
+		if (isset($values[PATTERNS_FILES])) {
+			$files = (!is_array($values[PATTERNS_FILES])) ? array($values[PATTERNS_FILES]) : $values[PATTERNS_FILES];
+    	foreach ($files as $file) {
+      	require_once $file;
+    	}
+    }
+    
+	  $module = $values['module'];
+	  $func = $values[PATTERNS_EXPORT][PATTERNS_EXPORT_ALL];
+	  
+		$result[$tag] = call_user_func($func);
+    
+  }
+
+  return $result;
+}
+
+function patterns_extract_batch($tagmodules) {
+
+	$cur_sec = 1;
+	$tot_sec = count($tagmodules);
+	foreach ($tagmodules as $tag => $values) {
+		if (!isset($values[PATTERNS_EXPORT])) {
+	  		continue;
+	  }
+		if (isset($values[PATTERNS_FILES])) {
+			$files = (!is_array($values[PATTERNS_FILES])) ? array($values[PATTERNS_FILES]) : $values[PATTERNS_FILES];
+    	foreach ($files as $file) {
+      	require_once $file;
+    	}
+    }
+	  $module = $values['module'];
+	  $func = array($values[PATTERNS_EXPORT][PATTERNS_EXPORT_ALL]);
+	  //foreach ($tags as $tag => $forms) {
+		
+	  	
+		
+	    $progress_params = array(
+	                          '%section' => $module,
+	                          '%cur_sec' => $cur_sec,
+	                          '%tot_sec' => $tot_sec,
+	    );
 	
-  return $form;
+	    $progress = t('Running component "%section" (%cur_sec/%tot_sec), action @current out of @total', $progress_params);
+			    
+	    $batch = array(
+	      //'title' => t('Processing section %section of pattern %pattern', array('%section' => $section, '%pattern' => $info['title'])),
+	      'title' => t('Extracting configuration for %tag', array('%tag' => $tag)),
+	      'progress_message' => $progress,
+	      'finished' => 'patterns_extract_batch_finish',
+	    	'operations' => array($func),
+	      'init_message' => t('Initializing component "%section" (%cur_sec/%tot_sec)', array(
+	                          '%section' => $module,
+	                          '%cur_sec' => $cur_sec,
+	                          '%tot_sec' => $tot_sec,
+	                         )),
+	    );
+	
+	    if (isset($values[PATTERNS_FILES]) && !empty($values[PATTERNS_FILES])) {
+	   		//$batch['file'] = current($values[PATTERNS_FILES]); // should be an array or not?
+	   		$batch['file'] = drupal_get_path('module','patterns_components') . 'components/taxonomy.inc';
+	    }
+	    
+	                         
+	      
+	  //}
+	
+    $_SESSION['patterns_extract_batch_info'] = array('component' => $module, 'tag' => $tag);
+    batch_set($batch);
+    $cur_sec++;
+  }
+
+  return TRUE;
+}
+
+/**
+ * Finishes a batch operation.
+ * @TODO Doc.
+ */
+function patterns_extract_batch_finish($success, $results, $operations) {
+  $info = $_SESSION['patterns_extract_batch_info'];
+  $section = $results['module'];
+  if (empty($results['abort'])) {
+    foreach ($info as $key => $i) {
+      drupal_set_message(t('Section "@section" of pattern "@pattern" ran successfully.', array('@pattern' => $i['title'],
+                                                                                             '@section' => $section,
+      )));
+      $query_params = array(':time' => time(), // Note: time() != $_SERVER['REQUEST_TIME']
+                            ':pid' => $key,
+                            ':en' => PATTERNS_STATUS_ENABLED,
+      );
+      db_query("UPDATE {patterns} SET status = :en, enabled = :time WHERE pid = :pid", $query_params);
+    }
+  }
+  else {
+    $pattern = reset($info);
+    drupal_set_message(t('Section "@section" of pattern "@pattern" ran with errors.
+      Check the error messages to get more details.',
+      array('@pattern' => $pattern['title'], '@section' => $section,
+           )),
+     'error');
+    drupal_set_message($results['error_message'], 'error');
+  }
+  
+  unset($_SESSION['patterns_batch_info']);
+  drupal_flush_all_caches();
 }
 
 
@@ -458,38 +469,13 @@ function patterns_extract_page4($form, &$form_state) {
 }
 
 /**
- * Implementation of hook_form_alter().
- * needed for deactivating actual submission of the forms when submitting, i.e.
- * we only want to know what gets submitted without the submission getting
- * processed
- */
-function patterns_form_alter(&$form, $form_state, $form_id) {
-  // Add the record callback on submit and delete all others
-  if ($form_id != 'macro_import_macro' && variable_get('macro_enabled', FALSE) && variable_get('patterns_import_module', FALSE)) {
-   $form['#submit'] = array();
-   $form['#submit'][] = 'macro_record_macro';
-  }
-}
-
-/**
- * in case error happens and script gets halted
- */
-function patterns_import_module_error_handler($errno, $errstr) {
-  variable_set('macro_enabled', FALSE);
-  variable_set('macro_submissions', array());
-  variable_set('patterns_import_module', FALSE);
-  restore_error_handler();
-  // normal error handler should take over from here
-  return FALSE;
-}
-
-/**
  * validation function for import_module_form
  * checks in which step we are and puts the step counter up and sets the rebuild flag
  */
 function patterns_extract_validate($form, &$form_state) {
 	
-	$form_state['rebuild'] = TRUE;
+	// TODO: rebuild only for multistep
+	//$form_state['rebuild'] = TRUE;
 	$step = _patterns_extract_check_step($form_state, TRUE);
 	if ($step == 1) {
 		return _patterns_extract_validate_step1($form, $form_state);
@@ -502,6 +488,16 @@ function patterns_extract_validate($form, &$form_state) {
 }
 
 function _patterns_extract_validate_step1($form, &$form_state) {
+	
+	if (!isset($form_state['values']['format'])){
+		form_set_error('format', t('No valid format selected.'));
+		return FALSE;
+	}
+	
+	if (isset($form_state['values']['all']) && $form_state['values']['all'] == 0){
+		return TRUE; // We extract all, no need for further checkings
+	}
+	
 	
 	if (!isset($form_state['values']['module'])){
 		form_set_error('ext', t('No valid module selected.'));
@@ -518,13 +514,16 @@ function _patterns_extract_validate_step1($form, &$form_state) {
 		return FALSE;
 	}
 	
-	if (!isset($form_state['values']['format'])){
-		form_set_error('format', t('No valid format selected.'));
-		return FALSE;
-	}
-	
   return FALSE;
 }
+
+
+// NOT USED 
+////////////////////////////////////////////////////////
+
+
+
+
 
 function patterns_extract_visualize_step_process($step) {
 
@@ -552,13 +551,59 @@ function patterns_import_module_ajax_module_forms_callback($form, $form_state) {
 }
 
 
+
+function _patterns_extract_add_ajax_to_options (&$form) {
+	if (!isset($form['options'])) return FALSE;
+	if (!isset($form['module'])) return FALSE;
+	
+	$module = $form['module'];
+	$idx_module = $module . '_forms-wrapper';
+	$form['module_forms_container'] = array(
+    '#type' => 'fieldset',
+    '#prefix' => '<div id="' . $idx_module . '">',
+    '#suffix' => '</div>',
+  );
+	
+	$form['options'] += array(
+    '#ajax' => array(
+     'wrapper' => $idx_module,
+     'callback' => 'patterns_import_module_ajax_module_forms_callback',
+    ),
+  ); 
+	  
+/*
+   
+   $form['module_forms_container']['checkall'] = array(
+  	'#type' => 'checkboxes',
+    '#attributes' => array('onclick' => 'checkUncheckAll(this);'),
+    '#options' => array('UnCheckAll' => "Select / Unselect all"),
+  );
+   
+   // javascript for the check / uncheck all function
+  drupal_add_js("function checkUncheckAll(theElement) {
+        var theForm = theElement.form, z = 0;
+        for(z=0; z<theForm.length;z++){
+          if (theForm[z].type == 'checkbox' && theForm[z].name != 'checkall'){
+            theForm[z].checked = theElement.checked;
+          }
+        }
+      }
+    ", 'inline');
+
+*/
+
+	 return TRUE;
+}
+
+
 /**
  * Forms to create a yaml file based on a module
  * longer description:
  * Displays forms to choose a module (which implements the pattern hooks) and
  * the forms which we get from module_patterns,
  * then submits the forms and captures the form submissions with the Macro module.
- * From this, yaml file gets generated
+ * From this, yaml file gets generated.
+ * 
  */
 
 function patterns_extract_old($form, &$form_state) {
@@ -901,4 +946,68 @@ function patterns_extract_old($form, &$form_state) {
   }
 
   return $form;
+}
+
+function patterns_extract_page2_old($form, &$form_state) {
+	   // now get the forms and save them into $actions
+   $module_name = $form_state['values']['module'];
+   
+   // first check if user might want to import from all
+   if ($module_name != $import_from_all_string) {
+    $actions = call_user_func($module_name . "_patterns", NULL);
+   }
+   else {
+    $actions = array();
+    foreach ($modules_with_components as $module) {
+     if ($module == $import_from_all_string) continue;
+     $actions = array_merge($actions, call_user_func($module . "_patterns", NULL));
+    }
+
+   }
+
+   // get all the forms
+   $module_form_ids = array();
+   $files = array();
+   foreach ($actions as $entry) {
+    $files = array_merge(isset($entry[PATTERNS_FILES]) ?  $entry[PATTERNS_FILES] : array(), $files);
+   }
+
+   // build array of forms for showing as checkboxes
+   // current output per form: <tag> : <descr> '<action>' : <myform>
+   $options = array();
+   $counter = 0;
+   foreach ($actions as $tag => $entry) {
+    $descr = $entry[PATTERNS_INFO];
+    foreach ($entry as $action => $forms) {
+     if ($action != PATTERNS_INFO && $action != PATTERNS_FILES && $action != PATTERNS_CREATE && $action != PATTERNS_DELETE) {
+      foreach ($forms as $my_form) {
+       $key = "o" . $counter;
+       $options = array_merge($options, array($key => $tag . ": " . $descr . " '" . $action . "': " . $my_form));
+       $counter++;
+      }
+     }
+    }
+   }
+
+   // show all forms as checkboxes
+   $form['module_forms_container']['module_forms'] = array(
+      '#type' => 'checkboxes',
+      '#multiple' => TRUE,
+      '#options' => $options,
+      '#size' => count($options, COUNT_RECURSIVE),
+      '#title' => t('Which forms should be inspected?'),
+      '#default_value' => isset($form_state['values']['module_forms']) ? $form_state['values']['module_forms'] : array(),
+      //'#disabled' => $step < 3 ? FALSE : TRUE,
+   );
+   
+   $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Import')
+   );
+   $form['#validate'][] = 'patterns_extract_validate';
+   $form['#submit'][] = 'patterns_import_submit';
+   
+     // Not for now
+  
+   return $form;
 }

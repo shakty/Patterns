@@ -128,8 +128,6 @@ function theme_patterns_list($args) {
             t('Description'),
           array('data' => t('Operations'), 'colspan' => 7),
         ),
-        // Ensure that the "Core" package fieldset comes first.
-        //'#weight' => $package == 'Core' ? -10 : NULL,
       );
     }
   }
@@ -165,8 +163,6 @@ function theme_patterns_list($args) {
             t('Description'),
           array('data' => t('Operations'), 'colspan' => 7),
         ),
-        // Ensure that the "Core" package fieldset comes first.
-        //'#weight' => $package == 'Core' ? -10 : NULL,
       );
     }
   }

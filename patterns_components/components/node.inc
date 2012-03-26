@@ -22,11 +22,11 @@ function node_patterns($data) {
     PATTERNS_MODIFY => $forms,
     PATTERNS_DELETE => array('node_delete_confirm'),
     PATTERNS_FILES  => $files_n,
-    PATTERNS_EXPORT => array(
-    											PATTERNS_EXPORT_ALL => 'function1',
-													'Articles' => 'export_generic_node',	
-													'This node' => 'export_single_node',
-											 ),
+    //PATTERNS_EXPORT => array(
+    //											PATTERNS_EXPORT_ALL => 'function1',
+		//											'Articles' => 'export_generic_node',	
+		//											'This node' => 'export_single_node',
+		//									 ),
   );
 
   $actions['content_type'] = array(
