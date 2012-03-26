@@ -87,6 +87,8 @@ function patterns_export($form, &$form_state) {
     '#title' => t('Action'),
     '#default_value' => PATTERNS_EXPORT_TO_FILE,
   );
+  
+  patterns_forms_get_info_section($form, array(), array('collapsed' => TRUE));
 
   $form['export_name'] = array(
     '#type' => 'textfield',
@@ -173,7 +175,8 @@ function patterns_export_submit($form, &$form_state) {
   }
   else {
     // the export array with a general info section
-    $export = patterns_utils_generate_info_section($filename, 'Exported');
+    //$export = patterns_api_add_info_section($export, 'Exported');
+    $export = patterns_api_add_info_section($form_state['values']['info']);
   }
 
 

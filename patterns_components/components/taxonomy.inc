@@ -18,6 +18,8 @@ function taxonomy_patterns($data = NULL) {
     PATTERNS_FILES 	=> array('modules/taxonomy/taxonomy.admin.inc'),
     PATTERNS_EXPORT => array(
     											PATTERNS_EXPORT_ALL => 'taxonomy_patterns_export_all_vocs',
+    											// Commented are more options for extraction
+    											// This is not yet working
 													//'Option 1' => 'export_generic_node',	
 													//'Single Vocabulary' => array('callback' => 'taxonomy_patterns_export_single_vocabulary',
 													//														 'arguments' => array('1', '2', '3'),
@@ -39,7 +41,8 @@ function taxonomy_patterns($data = NULL) {
 											 ),
   );
 	
-	/*
+	/* Not used anymore
+	 
   $actions['vocabulary_extract_all']  = array(
     PATTERNS_INFO => t('Create/Modify/Delete Taxonomy Vocabularies'),
     PATTERNS_MODIFY => array('taxonomy_form_vocabulary'),
