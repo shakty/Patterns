@@ -1,3 +1,11 @@
+7045:
+
+		- Added hook_patterns_publish and hook_patterns_unpublish
+
+7044:
+
+		- Added drush hooks to automatically download and enable modules
+
 7043:
 
 		- During saving operation, if failing in parsing a pattern file previously 
