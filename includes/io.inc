@@ -392,7 +392,7 @@ function patterns_io_save_pattern($content = NULL, $name = NULL, $format = PATTE
   $pattern = $load_function($path);
   if (!$pattern) {
     drupal_set_message(t("Pattern '%name' could not be saved into the database. Make sure edited code is well-formed.", array('%name' => $name)), 'error');
-    // TODO: unlink the file
+    patterns_io_remove_pattern_from_fs($path);
     return FALSE;
   }
 
@@ -427,22 +427,8 @@ function patterns_io_remove_pattern($pattern_orig, $verbose = TRUE) {
 		}
 		return FALSE;
 	}
-	
-	// Check permissions
-	$file = $pattern->file;
-	if (!is_writable($file)) {
-		if ($verbose) {
-			drupal_set_message(t('Do not have permission to delete file %pattern. Aborting.', array('%pattern' => $file)), 'error');
-		}
-		return FALSE;
-	}
-	
-	// Delete from FS
-	$result = unlink($file);	
-	if (!$result) {
-		if ($verbose) {
-			drupal_set_message(t('An error occurred while deleting  %pattern.', array('%pattern' => $file)), 'error');
-		}
+
+	if (!patterns_io_remove_pattern_from_fs($pattern->file, $verbose)) {
 		return FALSE;
 	}
 	
@@ -455,6 +441,28 @@ function patterns_io_remove_pattern($pattern_orig, $verbose = TRUE) {
   }
   
   return $result;
+}
+
+function patterns_io_remove_pattern_from_fs($path, $verbose = TRUE) {
+	
+	// Check permissions
+	if (!is_writable($path)) {
+		if ($verbose) {
+			drupal_set_message(t('Do not have permission to delete file %pattern. Aborting.', array('%pattern' => $path)), 'error');
+		}
+		return FALSE;
+	}
+	
+	// Delete from FS
+	$result = unlink($path);	
+	if (!$result) {
+		if ($verbose) {
+			drupal_set_message(t('An error occurred while deleting  %pattern.', array('%pattern' => $path)), 'error');
+		}
+		return FALSE;
+	}
+	
+	return TRUE;
 }
 
 

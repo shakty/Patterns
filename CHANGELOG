@@ -1,3 +1,8 @@
+7043:
+
+		- During saving operation, if failing in parsing a pattern file previously 
+		  copied in the files directory, the file is removed.
+
 7042:
 		- Created page for displaying information after first install of 
 		    patterns.
