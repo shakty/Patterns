@@ -15,6 +15,7 @@ function patterns_modules_page($pid) {
   drupal_set_title($pattern->title . ' ' . t('(Pattern Modules)'));
 
   $modules = isset($pattern->pattern['modules']) ? $pattern->pattern['modules'] : array();
+  $modules = is_array($modules) ? $modules : array($modules);
   $modules_info = system_rebuild_module_data();
   $modules_list = module_list();
 
@@ -25,14 +26,28 @@ function patterns_modules_page($pid) {
   // currently enabled or not
   foreach ($modules as $module) {
     $row = array();
-    $delete = is_array($module) ? $module['delete'] : FALSE;
     $module = is_array($module) ? $module['value'] : $module;
     $available = array_key_exists($module, $modules_info);
     $enabled = array_key_exists($module, $modules_list);
+    
     $row[] = $module;
     $row[] = $available ? t('Yes') : '<span class="alert">' . t('No') . '</span>';
     $row[] = $enabled ? t('Yes') : '<span class="alert">' . t('No') . '</span>';
-    $row[] = $delete ? t('Delete') : t('Enable');
+    
+    if ($available && ! $enabled) {
+    	$row[] = lt('Enable', 'admin/pattern/drush/enable');
+    	
+    }
+    elseif (!$available) {
+    	$row[] = l(t('Download and Enable'), 'admin/pattern/service/dlenable');	
+    }
+    else {
+    	$row[] = '-';
+    }
+    
+    $row[] = '<span id="action_results"></span>'; 
+    
+    
 
     $rows[] = array('data' => $row);
 
@@ -54,12 +69,12 @@ function patterns_modules_page($pid) {
         'data' => array(
           array(
             'data' => t('No extra modules are required to run this pattern.'),
-            'colspan' => '4',
+            'colspan' => '5',
      ))));
 
   }
 
-  $header = array(t('Name'), t('Available'), t('Enabled'), t('Pattern Action'));
+  $header = array(t('Name'), t('Available'), t('Enabled'), t('Actions'));
   return theme('table', array('header' => $header, 'rows' => $rows, 'caption' => t('Modules used for this pattern')));
 
 }

@@ -161,3 +161,16 @@ function patterns_utils_init_from_pattern($key, $pattern, $value = NULL, $fallba
   }
   return $fallback;
 }
+
+
+function patterns_utils_is_module_available($module = NULL) {
+	if (is_null($module)) return FALSE;
+	$modules = system_rebuild_module_data();
+	return (isset($modules[$module])) ? TRUE : FALSE;
+}
+
+function patterns_utils_is_module_enabled($module = NULL) {
+	if (is_null($module)) return FALSE;
+	$modules = module_list();
+	return isset($modules[$module]) ? TRUE : FALSE;
+}
