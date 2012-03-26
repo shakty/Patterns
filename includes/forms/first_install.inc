@@ -73,6 +73,6 @@ function patterns_first_install_validate($form, &$form_state){
 
 function patterns_first_install_submit($form, &$form_state) {
 	variable_set(PATTERNS_FIRST_INSTALL, FALSE);
-	variable_set(patterns_drush_path, $form_state['values']['welcome']['drush_path']);
+	variable_set('patterns_drush_path', $form_state['values']['drush_path']);
 	 menu_rebuild();
 }
