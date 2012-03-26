@@ -261,3 +261,57 @@ function patterns_actions() {
                PATTERNS_INCLUDE => PATTERNS_INCLUDE,
               );
 }
+
+
+/**
+ * Downloads modules with the drush dl command
+ * Only if the variable patterns_drush_path is set.
+ * @param array $modules a list of modules to download
+ * returns an array with the lines of the output of the command
+ */
+function patterns_drush_download_modules($modules) {
+  if(variable_get('patterns_drush_path') !== '') {
+    $output = array('following was output by drush');
+    $cmd = variable_get('patterns_drush_path');
+    $cmd .= ' -r '. patterns_get_drupal_installation_path();
+    $cmd .= ' dl '. implode(' ', $modules) .' -y';
+    exec($cmd , $output);
+    return $output;
+  } else {
+    return array('Drush path wasn\'t set');
+  }
+}
+
+/**
+ * Downloads modules with the drush dl command
+ * Only if the variable patterns_drush_path is set.
+ * @param array $modules a list of modules to enable
+ * @param bool $resolve_dependencies enable downloading and enabling dependencies
+ * returns an array with the lines of the output of the command
+ */
+function patterns_drush_enable_modules($modules, $resolve_dependencies = FALSE) {
+  $rd = '';
+  if($resolve_dependencies) {
+    $rd = '--resolve-dependencies';
+  } 
+  
+  if(variable_get('patterns_drush_path') !== '') {
+    $output = array('following was output by drush');
+    $cmd = variable_get('patterns_drush_path');
+    $cmd .= ' -r '. patterns_get_drupal_installation_path();
+    $cmd .= ' en '. $rd .' '. implode(' ', $modules) .' -y';
+    exec($cmd , $output);
+    return $output;
+  } else {
+    return array('Drush path wasn\'t set');
+  }
+}
+
+/**
+ * returns installation path of drupal
+ * TODO: more robust version if possible
+ */
+function patterns_get_drupal_installation_path() {
+  // TODO: Patterns or patterns?
+  return realpath(drupal_get_path('module', 'Patterns') .'/../../../..') . '/';
+}
