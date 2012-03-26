@@ -92,7 +92,7 @@ function patterns_forms_get_execution_options($form = array()) {
  * @return array $form The form containing the select element.
  *
  */
-function patterns_forms_get_formats_selector($form = array(), $default = PATTERNS_FORMAT_UNKNOWN, $descr = NULL, $unknown = TRUE) {
+function patterns_forms_get_formats_selector(&$form = array(), $default = PATTERNS_FORMAT_UNKNOWN, $descr = NULL, $unknown = TRUE) {
 
   $descr = (is_null($descr)) ? t('Pattern will be validated and run against this format.') : t($descr);
   $formats = ($unknown) ? array(PATTERNS_FORMAT_UNKNOWN => PATTERNS_FORMAT_UNKNOWN)
@@ -142,4 +142,41 @@ function patterns_forms_parser_ready($form = array(), $parser = NULL) {
 		);
 	}
 }
+
+
+function patterns_forms_get_info_section(&$form = array(), $info = array(), $options = array()) {
+	$info = array_merge($info, patterns_api_add_info_section($info));
+	$collapsed = (isset($options['collapsed']) && $options['collapsed'] == TRUE) ? TRUE : FALSE; 
+	$form['info'] = array(
+		'#type' => 'fieldset',
+	  '#title' => 'Info Section',
+  	'#collapsible' => TRUE,
+    '#collapsed' => $collapsed, 
+		'#tree' => TRUE, 
+	);
+	
+	foreach ($info['info'] as $i => $value) {
+		$form['info'][$i] = array(
+	  	'#type' => 'textfield',
+	  	'#title' => t($i),
+	  	'#required' => TRUE,
+			'#default_value' => $value, 
+		);
+	}
+	
+	return $form;
+}
+
+
+function patterns_forms_get_name_selector(&$form = array(), $default = NULL, $options = array()) {
+	 
+	$form['pattern_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Name of the pattern file'),
+    '#default_value' => t('pattern') . '_' . strval(time()),
+  );
+  
+  return $form;
+}
+
 

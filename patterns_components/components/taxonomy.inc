@@ -18,10 +18,10 @@ function taxonomy_patterns($data = NULL) {
     PATTERNS_FILES 	=> array('modules/taxonomy/taxonomy.admin.inc'),
     PATTERNS_EXPORT => array(
     											PATTERNS_EXPORT_ALL => 'taxonomy_patterns_export_all_vocs',
-													'Option 1' => 'export_generic_node',	
-													'Single Vocabulary' => array('callback' => 'taxonomy_patterns_export_single_vocabulary',
-																											 'arguments' => array('1', '2', '3'),
-    											),
+													//'Option 1' => 'export_generic_node',	
+													//'Single Vocabulary' => array('callback' => 'taxonomy_patterns_export_single_vocabulary',
+													//														 'arguments' => array('1', '2', '3'),
+    											//),
 											 ),
   );
 
@@ -31,12 +31,12 @@ function taxonomy_patterns($data = NULL) {
     PATTERNS_MODIFY => array('taxonomy_form_term'),
     PATTERNS_DELETE => array('taxonomy_term_confirm_delete'),
     PATTERNS_FILES 	=> array('modules/taxonomy/taxonomy.admin.inc'),
-    //PATTERNS_EXPORT => array(
-    //											PATTERNS_EXPORT_ALL => 'taxonomy_patterns_export_all_terms',	
-		//											'Single Term' => array('callback' => 'taxonomy_patterns_export_single_vocabulary',
-		//																						 'arguments' => 'taxonomy_patterns_get_terms_args',
-    //											),
-		//									 ),
+    PATTERNS_EXPORT => array(
+    										 	PATTERNS_EXPORT_ALL => 'taxonomy_patterns_export_all_terms',	
+													//'Single Term' => array('callback' => 'taxonomy_patterns_export_single_vocabulary',
+													//											 'arguments' => 'taxonomy_patterns_get_terms_args',
+    											//),
+											 ),
   );
 	
 	/*
@@ -71,13 +71,24 @@ function taxonomy_patterns_export_all_vocs($args = NULL, &$result = NULL) {
 	$info = taxonomy_patterns();
 	$form_id = current($info['vocabulary'][PATTERNS_MODIFY]);
 	$vocs = taxonomy_get_vocabularies();
-	$out = array();
-	foreach ($vocs as $param) {
-  	$out = array_merge($out, patterns_api_extract_actions($form_id, $param, 'vocabulary', PATTERNS_MODIFY));
+	$result = array();
+	foreach ($vocs as $voc) {
+		// It is important to user array merge. Pushing is not enough
+  	$result = array_merge($result, patterns_api_extract_actions($form_id, $voc, 'vocabulary', PATTERNS_MODIFY));
   }
-  
-  return $out;
-	
+  return $result;
+}
+
+function taxonomy_patterns_export_all_terms($args = NULL, $result = NULL) {
+	$info = taxonomy_patterns();
+	$terms = entity_load('taxonomy_term');
+	$form_id = current($info['term'][PATTERNS_MODIFY]);
+	$result = array();
+  foreach ($terms as $term) {
+  	// It is important to user array merge. Pushing is not enough
+  	$result = array_merge($result, patterns_api_extract_actions($form_id, $term, 'term', PATTERNS_MODIFY));
+  }
+  return $result;
 }
 
 // returns arguments needed for the forms when processing automatically

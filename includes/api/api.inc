@@ -145,7 +145,7 @@ function patterns_api_add_info_section($info = array(), &$pattern = array(), $ow
   $pattern[PATTERNS_SECTION_INFO] = array();
 
   $pattern[PATTERNS_SECTION_INFO]['title']          = (isset($info['title'])) ? $info['title'] : 'Untitled Pattern';
-  $pattern[PATTERNS_SECTION_INFO]['category']       = (isset($info['category'])) ? $info['author'] : 'General';
+  $pattern[PATTERNS_SECTION_INFO]['category']       = (isset($info['category'])) ? $info['category'] : 'General';
   $pattern[PATTERNS_SECTION_INFO]['description']    = (isset($info['description'])) ? $info['description'] : 'No description';
   $pattern[PATTERNS_SECTION_INFO]['version']    		= (isset($info['version'])) ? $info['version'] : '1.0';
   $pattern[PATTERNS_SECTION_INFO]['core']           = (isset($info['core'])) ? $info['core'] : 'x.y';

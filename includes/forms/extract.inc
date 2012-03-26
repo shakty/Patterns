@@ -138,7 +138,7 @@ function patterns_extract_page1($form, &$form_state) {
 		'#type' => 'fieldset',
 	  '#title' => 'Options',
   	'#collapsible' => TRUE,
-    '#collapsed' => FALSE, // TODO set to TRUE after debugging
+    '#collapsed' => TRUE, // TODO set to TRUE after debugging
 	);
 	
 	$form['all']['all'] = array (
@@ -147,7 +147,7 @@ function patterns_extract_page1($form, &$form_state) {
   	'#type' => 'checkbox',
 	);
    	
-  $form['ext'] = array (
+  $form['all']['ext'] = array (
 		'#type' => 'fieldset',
 	  '#title' => 'Components with automatic extraction enabled',
   	'#collapsible' => TRUE,
@@ -161,20 +161,20 @@ function patterns_extract_page1($form, &$form_state) {
 	
   foreach ($tm_index as $module => $tags) {
   
-  	$form['ext'][$module] = array (
+  	$form['all']['ext'][$module] = array (
 	    '#type' => 'fieldset',
 	    '#title' => $module,
   		'#collapsible' => TRUE,
   		'#collapsed' => FALSE, // TODO set to TRUE after debugging
 	  );
 	  
-	  $form['ext'][$module]['module'] = array(
+	  $form['all']['ext'][$module]['module'] = array(
 	    '#type' => 'hidden',
 	  	'#default_value' => $module,
 	  ); 
 	  
 	  
-	  $form['ext'][$module]['options'] = array(
+	  $form['all']['ext'][$module]['options'] = array(
 	    '#type' => 'radios',
 	    '#title' => t('Extraction options'),
 	    '#options' => array_combine(array_keys($tags), array_keys($tags)),
@@ -182,13 +182,13 @@ function patterns_extract_page1($form, &$form_state) {
 	  
 	  foreach ($tags as $tag => $forms) {
 
-	  	$form['ext'][$module][$tag]['tag'] = array(
+	  	$form['all']['ext'][$module][$tag]['tag'] = array(
 	    	'#type' => 'hidden',
 	  		'#default_value' => $tag,
 	  	); 
 	  	
 	  	//$form['ext'][$module][$tag]['options'][$tag] = array(
-	  	$form['ext'][$module][$tag]['options'] = array(
+	  	$form['all']['ext'][$module][$tag]['options'] = array(
 	      '#type' => 'radios',
 	  		'#title' => $tag,
 	    	'#options' => array_combine(array_keys($forms), array_keys($forms)),
@@ -199,27 +199,31 @@ function patterns_extract_page1($form, &$form_state) {
 	  		),
 	  	);
 	  }
-	   
+	  
 	  
 	  //_patterns_extract_add_ajax_to_options($form['ext'][$module]);
 	  
-	  
-	  $form['ext']['module'] = array(
+	  // TODO: do we need this?
+	  $form['all']['ext']['module'] = array(
 	    '#type' => 'hidden',
 	  	'#default_value' => $module,
 	  ); 
 	  
-  }  
+  }   
   
-  $form = patterns_forms_get_formats_selector($form,
+  patterns_forms_get_info_section($form, array(), array('collapsed' => TRUE));
+  
+  patterns_forms_get_formats_selector($form,
   																						patterns_forms_get_default_format(),
   																						'Extract data in this format',
   																						FALSE
   );
   
+  patterns_forms_get_name_selector($form);
+  
   $form['submit'] = array(
   	'#type' => 'submit',
-    '#value' => t('Next Step'),
+    '#value' => t('Extract'),
   );
   $form['#validate'][] = 'patterns_extract_validate';
   
@@ -229,13 +233,14 @@ function patterns_extract_page1($form, &$form_state) {
 function patterns_extract_submit($form, &$form_state) {
 	
 	$tm_index = patterns_api_build_tagmodules_index();
-	$format = $form_state['values']['format'];
-
+	$format 	= $form_state['values']['format'];
+	$filename = $form_state['values']['pattern_name'];
 	// TODO: Loop here and create a modules section
+	
 	
 	// Sets the category for the info
   // category: " . $modules_with_components[$form_state['values']['module']]
-	$pattern = patterns_api_add_info_section();
+	$pattern = patterns_api_add_info_section($form_state['values']['info']);
 	$sections = patterns_extract_php($tm_index);
 	foreach($sections as $s => $values) {
 		$pattern[$s] = $values;
@@ -251,7 +256,7 @@ function patterns_extract_submit($form, &$form_state) {
 		drupal_set_message('Pattern succesfully extracted');
 	}
 	
-	$result = patterns_io_save_pattern($pattern, 'IMPORTED.yaml', $format);
+	$result = patterns_io_save_pattern($pattern, $filename, $format);
 	
 	if ($result) {
 		drupal_set_message('Pattern succesfully imported');

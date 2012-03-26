@@ -369,7 +369,7 @@ function patterns_io_save_pattern($content = NULL, $name = NULL, $format = PATTE
 
   if (is_null($original)) {
     if (is_array($content)) {
-       $original = patterns_parser_dump($content, $format); // not correct, should dump
+       $original = patterns_parser_dump($content, $format); 
     }
     else {
       $original = $content;

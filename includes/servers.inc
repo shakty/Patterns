@@ -203,7 +203,7 @@ function patterns_unpublish_pattern($pid) {
   drupal_set_message(t('Pattern %pattern was marked as private.', array('%pattern' => @$pattern->name)));
   
   // Patterns API
-  // Invoke all the modules who wants to do something with the published pattern
+  // Invoke all the modules who wants to do something with the unpublished pattern
   module_invoke_all('patterns_unpublish', $pattern);
   
   drupal_goto('admin/patterns');
