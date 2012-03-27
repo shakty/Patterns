@@ -2,10 +2,10 @@
 
 info:
   title: Set up the Econophysics Forum
-  description: Enables the theme, adds blocks, sets variables, enables modules, adds path aliases and menu items.
+  description: Enables the theme, adds blocks, adds content types with fields, sets variables, enables modules, adds path aliases and menu items.
   author: QScience
   category: QScience
-  version: 1.0
+  version: 2.0
   core: 7.x
   author_website: http://qlectives.eu/
 
@@ -21,11 +21,12 @@ actions:
       - blog
       - taxonomy
       - comment
-      - aggregator
-      - votingapi
-      - fivestar
+#      - aggregator
+#      - votingapi
+#      - fivestar
       - path
       - pathauto
+      - date
 
   - delete:
       tag: modules
@@ -36,8 +37,26 @@ actions:
   - create:
       tag: theme
       value: garland
+      default: true
 
 # ---------- Blocks ----------
+
+  - create:
+     tag: block
+     id: block
+     status: 1
+     weight: -5
+     theme: garland
+     title: Links
+     info: Links to other sites
+     body:
+         value: >
+           <ul><li><a href="http://www.futurict.eu/">FuturICT</a></li><li><a href="http://cordis.europa.eu/fp7/ict/">ICT - Information and Communication Technologies</a></li><li><a href="http://cordis.europa.eu/fet-proactive/">FET-Proactive</a></li></ul>
+
+         format: full_html
+     region: sidebar_second # Redundant, but needed, for now.
+     regions:
+         garland: sidebar_second
 
   - modify:
       tag: block
@@ -164,6 +183,72 @@ actions:
         name: site_name
         value: EconoPhysics Forum
 
+
+# ---------- Content Types and Fields ----------
+
+  - create:
+     tag: content_type
+     name: Paper
+     type: paper # machine readable name
+     description: A content type for scientific papers.
+     title_label: Paper Title
+     node_preview: 1
+     help: Scientific papers.
+     node_options:
+      - status
+      - promote
+
+  - create:
+      tag: instance
+      entity: node
+      bundle: paper
+      name: author
+      label: Authors
+      weight: 2
+
+  - create:
+      tag: instance
+      entity: node
+      bundle: paper
+      name: publish_date
+      label: Publication date
+      type: datetime
+      widget: date_select
+      weight: 3
+
+  - create:
+     tag: content_type
+     name: Event
+     type: event # machine readable name
+     description: An event.
+     title_label: Title
+     node_preview: 1
+     help: An event.
+     node_options:
+      - status
+      - promote
+
+  - create:
+      tag: instance
+      entity: node
+      bundle: event
+      name: start_date
+      label: Starts
+      type: datetime
+      widget: date_select
+      weight: 3
+
+  - create:
+      tag: instance
+      entity: node
+      bundle: event
+      name: end_date
+      label: Ends
+      type: datetime
+      widget: date_select
+      weight: 4
+
+
 # ---------- Users ----------
 
 #  - create:
@@ -174,6 +259,10 @@ actions:
 #      timezone: Europe/Zurich
 #      roles: 2
 #      status: 1
+
+
+
+
 
 
 
