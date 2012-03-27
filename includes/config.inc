@@ -13,10 +13,13 @@
 function patterns_permission() {
   return array(
     'administer patterns' => array(
-      'title' => t('administer patterns'),
+      'title' => t('Administer patterns'),
     ),
     'get patterns' => array(
-      'title' => t('get patterns'),
+      'title' => t('Get a pattern or the XML feed through the REST web service'),
+    ),
+    'public patterns' => array(
+      'title' => t('See the public patterns page'),
     ),
     // TODO: More detailed set of permissions.
   );
@@ -27,8 +30,7 @@ function patterns_permission() {
  * @TODO proper doc.
  */
 function patterns_config_settings($form, &$form_state) {
-
-
+  
   $form['exec'] = array(
     '#type' => 'fieldset',
     '#title' => t('File system options'),
@@ -93,17 +95,23 @@ function patterns_config_settings($form, &$form_state) {
     '#default_value' => variable_get('patterns_update_db_from_fs', TRUE),
   );
 
-  $form['publish'] = array(
+  $form['sharing'] = array(
     '#type' => 'fieldset',
     '#title' => t('Sharing options'),
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
-  $form['publish']['patterns_allow_publish'] = array(
+  $form['sharing']['patterns_allow_publish'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable sharing of patterns'),
     '#description' => t('If selected, patterns can be shared with others web sites.'),
     '#default_value' => variable_get('patterns_allow_publish', PATTERNS_ALLOW_PUBLISH_DEFAULT),
+  );
+  $form['sharing']['patterns_public_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Enabled patterns public page'),
+    '#description' => t('If set, a public page of public patterns in the web site will be created under this url. Please review the permissions of your web site to make sure that anonymous users can see it.'),
+    '#default_value' => variable_get('patterns_public_url', ''),
   );
 
   $form['other'] = array(

@@ -1,3 +1,8 @@
+7047:
+		
+		- Page for public patterns created.
+		- Admin can set an url for the page from the settings page.
+
 7046:
 
 		- Automatic extraction seems to work, for ALL and for specific forms / components

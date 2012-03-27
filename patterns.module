@@ -122,6 +122,16 @@ function patterns_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10
   );
+  
+  if (patterns_utils_is_public_page_enabled()) {
+    $items[variable_get('patterns_public_url', '')] = array(
+	    'title' => 'Public',
+	    'type' => MENU_LOCAL_TASK,
+      'page callback' => 'patterns_list_public',
+    	'access arguments' => array('public patterns'),
+	    'weight' => -9
+	  );
+  }
 
   // MAIN ROUTES
 
@@ -357,16 +367,6 @@ function patterns_list() {
     '#title' => 'Commands'
     );
 
-//  $form['commands']['refresh'] = array(
-//    '#type' => 'button',
-//    '#value' => 'Refresh',
-//    '#attributes' => array('style' => 'float:right'),
-//    '#ajax' => array(
-//      'callback' => 'patterns_io_get_patterns_service',
-//      'wrapper' => 'all_patterns_div',
-//    ),
-//  );
-
   $form['commands']['refresh'] = array(
     '#type' => 'button',
     '#value' => t('Refresh All'),
@@ -403,6 +403,16 @@ function patterns_list() {
   $patterns = patterns_io_get_patterns(variable_get('patterns_refresh_from_fs', TRUE));
 
   $output .= theme('patterns_list', $patterns);
+
+  return $output;
+}
+
+function patterns_list_public() {
+
+  // Load the patterns from database.
+  $patterns = patterns_io_get_patterns(variable_get('patterns_refresh_from_fs', TRUE), FALSE);
+  
+  $output = theme('patterns_list', $patterns);
 
   return $output;
 }

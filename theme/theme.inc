@@ -91,11 +91,12 @@ function theme_patterns_list($args) {
 
   $patterns_title = '<div id="all_patterns_div"><h3>' . t('Available Patterns') . '</h3>';
 
-  if (!file_exists(libraries_get_path('spyc') . '/spyc.php')) {
-    $spyc = l(t('Spyc'), 'http://code.google.com/p/spyc/');
-    $patterns_title .= t('!Spyc was not found. Please install the library in \'sites\all\libraries\spyc\' in order read YAML patterns.', array( '!Spyc' => $spyc ));
+  if (!patterns_utils_is_public_page_enabled()) {
+  	if (!patterns_parser_ready()) {
+  		$patterns_title.= t('No available patterns were found. Please install enable one from the Modules page.');	
+  	}  
   }
-
+  
   $form['patterns'] = array(
     '#prefix' => $patterns_title,
     '#suffix' => ' </div>',
@@ -109,36 +110,47 @@ function theme_patterns_list($args) {
   else {
 
     foreach ($patterns as $pid => $pattern) {
-
+	
+    	if (patterns_utils_is_public_page()) {
+    		if (!$pattern->public) {
+    			continue;
+    		}
+    	}
+    	
       $category = $pattern->info['category'] ? $pattern->info['category'] : t('Other');
-
-      $form['patterns'][$category][] = _patterns_pattern_build_row($pid, $pattern);
-      $form['patterns'][$category] += array(
-        '#type' => 'fieldset',
-        '#title' => $category,
-        '#collapsible' => TRUE,
-        '#collapsed' => FALSE,
-        '#theme' => 'patterns_patterns_fieldset',
-        '#header' => array(
-          array('data' => t('Enabled'), 'class' => array('checkbox')),
-            t('Format'),
-            t('Name'),
-            t('Title'),
-            t('Version'),
-            t('Description'),
-          array('data' => t('Operations'), 'colspan' => 7),
-        ),
-      );
+      
+	    $form['patterns'][$category][] = _patterns_pattern_build_row($pid, $pattern);
+	      $form['patterns'][$category] += array(
+	        '#type' => 'fieldset',
+	        '#title' => $category,
+	        '#collapsible' => TRUE,
+	        '#collapsed' => TRUE,
+	        '#theme' => 'patterns_patterns_fieldset',
+	        '#header' => array(
+	          array('data' => t('Enabled'), 'class' => array('checkbox')),
+	            t('Format'),
+	            t('Name'),
+	            t('Title'),
+	            t('Version'),
+	            t('Description'),
+	          array('data' => t('Operations'), 'colspan' => 7),
+	        ),
+	      );
     }
   }
 
 
+  // Page finishes here if this is the public
+  if (patterns_utils_is_public_page_enabled()) {
+  	return drupal_render($form);
+  }
+  
   $form['removed'] = array(
     '#prefix' => '<div id="removed_patterns_div"><h3>' . t('Removed Patterns') . '</h3>',
     '#suffix' => ' </div>',
     '#tree' => TRUE,
   );
-
+  
   if (empty($removed)) {
     $form['removed']['#markup'] = t('No patterns in the recycle bin.');
   }
@@ -234,7 +246,7 @@ function theme_patterns_patterns_fieldset($variables) {
  * @param StdClass $pattern A pattern object as loaded from database
  * @param array $extra associative array of extra parameters. Not used now.
  */
-function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
+function _patterns_pattern_build_row($pid, $pattern, $options = array()) {
   // Add in the defaults.
   $extra = array(
     'requires' => array(),
@@ -243,8 +255,6 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
     'enabled' => FALSE,
     'links' => array(),
   );
-
-  $actions = patterns_get_patterns_links($pattern);
 
   $form = array(
     '#tree' => TRUE,
@@ -280,8 +290,12 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
   $form['version'] = array(
     '#markup' =>  @$pattern->info['version'],
   );
-  $form['#requires'] = $extra['requires'];
-  $form['#required_by'] = $extra['required_by'];
+  
+  
+  
+  
+  #$form['#requires'] = $extra['requires'];
+  #$form['#required_by'] = $extra['required_by'];
 
   // Check the compatibilities.
   $compatible = TRUE;
@@ -312,8 +326,35 @@ function _patterns_pattern_build_row($pid, $pattern, $extra = array()) {
     );
     $form['description']['#markup'] .= theme('system_modules_incompatible', array('message' => $status_long));
   }
-
+	
+  
+ 	$actions = patterns_get_patterns_links($pattern);
   $form['links'] = $actions;
+  
+  return $form;
+}
 
+
+function theme_patterns_category_table($patterns) {
+	
+	$form['patterns'][$category][] = _patterns_pattern_build_row($pid, $pattern);
+      $form['patterns'][$category] += array(
+        '#type' => 'fieldset',
+        '#title' => $category,
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        '#theme' => 'patterns_patterns_fieldset',
+        '#header' => array(
+          array('data' => t('Enabled'), 'class' => array('checkbox')),
+            t('Format'),
+            t('Name'),
+            t('Title'),
+            t('Version'),
+            t('Description'),
+          	t('Uri'),
+        ),
+      );
+    
+    
   return $form;
 }

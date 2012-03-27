@@ -7,6 +7,8 @@
 
 static $patterns_formats = array();
 
+define('PATTERNS_PUBLIC_URL', 'patterns_public_url');
+
 define('PATTERNS_UPDATES', 'patterns_updates');
 define('PATTERNS_FIRST_INSTALL', 'patterns_first_install');
 

@@ -43,62 +43,64 @@ function patterns_get_patterns_links($pattern = NULL, $options = NULL) {
 
   $pid = $pattern->pid;
 
-  // RUN
-
-  // PATTERNS_STATUS_OK:
-  $actions['run'] = t('Run');
-
-  if ($pattern->status == PATTERNS_STATUS_ENABLED) {
-    $actions['run'] = t('Re-Run');
+  // Display full commands only in the admin pages
+  if (!patterns_utils_is_public_page()) {
+	  // RUN
+	
+	  // PATTERNS_STATUS_OK:
+	  $actions['run'] = t('Run');
+	
+	  if ($pattern->status == PATTERNS_STATUS_ENABLED) {
+	    $actions['run'] = t('Re-Run');
+	  }
+	  elseif ($pattern->status == PATTERNS_STATUS_INVALID) {
+	    $actions['run'] = t('Invalid!');
+	  }
+	  elseif ($pattern->enabled >= $pattern->updated) {
+	    $actions['run'] = t('Run-Update');
+	  }
+	
+	  if (!in_array($pattern->status, array(PATTERNS_STATUS_INVALID, PATTERNS_STATUS_TRASHED))) {
+	    $actions['run'] = l($actions['run'], 'admin/patterns/enable/' . $pid);
+	  }
+	
+	  // EDIT
+	
+	  $actions['edit'] = l(t('Edit'), 'admin/patterns/edit/' . $pid);
+	
+	  // MODULES
+	
+	  $actions['check'] = l(t('Check'), 'admin/patterns/check/' . $pid);
+	
+	  // TRASH
+	
+	  if ($pattern->status != PATTERNS_STATUS_TRASHED) {
+	    // Trash Link
+	    $actions['trash'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax'))));
+	  }
+	  else {
+	    $actions['trash'] = l(t('Restore'), 'admin/patterns/restore/' . $pid, array('attributes' => array('class' => array('use-ajax'))));
+	  }
+	
+	  // REMOVE
+	
+	  if (!empty($pattern->file) && is_writable($pattern->file)) {
+	    // Remove Link
+	    $actions['remove'] = l(t('Remove'), 'admin/patterns/remove/' . $pid);
+	  }
+	  else {
+	    $actions['remove'] = '-';
+	  }
+	
+	  // PUBLISH
+	
+	  if (variable_get('patterns_allow_publish', PATTERNS_ALLOW_PUBLISH_DEFAULT)) {
+	    $actions['publish'] = ($pattern->public) ? t('Unpublish') : t('Publish');
+	    if ($pattern->status != PATTERNS_STATUS_TRASHED) {
+	      $actions['publish'] = $pattern->public ? l($actions['publish'], 'admin/patterns/unpublish/' . $pid) : l($actions['publish'], 'admin/patterns/publish/' . $pid);
+	    }
+	  }
   }
-  elseif ($pattern->status == PATTERNS_STATUS_INVALID) {
-    $actions['run'] = t('Invalid!');
-  }
-  elseif ($pattern->enabled >= $pattern->updated) {
-    $actions['run'] = t('Run-Update');
-  }
-
-  if (!in_array($pattern->status, array(PATTERNS_STATUS_INVALID, PATTERNS_STATUS_TRASHED))) {
-    $actions['run'] = l($actions['run'], 'admin/patterns/enable/' . $pid);
-  }
-
-  // EDIT
-
-  $actions['edit'] = l(t('Edit'), 'admin/patterns/edit/' . $pid);
-
-  // MODULES
-
-  $actions['check'] = l(t('Check'), 'admin/patterns/check/' . $pid);
-
-  // TRASH
-
-  if ($pattern->status != PATTERNS_STATUS_TRASHED) {
-    // Trash Link
-    $actions['trash'] = l(t('Trash'), 'admin/patterns/trash/' . $pid, array('attributes' => array('class' => array('use-ajax'))));
-  }
-  else {
-    $actions['trash'] = l(t('Restore'), 'admin/patterns/restore/' . $pid, array('attributes' => array('class' => array('use-ajax'))));
-  }
-
-  // REMOVE
-
-  if (!empty($pattern->file) && is_writable($pattern->file)) {
-    // Remove Link
-    $actions['remove'] = l(t('Remove'), 'admin/patterns/remove/' . $pid);
-  }
-  else {
-    $actions['remove'] = '-';
-  }
-
-  // PUBLISH
-
-  if (variable_get('patterns_allow_publish', PATTERNS_ALLOW_PUBLISH_DEFAULT)) {
-    $actions['publish'] = ($pattern->public) ? t('Unpublish') : t('Publish');
-    if ($pattern->status != PATTERNS_STATUS_TRASHED) {
-      $actions['publish'] = $pattern->public ? l($actions['publish'], 'admin/patterns/unpublish/' . $pid) : l($actions['publish'], 'admin/patterns/publish/' . $pid);
-    }
-  }
-
   // GET
 
   $actions['uri'] = ($pattern->public) ? l(t('Get'), 'patterns/get/' . $pid, array( 'attributes' => array('target' => '_blank')))
