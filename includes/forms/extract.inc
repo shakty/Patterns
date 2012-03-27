@@ -283,7 +283,7 @@ function patterns_extract_submit($form, &$form_state) {
   	    if (empty($enabled)) {
   	      continue;
   	    }
-  	    $exports[$tag]['__to_export__'] = array();
+  	    $exports[$tag] = array();
   	    // Loop along all enabled export functions
         foreach ($data[$tag]['options'] as $export_key => $func) {
           if (!empty($func)) {
@@ -293,9 +293,9 @@ function patterns_extract_submit($form, &$form_state) {
         
         // If no sub-tag was selected (should not be the case)
         // then we execute EXPORT_ALL (if available)
-        if (empty($exports[$tag]['__to_export__'])) {
+        if (empty($tm_index[$tag]['__to_export__'])) {
           if (isset($tm_index[$tag][PATTERNS_EXPORT][PATTERNS_EXPORT_ALL])) {
-            $tm_index[$tag]['__to_export__'][] = $tm_index[$tag][PATTERNS_EXPORT][PATTERNS_EXPORT_ALL];
+            $tm_index[$tag]['__to_export__'] = $tm_index[$tag][PATTERNS_EXPORT][PATTERNS_EXPORT_ALL];
           }
         }    
 	    }
@@ -320,7 +320,7 @@ function patterns_extract_submit($form, &$form_state) {
 //		
 //	}
 	
-	$sections = patterns_extract_php($funcs);
+	$sections = patterns_extract_php($tm_index);
 	
 	if (empty($sections)) {
 	  drupal_set_message(t('Export did not return any data.'), 'error');
@@ -353,10 +353,10 @@ function patterns_extract_php($tagmodules) {
 
 	$result = array();
 	foreach ($tagmodules as $tag => $values) {
-	  if (isset($values['__to_export__'])) {
+	  if (!isset($values['__to_export__'])) {
         $values[PATTERNS_EXPORT][PATTERNS_EXPORT_ALL] = $values['__to_export__']; 
     }
-		elseif (!isset($values[PATTERNS_EXPORT]) || !isset($values[PATTERNS_EXPORT][PATTERNS_EXPORT_ALL]))) {
+		elseif (!isset($values[PATTERNS_EXPORT]) || !isset($values[PATTERNS_EXPORT][PATTERNS_EXPORT_ALL])) {
 	  		continue;
 	  }
 	  
@@ -369,8 +369,14 @@ function patterns_extract_php($tagmodules) {
     
 	  //$module = $values['module'];
 	  $func = $values[PATTERNS_EXPORT][PATTERNS_EXPORT_ALL];
-	  
-		$result[$tag] = call_user_func($func);
+	  if (!is_array($func)) {
+			$result[$tag] = call_user_func($func);
+	  }
+	  else {
+	  	foreach ($func as $f) {
+	  		$result[tag] = array_merge($result[$tag], call_user_func($f));
+	  	}
+	  }
     
   }
 
