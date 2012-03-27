@@ -31,6 +31,7 @@ function patterns_menu_alter($items) {
 	*/
 }
 
+
 /**
  * 
  * Enter description here ...
@@ -73,16 +74,17 @@ function patterns_drush_enable_modules_service($dl = FALSE) {
  * returns an array with the lines of the output of the command
  */
 function patterns_drush_download_modules($modules) {
-  if (variable_get('patterns_drush_path') !== '') {
-    $output = array('following was output by drush');
-    $cmd = variable_get('patterns_drush_path');
-    $cmd .= ' -r '. patterns_get_drupal_installation_path();
-    $cmd .= ' dl '. implode(' ', $modules) .' -y';
-    exec($cmd , $output);
-    return $output;
-  } else {
-    return array('Drush path wasn\'t set');
+  if (!patterns_drush_ready()) {
+  	return array('Drush path wasn\'t set');
   }
+  
+  $output = array('Drush output: ');
+  $cmd = variable_get('patterns_drush_path');
+  $cmd .= ' -r '. patterns_get_drupal_installation_path();
+  $cmd .= ' dl '. implode(' ', $modules) .' -y';
+  exec($cmd , $output);
+  return $output;
+ 
 }
 
 /**
@@ -93,21 +95,24 @@ function patterns_drush_download_modules($modules) {
  * returns an array with the lines of the output of the command
  */
 function patterns_drush_enable_modules($modules, $resolve_dependencies = FALSE) {
-  $rd = '';
+	if (!patterns_drush_ready()) {
+  	return array('Drush path wasn\'t set');
+  }
+	
+	$rd = '';
   if ($resolve_dependencies) {
     $rd = '--resolve-dependencies';
   } 
   
-  if (variable_get('patterns_drush_path') !== '') {
-    $output = array('following was output by drush');
-    $cmd = variable_get('patterns_drush_path');
-    $cmd .= ' -r '. patterns_get_drupal_installation_path();
-    $cmd .= ' en '. $rd .' '. implode(' ', $modules) .' -y';
-    exec($cmd , $output);
-    return $output;
-  } else {
-    return array('Drush path wasn\'t set');
-  }
+ 
+	$output = array('following was output by drush');
+	$cmd = variable_get('patterns_drush_path');
+	$cmd .= ' -r '. patterns_get_drupal_installation_path();
+	$cmd .= ' en '. $rd .' '. implode(' ', $modules) .' -y';
+	exec($cmd , $output);
+	
+	return $output;
+ 
 }
 
 /**
@@ -117,4 +122,8 @@ function patterns_drush_enable_modules($modules, $resolve_dependencies = FALSE) 
 function patterns_get_drupal_installation_path() {
   // TODO: Patterns or patterns?
   return realpath(drupal_get_path('module', 'Patterns') .'/../../../..') . '/';
+}
+
+function patterns_drush_ready() {
+	return (variable_get('patterns_drush_path') !== '') ? TRUE : FALSE;
 }
