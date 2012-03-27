@@ -117,8 +117,6 @@ function patterns_extract($form, &$form_state) {
 
 }
 
-
-
 function patterns_extract_page1($form, &$form_state) {
 
 	
@@ -187,8 +185,8 @@ function patterns_extract_page1($form, &$form_state) {
 	  		'#default_value' => $tag,
 	  	); 
 	  	
-	  	//$form['ext'][$module][$tag]['options'][$tag] = array(
-	  	$form['all']['ext'][$module][$tag]['options'] = array(
+	  	$form['all']['ext'][$module][$tag]['options'][$tag] = array(
+	  	//$form['all']['ext'][$module][$tag]['options'] = array(
 	      '#type' => 'radios',
 	  		'#title' => $tag,
 	    	'#options' => array_combine(array_keys($forms), array_keys($forms)),
