@@ -20,7 +20,7 @@ function patterns_phpparser_patterns_parser() {
  *
  * @return array|bool The pattern structure, or FALSE.
  */
-function patterns_phpparser_load($path, $local = TRUE) {
+function patterns_phpparser_load_new($path, $local = TRUE) {
   if ($local && !file_exists($path)) {
     return FALSE;
   }
@@ -36,21 +36,32 @@ function patterns_phpparser_load($path, $local = TRUE) {
  * @depracated
  *
  */
-function patterns_phpparser_load_old($path, $local = TRUE) {
+function patterns_phpparser_load($path, $local = TRUE) {
   if ($local && !file_exists($path)) {
     return FALSE;
   }
-  $pattern = array();
-
-  include($path);
-  // That should have declared a 'pattern' into current scope.
-
-  if (!patterns_validate_pattern($pattern)) {
-    // TODO: why not drupal_set_message?
-    trigger_error(t("Failed to evaluate a useful pattern from the input file %path. Pattern did not validate. May have been invalid syntax.", array('%path' => $path)), E_USER_WARNING);
+  
+  // TODO: not working
+  return FALSE;
+  
+  // $pattern = array();
+  // include $path
+  // return $pattern;
+  
+  
+  
+	if (!$php = file_get_contents($path)) {
     return FALSE;
   }
-  return $pattern;
+  
+  // That should have declared a 'pattern' into current scope.
+
+  //if (!patterns_validate_pattern($pattern)) {
+  //  // TODO: why not drupal_set_message?
+  //  trigger_error(t("Failed to evaluate a useful pattern from the input file %path. Pattern did not validate. May have been invalid syntax.", array('%path' => $path)), E_USER_WARNING);
+  //  return FALSE;
+  //}
+  return $php;
 }
 
 
@@ -66,9 +77,14 @@ function patterns_phpparser_parse($pattern = NULL) {
 	if (is_array($pattern)) return $pattern;
   if (!is_string($pattern)) return FALSE;
 
-  $outout = array();
-  parse_str($pattern, $output);
-  return $output;
+  // TODO: at the moment string parsing does not work
+  
+  return FALSE
+  
+  //$outout = array();
+  //parse_str($pattern, $output);
+  //$output = eval($pattern);
+  //return $output;
 }
 
 /**
@@ -78,14 +94,10 @@ function patterns_phpparser_parse($pattern = NULL) {
  */
 function patterns_phpparser_dump($pattern = NULL) {
 	if (is_null($pattern) || !is_array($pattern)) return FALSE;
-    
-	$subs = variable_get('PHP type pattern', $pattern);
-    $string = '';
-    foreach ($subs as $key => $value) {
-       $string .= "\$subs[$key]['values']  = " . var_export(patterns_phpparser_parse($pattern), TRUE) . ";\n";
-          
-    }
- // return $string;
-
-  return print_r($string, TRUE);
+	
+  $string = '';
+  //foreach ($subs as $key => $value) {
+ 	  $string = "\$pattern = " . var_export($pattern, TRUE) . ";\n";       
+  //}
+  return $string;
 }
