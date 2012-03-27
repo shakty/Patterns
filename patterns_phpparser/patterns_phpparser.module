@@ -79,13 +79,11 @@ function patterns_phpparser_parse($pattern = NULL) {
 function patterns_phpparser_dump($pattern = NULL) {
 	if (is_null($pattern) || !is_array($pattern)) return FALSE;
     
-	$subs = variable_get('PHP type pattern', $pattern);
     $string = '';
-    foreach ($subs as $key => $value) {
-       $string .= "\$subs[$key]['values']  = " . var_export(patterns_phpparser_parse($pattern), TRUE) . ";\n";
-          
-    }
- // return $string;
+   // foreach ($subs as $key => $value) {
+    $string = "\$pattern = " . var_export($pattern, TRUE) . ";\n"; 
+ //   }
+ return $string;
 
-  return print_r($string, TRUE);
+ //return print_r($string, TRUE);
 }
