@@ -1,3 +1,8 @@
+7046:
+
+		- Automatic extraction seems to work, for ALL and for specific forms / components
+		- TODO: improve GUI
+
 7045:
 
 		- Added hook_patterns_publish and hook_patterns_unpublish

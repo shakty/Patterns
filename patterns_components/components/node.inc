@@ -35,6 +35,11 @@ function node_patterns($data) {
     PATTERNS_MODIFY => array('node_type_form'),
     PATTERNS_DELETE => array('node_type_delete_confirm'),
     PATTERNS_FILES  => $files_ct,
+    //PATTERNS_EXPORT => array(
+    //											PATTERNS_EXPORT_ALL => 'ccctttypes',
+		//											'ctype' => 'ccctttypes1',	
+		//											'ctype2' => 'ccctttypes2',
+		//									 ),
   );
 
   $actions['content_type_extract_all'] = array(

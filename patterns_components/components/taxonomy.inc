@@ -20,7 +20,7 @@ function taxonomy_patterns($data = NULL) {
     											PATTERNS_EXPORT_ALL => 'taxonomy_patterns_export_all_vocs',
     											// Commented are more options for extraction
     											// This is not yet working
-													//'Option 1' => 'export_generic_node',	
+													'Cheat (I am doing terms)' => 'taxonomy_patterns_export_all_terms',	
 													//'Single Vocabulary' => array('callback' => 'taxonomy_patterns_export_single_vocabulary',
 													//														 'arguments' => array('1', '2', '3'),
     											//),

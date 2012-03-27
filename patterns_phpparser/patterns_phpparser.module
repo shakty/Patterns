@@ -79,7 +79,7 @@ function patterns_phpparser_parse($pattern = NULL) {
 
   // TODO: at the moment string parsing does not work
   
-  return FALSE
+  return FALSE;
   
   //$outout = array();
   //parse_str($pattern, $output);
