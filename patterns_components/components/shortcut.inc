@@ -78,7 +78,7 @@ function shortcut_patterns_export_all_set($args = NULL, &$result = NULL) {
   $sets = shortcut_sets();
   $result = array();
   foreach ($sets as $set_name => $value) {
-    $setObject = shorcut_set_load($set_name);
+    $setObject = shortcut_set_load($set_name);
     $result = array_merge($result, patterns_api_extract_actions($form_id, $setObject, 'shortcut_set', PATTERNS_MODIFY));
     return $result;
   }

@@ -280,20 +280,18 @@ function patterns_extract_submit($form, &$form_state) {
 	}
 	
 	$sections = patterns_extract_php($tm_index);
+	
+	if (empty($sections)) {
+	  drupal_set_message(t('Export did not return any data.'), 'error');
+	  return FALSE;
+	}
+	
 	foreach($sections as $s => $values) {
 		$pattern[$s] = $values;
 	} 
-	//$pattern = array_merge($info, $sections);
 	
-	//if (patterns_validate_pattern($pattern, ))
-	
-	//$parsed = patterns_parser_parse($pattern, $format);
 	drupal_set_message(print_r($pattern, true));
-	
-	if ($parsed) {
-		drupal_set_message('Pattern succesfully extracted');
-	}
-	
+		
 	$result = patterns_io_save_pattern($pattern, $filename, $format);
 	
 	if ($result) {
@@ -303,24 +301,8 @@ function patterns_extract_submit($form, &$form_state) {
 	
 	//patterns_extract_batch($tm_index);
 	
-	
-	
 	$form_state['redirect'] = 'admin/patterns/extract';
-	/*
-	// Only extract all for now
-	
-	$pattern = patterns_api_add_info_section();
-	
 
-	$exports = patterns_api_build_moduletags_index($form_state['values']['module'], null, PATTERNS_EXPORT);
-	$func = $exports[$form_state['values']['options']];
-	
-	$sections = call_user_func_array($func, array());
-
-	$pattern = array_merge($info, $sections);
-	
-	//debug($pattern);
-	*/
 }
 function patterns_extract_php($tagmodules) {
 
