@@ -24,7 +24,7 @@ function menu_patterns($data) {
     PATTERNS_DELETE => array('menu_item_delete_form'),
     PATTERNS_FILES => $files,
     PATTERNS_EXPORT => array(
-                            PATTERNS_EXPORT_ALL => 'menu_patterns_export_all_menu_item',)
+                            PATTERNS_EXPORT_ALL => 'menu_patterns_export_all_menu_item',),
   );
 
   return $actions;
