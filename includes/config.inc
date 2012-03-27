@@ -109,7 +109,7 @@ function patterns_config_settings($form, &$form_state) {
   );
   $form['sharing']['patterns_public_url'] = array(
     '#type' => 'textfield',
-    '#title' => t('Enabled patterns public page'),
+    '#title' => t('Enable patterns public page'),
     '#description' => t('If set, a public page of public patterns in the web site will be created under this url. Please review the permissions of your web site to make sure that anonymous users can see it.'),
     '#default_value' => variable_get('patterns_public_url', ''),
   );

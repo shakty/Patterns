@@ -175,15 +175,26 @@ function patterns_import_server_submit($form, &$form_state) {
 }
 
 /**
- * @TODO Not really doing anything for now.
- * @param mixed $pid
+ * Callback function for route /admin/patterns/publish/
+ * 
+ * Sets the flag public to TRUE in the database and invokes the 
+ * hook_patterns_publish in all the modules implementing it.
+ * 
+ * Redirects the user to the patterns home.
+ * 
+ * @param mixed $pattern the id or the name of the pattern.
  */
-function patterns_publish_pattern($pid) {
+function patterns_publish_pattern($pattern) {
 	
-  $pattern = patterns_utils_if_invalid_go_back($pid);
-  $result = db_query("UPDATE {patterns} SET public = 1 WHERE pid = :pid", array('pid' => $pid));
+  $pattern = patterns_utils_if_invalid_go_back($pattern);
+  $result = patterns_db_publish_pattern($pattern);
 
-  drupal_set_message(t('Pattern %pattern was marked as public.', array('%pattern' => @$pattern->name)));
+  if ($result) {
+    drupal_set_message(t('Pattern %pattern was marked as public.', array('%pattern' => @$pattern->name)));
+  }
+  else {
+    drupal_set_message(t('An error occurred. Unable to mark pattern %pattern as public.', array('%pattern' => @$pattern->name)), 'error');
+  }
   
   // Patterns API
   // Invoke all the modules who wants to do something with the published pattern
@@ -193,15 +204,25 @@ function patterns_publish_pattern($pid) {
 }
 
 /**
- * @TODO Not really doing anything for now.
- * @param mixed $pid
+ * Callback function for route /admin/patterns/unpublish/
+ * 
+ * Sets the flag public to FALSE in the database and invokes the 
+ * hook_patterns_unpublish in all the modules implementing it.
+ * 
+ * Redirects the user to the patterns home.
+ * 
+ * @param mixed $pattern the id or the name of the pattern.
  */
-function patterns_unpublish_pattern($pid) {
-  $pattern = patterns_utils_if_invalid_go_back($pid);
-  $result = db_query("UPDATE {patterns} SET public = 0 WHERE pid = :pid", array('pid' => $pid));
+function patterns_unpublish_pattern($pattern) {
+  $pattern = patterns_utils_if_invalid_go_back($pattern);
+  $result = patterns_db_unpublish_pattern($pattern);
 
-  drupal_set_message(t('Pattern %pattern was marked as private.', array('%pattern' => @$pattern->name)));
-  
+  if ($result) {
+    drupal_set_message(t('Pattern %pattern was marked as private.', array('%pattern' => @$pattern->name)));
+  }
+  else {
+    drupal_set_message(t('An error occurred. Unable to mark pattern %pattern as private.', array('%pattern' => @$pattern->name)), 'error');
+  }
   // Patterns API
   // Invoke all the modules who wants to do something with the unpublished pattern
   module_invoke_all('patterns_unpublish', $pattern);

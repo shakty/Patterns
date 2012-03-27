@@ -1,3 +1,7 @@
+7048:
+
+		- Publish/Unpublish pattern has a separate function to access the db.
+
 7047:
 		
 		- Page for public patterns created.
