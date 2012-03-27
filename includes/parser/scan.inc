@@ -233,6 +233,7 @@ function _patterns_scan_validate_patternscan($patternscan, $display_errors = FAL
  */
 function _patterns_scan_is_section($section = NULL) {
 	if (is_null($section)) return FALSE;
+	if (!is_array($section)) return FALSE;
 	$action = array_pop($section);
 	return _patterns_scan_is_action($action);
 }
