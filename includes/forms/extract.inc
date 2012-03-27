@@ -192,13 +192,6 @@ function patterns_extract_page1($form, &$form_state) {
   		'#collapsed' => FALSE, // TODO set to TRUE after debugging
 	  );
 	  
-	  /*
-	  $form['all']['ext'][$module]['module'] = array(
-	    '#type' => 'hidden',
-	  	'#default_value' => $module,
-	  ); 
-	  */
-	  
 	  $form['all']['ext'][$module]['options'] = array (
 	    '#type' => 'checkboxes',
 	    '#title' => t('Extraction options'),
@@ -206,17 +199,10 @@ function patterns_extract_page1($form, &$form_state) {
 	  ); 
 	  
 	  foreach ($tags as $tag => $forms) {
-
-	  	/*
-	  	$form['all']['ext'][$module][$tag]['tag'] = array(
-	    	'#type' => 'hidden',
-	  		'#default_value' => $tag,
-	  	); 
-	  	*/
+	  	
 	    $input_name = _patterns_extract_build_input_name($module,$tag);
 	    
 	  	$form['all']['ext'][$module][$tag]['options'] = array(
-	  	//$form['all']['ext'][$module][$tag]['options'] = array(
 	      '#type' => 'checkboxes',
 	  		'#title' => $tag,
 	    	'#options' => array_combine(array_keys($forms), array_keys($forms)),
@@ -233,12 +219,6 @@ function patterns_extract_page1($form, &$form_state) {
 	  
 	  
 	  //_patterns_extract_add_ajax_to_options($form['ext'][$module]);
-	  
-	  // TODO: do we need this?
-//	  $form['all']['ext']['module'] = array(
-//	    '#type' => 'hidden',
-//	  	'#default_value' => $module,
-//	  ); 
 	  
   }   
   
@@ -320,7 +300,7 @@ function patterns_extract_submit($form, &$form_state) {
 //		
 //	}
 	
-	$sections = patterns_extract_php($tm_index);
+	list($sections, $modules) = patterns_extract_php($tm_index);
 	
 	if (empty($sections)) {
 	  drupal_set_message(t('Export did not return any data.'), 'error');
@@ -329,7 +309,7 @@ function patterns_extract_submit($form, &$form_state) {
 	
 	// Modules that needs to be enabled
 	// to run the pattern
-	$modules = array_keys($sections);
+	patterns_api_add_modules_section($modules, $pattern);
 	
 	foreach($sections as $s => $values) {
 		$pattern[$s] = $values;
@@ -352,8 +332,9 @@ function patterns_extract_submit($form, &$form_state) {
 function patterns_extract_php($tagmodules) {
 
 	$result = array();
+	$modules = array();
 	foreach ($tagmodules as $tag => $values) {
-	  if (!isset($values['__to_export__'])) {
+	  if (isset($values['__to_export__'])) {
         $values[PATTERNS_EXPORT][PATTERNS_EXPORT_ALL] = $values['__to_export__']; 
     }
 		elseif (!isset($values[PATTERNS_EXPORT]) || !isset($values[PATTERNS_EXPORT][PATTERNS_EXPORT_ALL])) {
@@ -367,18 +348,21 @@ function patterns_extract_php($tagmodules) {
     	}
     }
     
-	  //$module = $values['module'];
+	  array_push($modules, $values['module']);
 	  $func = $values[PATTERNS_EXPORT][PATTERNS_EXPORT_ALL];
 	  if (!is_array($func)) {
-			$result[$tag] = call_user_func($func);
+			$sections[$tag] = call_user_func($func);
 	  }
 	  else {
 	  	foreach ($func as $f) {
-	  		$result[tag] = array_merge($result[$tag], call_user_func($f));
+	  		$sections[tag] = array_merge($result[$tag], call_user_func($f));
 	  	}
 	  }
     
   }
+  
+  $result[] = $sections;
+	$result[] = $modules;
 
   return $result;
 }

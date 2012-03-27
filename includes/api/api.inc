@@ -156,6 +156,30 @@ function patterns_api_add_info_section($info = array(), &$pattern = array(), $ow
   return $pattern;
 }
 
+/**
+ * Adds / Replaces an Info section to a pattern.
+ * 
+ * Removes duplicates from the list of modules.
+ * 
+ * @param array $modules
+ * 	 Array containing the name of the modules
+ * @param array $pattern (optional)
+ *   The associative array representing a pattern
+ * @param Bool $ow (optional)
+ * 	 If TRUE, a pre-existing modules section will be 
+ * 	 overwritten. Defaults FALSE.
+ * 
+ * @return Bool|Array Return the array containing the 
+ *   the modules section, or FALSE if an error occurred 
+ */
+function patterns_api_add_modules_section($modules = NULL, &$pattern = array(), $ow = FALSE) {
+	if (is_null($modules)) return FALSE;
+	if (isset($pattern['modules']) && !$ow) return FALSE;
+	$modules = (is_array($modules)) ? $modules : array($modules);
+	$pattern['modules'] = array_unique($modules);
+	return $pattern;
+}
+
 
 /**
  * Initializes an empty section in a pattern file.

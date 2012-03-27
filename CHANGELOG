@@ -1,3 +1,9 @@
+7049:
+
+		- Fixed module/tag/form selection in the extract page.
+		- Extraction automatically adds the modules which are required for
+			running the pattern
+
 7048:
 
 		- Publish/Unpublish pattern has a separate function to access the db.
