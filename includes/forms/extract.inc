@@ -4,6 +4,10 @@
  * Importing Patterns from a file or using an URL.
  */
 
+function _patterns_extract_build_input_name($module, $tag){
+  return 'ext['.$module.'][options][' . $tag . ']';
+}
+
 function _patterns_extract_goto($form, &$form_state, $step) {
   // MODULE SELECTED
   
@@ -117,14 +121,14 @@ function _patterns_extract_if_invalid_step_goback($step = 0,
 
 function patterns_extract($form, &$form_state) {
  	
- 	$step = _patterns_extract_check_step($form_state);
-	_patterns_extract_if_invalid_step_goback($step);
-	$form['step'] = array(
-     '#type' => 'hidden',
-     '#title' => t('Pattern Identifier'),
-     '#description' => t('step'),
-     '#value' => $step,
-  );
+ 	//$step = _patterns_extract_check_step($form_state);
+	//_patterns_extract_if_invalid_step_goback($step);
+//	$form['step'] = array(
+//     '#type' => 'hidden',
+//     '#title' => t('Pattern Identifier'),
+//     '#description' => t('step'),
+//     '#value' => $step,
+//  );
 	
   //debug($step);
   
@@ -132,8 +136,9 @@ function patterns_extract($form, &$form_state) {
   $name = isset($form_state['values']['name']) ?  $form_state['values']['name'] : 'name not set';
   
   patterns_io_load_components();
-
-  return _patterns_extract_goto($form, $form_state, $step);
+  
+  return patterns_extract_page1($form, $form_state);
+  //return _patterns_extract_goto($form, $form_state, $step);
 
 }
 
@@ -168,9 +173,9 @@ function patterns_extract_page1($form, &$form_state) {
   $form['all']['ext'] = array (
 		'#type' => 'fieldset',
 	  '#title' => 'Components with automatic extraction enabled',
-  	//'#tree' => TRUE,
+  	'#tree' => TRUE,
   	'#collapsible' => TRUE,
-    '#collapsed' => TRUE, // TODO set to TRUE after debugging
+    '#collapsed' => FALSE, // TODO set to TRUE after debugging
   	'#states' => array(
 		     	 'visible' => array(   // action to take.
 		        ':input[name="all"]' => array('checked' => TRUE),
@@ -194,8 +199,8 @@ function patterns_extract_page1($form, &$form_state) {
 	  ); 
 	  */
 	  
-	  $form['all']['ext'][$module]['options'] = array(
-	    '#type' => 'radios',
+	  $form['all']['ext'][$module]['options'] = array (
+	    '#type' => 'checkboxes',
 	    '#title' => t('Extraction options'),
 	    '#options' => array_combine(array_keys($tags), array_keys($tags)),
 	  ); 
@@ -208,16 +213,20 @@ function patterns_extract_page1($form, &$form_state) {
 	  		'#default_value' => $tag,
 	  	); 
 	  	*/
-	  	
-	  	$form['all']['ext'][$module][$tag]['options'][$tag] = array(
+	    $input_name = _patterns_extract_build_input_name($module,$tag);
+	    
+	  	$form['all']['ext'][$module][$tag]['options'] = array(
 	  	//$form['all']['ext'][$module][$tag]['options'] = array(
-	      '#type' => 'radios',
+	      '#type' => 'checkboxes',
 	  		'#title' => $tag,
 	    	'#options' => array_combine(array_keys($forms), array_keys($forms)),
 	  		'#states' => array(
 		     	 'visible' => array(   // action to take.
-		        ':input[name="options"]' => array('value' => $tag),
-		      ),
+		        ':input[name="' . $input_name . '"]' => array('checked' => TRUE),
+		       ),
+		       'checked' => array(   // action to take.
+            ':input[name="' . $input_name . '"]' => array('checked' => TRUE),
+           ),
 	  		),
 	  	);
 	  }
@@ -226,10 +235,10 @@ function patterns_extract_page1($form, &$form_state) {
 	  //_patterns_extract_add_ajax_to_options($form['ext'][$module]);
 	  
 	  // TODO: do we need this?
-	  $form['all']['ext']['module'] = array(
-	    '#type' => 'hidden',
-	  	'#default_value' => $module,
-	  ); 
+//	  $form['all']['ext']['module'] = array(
+//	    '#type' => 'hidden',
+//	  	'#default_value' => $module,
+//	  ); 
 	  
   }   
   
@@ -264,27 +273,63 @@ function patterns_extract_submit($form, &$form_state) {
   // category: " . $modules_with_components[$form_state['values']['module']]
 	$pattern = patterns_api_add_info_section($form_state['values']['info']);
 	
-	if (isset($form_state['values']['options']) && !empty($form_state['values']['options'])) {
-		$cmp = $form_state['values']['options'];
-		$tm_index = array($cmp => $tm_index[$cmp]);
-		
-		if (isset($form_state['values'][$cmp]) && !empty($form_state['values'][$cmp])) {
-			$tag = $form_state['values'][$cmp];
-			$func = $tm_index[$cmp][PATTERNS_EXPORT][$tag];
-			$tm_index[$cmp][PATTERNS_EXPORT][PATTERNS_EXPORT_ALL] = $func;
-		}
-		//else {
-		//	$tm_index[$cmp] = array($tag => $tm_index[$cmp][PATTERNS_EXPORT_ALL]);
-		//}
-		
+	if (isset($form_state['values']['all']) && $form_state['values']['all'] != 0) {
+  	// Individual modules have selected and the tagmodules index needs to be
+  	// refactored.
+	  $exports = array();
+  	foreach ($form_state['values']['ext'] as $module => $data) {
+  	  
+  	  foreach ($data['options'] as $tag => $enabled) {
+  	    if (empty($enabled)) {
+  	      continue;
+  	    }
+  	    $exports[$tag]['__to_export__'] = array();
+  	    // Loop along all enabled export functions
+        foreach ($data[$tag]['options'] as $export_key => $func) {
+          if (!empty($func)) {
+            $tm_index[$tag]['__to_export__'][] = $tm_index[$tag][PATTERNS_EXPORT][$func];
+          }
+        }
+        
+        // If no sub-tag was selected (should not be the case)
+        // then we execute EXPORT_ALL (if available)
+        if (empty($exports[$tag]['__to_export__'])) {
+          if (isset($tm_index[$tag][PATTERNS_EXPORT][PATTERNS_EXPORT_ALL])) {
+            $tm_index[$tag]['__to_export__'][] = $tm_index[$tag][PATTERNS_EXPORT][PATTERNS_EXPORT_ALL];
+          }
+        }    
+	    }
+  	}
+  	
+  	$tm_index = array_intersect_key($tm_index, $exports);
+  	//$tm_index = array_combine($tm_index, $exports);
 	}
 	
-	$sections = patterns_extract_php($tm_index);
+//	if (isset($form_state['values']['options']) && !empty($form_state['values']['options'])) {
+//		$cmp = $form_state['values']['options'];
+//		$tm_index = array($cmp => $tm_index[$cmp]);
+//		
+//		if (isset($form_state['values'][$cmp]) && !empty($form_state['values'][$cmp])) {
+//			$tag = $form_state['values'][$cmp];
+//			$func = $tm_index[$cmp][PATTERNS_EXPORT][$tag];
+//			$tm_index[$cmp][PATTERNS_EXPORT][PATTERNS_EXPORT_ALL] = $func;
+//		}
+//		//else {
+//		//	$tm_index[$cmp] = array($tag => $tm_index[$cmp][PATTERNS_EXPORT_ALL]);
+//		//}
+//		
+//	}
+	
+	$sections = patterns_extract_php($funcs);
 	
 	if (empty($sections)) {
 	  drupal_set_message(t('Export did not return any data.'), 'error');
 	  return FALSE;
 	}
+	
+	// Modules that needs to be enabled
+	// to run the pattern
+	$modules = array_keys($sections);
 	
 	foreach($sections as $s => $values) {
 		$pattern[$s] = $values;
@@ -308,9 +353,13 @@ function patterns_extract_php($tagmodules) {
 
 	$result = array();
 	foreach ($tagmodules as $tag => $values) {
-		if (!isset($values[PATTERNS_EXPORT])) {
+	  if (isset($values['__to_export__'])) {
+        $values[PATTERNS_EXPORT][PATTERNS_EXPORT_ALL] = $values['__to_export__']; 
+    }
+		elseif (!isset($values[PATTERNS_EXPORT]) || !isset($values[PATTERNS_EXPORT][PATTERNS_EXPORT_ALL]))) {
 	  		continue;
 	  }
+	  
 		if (isset($values[PATTERNS_FILES])) {
 			$files = (!is_array($values[PATTERNS_FILES])) ? array($values[PATTERNS_FILES]) : $values[PATTERNS_FILES];
     	foreach ($files as $file) {
@@ -318,7 +367,7 @@ function patterns_extract_php($tagmodules) {
     	}
     }
     
-	  $module = $values['module'];
+	  //$module = $values['module'];
 	  $func = $values[PATTERNS_EXPORT][PATTERNS_EXPORT_ALL];
 	  
 		$result[$tag] = call_user_func($func);
@@ -328,125 +377,6 @@ function patterns_extract_php($tagmodules) {
   return $result;
 }
 
-function patterns_extract_batch($tagmodules) {
-
-	$cur_sec = 1;
-	$tot_sec = count($tagmodules);
-	foreach ($tagmodules as $tag => $values) {
-		if (!isset($values[PATTERNS_EXPORT])) {
-	  		continue;
-	  }
-		if (isset($values[PATTERNS_FILES])) {
-			$files = (!is_array($values[PATTERNS_FILES])) ? array($values[PATTERNS_FILES]) : $values[PATTERNS_FILES];
-    	foreach ($files as $file) {
-      	require_once $file;
-    	}
-    }
-	  $module = $values['module'];
-	  $func = array($values[PATTERNS_EXPORT][PATTERNS_EXPORT_ALL]);
-	  //foreach ($tags as $tag => $forms) {
-		
-	  	
-		
-	    $progress_params = array(
-	                          '%section' => $module,
-	                          '%cur_sec' => $cur_sec,
-	                          '%tot_sec' => $tot_sec,
-	    );
-	
-	    $progress = t('Running component "%section" (%cur_sec/%tot_sec), action @current out of @total', $progress_params);
-			    
-	    $batch = array(
-	      //'title' => t('Processing section %section of pattern %pattern', array('%section' => $section, '%pattern' => $info['title'])),
-	      'title' => t('Extracting configuration for %tag', array('%tag' => $tag)),
-	      'progress_message' => $progress,
-	      'finished' => 'patterns_extract_batch_finish',
-	    	'operations' => array($func),
-	      'init_message' => t('Initializing component "%section" (%cur_sec/%tot_sec)', array(
-	                          '%section' => $module,
-	                          '%cur_sec' => $cur_sec,
-	                          '%tot_sec' => $tot_sec,
-	                         )),
-	    );
-	
-	    if (isset($values[PATTERNS_FILES]) && !empty($values[PATTERNS_FILES])) {
-	   		//$batch['file'] = current($values[PATTERNS_FILES]); // should be an array or not?
-	   		$batch['file'] = drupal_get_path('module','patterns_components') . 'components/taxonomy.inc';
-	    }
-	    
-	                         
-	      
-	  //}
-	
-    $_SESSION['patterns_extract_batch_info'] = array('component' => $module, 'tag' => $tag);
-    batch_set($batch);
-    $cur_sec++;
-  }
-
-  return TRUE;
-}
-
-/**
- * Finishes a batch operation.
- * @TODO Doc.
- */
-function patterns_extract_batch_finish($success, $results, $operations) {
-  $info = $_SESSION['patterns_extract_batch_info'];
-  $section = $results['module'];
-  if (empty($results['abort'])) {
-    foreach ($info as $key => $i) {
-      drupal_set_message(t('Section "@section" of pattern "@pattern" ran successfully.', array('@pattern' => $i['title'],
-                                                                                             '@section' => $section,
-      )));
-      $query_params = array(':time' => time(), // Note: time() != $_SERVER['REQUEST_TIME']
-                            ':pid' => $key,
-                            ':en' => PATTERNS_STATUS_ENABLED,
-      );
-      db_query("UPDATE {patterns} SET status = :en, enabled = :time WHERE pid = :pid", $query_params);
-    }
-  }
-  else {
-    $pattern = reset($info);
-    drupal_set_message(t('Section "@section" of pattern "@pattern" ran with errors.
-      Check the error messages to get more details.',
-      array('@pattern' => $pattern['title'], '@section' => $section,
-           )),
-     'error');
-    drupal_set_message($results['error_message'], 'error');
-  }
-  
-  unset($_SESSION['patterns_batch_info']);
-  drupal_flush_all_caches();
-}
-
-
-function patterns_extract_page2($form, &$form_state) {
-	
-	
-	// TODO: Loop here and create a modules section
-	
-	
-	// Sets the category for the info
-  // category: " . $modules_with_components[$form_state['values']['module']]
-	$pattern = patterns_api_add_info_section($form_state['values']['info']);
-	
-	$pattern = patterns_api_add_info_section();
-	
-	// Sets the category for the info
-  // category: " . $modules_with_components[$form_state['values']['module']]
-
-	$exports = patterns_api_build_moduletags_index($form_state['values']['module'], null, PATTERNS_EXPORT);
-	$func = $exports[$form_state['values']['options']];
-	
-	$sections = call_user_func_array($func, array());
-
-	$pattern = array_merge($info, $sections);
-	
-	//debug($pattern);
-	
-  return $form;
-}
-
 
 /**
  * validation function for import_module_form
@@ -454,10 +384,37 @@ function patterns_extract_page2($form, &$form_state) {
  */
 function patterns_extract_validate($form, &$form_state) {
 	
-	$step = _patterns_extract_check_step($form_state, TRUE);
-	if ($step == 1) {
-		return _patterns_extract_validate_step1($form, $form_state);
-	}
+	//$step = _patterns_extract_check_step($form_state, TRUE);
+	//if ($step == 1) {
+	//	return _patterns_extract_validate_step1($form, $form_state);
+	//}
+	
+//	shortcut_set Array [1] 
+//  [0...0] 
+//    options Array [1] 
+//      [0...0] 
+//        shortcut_set  Array [1] 
+//          [0...0] 
+//            All 0 
+//	
+//            
+//	
+//	taxonomy Array [3] 
+//  [0...2] 
+//    options Array [2] 
+//      [0...1] 
+//        vocabulary  vocabulary  
+//        term  term  
+//    vocabulary  Array [1] 
+//      [0...0] 
+//        options Array [1] 
+//          [0...0] 
+//            vocabulary  Array [2] 
+//              [0...1] 
+//                All All 
+//                Cheat (I am doing terms)  0 
+//    term  Array [1] 
+	
 	
   
 	
