@@ -180,7 +180,7 @@ function patterns_utils_is_module_available($module = NULL) {
  * 
  * @param mixed $module String representing the name of the module
  * 
- * * @return Bool TRUE If the module is currently enabled
+ * @return Bool TRUE If the module is currently enabled
  */
 function patterns_utils_is_module_enabled($module = NULL) {
 	if (is_null($module)) return FALSE;

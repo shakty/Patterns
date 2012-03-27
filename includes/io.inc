@@ -215,10 +215,14 @@ function _patterns_io_analyze_scandir_messages($messages = NULL) {
  *
  * @param $reset if TRUE, it always updates the patterns in
  *  the database with the file system.
+ * @param bool $verbose If TRUE, only public patterns 
+ * 	 are returned
+ * @param bool $verbose If TRUE, verbose output is 
+ *   printed to screen
  *
  * @return array The array of available patterns.
  */
-function patterns_io_get_patterns($reset = TRUE, $verbose = TRUE) {
+function _patterns_io_get_patterns($reset = TRUE, $verbose = TRUE, $public = FALSE) {
 
   if ($reset || !variable_get('patterns_loaded', FALSE)) {
     // Updates the patterns in the database
@@ -240,7 +244,11 @@ function patterns_io_get_patterns($reset = TRUE, $verbose = TRUE) {
     if (!isset($pattern->name)) {
       continue;
     }
-
+		
+    if ($public && !$pattern->public) {
+    	continue;
+    }
+    
     // Skip pattern if its file is missing.
     if (!is_file($pattern->file)) {
       $messages[] = patterns_utils_toString($pattern);
@@ -266,6 +274,26 @@ function patterns_io_get_patterns($reset = TRUE, $verbose = TRUE) {
   }
 
   return $patterns;
+}
+
+/**
+ * Wrapper function for _patterns_io_get_patterns.
+ * @see _patterns_io_get_patterns.
+ * 
+ * @return Array Associative array of public patterns.
+ */
+function patterns_io_get_public_patterns($reset = TRUE, $verbose = TRUE) {
+  return _patterns_io_get_patterns($reset, $verbose, TRUE);
+}
+
+/**
+ * Wrapper function for _patterns_io_get_patterns.
+ * @see _patterns_io_get_patterns.
+ * 
+ * @return array The array of available patterns.
+ */
+function patterns_io_get_patterns($reset = TRUE, $verbose = TRUE) {
+  return _patterns_io_get_patterns($reset, $verbose, FALSE);
 }
 
 /**

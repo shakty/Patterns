@@ -89,11 +89,11 @@ function theme_patterns_list($args) {
   $patterns = $args[PATTERNS_STATUS_OK];
   $removed = $args[PATTERNS_STATUS_TRASHED];
 
-  $patterns_title = '<div id="all_patterns_div"><h3>' . t('Available Patterns') . '</h3>';
+  $patterns_title = '<div id="all_patterns_div">';
 
   if (!patterns_utils_is_public_page_enabled()) {
   	if (!patterns_parser_ready()) {
-  		$patterns_title.= t('No available patterns were found. Please install enable one from the Modules page.');	
+  		$patterns_title.= t('No available patterns parser was found. Please enable one from the Modules page.');	
   	}  
   }
   
@@ -141,7 +141,7 @@ function theme_patterns_list($args) {
 
 
   // Page finishes here if this is the public
-  if (patterns_utils_is_public_page_enabled()) {
+  if (patterns_utils_is_public_page()) {
   	return drupal_render($form);
   }
   

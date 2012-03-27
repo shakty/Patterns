@@ -127,6 +127,7 @@ function patterns_menu() {
     $items[variable_get('patterns_public_url', '')] = array(
 	    'title' => 'Public',
 	    'type' => MENU_LOCAL_TASK,
+    	'description' => 'Patterns',
       'page callback' => 'patterns_list_public',
     	'access arguments' => array('public patterns'),
 	    'weight' => -9
@@ -408,12 +409,10 @@ function patterns_list() {
 }
 
 function patterns_list_public() {
-
-  // Load the patterns from database.
-  $patterns = patterns_io_get_patterns(variable_get('patterns_refresh_from_fs', TRUE), FALSE);
-  
+  drupal_add_css(drupal_get_path('module', 'patterns') . '/css/patterns.css');
+  drupal_add_js(drupal_get_path('module', 'patterns') . '/js/patterns.js');
+  $patterns = patterns_io_get_public_patterns(variable_get('patterns_refresh_from_fs', TRUE), FALSE);
   $output = theme('patterns_list', $patterns);
-
   return $output;
 }
 
