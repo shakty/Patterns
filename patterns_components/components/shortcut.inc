@@ -25,7 +25,7 @@
 /**
  * hook_patterns()
  */
-function shortcut_patterns($data) {
+function shortcut_patterns($data = NULL) {
   $files = array('modules/shortcut/shortcut.admin.inc');
 
   $actions['shortcut_set'] = array(
@@ -34,6 +34,9 @@ function shortcut_patterns($data) {
     PATTERNS_MODIFY => array('shortcut_set_edit_form'),
     PATTERNS_DELETE => array('shortcut_set_delete_form'),
     PATTERNS_FILES => $files,
+    PATTERNS_EXPORT => array(
+    											PATTERNS_EXPORT_ALL => 'shortcut_patterns_export_all_set',
+                          ),
     );
   $actions['shortcut_link'] = array(
     PATTERNS_INFO => t('add a new link to one shortcut_set'),
@@ -41,11 +44,17 @@ function shortcut_patterns($data) {
     PATTERNS_MODIFY => array('shortcut_link_edit'),
     PATTERNS_DELETE => array('shortcut_link_delete'),
     PATTERNS_FILES => $files,
+//    PATTERNS_EXPORT => array(
+//    											PATTERNS_EXPORT_ALL => 'shortcut_patterns_export_all_link',
+//                          ),
     );
   $actions['shortcut_set_user'] = array(
     PATTERNS_INFO => t('one user get one shortcut_set'),
     PATTERNS_MODIFY => array('shortcut_set_switch'),
     PATTERNS_FILES => $files,
+//  PATTERNS_EXPORT => array(
+//  											PATTERNS_EXPORT_ALL => 'shortcut_patterns_export_all_xxx',
+//                        ),
     );
 
   return $actions;
@@ -62,6 +71,33 @@ function shortcut_patterns_actions($data) {
     'shortcut_link_delete' => t('Shortcut: delete a shortcut link'),
     );
 }
+
+function shortcut_patterns_export_all_set($args = NULL, &$result = NULL) {
+  $info = shortcut_patterns();
+  $form_id = current($info['shortcut_set'][PATTERNS_MODIFY]);
+  $sets = shortcut_sets();
+  $result = array();
+  foreach ($sets as $set_name => $value) {
+    $setObject = shorcut_set_load($set_name);
+    $result = array_merge($result, patterns_api_extract_actions($form_id, $setObject, 'shortcut_set', PATTERNS_MODIFY));
+    return $result;
+  }
+  return $result;
+}
+
+/*
+function shortcut_patterns_export_all_link($args = NULL, &$result = NULL) {
+  $info = shortcut_patterns();
+  $form_id = current($info['shortcut_link'][PATTERNS_MODIFY]);
+  $sets = shortcut_sets();
+  $result = array();
+  foreach ($sets as $set_name => $value) {
+    $set = shortcut_set_load($set_name);
+    $result = array_merge($result, patterns_api_extract_actions($form_id, $set, 'shortcut_link', PATTERNS_MODIFY));
+  }
+  return $result;
+}
+*/
 
 /**
  * hook_patterns_prepare()
@@ -234,7 +270,8 @@ function shortcut_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE
     $return = array();
     $sets = shortcut_sets();
     foreach ($sets as $set_name => $value) {
-      array_push($return, array($set_name => $value, shortcut_set_load($set_name)));
+      array_merge($return, array('oldname' => $value['title']));
+      return $return;
     }
     return $return;
   }
