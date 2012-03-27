@@ -85,5 +85,4 @@ function patterns_phpparser_dump($pattern = NULL) {
  //   }
  return $string;
 
- //return print_r($string, TRUE);
 }
