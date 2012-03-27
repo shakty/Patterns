@@ -44,9 +44,10 @@ function system_patterns($data) {
     PATTERNS_CREATE => array(),
     PATTERNS_MODIFY => array(), // TODO: ??
     PATTERNS_DELETE => array(),
+    PATTERNS_EXPORT => array(PATTERNS_EXPORT_ALL => 'system_patterns_export_all_variables',),
   );
 
-  $actions['variable'] = $actions['variables']; // Alias
+//  $actions['variable'] = $actions['variables']; // Alias, not available any more
 
  /* $actions['date'] = array('descr' => t('Create/edit/delete types of date and time'),
   	PATTERNS_CREATE => array('system_configure_date_formats_form','system_add_date_format_type_form'),
@@ -72,6 +73,22 @@ function system_patterns_actions($data) {
         'system_delete_date_format_type_form' => t('Delete a type of date and time'),
         'system_configure_date_formats_form' => t('Create/edit formats of date and time'),*/
   );
+}
+
+function system_patterns_export_all_variables($args = NULL, $result = NULL) {
+  // Taken from the Devel module.
+  $query = db_select('variable', 'v')->extend('TableSort');
+  $query->fields('v', array('name', 'value'));
+  $result = $query->execute();
+
+  $actions = array(PATTERNS_CREATE => array('tag' => 'variables'));
+  foreach ($result as $row) {
+    $name = $row->name;
+    $value = variable_get($name);
+    $action = array('name' => $name, 'value' => $value);
+    array_push($actions[PATTERNS_CREATE], $action);
+  }
+  return array($actions);
 }
 
 // Prepare data for processing
@@ -546,3 +563,4 @@ function _call_php_func_include_files($values) {
     require_once($values['filepath']);
   }
 }
+
