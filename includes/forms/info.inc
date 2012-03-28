@@ -9,6 +9,11 @@
 function patterns_info_page() {
 
   $form = array();
+  
+  $text = 'General Information about the state of the Patterns module.';
+	$title = 'Patterns Info';
+  patterns_forms_add_page_header($form, $title, $text);
+  
   $form = patterns_info_directories($form);
   $form = patterns_info_components($form);
   $form = patterns_info_parsers($form);

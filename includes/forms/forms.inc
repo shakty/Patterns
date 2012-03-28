@@ -4,13 +4,22 @@
  * Patterns forms.
  */
 
+module_load_include('inc', 'patterns', 'includes/forms/lab');
 module_load_include('inc', 'patterns', 'includes/forms/export');
-module_load_include('inc', 'patterns', 'includes/forms/extract');
 module_load_include('inc', 'patterns', 'includes/forms/quickrun');
 module_load_include('inc', 'patterns', 'includes/forms/editor');
 module_load_include('inc', 'patterns', 'includes/forms/import');
 module_load_include('inc', 'patterns', 'includes/forms/helper');
 module_load_include('inc', 'patterns', 'includes/forms/info');
+
+
+function patterns_forms_add_page_header(&$form, $title, $text = '') {
+	  $form['header'] = array (
+		'#markup' => t($text),
+		'#prefix' => '<div id="intro_export"><strong>' . t($title) . ': </strong>',
+		'#suffix' => '<hr><br/></div>',
+	);
+}
 
 /**
  * Builds up a fieldset containing the options for executing a

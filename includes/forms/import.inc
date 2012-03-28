@@ -15,6 +15,12 @@ function patterns_import_source($form, &$form_state) {
 
   $def_dir = patterns_path_get_files_dir();
 
+  $form['intro'] = array (
+		'#markup' => t('Cut and paste the content of a pattern file in the text area below to import it in the database.'),
+		'#prefix' => '<div id="intro_export"><strong>Import from Source: </strong>',
+		'#suffix' => '<hr><br/></div>',
+	);
+  
   $form['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Pattern Identifier'),
@@ -70,7 +76,11 @@ function patterns_import_source($form, &$form_state) {
 function patterns_import_file($form, &$form_state) {
 
   $def_dir = patterns_path_get_files_dir();
-
+  
+	$text = 'Choose a local file to import in the database.';
+	$title = 'Import from File';
+  patterns_forms_add_page_header($form, $title, $text);
+     
   $form['#attributes']['enctype'] = 'multipart/form-data';
 
   $form['pattern_uri'] = array(
@@ -122,6 +132,10 @@ function patterns_import_file($form, &$form_state) {
  */
 function patterns_import_url($form, &$form_state) {
 
+	$text = 'Insert the uri of a remote file to be downloaded and imported in the database.';
+	$title = 'Import from URL';
+  patterns_forms_add_page_header($form, $title, $text);
+	
   if (!ini_get('allow_url_fopen')) {
     $form['import_url'] = array(
     // The string 'Feature disabled' is checked inside the test directory

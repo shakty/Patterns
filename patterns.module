@@ -103,7 +103,7 @@ function patterns_menu() {
 	    'title' => 'Patterns',
 	    'description' => 'Patterns was just installed or important updates have been found',
 	    'page callback' => 'patterns_first_install_page',
-	    'access arguments' => array('administer patterns')
+	    'access arguments' => array('administer patterns'),
   	);
   	
   	return $items;
@@ -114,13 +114,13 @@ function patterns_menu() {
     'title' => 'Patterns',
     'description' => 'Administer patterns available for your site',
     'page callback' => 'patterns_list',
-    'access arguments' => array('administer patterns')
+    'access arguments' => array('administer patterns'),
   );
   
   $items['admin/patterns/list'] = array(
     'title' => 'List',
     'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10
+    'weight' => -10,
   );
   
   if (patterns_utils_is_public_page_enabled()) {
@@ -130,7 +130,7 @@ function patterns_menu() {
     	'description' => 'Patterns',
       'page callback' => 'patterns_list_public',
     	'access arguments' => array('public patterns'),
-	    'weight' => -9
+	    'weight' => -9,
 	  );
   }
 
@@ -141,7 +141,7 @@ function patterns_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('patterns_enable_pattern'),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
 
   $items['admin/patterns/edit/%'] = array(
@@ -149,7 +149,7 @@ function patterns_menu() {
     'page callback' => 'patterns_edit_page',
     'page arguments' => array(3),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
 
   $items['admin/patterns/quickrun'] = array(
@@ -157,15 +157,15 @@ function patterns_menu() {
     'page callback' => 'patterns_editor',
     'page arguments' => array('patterns_quickrun'),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_LOCAL_TASK
+    'type' => MENU_CALLBACK,
   );
 
-  $items['admin/patterns/export'] = array(
-    'title' => 'Export',
+  $items['admin/patterns/lab'] = array(
+    'title' => 'Lab',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('patterns_export'),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_LOCAL_TASK
+    'type' => MENU_LOCAL_TASK,
   );
 
   $items['admin/patterns/create/%'] = array(
@@ -173,7 +173,7 @@ function patterns_menu() {
     'page callback' => 'patterns_editor_create_page',
     'page arguments' => array(3),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
 
   // SETTINGS
@@ -184,7 +184,7 @@ function patterns_menu() {
     'page arguments' => array('patterns_config_settings'),
     'access arguments' => array('administer patterns'),
     'type' => MENU_LOCAL_TASK,
-    'weight' => 10
+    'weight' => 10,
   );
 
   // TRASH, RESTORE, REMOVE
@@ -194,14 +194,14 @@ function patterns_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('patterns_trash_pattern'),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
 
   $items['admin/patterns/restore'] = array(
     'title' => 'Restore a pattern from the recycle bin',
     'page callback' => 'patterns_restore_pattern',
     'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
 
   $items['admin/patterns/remove'] = array(
@@ -209,7 +209,7 @@ function patterns_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('patterns_remove_pattern'),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
 
   // UTILS
@@ -218,14 +218,14 @@ function patterns_menu() {
     'title' => 'Refresh Patterns',
     'page callback' => 'patterns_io_get_patterns_service',
     'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
 
   $items['admin/patterns/validate'] = array(
     'title' => 'Validate Pattern YAML Source',
     'page callback' => 'patterns_validate_service',
     'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
 
   // SERVICES
@@ -235,7 +235,7 @@ function patterns_menu() {
     'page callback' => 'patterns_feed',
     'access arguments' => array('get patterns'),
     'access callback' => TRUE,
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
 
   $items['patterns/get'] = array(
@@ -243,7 +243,7 @@ function patterns_menu() {
     'page callback' => 'patterns_io_get_pattern_service',
     'access arguments' => array('get patterns'),
     'access callback' => TRUE,
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
 
   // IMPORT
@@ -253,13 +253,13 @@ function patterns_menu() {
     'page callback' => 'patterns_editor',
     'page arguments' => array('patterns_import_source'),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_LOCAL_TASK
+    'type' => MENU_LOCAL_TASK,
   );
 
   $items['admin/patterns/import/source'] = array(
     'title' => 'Import Source Code',
     'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10
+    'weight' => -10,
   );
 
   $items['admin/patterns/import/file'] = array(
@@ -267,21 +267,21 @@ function patterns_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('patterns_import_file'),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_LOCAL_TASK
+    'type' => MENU_LOCAL_TASK,
   );
   $items['admin/patterns/import/url'] = array(
     'title' => 'Import from URL',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('patterns_import_url'),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_LOCAL_TASK
+    'type' => MENU_LOCAL_TASK,
   );
-  $items['admin/patterns/extract'] = array(
-    'title' => 'Extract',
+  $items['admin/patterns/export'] = array(
+    'title' => 'Export',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('patterns_extract'),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_LOCAL_TASK
+    'type' => MENU_LOCAL_TASK,
   );
 
   // PUBLISH / UNPUBLISH
@@ -290,14 +290,14 @@ function patterns_menu() {
     'title' => 'Publish Pattern',
     'page callback' => 'patterns_publish_pattern',
     'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
 
   $items['admin/patterns/unpublish'] = array(
     'title' => 'Unpublish Pattern',
     'page callback' => 'patterns_unpublish_pattern',
     'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
 
   // UTILITY
@@ -307,14 +307,14 @@ function patterns_menu() {
     'page callback' => 'patterns_info_page',
     'access arguments' => array('administer patterns'),
   	'weight' => 15,
-    'type' => MENU_LOCAL_TASK
+    'type' => MENU_LOCAL_TASK,
   );
 
   $items['admin/patterns/check'] = array(
     'title' => 'Pattern Modules',
     'page callback' => 'patterns_modules_page',
     'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
 
   // Disable for now
@@ -384,11 +384,11 @@ function patterns_list() {
     '#suffix' => '</a>',
   );
 
-  $form['commands']['export'] = array(
+  $form['commands']['quickrun'] = array(
     '#type' => 'button',
-    '#value' => t('Export'),
+    '#value' => t('Quick Run'),
     '#attributes' => array('style' => 'float:right'),
-    '#prefix' => '<a href="' . url('admin/patterns/export') . '">',
+    '#prefix' => '<a href="' . url('admin/patterns/quickrun') . '">',
     '#suffix' => '</a>',
   );
 

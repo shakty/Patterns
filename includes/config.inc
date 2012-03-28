@@ -31,6 +31,10 @@ function patterns_permission() {
  */
 function patterns_config_settings($form, &$form_state) {
   
+	$text = 'Configure the behavior of Patterns.';
+	$title = 'Patterns settings';
+  patterns_forms_add_page_header($form, $title, $text);
+	
   $form['exec'] = array(
     '#type' => 'fieldset',
     '#title' => t('File system options'),

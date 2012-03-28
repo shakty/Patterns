@@ -1,3 +1,10 @@
+7050:
+		- Beautified interface: changed some of the labels and added a small title
+			to all pages
+		- Patterns Export -> Patterns Lab
+		- Patterns Extract -> Patterns Export
+		- Patterns Quick-Run become a MENU_CALLBACK instead of MENU_LOCAL_TASK
+
 7049:
 
 		- Fixed module/tag/form selection in the extract page.
