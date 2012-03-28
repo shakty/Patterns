@@ -75,20 +75,21 @@ function system_patterns_actions($data) {
   );
 }
 
-function system_patterns_export_all_variables($args = NULL, $result = NULL) {
+function system_patterns_export_all_variables($args = NULL, &$result = NULL) {
   // Taken from the Devel module.
   $query = db_select('variable', 'v')->extend('TableSort');
   $query->fields('v', array('name', 'value'));
-  $result = $query->execute();
+  $qresult = $query->execute();
 
   $actions = array(PATTERNS_CREATE => array('tag' => 'variables'));
-  foreach ($result as $row) {
+  foreach ($qresult as $row) {
     $name = $row->name;
     $value = variable_get($name);
     $action = array('name' => $name, 'value' => $value);
     array_push($actions[PATTERNS_CREATE], $action);
   }
-  return array($actions);
+  $result = array($actions);
+  return $result;
 }
 
 // Prepare data for processing
