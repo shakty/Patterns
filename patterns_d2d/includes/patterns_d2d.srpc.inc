@@ -34,7 +34,7 @@ function patterns_d2d_push_patterns_server($arguments, $rpc_info) {
       );
       if (drupaltodrupal_check_array($exploded_pattern, $check)) {
         $name = $rpc_info['id'] . '_' . $exploded_pattern['name'];
-        if (patterns_io_save_pattern($exploded_pattern['content'], $rpc_info['id'] . '_' . $name, $exploded_pattern['format'])) {
+        if (patterns_io_save_pattern($exploded_pattern['content'], $name, $exploded_pattern['format'])) {
           patterns_db_publish_pattern($name);
           $n_patterns++;
         }
