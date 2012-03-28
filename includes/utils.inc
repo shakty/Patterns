@@ -204,6 +204,11 @@ function patterns_utils_is_public_page_enabled() {
  * @return Bool TRUE, if the current page is the public patterns page
  */
 function patterns_utils_is_public_page() {
-	return (request_path() == variable_get(PATTERNS_PUBLIC_URL, '')) ? TRUE : FALSE; 
+	$f = variable_get('site_frontpage', '');
+	$p = variable_get(PATTERNS_PUBLIC_URL, '');
+	if ($f == $p) {
+		return drupal_is_front_page();
+	}
+	return (request_path() == $p) ? TRUE : FALSE; 
 }
 
