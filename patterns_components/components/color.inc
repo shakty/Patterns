@@ -26,7 +26,7 @@ function color_patterns_actions($data) {
 }
 
 function color_patterns_export_all_color($args = NULL, &$result = NULL){
-	$info = color_patterns();
+	$info = color_patterns(NULL);
  	 $form_id = current($info['color'][PATTERNS_MODIFY]);
     $themes = system_rebuild_theme_data();
     $result = array();
@@ -36,7 +36,7 @@ function color_patterns_export_all_color($args = NULL, &$result = NULL){
     	}
     	if (color_get_info($voc->name)) {
     		 $result = array_merge($result, patterns_api_extract_actions($form_id, $voc->name, 'color', PATTERNS_MODIFY));
-    	}  
+    	}
     }
      return $result;
 }

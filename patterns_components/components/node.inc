@@ -22,9 +22,10 @@ function node_patterns($data) {
     PATTERNS_MODIFY => $forms,
     PATTERNS_DELETE => array('node_delete_confirm'),
     PATTERNS_FILES  => $files_n,
+    PATTERNS_EXPORT => array(PATTERNS_EXPORT_ALL => 'node_patterns_export_all_nodes',),
     //PATTERNS_EXPORT => array(
     //											PATTERNS_EXPORT_ALL => 'function1',
-		//											'Articles' => 'export_generic_node',	
+		//											'Articles' => 'export_generic_node',
 		//											'This node' => 'export_single_node',
 		//									 ),
   );
@@ -35,9 +36,10 @@ function node_patterns($data) {
     PATTERNS_MODIFY => array('node_type_form'),
     PATTERNS_DELETE => array('node_type_delete_confirm'),
     PATTERNS_FILES  => $files_ct,
+    PATTERNS_EXPORT => array(PATTERNS_EXPORT_ALL => 'node_patterns_export_all_content_types',),
     //PATTERNS_EXPORT => array(
     //											PATTERNS_EXPORT_ALL => 'ccctttypes',
-		//											'ctype' => 'ccctttypes1',	
+		//											'ctype' => 'ccctttypes1',
 		//											'ctype2' => 'ccctttypes2',
 		//									 ),
   );
@@ -51,6 +53,35 @@ function node_patterns($data) {
   return $actions;
 
 }
+
+function node_patterns_export_all_content_types($args = NULL, &$result = NULL){
+  // Load content types.
+  $types = _node_types_build()->types;
+  $result = array();
+  foreach ($types as $type) {
+    $type = (array) $type;
+    $data = array('tag' => 'content_type');
+    $data = array_merge($data, $type);
+    $action = array(PATTERNS_CREATE => $data);
+    array_push($result, $action);
+  }
+  return $result;
+}
+
+function node_patterns_export_all_nodes($args = NULL, &$result = NULL){
+  // Load nodes.
+  $nodes = node_load_multiple(FALSE);
+  $result = array();
+  foreach ($nodes as $node) {
+    $node = (array) $node;
+    $data = array('tag' => 'node');
+    $data = array_merge($data, $node);
+    $action = array(PATTERNS_CREATE => $data);
+    array_push($result, $action);
+  }
+  return $result;
+}
+
 
 function node_patterns_actions($data) {
   return array(

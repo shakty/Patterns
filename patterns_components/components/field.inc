@@ -59,11 +59,11 @@ function field_patterns_export_all_ins($args = NULL, &$result = NULL){
       $result = array_merge($result, patterns_api_extract_actions($form_id, $field, 'instance', PATTERNS_MODIFY));
     }
      return $result;
-	
+
 }
 
 function field_patterns_export_all_fields($args = NULL, &$result = NULL){
-	$info = field_patterns();
+	$info = field_patterns(NULL);
  	_field_info_collate_fields(true);
  	 _field_info_collate_types(true);
  	 $form_id = current($info['field'][PATTERNS_MODIFY]);
@@ -77,7 +77,7 @@ function field_patterns_export_all_fields($args = NULL, &$result = NULL){
 }
 
 function field_patterns_export_all_weight($args = NULL, &$result = NULL){
-	$info = field_patterns();
+	$info = field_patterns(NULL);
  	_field_info_collate_fields(true);
  	 _field_info_collate_types(true);
  	 $form_id = current($info['field_weight'][PATTERNS_MODIFY]);
@@ -100,10 +100,10 @@ function field_patterns_export_all_weight($args = NULL, &$result = NULL){
     		 array_push($returns, $return);
     		$result = array_merge($result, patterns_api_extract_actions($form_id, $return, 'field_weight', PATTERNS_MODIFY));
     	}
-      
+
     }
      return $result;
-	
+
 }
 // returns arguments needed for the forms when processing automatically
 // $loop is set if we want to extract all values
