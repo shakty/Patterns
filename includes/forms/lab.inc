@@ -4,7 +4,7 @@
  * Functions related to exporting patterns.
  */
 
-function patterns_export($form, &$form_state) {
+function patterns_lab($form, &$form_state) {
 
 	$form = array();
 	
@@ -70,23 +70,23 @@ function patterns_export($form, &$form_state) {
     '#empty' => t('No Patterns'),
   );
 
-  $form['export'] = array(
+  $form['lab'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Export options'),
+    '#title' => t('Lab options'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
 
-  $form['export']['mode'] = array(
+  $form['lab']['mode'] = array(
     '#type' => 'radios',
-    '#options' => _patterns_export_get_exp_mode_options(),
-    '#title' => t('Export mode'),
+    '#options' => _patterns_lab_get_exp_mode_options(),
+    '#title' => t('Include mode'),
     '#default_value' => PATTERNS_EXPORT_MODE_FULL,
   );
 
-  $form['export']['to'] = array(
+  $form['lab']['to'] = array(
     '#type' => 'radios',
-    '#options' => _patterns_export_get_exp_to_options(),
+    '#options' => _patterns_lab_get_exp_to_options(),
     '#title' => t('Action'),
     '#default_value' => PATTERNS_EXPORT_TO_FILE,
   );
@@ -95,23 +95,23 @@ function patterns_export($form, &$form_state) {
 
   $form['export_name'] = array(
     '#type' => 'textfield',
-    '#title' => t('Name of the exported pattern file'),
+    '#title' => t('Name of the new pattern file'),
     '#description' => t('Extension will be automatically added'),
-    '#default_value' => t('exported_pattern') . '_' . strval(time()),
+    '#default_value' => t('pattern') . '_' . strval(time()),
   );
 																																					 
   $form = patterns_forms_get_formats_selector($form, 
   																						patterns_forms_get_default_format(),
-  																						'Export all selected patterns in this format.',
+  																						'Include all selected patterns in this format.',
   																						FALSE
   );
   
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Export')
+    '#value' => t('Go')
   );
 
-  $form['#submit'][] = 'patterns_export_submit';
+  $form['#submit'][] = 'patterns_lab_submit';
 
   return $form;
 }
@@ -123,17 +123,17 @@ function patterns_export($form, &$form_state) {
  * @param $form
  * @param $form_state
  */
-function patterns_export_validate($form, &$form_state) {
+function patterns_lab_validate($form, &$form_state) {
   if (!isset($form_state['values']['patterns_table'])) {
     form_set_error('patterns_table', t('An error has occurred'));
   }
 
   if (array_sum($form_state['values']['patterns_table']) === 0) {
-    form_set_error('patterns_table', t('No pattern selected to export.'));
+    form_set_error('patterns_table', t('No pattern selected.'));
   }
 
-  if (!isset($form_state['values']['mode']) || !patterns_export_is_valid_export_mode($form_state['values']['mode'])) {
-    form_set_error('mode', t('Please select a valid export mode option'));
+  if (!isset($form_state['values']['mode']) || !patterns_lab_is_valid_export_mode($form_state['values']['mode'])) {
+    form_set_error('mode', t('Please select a valid include mode option'));
   }
 
   if (!isset($form_state['values']['to'])) {
@@ -148,7 +148,7 @@ function patterns_export_validate($form, &$form_state) {
     _patterns_import_check_name($form_state['values']['export_name']);
   }
   elseif (empty($form_state['values']['export_name'])) {
-    $form_state['values']['export_name'] = 'exported_pattern';
+    $form_state['values']['export_name'] = 'pattern';
   }
   
   return TRUE;
@@ -159,7 +159,7 @@ function patterns_export_validate($form, &$form_state) {
  * @param $form
  * @param $form_state
  */
-function patterns_export_submit($form, &$form_state) {
+function patterns_lab_submit($form, &$form_state) {
   // Load the patterns from database.
   @$patterns = patterns_db_get_patterns();
 	$path = patterns_path_get_files_dir();
@@ -208,9 +208,9 @@ function patterns_export_submit($form, &$form_state) {
         $zip->addFromString($pattern->name, patterns_parser_parse($pattern->pattern, $format));
       }
       else {
-        $included = _patterns_export_include_pattern($pattern, $form_state['values']['mode']);
+        $included = _patterns_lab_include_pattern($pattern, $form_state['values']['mode']);
         $included = array('pattern' => $included);
-        $export['exported'][] = array('include' => $included);
+        $export['lab'][] = array('include' => $included);
       }
 
       $count++;
@@ -247,7 +247,7 @@ function patterns_export_submit($form, &$form_state) {
 
   if ($form_state['values']['to'] === PATTERNS_EXPORT_TO_DB) {
     patterns_io_save_pattern($file, $filename, $format, $path);
-    drupal_goto('admin/patterns/export/');
+    drupal_goto('admin/patterns/lab/');
   }
   else {
     drupal_add_http_header("Content-type", " text/plain; charset=utf-8");
@@ -263,7 +263,7 @@ function patterns_export_submit($form, &$form_state) {
  * Checks if zip compression is available.
  *
  */
-function _patterns_export_get_exp_to_options() {
+function _patterns_lab_get_exp_to_options() {
   $options = array(
     PATTERNS_EXPORT_TO_DB   => t('Import into the database'),
     PATTERNS_EXPORT_TO_FILE => t('Download as a pattern file'),
@@ -282,7 +282,7 @@ function _patterns_export_get_exp_to_options() {
  * Checks if zip compression is available.
  *
  */
-function _patterns_export_get_exp_mode_options() {
+function _patterns_lab_get_exp_mode_options() {
   $options = array(
     PATTERNS_EXPORT_MODE_FULL     => t('All the sections (info and modules included) of the pattern'),
     PATTERNS_EXPORT_MODE_ACTIONS  => t('Actions only (info and modules sections excluded) of the pattern'),
@@ -298,7 +298,7 @@ function _patterns_export_get_exp_mode_options() {
  * to configure Patterns behaviors with the 'include' tag.
  *
  */
-function patterns_export_is_valid_export_mode($mode = NULL) {
+function patterns_lab_is_valid_export_mode($mode = NULL) {
   if (is_null($mode)) return FALSE;
 
   $modes = array(
@@ -320,7 +320,7 @@ function patterns_export_is_valid_export_mode($mode = NULL) {
  * @param mixed $mode one of the four inclusion modes
  *
  */
-function _patterns_export_include_pattern($pattern, $mode = PATTERNS_EXPORT_MODE_FULL) {
+function _patterns_lab_include_pattern($pattern, $mode = PATTERNS_EXPORT_MODE_FULL) {
   if (empty($pattern)) return FALSE;
   if ($mode === PATTERNS_EXPORT_MODE_FULL) {
     return $pattern->pattern;

@@ -163,7 +163,7 @@ function patterns_menu() {
   $items['admin/patterns/lab'] = array(
     'title' => 'Lab',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('patterns_export'),
+    'page arguments' => array('patterns_lab'),
     'access arguments' => array('administer patterns'),
     'type' => MENU_LOCAL_TASK,
   );
@@ -279,7 +279,7 @@ function patterns_menu() {
   $items['admin/patterns/export'] = array(
     'title' => 'Export',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('patterns_extract'),
+    'page arguments' => array('patterns_export'),
     'access arguments' => array('administer patterns'),
     'type' => MENU_LOCAL_TASK,
   );
