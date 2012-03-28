@@ -36,7 +36,7 @@ function node_patterns($data) {
     PATTERNS_MODIFY => array('node_type_form'),
     PATTERNS_DELETE => array('node_type_delete_confirm'),
     PATTERNS_FILES  => $files_ct,
-//    PATTERNS_EXPORT => array(PATTERNS_EXPORT_ALL => 'node_patterns_export_all_content_types',),
+    PATTERNS_EXPORT => array(PATTERNS_EXPORT_ALL => 'node_patterns_export_all_content_types',),
     //PATTERNS_EXPORT => array(
     //											PATTERNS_EXPORT_ALL => 'ccctttypes',
 		//											'ctype' => 'ccctttypes1',
@@ -56,6 +56,15 @@ function node_patterns($data) {
 
 function node_patterns_export_all_content_types($args = NULL, &$result = NULL){
   // Load content types.
+  $types = _node_types_build()->types;
+  $result = array();
+  foreach ($types as $type) {
+    $type = (array) $type;
+    $data = array('tag' => 'content_type');
+    $data = array_merge($data, $type);
+    $action = array(PATTERNS_CREATE => $data);
+    array_push($result, $action);
+  }
   return $result;
 }
 
