@@ -17,16 +17,21 @@ function pathauto_patterns() {
     PATTERNS_MODIFY => array('path_admin_form'),
     PATTERNS_DELETE => array('path_admin_delete_confirm'),
     PATTERNS_FILES => $files,
+    PATTERNS_EXPORT => array(
+                            PATTERNS_EXPORT_ALL => 'pathauto_patterns_export_all_url_alias',
+                            ),
   );
   $actions['pathauto_patterns'] = array(
     PATTERNS_INFO => t('setting patterns for auto URLs aliases'),
     PATTERNS_MODIFY => array('pathauto_patterns_form', 'pathauto_bulk_update_form'),
     PATTERNS_FILES => $files,
+   
   );
 
   return $actions;
 
 }
+
 
 function pathauto_patterns_actions() {
   return array(
@@ -133,6 +138,21 @@ function pathauto_patterns_build($action, $tag, &$data = NULL, $form_id) {
   module_load_include('inc', 'path', 'path.admin');
   return patterns_results(PATTERNS_SUCCESS,   t('Execution successful'), $data);
 }
+
+
+function pathauto_patterns_export_all_url_alias($args = NULL, &$result = NULL) {
+	$info = pathauto_patterns();
+	$form_id = current($info['url_alias'][PATTERNS_MODIFY]);
+	$loop = TRUE;
+	$paths = db_query("SELECT * FROM {url_alias}", array(), array('fetch' => PDO::FETCH_ASSOC))->fetchAll();
+	$result = array();
+	foreach ($path as $path) {
+		// It is important to user array merge. Pushing is not enough
+		$result = array_merge($result, patterns_api_extract_actions($form_id, $path, 'url_alias', PATTERNS_MODIFY));
+	}
+	return $result;
+}
+
 
 /*
  *
