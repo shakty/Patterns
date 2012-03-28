@@ -4,15 +4,15 @@
  * Importing Patterns from a file or using an URL.
  */
 
-function _patterns_extract_build_input_name($module, $tag){
+function _patterns_export_build_input_name($module, $tag){
   return 'ext['.$module.'][options][' . $tag . ']';
 }
 
-function _patterns_extract_goto($form, &$form_state, $step) {
+function _patterns_export_goto($form, &$form_state, $step) {
   // MODULE SELECTED
   
 	if ($step == 1) {
-		return patterns_extract_page1($form, $form_state);
+		return patterns_export_page1($form, $form_state);
 	}
 
 	
@@ -34,7 +34,7 @@ function _patterns_extract_goto($form, &$form_state, $step) {
   	//}
 
   	//if (isset($form_state['values']['module']) && !is_int($form_state['values']['module']))  {
-		// return patterns_extract_page2($form, $form_state);
+		// return patterns_export_page2($form, $form_state);
   	//}
   }	
   
@@ -42,12 +42,12 @@ function _patterns_extract_goto($form, &$form_state, $step) {
 	// FORM SELECTED
 	/*  
   if ( $step == 3 && !isset($form_state['values']['content'])) {
-  	return patterns_extract_page3($form, $form_state);
+  	return patterns_export_page3($form, $form_state);
   }
 
   // show pattern import form
   if ($step = 4) {
-		return patterns_extract_page4($form, $form_state);
+		return patterns_export_page4($form, $form_state);
   }
   */
   
@@ -67,12 +67,12 @@ function _patterns_extract_goto($form, &$form_state, $step) {
  * @return mixed|Bool
  * 	 The current value of the step, or FALSE if it fails to determine it
  */
-function _patterns_extract_check_step(&$form_state, $validation = FALSE) {
+function _patterns_export_check_step(&$form_state, $validation = FALSE) {
  	
 	$step = FALSE;
 	
 	if (isset($form_state['values']['all']) && $form_state['values']['all'] == 0) {
-    $step = 6; // EXTRACT ALL
+    $step = 6; // Export ALL
   }
   /*
 	elseif (isset($form_state['values']['content'])) {
@@ -97,13 +97,13 @@ function _patterns_extract_check_step(&$form_state, $validation = FALSE) {
   return $step;
 }
 
-function _patterns_extract_if_invalid_step_goback($step = 0,
-				                                          $back = '/admin/patterns/extract',
+function _patterns_export_if_invalid_step_goback($step = 0,
+				                                          $back = '/admin/patterns/export',
 				                                          $options = array()) {
  	
 	// TODO: Adjust
   if ($step < 1 || $step > 10) {
-  	drupal_set_message(t('Extraction could not proceed to the next step. Step %id not found.', array('%id' => $step)), 'error');
+  	drupal_set_message(t('Export could not proceed to the next step. Step %id not found.', array('%id' => $step)), 'error');
   	drupal_goto($back);
   }
   return $step;
@@ -119,10 +119,10 @@ function _patterns_extract_if_invalid_step_goback($step = 0,
  * From this, yaml file gets generated
  */
 
-function patterns_extract($form, &$form_state) {
+function patterns_export($form, &$form_state) {
  	
- 	//$step = _patterns_extract_check_step($form_state);
-	//_patterns_extract_if_invalid_step_goback($step);
+ 	//$step = _patterns_export_check_step($form_state);
+	//_patterns_export_if_invalid_step_goback($step);
 //	$form['step'] = array(
 //     '#type' => 'hidden',
 //     '#title' => t('Pattern Identifier'),
@@ -137,17 +137,17 @@ function patterns_extract($form, &$form_state) {
   
   patterns_io_load_components();
   
-  return patterns_extract_page1($form, $form_state);
-  //return _patterns_extract_goto($form, $form_state, $step);
+  return patterns_export_page1($form, $form_state);
+  //return _patterns_export_goto($form, $form_state, $step);
 
 }
 
-function patterns_extract_page1($form, &$form_state) {
+function patterns_export_page1($form, &$form_state) {
 	
 	$tm_index = patterns_api_build_tagmodules_index(null, null, PATTERNS_EXPORT);
 	
 	if (count($tm_index) == 0) {
-		  drupal_set_message(t('The components currently installed do not allow automatic extraction of the configuration of the web site'), 'error');
+		  drupal_set_message(t('The components currently installed do not allow automatic export of the configuration of the web site'), 'error');
 			
 			$form['disabled'] = array (
 				'#markup' => l(t('Click here to back'), 'admin/patterns'),
@@ -171,13 +171,13 @@ function patterns_extract_page1($form, &$form_state) {
 	
 	$form['all']['all'] = array (
 		'#type' => 'fieldset',
-	  '#title' => 'I want to extract configuration from single components (Experimental)',
+	  '#title' => 'I want to select the components individually (Experimental)',
   	'#type' => 'checkbox',
 	);
    	
   $form['all']['ext'] = array (
 		'#type' => 'fieldset',
-	  '#title' => 'Components with automatic extraction enabled',
+	  '#title' => 'Components with automatic export enabled',
   	'#tree' => TRUE,
   	'#collapsible' => TRUE,
     '#collapsed' => FALSE, // TODO set to TRUE after debugging
@@ -199,13 +199,13 @@ function patterns_extract_page1($form, &$form_state) {
 	  
 	  $form['all']['ext'][$module]['options'] = array (
 	    '#type' => 'checkboxes',
-	    '#title' => t('Extraction options'),
+	    '#title' => t('Export options'),
 	    '#options' => array_combine(array_keys($tags), array_keys($tags)),
 	  ); 
 	  
 	  foreach ($tags as $tag => $forms) {
 	  	
-	    $input_name = _patterns_extract_build_input_name($module,$tag);
+	    $input_name = _patterns_export_build_input_name($module,$tag);
 	    
 	  	$form['all']['ext'][$module][$tag]['options'] = array(
 	      '#type' => 'checkboxes',
@@ -223,7 +223,7 @@ function patterns_extract_page1($form, &$form_state) {
 	  }
 	  
 	  
-	  //_patterns_extract_add_ajax_to_options($form['ext'][$module]);
+	  //_patterns_export_add_ajax_to_options($form['ext'][$module]);
 	  
   }   
   
@@ -231,7 +231,7 @@ function patterns_extract_page1($form, &$form_state) {
   
   patterns_forms_get_formats_selector($form,
   																						patterns_forms_get_default_format(),
-  																						'Extract data in this format',
+  																						'Export data in this format',
   																						FALSE
   );
   
@@ -239,14 +239,14 @@ function patterns_extract_page1($form, &$form_state) {
   
   $form['submit'] = array(
   	'#type' => 'submit',
-    '#value' => t('Extract'),
+    '#value' => t('Export'),
   );
-  $form['#validate'][] = 'patterns_extract_validate';
+  $form['#validate'][] = 'patterns_export_validate';
   
   return $form;
 }
 
-function patterns_extract_submit($form, &$form_state) {
+function patterns_export_submit($form, &$form_state) {
 	
 	$tm_index = patterns_api_build_tagmodules_index();
 	$format 	= $form_state['values']['format'];
@@ -305,7 +305,7 @@ function patterns_extract_submit($form, &$form_state) {
 //		
 //	}
 	
-	list($sections, $modules) = patterns_extract_php($tm_index);
+	list($sections, $modules) = patterns_export_php($tm_index);
 	
 	if (empty($sections)) {
 	  drupal_set_message(t('Export did not return any data.'), 'error');
@@ -329,12 +329,12 @@ function patterns_extract_submit($form, &$form_state) {
 	}
 	
 	
-	//patterns_extract_batch($tm_index);
+	//patterns_export_batch($tm_index);
 	
-	$form_state['redirect'] = 'admin/patterns/extract';
+	$form_state['redirect'] = 'admin/patterns/export';
 
 }
-function patterns_extract_php($tagmodules) {
+function patterns_export_php($tagmodules) {
 
 	$result = array();
 	$modules = array();
@@ -377,11 +377,11 @@ function patterns_extract_php($tagmodules) {
  * validation function for import_module_form
  * checks in which step we are and puts the step counter up and sets the rebuild flag
  */
-function patterns_extract_validate($form, &$form_state) {
+function patterns_export_validate($form, &$form_state) {
 	
-	//$step = _patterns_extract_check_step($form_state, TRUE);
+	//$step = _patterns_export_check_step($form_state, TRUE);
 	//if ($step == 1) {
-	//	return _patterns_extract_validate_step1($form, $form_state);
+	//	return _patterns_export_validate_step1($form, $form_state);
 	//}
 	
 //	shortcut_set Array [1] 
@@ -418,7 +418,7 @@ function patterns_extract_validate($form, &$form_state) {
   return TRUE;
 }
 
-function _patterns_extract_validate_step1($form, &$form_state) {
+function _patterns_export_validate_step1($form, &$form_state) {
 	
 	if (!isset($form_state['values']['format'])){
 		form_set_error('format', t('No valid format selected.'));
@@ -426,7 +426,7 @@ function _patterns_extract_validate_step1($form, &$form_state) {
 	}
 	
 	if (isset($form_state['values']['all']) && $form_state['values']['all'] == 0){
-		return TRUE; // We extract all, no need for further checkings
+		return TRUE; // We export all, no need for further checkings
 	}
 	
 	/*

@@ -1,3 +1,9 @@
+
+7051		- Major Update: Patterns_d2d submodule added: Patterns can be automatically
+			pushed to a Patterns Server.
+	
+*********************************************************************************************
+
 7050:
 		- Beautified interface: changed some of the labels and added a small title
 			to all pages
