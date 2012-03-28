@@ -48,39 +48,49 @@ function field_patterns_actions($data) {
 
 
 function field_patterns_export_all_ins($args = NULL, &$result = NULL){
-	$info = field_patterns();
+	//$info = field_patterns();
  	_field_info_collate_fields(true);
  	 _field_info_collate_types(true);
- 	 $form_id = current($info['instance'][PATTERNS_MODIFY]);
+ 	// $form_id = current($info['instance'][PATTERNS_MODIFY]);
     $instances = field_read_instances();
     $result = array();
     foreach ($instances as $voc) {
-    	$field=field_info_instance($voc['entity_type'], $voc['field_name'], $voc['bundle']);
-      $result = array_merge($result, patterns_api_extract_actions($form_id, $field, 'instance', PATTERNS_MODIFY));
+    	$field=(array) field_info_instance($voc['entity_type'], $voc['field_name'], $voc['bundle']);
+	 $data = array('tag' => 'instance');
+   	 $data = array_merge($data, $field);
+	$action = array(PATTERNS_CREATE => $data);
+
+      array_push($result, $action);
+
     }
      return $result;
 
 }
 
 function field_patterns_export_all_fields($args = NULL, &$result = NULL){
-	$info = field_patterns(NULL);
+//	$info = field_patterns(NULL);
  	_field_info_collate_fields(true);
  	 _field_info_collate_types(true);
- 	 $form_id = current($info['field'][PATTERNS_MODIFY]);
+ //	 $form_id = current($info['field'][PATTERNS_MODIFY]);
     $instances = field_read_instances();
     $result = array();
     foreach ($instances as $voc) {
-      $result = array_merge($result, patterns_api_extract_actions($form_id, $voc, 'field', PATTERNS_MODIFY));
+	$voc=(array) $voc;
+       $data = array('tag' => 'field');
+   	 $data = array_merge($data, $voc);
+	$action = array(PATTERNS_CREATE => $data);
+
+      array_push($result, $action);
     }
      return $result;
 
 }
 
 function field_patterns_export_all_weight($args = NULL, &$result = NULL){
-	$info = field_patterns(NULL);
+//	$info = field_patterns(NULL);
  	_field_info_collate_fields(true);
  	 _field_info_collate_types(true);
- 	 $form_id = current($info['field_weight'][PATTERNS_MODIFY]);
+ //	 $form_id = current($info['field_weight'][PATTERNS_MODIFY]);
     $instances = field_read_instances();
     $result = array();
     $returns=array();
@@ -98,7 +108,12 @@ function field_patterns_export_all_weight($args = NULL, &$result = NULL){
       }
     	if(j==0){
     		 array_push($returns, $return);
-    		$result = array_merge($result, patterns_api_extract_actions($form_id, $return, 'field_weight', PATTERNS_MODIFY));
+
+       $data = array('tag' => 'field_weight');
+   	 $data = array_merge($data, $return);
+	$action = array(PATTERNS_CREATE => $data);
+
+      array_push($result, $action);
     	}
 
     }

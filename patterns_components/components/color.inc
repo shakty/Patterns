@@ -26,8 +26,8 @@ function color_patterns_actions($data) {
 }
 
 function color_patterns_export_all_color($args = NULL, &$result = NULL){
-	$info = color_patterns(NULL);
- 	 $form_id = current($info['color'][PATTERNS_MODIFY]);
+//	$info = color_patterns(NULL);
+ //	 $form_id = current($info['color'][PATTERNS_MODIFY]);
     $themes = system_rebuild_theme_data();
     $result = array();
     foreach ($themes as $voc) {
@@ -35,7 +35,14 @@ function color_patterns_export_all_color($args = NULL, &$result = NULL){
      		 continue;
     	}
     	if (color_get_info($voc->name)) {
-    		 $result = array_merge($result, patterns_api_extract_actions($form_id, $voc->name, 'color', PATTERNS_MODIFY));
+
+		$voc=(array) $voc->name;
+       	$data = array('tag' => 'color');
+   		 $data = array_merge($data, $voc);
+		$action = array(PATTERNS_CREATE => $data);
+		 array_push($result, $action);
+
+    	//	 $result = array_merge($result, patterns_api_extract_actions($form_id, $voc->name, 'color', PATTERNS_MODIFY));
     	}
     }
      return $result;
