@@ -105,12 +105,14 @@ function patterns_config_settings($form, &$form_state) {
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
+  
   $form['sharing']['patterns_allow_publish'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable sharing of patterns'),
     '#description' => t('If selected, patterns can be shared with others web sites.'),
     '#default_value' => variable_get('patterns_allow_publish', PATTERNS_ALLOW_PUBLISH_DEFAULT),
   );
+  
   $form['sharing']['patterns_public_url'] = array(
     '#type' => 'textfield',
     '#title' => t('Enable patterns public page'),
@@ -118,6 +120,21 @@ function patterns_config_settings($form, &$form_state) {
     '#default_value' => variable_get('patterns_public_url', ''),
   );
 
+  $form['drush'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Drush Integration'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+
+  );
+  
+  $form['drush']['patterns_drush_path'] = array(
+	  '#type' => 'textfield',
+	  '#title' => t('Drush Path'),
+	  '#description' => t('If you have drush installed, please specify the path. Otherwise leave it empty'),
+	  '#required' => FALSE,
+	);
+  
   $form['other'] = array(
     '#type' => 'fieldset',
     '#title' => t('Other'),
