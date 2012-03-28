@@ -3,7 +3,7 @@
  * @file
  * Patterns component for pathauto.
  */
-function color_patterns($data) {
+function color_patterns($data= NULL) {
   $files = array('modules/system/system.module', 'modules/system/system.admin.inc');
 
   $actions['color'] = array(

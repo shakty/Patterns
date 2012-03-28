@@ -3,7 +3,7 @@
  * @file
  * Patterns component for Fields.
  */
-function field_patterns($data) {
+function field_patterns($data= NULL) {
 
   $files = array('modules/field_ui/field_ui.admin.inc', 'modules/field/field.info.inc');
   $actions['field'] = array(
