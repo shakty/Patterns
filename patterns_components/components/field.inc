@@ -10,6 +10,9 @@ function field_patterns($data) {
     PATTERNS_INFO => t('Create/Modify/Delete field'),
     PATTERNS_MODIFY => array('field_ui_field_settings_form'),
     PATTERNS_FILES => $files,
+    PATTERNS_EXPORT => array(
+    	PATTERNS_EXPORT_ALL => 'field_patterns_export_all_fields',
+	),
   );
   $actions['instance'] = array(
     PATTERNS_INFO => t('Create/Modify/Delete field'),
@@ -17,11 +20,17 @@ function field_patterns($data) {
     PATTERNS_MODIFY => array('field_ui_field_edit_form'),
     PATTERNS_DELETE => array('field_ui_field_delete_form'),
     PATTERNS_FILES => $files,
+   PATTERNS_EXPORT => array(
+    	PATTERNS_EXPORT_ALL => 'field_patterns_export_all_ins',
+	),
   );
   $actions['field_weight'] = array(
     PATTERNS_INFO => t('Order the fields'),
     PATTERNS_MODIFY => array('field_ui_field_overview_form'),
     PATTERNS_FILES => $files,
+    PATTERNS_EXPORT => array(
+    	PATTERNS_EXPORT_ALL => 'field_patterns_export_all_weight',
+	),
   );
 
   return $actions;
@@ -37,6 +46,65 @@ function field_patterns_actions($data) {
   );
 }
 
+
+function field_patterns_export_all_ins($args = NULL, &$result = NULL){
+	$info = field_patterns();
+ 	_field_info_collate_fields(true);
+ 	 _field_info_collate_types(true);
+ 	 $form_id = current($info['instance'][PATTERNS_MODIFY]);
+    $instances = field_read_instances();
+    $result = array();
+    foreach ($instances as $voc) {
+    	$field=field_info_instance($voc['entity_type'], $voc['field_name'], $voc['bundle']);
+      $result = array_merge($result, patterns_api_extract_actions($form_id, $field, 'instance', PATTERNS_MODIFY));
+    }
+     return $result;
+	
+}
+
+function field_patterns_export_all_fields($args = NULL, &$result = NULL){
+	$info = field_patterns();
+ 	_field_info_collate_fields(true);
+ 	 _field_info_collate_types(true);
+ 	 $form_id = current($info['field'][PATTERNS_MODIFY]);
+    $instances = field_read_instances();
+    $result = array();
+    foreach ($instances as $voc) {
+      $result = array_merge($result, patterns_api_extract_actions($form_id, $voc, 'field', PATTERNS_MODIFY));
+    }
+     return $result;
+
+}
+
+function field_patterns_export_all_weight($args = NULL, &$result = NULL){
+	$info = field_patterns();
+ 	_field_info_collate_fields(true);
+ 	 _field_info_collate_types(true);
+ 	 $form_id = current($info['field_weight'][PATTERNS_MODIFY]);
+    $instances = field_read_instances();
+    $result = array();
+    $returns=array();
+    foreach ($instances as $voc) {
+    	 $return = array(
+        'entity_type' => $voc['entity_type'],
+        'bundle' => $voc['bundle'],
+      );
+      $j = 0;
+      foreach ($returns as $v) {
+        if ($v['entity_type'] == $voc['entity_type'] && $v['bundle'] == $voc['bundle']) {
+          $j = 1;
+          break;
+        }
+      }
+    	if(j==0){
+    		 array_push($returns, $return);
+    		$result = array_merge($result, patterns_api_extract_actions($form_id, $return, 'field_weight', PATTERNS_MODIFY));
+    	}
+      
+    }
+     return $result;
+	
+}
 // returns arguments needed for the forms when processing automatically
 // $loop is set if we want to extract all values
 function field_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
