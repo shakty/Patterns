@@ -10,6 +10,9 @@ function color_patterns($data) {
     PATTERNS_INFO => t('Setting color'),
     PATTERNS_MODIFY => array('system_theme_settings'),
     PATTERNS_FILES => $files,
+     PATTERNS_EXPORT => array(
+    	PATTERNS_EXPORT_ALL => 'color_patterns_export_all_color',
+	),
   );
 
   return $actions;
@@ -20,6 +23,22 @@ function color_patterns_actions($data) {
   return array(
     'system_theme_settings' => t('color: Edit scheme color settings'),
   );
+}
+
+function color_patterns_export_all_color($args = NULL, &$result = NULL){
+	$info = color_patterns();
+ 	 $form_id = current($info['color'][PATTERNS_MODIFY]);
+    $themes = system_rebuild_theme_data();
+    $result = array();
+    foreach ($themes as $voc) {
+    	 if (!empty($theme->info['hidden'])) {
+     		 continue;
+    	}
+    	if (color_get_info($voc->name)) {
+    		 $result = array_merge($result, patterns_api_extract_actions($form_id, $voc->name, 'color', PATTERNS_MODIFY));
+    	}  
+    }
+     return $result;
 }
 // returns arguments needed for the forms when processing automatically
 // $loop is set if we want to extract all values

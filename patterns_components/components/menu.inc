@@ -13,13 +13,20 @@ function menu_patterns($data) {
     PATTERNS_MODIFY => array('menu_edit_menu'),
     PATTERNS_DELETE => array('menu_delete_menu_confirm'),
     PATTERNS_FILES => $files,
+    PATTERNS_EXPORT => array(
+                              PATTERNS_EXPORT_ALL => 'menu_patterns_export_all_menu',
+                             ), 
   );
+  
   $actions['menu_item'] = array(
     PATTERNS_INFO => t('Create/Modify/Delete menu item'),
     PATTERNS_CREATE => array('menu_edit_item'),
     PATTERNS_MODIFY => array('menu_edit_item'),
     PATTERNS_DELETE => array('menu_item_delete_form'),
     PATTERNS_FILES => $files,
+    PATTERNS_EXPORT => array(
+                             PATTERNS_EXPORT_ALL => 'menu_patterns_export_all_menu_item',
+                       ),
   );
 
   return $actions;
@@ -98,6 +105,38 @@ function menu_patterns_prepare($action, $tag, &$data) {
       break;
   }
   return patterns_results();
+}
+/*menu export from api extract function */
+
+function menu_patterns_export_all_menu($args = NULL, &$result = NULL) {
+	$info = menu_patterns();
+	$form_id = current($info['menu'][PATTERNS_MODIFY]);
+	$menu = db_query("SELECT * FROM {menu_custom} ORDER BY title", array(), array('fetch' => PDO::FETCH_ASSOC));
+	$result = array();
+	foreach ($menu as $menu) {
+		// It is important to user array merge. Pushing is not enough
+		$result = array_merge($result, patterns_api_extract_actions($form_id, $menu, 'menu', PATTERNS_MODIFY));
+	}
+	return $result;
+}
+
+function menu_patterns_export_all_menu_item($args = NULL, &$result = NULL) {
+	$info = menu_patterns();
+	$form_id = current($info['menu_item'][PATTERNS_MODIFY]);
+	$menu_item = db_query("SELECT * FROM {menu_links} ORDER BY link_title", array(), array('fetch' => PDO::FETCH_ASSOC));
+	$result = array();
+	$i = 0;
+	foreach ($menu_item as $menu_item) {
+		$i ++;
+		if ($menu_item['link_title'] == '') {
+			$menu_item['link_title'] = 'null';
+		}
+		$menu_item['options'] = unserialize($menu_item['options']);
+		$menu_item['href'] = "";
+		// It is important to user array merge. Pushing is not enough
+		$result = array_merge($result, patterns_api_extract_actions($form_id, $menu_item, 'menu_item', PATTERNS_MODIFY));
+	}
+	return $result;
 }
 
 function menu_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
