@@ -27,6 +27,7 @@ function user_patterns($data) {
     PATTERNS_MODIFY => array('user_admin_role'),
     PATTERNS_DELETE => array('user_admin_role_delete_confirm'),
     PATTERNS_FILES => $files,
+    PATTERNS_EXPORT => array(PATTERNS_EXPORT_ALL => 'user_patterns_export_all_roles',),
   );
 
   $actions['permission'] = array(
@@ -35,6 +36,7 @@ function user_patterns($data) {
     PATTERNS_MODIFY => array('user_admin_permissions'),
     PATTERNS_DELETE => array('user_admin_permissions'),
     PATTERNS_FILES => $files,
+    PATTERNS_EXPORT => array(PATTERNS_EXPORT_ALL => 'user_patterns_export_all_permissions',),
   );
 
   return $actions;
@@ -51,6 +53,45 @@ function user_patterns_actions($data) {
     'user_admin_role_delete_confirm' => t('User: Delete role'),
     'user_admin_permissions' => t('User: Configure permissions'),
   );
+}
+
+
+function user_patterns_export_all_roles($args = NULL, &$result = NULL){
+  $roles = user_roles(TRUE);
+  $result = array();
+  foreach ($roles as $role) {
+    $data = array('tag' => 'role');
+    $data['value'] = $role;
+    $action = array(PATTERNS_CREATE => $data);
+    array_push($result, $action);
+  }
+  return $result;
+}
+
+function user_patterns_export_all_permissions($args = NULL, &$result = NULL){
+  $info = user_patterns();
+  $form_id = current($info['permission'][PATTERNS_MODIFY]);
+  $form_data = patterns_api_extract_actions($form_id, array(), 'permission', PATTERNS_MODIFY);
+  $form_data = $form_data[0][PATTERNS_MODIFY];
+
+  $roles = $form_data['role_names'];
+  $result = array();
+  foreach ($roles as $id => $role) {
+    $perms = $form_data[$id-1]; // TODO: this might not be right if the IDs are not contiguous.
+    $perms2 = array(); // Permissions that are set.
+    foreach ($perms as $perm){
+      if($perm !== 0){
+        array_push($perms2, $perm);
+      }
+    }
+    $permissions = implode(', ', $perms2);
+    $data = array('tag' => 'permission');
+    $data['rid'] = $id;
+    $data['value'] = $permissions;
+    $action = array(PATTERNS_CREATE => $data);
+    array_push($result, $action);
+  }
+  return $result;
 }
 
 // returns arguments needed for the forms when processing automatically
@@ -149,7 +190,7 @@ function user_patterns_prepare($action, $tag, &$data) {
     }
   }
   elseif ($tag == 'permission') {
-    if (isset($data['role']) && !$data['rid']) {
+    if (isset($data['role']) && !isset($data['rid'])) {
       $data['rid'] = $data['role'];
     }
     unset($data['role']);
