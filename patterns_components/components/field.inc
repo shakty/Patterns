@@ -28,9 +28,6 @@ function field_patterns($data= NULL) {
     PATTERNS_INFO => t('Order the fields'),
     PATTERNS_MODIFY => array('field_ui_field_overview_form'),
     PATTERNS_FILES => $files,
-    PATTERNS_EXPORT => array(
-    	PATTERNS_EXPORT_ALL => 'field_patterns_export_all_weight',
-	),
   );
 
   return $actions;
@@ -76,7 +73,7 @@ function field_patterns_export_all_fields($args = NULL, &$result = NULL){
 	$voc=(array) $voc;
        $data = array('tag' => 'field');
    	 $data = array_merge($data, $voc);
-	$action = array(PATTERNS_CREATE => $data);
+	$action = array(PATTERNS_MODIFY => $data);
 
       array_push($result, $action);
     }
@@ -84,7 +81,7 @@ function field_patterns_export_all_fields($args = NULL, &$result = NULL){
 
 }
 
-function field_patterns_export_all_weight($args = NULL, &$result = NULL){
+/*function field_patterns_export_all_weight($args = NULL, &$result = NULL){
 //	$info = field_patterns(NULL);
  	_field_info_collate_fields(true);
  	 _field_info_collate_types(true);
@@ -117,7 +114,7 @@ function field_patterns_export_all_weight($args = NULL, &$result = NULL){
     }
      return $result;
 
-}
+}*/
 // returns arguments needed for the forms when processing automatically
 // $loop is set if we want to extract all values
 function field_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
