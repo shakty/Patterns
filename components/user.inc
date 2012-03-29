@@ -148,7 +148,7 @@ function user_patterns_prepare($action, $tag, &$data) {
       unset($data['value']);
     }
   }
-  elseif ($tag == 'permissions') {
+  elseif ($tag == 'permission') {
     if (isset($data['role']) && !$data['rid']) {
       $data['rid'] = $data['role'];
     }
@@ -221,7 +221,7 @@ function user_patterns_validate($action, $tag, &$data) {
        $data['rid'] = $rid;
       }
     }
-    if (isset($rid) && $action === PATTERNS_CREATE) {
+    if ($rid !== FALSE && $action === PATTERNS_CREATE) {
       $status = PATTERNS_ERR;
       $msg = t('Role %role already exists.', array('%role' => $data['name']));
     }
@@ -238,7 +238,8 @@ function user_patterns_validate($action, $tag, &$data) {
       $msg = t('You cannot create a role with fixed rid.');
     }
   }
-  elseif ($tag == 'permissions') {
+  elseif ($tag == 'permission') {
+    // TODO: Allow to be set by a name as well.
     if (!$data['rid']) {
       $status = PATTERNS_ERR;
       $msg = t('You must specify a role to apply permissions to.');
@@ -282,7 +283,7 @@ function user_patterns_callbacks($action, $tag, &$data) {
       $result = array('user_admin_roles');
     }
   }
-  elseif ($tag == 'permissions') {
+  elseif ($tag == 'permission') {
     $result = array('user_admin_permissions');
   }
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
@@ -368,7 +369,7 @@ function user_patterns_build($action, $form_id, &$data = NULL, &$a) {
       foreach ($p as $key => $value) {
         $val = trim(trim($value), '\'"');
         if (in_array($val, $permissions)) {
-          if (!empty($data['delete'])) {
+          if ($action === PATTERNS_DELETE) {
             $perms[$val] = NULL;
           }
           else {
@@ -381,7 +382,7 @@ function user_patterns_build($action, $form_id, &$data = NULL, &$a) {
     else {
       for ($i = 0; $item = $data[$i]; $i++) {
         if (in_array($item, $permissions)) {
-          if (!empty($data['delete'])) {
+          if ($action === PATTERNS_DELETE) {
             $perms[$item] = 0;
           }
           else {
