@@ -2,70 +2,93 @@
 
 module_load_include('inc', 'api');
 
-function patterns_menu_alter($items) {
+function patterns_menu_alter(&$items) {
 	
-	/* NOT YET 
-	
-	$items['admin/patterns/drush/enable'] = array(
+  $items['admin/patterns/drush/enable/%'] = array(
     'title' => 'Enable Modules',
     'page callback' => 'patterns_drush_enable_modules_service',
     'page arguments' => array(4),
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
-	);
+  );
 	
-	$items['admin/patterns/drush/download'] = array(
+  $items['admin/patterns/drush/download/%'] = array(
     'title' => 'Enable Modules',
-    'page callback' => 'patterns_drush_enable_modules_service',
+    'page callback' => 'patterns_drush_download_modules_service',
     'page arguments' => array(4),
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
-	);
+  );
 	
-	$items['admin/patterns/drush/dlenable'] = array(
+  $items['admin/patterns/drush/dlenable/%'] = array(
     'title' => 'Download and Enable Modules',
-    'page callback' => 'patterns_drush_enable_modules_service',
-    'page arguments' => array(TRUE),
+    'page callback' => 'patterns_drush_dlenable_modules_service',
+    'page arguments' => array(4),
     'access arguments' => array('administer patterns'),
     'type' => MENU_CALLBACK
-	);
-	*/
-}
-
-
-/**
- * 
- * Enter description here ...
- */
-function patterns_drush_download_modules_service() {
-	if (!isset($_POST['modules'])) {
-    print t('Communication error.');
-    exit;
-  }
-  $modules = $_POST['modules'];
-  $out = patterns_drush_download_modules($modules);
-  print $out;
+  );
 }
 
 /**
- * 
- * Enter description here ...
+ * Calls drush dl and returns output and success/error messages
+ * @param string $module the module to download
+ * @param bool $raw If set to true, function returns $form instead of html
  */
-function patterns_drush_enable_modules_service($dl = FALSE) {
-	if (!isset($_POST['modules'])) {
-    print t('Communication error.');
-    exit;
+function patterns_drush_download_modules_service($module, $raw = FALSE) {
+  $out = patterns_drush_download_modules(array($module));
+  
+  $status = $out['status'];
+  if ($status == PATTERNS_SUCCESS) {
+    drupal_set_message("Drush download ran without errors. Check the output if no problems occured.");
   }
-  // Auto donwload if not available locally
-  // Not used now
-	$dl = (isset($_POST['download'])) ? TRUE : FALSE;
-  $dep = (isset($_POST['dependencies'])) ? TRUE : FALSE;
- 
-  $modules = $_POST['modules'];
-  $out = patterns_drush_download_modules($modules, $dep);
-  print $out;
+  else {
+    drupal_set_message("An error occured in drush download: drush returned return code ". $out['result'] .'.  See drush output', 'error');
+  }
+  
+  $form['patterns']['drush']['download'] = array (
+        '#title'  => 'Download:',
+        '#prefix' => '<div>',
+        '#suffix' => '</div><br/>',
+        '#markup' => t(implode('<br>', $out['msg'])),
+  );
+  
+  return !$raw ? drupal_render($form) : $form;
 }
 
+/**
+ * Calls drush en and returns output and success/error messages
+ * @param string $module the module to download
+ * @param bool $raw If set to true, function returns $form instead of html
+ */
+function patterns_drush_enable_modules_service($module, $raw = FALSE) {
+  $dep = TRUE;
+  $out = patterns_drush_enable_modules(array($module), $dep);
+  $status = $out['status'];
+  if ($status == PATTERNS_SUCCESS) {
+    drupal_set_message("Drush enable ran without errors. Check the output if no problems occured.");
+  }
+  else {
+    drupal_set_message("An error occured in drush enable: drush returned return code ". $out['result'] .'.  See drush output', 'error');
+  }
+  
+  $form['patterns']['drush']['enable'] = array (
+        '#title'  => 'Enable:',
+        '#prefix' => '<div>',
+        '#suffix' => '</div><br/>',
+        '#markup' => t(implode('<br>', $out['msg'])),
+  );
+  return !$raw ? drupal_render($form) : $form;
+}
+
+/**
+ * Calls drush dl and drush en. Returns output and success/error messages
+ * @param string $module the module to download and enable
+ */
+function patterns_drush_dlenable_modules_service($module) {
+  $form = patterns_drush_download_modules_service($module, TRUE);
+  $form[] = patterns_drush_enable_modules_service($module, TRUE);
+  return drupal_render($form);
+}
 
 
 /**
@@ -79,7 +102,7 @@ function patterns_drush_download_modules($modules) {
   	return array('Drush path wasn\'t set');
   }
   
-  $output = array('Drush output: ');
+  $output = array('Drush download output: ');
   $cmd = variable_get('patterns_drush_path');
   $cmd .= ' -r '. patterns_get_drupal_installation_path();
   $cmd .= ' dl '. implode(' ', $modules) .' -y';
@@ -108,7 +131,7 @@ function patterns_drush_enable_modules($modules, $resolve_dependencies = FALSE) 
   } 
   
  
-	$output = array('following was output by drush');
+	$output = array('Drush enable output:');
 	$cmd = variable_get('patterns_drush_path');
 	$cmd .= ' -r '. patterns_get_drupal_installation_path();
 	$cmd .= ' en '. $rd .' '. implode(' ', $modules) .' -y';

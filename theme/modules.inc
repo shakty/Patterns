@@ -35,11 +35,11 @@ function patterns_modules_page($pid) {
     $row[] = $enabled ? t('Yes') : '<span class="alert">' . t('No') . '</span>';
     
     if ($available && ! $enabled) {
-    	$row[] = lt('Enable', 'admin/pattern/drush/enable');
+    	$row[] = l(t('Enable'), 'admin/patterns/drush/enable/' . $module);
     	
     }
     elseif (!$available) {
-    	$row[] = l(t('Download and Enable'), 'admin/pattern/service/dlenable');	
+    	$row[] = l(t('Download and Enable'), 'admin/patterns/drush/dlenable/' . $module);	
     }
     else {
     	$row[] = '-';
