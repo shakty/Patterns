@@ -248,6 +248,17 @@ actions:
       widget: date_select
       weight: 4
 
+# ---------- Roles and permissions ----------
+
+  - create:
+      tag: role
+      name: editor
+
+  - create:
+      tag: permission
+      rid: 4
+      value: administer comments, administer nodes, create event content, edit any event content, create paper content, edit any paper content
+
 
 # ---------- Users ----------
 
@@ -259,3 +270,4 @@ actions:
 # timezone: Europe/Zurich
 # roles: 2
 # status: 1
+

@@ -59,9 +59,7 @@ function field_patterns_export_all_ins($args = NULL, &$result = NULL){
 	 $data = array('tag' => 'instance');
    	 $data = array_merge($data, $field);
 	$action = array(PATTERNS_CREATE => $data);
-
       array_push($result, $action);
-
     }
      return $result;
 
@@ -106,7 +104,7 @@ function field_patterns_export_all_weight($args = NULL, &$result = NULL){
           break;
         }
       }
-    	if(j==0){
+    	if($j==0){
     		 array_push($returns, $return);
 
        $data = array('tag' => 'field_weight');
