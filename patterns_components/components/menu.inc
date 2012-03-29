@@ -109,7 +109,7 @@ function menu_patterns_prepare($action, $tag, &$data) {
 /*menu export from api extract function */
 
 function menu_patterns_export_all_menu($args = NULL, &$result = NULL) {
-	$info = menu_patterns();
+	$info = menu_patterns($data=NULL);
 	$form_id = current($info['menu'][PATTERNS_MODIFY]);
 	$menu = db_query("SELECT * FROM {menu_custom} ORDER BY title", array(), array('fetch' => PDO::FETCH_ASSOC));
 	$result = array();
@@ -121,7 +121,7 @@ function menu_patterns_export_all_menu($args = NULL, &$result = NULL) {
 }
 
 function menu_patterns_export_all_menu_item($args = NULL, &$result = NULL) {
-	$info = menu_patterns();
+	$info = menu_patterns($data=NULL);
 	$form_id = current($info['menu_item'][PATTERNS_MODIFY]);
 	$menu_item = db_query("SELECT * FROM {menu_links} ORDER BY link_title", array(), array('fetch' => PDO::FETCH_ASSOC));
 	$result = array();
