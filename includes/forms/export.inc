@@ -360,7 +360,8 @@ function patterns_export_php($tagmodules) {
 	  }
 	  else {
 	  	foreach ($func as $f) {
-	  		$sections[tag] = array_merge($result[$tag], call_user_func($f));
+	  	    $result[$tag] = isset($result[$tag]) ? $result[$tag] : array();
+	  		$sections[$tag] = array_merge($result[$tag], call_user_func($f));
 	  	}
 	  }
     
