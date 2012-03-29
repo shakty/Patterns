@@ -1,5 +1,6 @@
 <?php
 
+module_load_include('inc', 'api');
 
 function patterns_menu_alter($items) {
 	
@@ -82,9 +83,11 @@ function patterns_drush_download_modules($modules) {
   $cmd = variable_get('patterns_drush_path');
   $cmd .= ' -r '. patterns_get_drupal_installation_path();
   $cmd .= ' dl '. implode(' ', $modules) .' -y';
-  exec($cmd , $output);
-  return $output;
- 
+  $cmd .= ' 2>&1'; // add error stream
+    
+  $return_var;
+  exec($cmd , $output, $return_var);
+  return patterns_results($return_var === 0 ? PATTERNS_SUCCESS : PATTERNS_ERR, $output, $return_var); 
 }
 
 /**
@@ -109,9 +112,11 @@ function patterns_drush_enable_modules($modules, $resolve_dependencies = FALSE) 
 	$cmd = variable_get('patterns_drush_path');
 	$cmd .= ' -r '. patterns_get_drupal_installation_path();
 	$cmd .= ' en '. $rd .' '. implode(' ', $modules) .' -y';
-	exec($cmd , $output);
+	$cmd .= ' 2>&1'; // add error stream
+	$return_var;
+	exec($cmd , $output, $return_var);
 	
-	return $output;
+	return patterns_results($return_var === 0 ? PATTERNS_SUCCESS : PATTERNS_ERR, $output, $return_var);
  
 }
 
