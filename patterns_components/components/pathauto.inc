@@ -146,7 +146,7 @@ function pathauto_patterns_export_all_url_alias($args = NULL, &$result = NULL) {
 	//$loop = TRUE;
 	$paths = db_query("SELECT * FROM {url_alias}", array(), array('fetch' => PDO::FETCH_ASSOC))->fetchAll();
 	$result = array();
-	foreach ($path as $path) {
+	foreach ($paths as $path) {
 		$path = (array) $path;
 		$data = array('tag' => 'path');
 		$data = array_merge($data, $path);
