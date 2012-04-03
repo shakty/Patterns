@@ -281,9 +281,29 @@ function user_patterns_validate($action, $tag, &$data) {
   }
   elseif ($tag == 'permission') {
     // TODO: Allow to be set by a name as well.
-    if (!$data['rid']) {
+    if(isset($data['rid'])) {
+      if (is_string($data['rid'])) {
+        $rid = db_query('SELECT rid FROM {role} WHERE name = :name', array('name' => $data['rid']))->fetchField();
+        if (!$rid) {
+          $status = PATTERNS_ERR;
+          $msg = t('Role name %name does not exist.', array('%name' => $data['rid']));
+        } else {
+          $data['rid'] = $rid;
+        }
+      }
+      elseif(is_numeric($data['rid'])) {
+        $exist = db_query("SELECT COUNT(*) FROM {role} WHERE rid = :rid", array('rid' => $data['rid']))->fetchField();
+        if (!$exist) {
+          $status = PATTERNS_ERR;
+          $msg = t('Role id %id does not exist.', array('%id' => $data['rid']));
+        }
+      } else {
+        $status = PATTERNS_ERR;
+        $msg = t('Role id %id must be a number or a string.', array('%id' => $data['rid']));
+      }
+    } else {
       $status = PATTERNS_ERR;
-      $msg = t('You must specify a role to apply permissions to.');
+      $msg = t('You must specify a role id or role name to apply permissions to.');
     }
   }
 
@@ -450,6 +470,7 @@ function user_patterns_build($action, $form_id, &$data = NULL, &$a) {
   }
 
   // TODO: check if these validations work
+  /* 
   if ($id == 'user_admin_permissions') {
     if (is_numeric($data['rid'])) {
       $rid = $data['rid'];
@@ -462,9 +483,11 @@ function user_patterns_build($action, $form_id, &$data = NULL, &$a) {
       return t('Invalid role %role to set permissions for.', array('%role' => $data['role'] ? $data['role'] : $data['rid']));
     }
   }
+  */
   $result = $data;
 
   return patterns_results($status, $msg, $result);
+ 
 }
 
 // Build a patterns actions and parameters
