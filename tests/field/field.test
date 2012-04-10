@@ -80,8 +80,14 @@ class PatternsFieldTestCase extends PatternRunTestCase {
   }
 
   public function testDate() {
-    //make sure the date module has been downloaded.
+    // make sure the date module has been downloaded.
     // Make sure that matches the name in the pattern file
+    
+  	if (!patterns_utils_is_module_enabled('date')) {
+  		$this->fail('Date module not found. Skipping all related tests');
+  		return;
+  	}
+  	
     $entity_type = 'node';
     $name = 'field_date';
     $bundle_name = 'article';

@@ -19,14 +19,21 @@ class PatternsColorTestCase extends PatternRunTestCase {
 
   public function setUp() {
     // Enable any modules required for the tests.
-    parent::setUp();
+    $modules = array('patterns_components',
+    								 'patterns_yamlparser',
+    								 'color',
+    );
+    
+    parent::setUp($modules);
   }
 
 
   public function testColor() {
+  	
+  	
+  	
     // Make sure that matches the theme in the pattern file
     $theme = 'bartik';
-    module_enable(array('color'));
     parent::runFile('color.yaml', 'Set theme color', PatternsCOLORTestCase::COLOR_TESTS_DIR);
     $palette = variable_get('color_' . $theme . '_palette');
 
