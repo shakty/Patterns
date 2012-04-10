@@ -1,5 +1,8 @@
+7052:
+		- SimpleTests re-enabled.
 
-7051		- Major Update: Patterns_d2d submodule added: Patterns can be automatically
+7051:
+		- Major Update: Patterns_d2d submodule added: Patterns can be automatically
 			pushed to a Patterns Server.
 	
 *********************************************************************************************

@@ -57,7 +57,7 @@ function patterns_first_install($form, &$form_state) {
 	$form['welcome']['drush_path'] = array(
 	  '#type' => 'textfield',
 	  '#title' => t('Drush Path'),
-	  '#description' => t('If you have drush installed, please specify the path. Otherwise leave it empty'),
+	  '#description' => t('If you have drush installed, you can automatically download missing modules necessary to run a pattern. Please specify the path. Otherwise leave it empty'),
 	  '#required' => FALSE,
 		'#default_value' => variable_get('patterns_drush_path', ''),
 	);
@@ -78,5 +78,5 @@ function patterns_first_install_validate($form, &$form_state){
 function patterns_first_install_submit($form, &$form_state) {
 	variable_set(PATTERNS_FIRST_INSTALL, FALSE);
 	variable_set('patterns_drush_path', $form_state['values']['drush_path']);
-	 menu_rebuild();
+	menu_rebuild();
 }

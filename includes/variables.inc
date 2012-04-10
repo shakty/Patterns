@@ -10,6 +10,8 @@ static $patterns_formats = array();
 define('PATTERNS_PUBLIC_URL', 'patterns_public_url');
 
 define('PATTERNS_UPDATES', 'patterns_updates');
+
+// Notice: if you change this value you must update also patterns.test
 define('PATTERNS_FIRST_INSTALL', 'patterns_first_install');
 
 define('PATTERNS_PARSER_PARSE', 'parse');

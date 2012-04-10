@@ -14,6 +14,13 @@ class PatternsPrivilegesTestCase extends DrupalWebTestCase {
   }
 
   public function setUp() {
+  	
+  	// Set the flag FIRST_INSTALL to FALSE before enabling patterns
+  	// so that we don't need to rebuild the menu
+  	// 'patterns_first_install' => PATTERNS_FIRST_INSTALL in 
+  	// includes/variables.inc (not yet loaded)
+  	variable_set('patterns_first_install', FALSE);
+  	
     // Enable any modules required for the tests.
     parent::setUp(
       'patterns',
@@ -22,13 +29,15 @@ class PatternsPrivilegesTestCase extends DrupalWebTestCase {
       'patterns_xmlparser',
       'patterns_phpparser'
     );
-
+    
     // TODO: how to ensure that Spyc is installed?
 
     // Create users.
     $this->adm_user = $this->drupalCreateUser(array('administer site configuration'));
     $this->pat_user = $this->drupalCreateUser(array('administer patterns'));
     $this->std_user = $this->drupalCreateUser(array());
+    
+    
   }
 
   function testSpyc() {
@@ -151,8 +160,23 @@ class PatternsPrivilegesTestCase extends DrupalWebTestCase {
 abstract class PatternRunTestCase extends DrupalWebTestCase {
 
   public function setUp() {
+  	
     // Enable any modules required for the tests.
-    parent::setUp('patterns');
+    parent::setUp('patterns',
+    							'patterns_components',
+						      'patterns_yamlparser',
+						      'patterns_xmlparser',
+						      'patterns_phpparser'
+    );
+    
+    
+  	// 'patterns_first_install' => PATTERNS_FIRST_INSTALL in 
+  	// includes/variables.inc (may be not yet loaded)
+  	variable_set('patterns_first_install', FALSE);
+  	// TODO: Set the flag FIRST_INSTALL to FALSE before enabling patterns
+  	// so that we don't need to rebuild the menu
+    menu_rebuild();
+  	
     // TODO: how to ensure that Spyc is installed?
 
     // Create users.

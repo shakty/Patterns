@@ -25,8 +25,10 @@ class PatternsImportTestCase extends PatternRunTestCase {
   public function testImportFileFromSource() {
 
     $name = 'Test_Import_From_Source';
-    $destination = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/tests/importing/imported/';
-
+    
+    // simpletest drupal_realpath('public://') . "/patterns/";
+  	$destination = patterns_path_get_files_dir();
+  	
     // Fill the form.
     $edit = array();
 
@@ -38,13 +40,13 @@ class PatternsImportTestCase extends PatternRunTestCase {
     // Post the form.
     $this->drupalPost('admin/patterns/import/source', $edit, t('Import'));
 
-    $this->checkImportedFile($name, $destination);
+    $this->checkImportedFile($name, PATTERNS_FORMAT_YAML, $destination);
   }
 
   public function testImportFileFromFile() {
 
     $name = 'Test_Import_From_File';
-    $destination = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/tests/importing/imported/';
+    $destination = $destination = patterns_path_get_files_dir();
 
     // Fill the form.
     $edit = array();
@@ -57,13 +59,13 @@ class PatternsImportTestCase extends PatternRunTestCase {
     $this->drupalPost('admin/patterns/import/file', $edit, t('Import'));
 
 
-    $this->checkImportedFile($name, $destination);
+     $this->checkImportedFile($name, PATTERNS_FORMAT_YAML, $destination);
   }
 
   public function testImportFileFromURL() {
 
     $name = 'Test_Import_From_URL';
-    $destination = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/tests/importing/imported/';
+		$destination = patterns_path_get_files_dir();
 
     if (!$this->is_fopenurl_enabled()) {
       $this->pass(t('Import from URL test skipped because \'allow_url_fopen\' is disabled.'));
@@ -80,19 +82,18 @@ class PatternsImportTestCase extends PatternRunTestCase {
     // Post the form.
     $this->drupalPost('admin/patterns/import/url', $edit, t('Import'));
 
-    $this->checkImportedFile($name, $destination);
-
+    $this->checkImportedFile($name, PATTERNS_FORMAT_YAML, $destination);
   }
 
-  private function checkImportedFile($name, $destination) {
+  private function checkImportedFile($name, $format, $destination) {
     $this->assertNoText(t('Errors in the name of the pattern'), t('Errors in the name of the patterns found.'));
     $this->assertNoText(t('Destination folder does not exist or is not writable'), t('Destination folder exists and is writable: ') . $destination); // TODO: proper t()
 
-    //$p = patterns_db_load_pattern_from_name($name);
+    $fullname = $name . '.' . $format;
 
     $ps = db_select('patterns', 'p')
                     ->fields('p')
-                    ->condition('p.name', $name)
+                    ->condition('p.name', $fullname)
                     ->execute()
                     ->fetchAll(); // return array of Std objs
 
@@ -101,11 +102,11 @@ class PatternsImportTestCase extends PatternRunTestCase {
     $p = $ps[0];
 
     $this->assertNotNull($p, t('Imported pattern found in the DB.'));
-    $this->assertEqual($p->name, $name, t('Imported pattern has the correct name.'));
+    $this->assertEqual($p->name, $fullname, t('Imported pattern has the correct name.'));
 
 
     // Cleanup
-    $deleted = file_unmanaged_delete($destination . $name . '.yaml');
+    $deleted = file_unmanaged_delete($destination . $fullname);
     $this->assertTrue($deleted, t('Test files deleted.'));
   }
 
