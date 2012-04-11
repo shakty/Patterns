@@ -18,17 +18,67 @@ class PatternsUserTestCase extends PatternRunTestCase {
   }
 
   public function testCreateModifyDelete() {
-    $this->testCreate();
-    // $this->testModify();
-    // $this->testDelete();
+    $this->testRoleCreate();
+    $this->testRoleModify();
+    $this->testRoleDelete();
+//    $this->testCreate();
+//    $this->testModify();
+//    $this->testDelete();
+  }
+
+  private function testRoleCreate() {
+    // The role should not exist at this point.
+    $role_count = db_select('role', 'r')
+      ->fields('r', array('rid'))
+      ->condition('name', 'test_role')
+      ->countQuery()->execute()->fetchField();
+    $this->assertIdentical($role_count, '0', t('The role should not exist at this point.'));
+
+    // Run the pattern.
+    parent::runFile('user_role_create.yaml', 'Role (create)', PatternsUserTestCase::USER_TESTS_DIR);
+
+    $this->assertUniqueText(t('The role has been added.'));
+
+    $role_count = db_select('role', 'r')
+      ->fields('r', array('name'))
+      ->condition('name', 'test_role')
+      ->countQuery()->execute()->fetchField();
+    $this->assertIdentical($role_count, '1', t('The test role should exist at this point.'));
+  }
+
+  private function testRoleModify() {
+    // Run the pattern.
+    parent::runFile('user_role_modify.yaml', 'Role (modify)', PatternsUserTestCase::USER_TESTS_DIR);
+
+    // The role should exist with the modified values.
+    $role_count = db_select('role', 'r')
+      ->fields('r', array('name'))
+      ->condition('name', 'test_role_mod')
+      ->condition('weight', '10')
+      ->countQuery()->execute()->fetchField();
+    $this->assertIdentical($role_count, '1', t('The role should exist with the modified values.'));
+  }
+
+  private function testRoleDelete() {
+    // Run the pattern.
+    parent::runFile('user_role_delete.yaml', 'Role (delete)', PatternsUserTestCase::USER_TESTS_DIR);
+
+    // The role should not exist at this point.
+    $role_count = db_select('role', 'r')
+      ->fields('r', array('name'))
+      ->condition('name', 'test_role_mod')
+      ->countQuery()->execute()->fetchField();
+    $this->assertIdentical($role_count, '0', t('The role should not exist at this point.'));
   }
 
   private function testCreate() {
     // The user should not exist at this point.
+
     $user_count = db_select('users', 'u')
       ->fields('u', array('uid'))
-      ->condition('uid', 'test_uid')
+      ->condition('name', 'test_uid')
       ->countQuery()->execute()->fetchField();
+
     $this->assertIdentical($user_count, '0', t('The user should not exist at this point.'));
 
     // Run the pattern.
@@ -40,9 +90,10 @@ class PatternsUserTestCase extends PatternRunTestCase {
     // The user should exist with the right values.
     $user = db_select('users', 'u')
       ->fields('u', array('uid'))
-      ->condition('uid', 'test_uid')
-      ->execute()->fetchField();
-    $this->assertIdentical(count($user), 1);
+      ->condition('name', 'test_uid')
+      ->countQuery()->execute()->fetchField();
+    $this->verbose('usercount: ' . $user);
+    $this->assertIdentical($user, 1, t('The test user should exist at this point.'));
     // TODO: Check fields.
   }
 

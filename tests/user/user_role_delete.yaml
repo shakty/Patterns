@@ -1,0 +1,16 @@
+# YAML User Pattern
+# QScience
+
+info:
+  title: Role (delete)
+  description: Removes the test role
+  author: QScience
+  category: Users
+  version: 1.0
+  core: 7.x
+  author_website: http://qlectives.eu/
+
+actions:
+  - delete:
+      tag: role
+      rid: test_role_mod

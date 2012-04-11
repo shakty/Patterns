@@ -1,0 +1,17 @@
+# YAML User Pattern
+# QScience
+
+info:
+  title: Role (create)
+  description: Creates a new role
+  author: QScience
+  category: Users
+  version: 1.0
+  core: 7.x
+  author_website: http://qlectives.eu/
+
+actions:
+  - create:
+      tag: role
+      name: test_role
+      weight: 8

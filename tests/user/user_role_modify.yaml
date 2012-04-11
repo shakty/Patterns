@@ -1,0 +1,18 @@
+# YAML User Pattern
+# QScience
+
+info:
+  title: Role (modify)
+  description: Modifies the test role
+  author: QScience
+  category: Users
+  version: 1.0
+  core: 7.x
+  author_website: http://qlectives.eu/
+
+actions:
+  - modify:
+      tag: role
+      rid: test_role
+      name: test_role_mod
+      weight: 10
