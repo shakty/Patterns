@@ -6,7 +6,7 @@
 
 class PatternsTaxonomyTestCase extends PatternRunTestCase {
 
-  const TAXO_TESTS_DIR = 'tests/taxonomy/';
+	var $taxo_tests_dir;
 
   public static function getInfo() {
     return array(
@@ -16,7 +16,10 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
     );
   }
 
-   public function setUp() { 	
+   public function setUp() {
+
+   	$this->taxo_tests_dir = $this->getPatternsTestDir() . 'taxonomy/';
+   	
     // Enable any modules required for the tests.
   	$modules = array('patterns_components',
   							     'patterns_yamlparser',
@@ -44,7 +47,7 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
     //$this->assertFALSE($taxo, t('Make sure that vocabulary \'anothervoc\' is not already existing.'));
 
     // CREATE VOCABULARY pattern.
-    parent::runFile('taxonomy_vocabulary_add.yaml', 'Taxonomy_Vocabulary_ADD', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
+    parent::runFile('taxonomy_vocabulary_add.yaml', 'Taxonomy_Vocabulary_ADD', $this->taxo_tests_dir);
 
     $taxo = taxonomy_vocabulary_machine_name_load($voc);
     $this->assertNotNull($taxo, t('Vocabulary \'anothervoc\' created.'));
@@ -61,7 +64,7 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
 
     $taxo = NULL;
 
-    parent::runFile('taxonomy_vocabulary_modify.yaml', 'Taxonomy_Vocabulary_MODIFY', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
+    parent::runFile('taxonomy_vocabulary_modify.yaml', 'Taxonomy_Vocabulary_MODIFY', $this->taxo_tests_dir);
 
     // Seems to fail
     // $taxo = taxonomy_vocabulary_machine_name_load($voc);
@@ -81,7 +84,7 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
 
     // Delete VOCABULARY pattern
 
-    parent::runFile('taxonomy_vocabulary_delete.yaml', 'Taxonomy_Vocabulary_DELETE', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
+    parent::runFile('taxonomy_vocabulary_delete.yaml', 'Taxonomy_Vocabulary_DELETE', $this->taxo_tests_dir);
 
     $taxos = db_select('taxonomy_vocabulary', 'tv')
       ->fields('tv', array('vid', 'name', 'description'))
@@ -110,7 +113,7 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
     $term = 'Patatina';
 
     // CREATE Term pattern.
-    parent::runFile('taxonomy_term_add.yaml', 'Taxonomy_Term_ADD', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
+    parent::runFile('taxonomy_term_add.yaml', 'Taxonomy_Term_ADD', $this->taxo_tests_dir);
 
     $terms = taxonomy_get_term_by_name($term);
     //$this->assertNotNull($terms, t('Terms found.'));
@@ -130,7 +133,7 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
 
     $t = NULL;
 
-    parent::runFile('taxonomy_term_modify.yaml', 'Taxonomy_Term_MODIFY', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
+    parent::runFile('taxonomy_term_modify.yaml', 'Taxonomy_Term_MODIFY', $this->taxo_tests_dir);
 
     $terms = db_select('taxonomy_term_data', 'ttd')
       ->fields('ttd', array('vid', 'tid', 'name', 'description'))
@@ -148,7 +151,7 @@ class PatternsTaxonomyTestCase extends PatternRunTestCase {
 
     // DELETE Term pattern
 
-    parent::runFile('taxonomy_term_delete.yaml', 'Taxonomy_Term_DELETE', PatternsTaxonomyTestCase::TAXO_TESTS_DIR);
+    parent::runFile('taxonomy_term_delete.yaml', 'Taxonomy_Term_DELETE', $this->taxo_tests_dir);
 
     $terms = db_select('taxonomy_term_data', 'ttd')
       ->fields('ttd', array('vid', 'tid', 'name', 'description'))

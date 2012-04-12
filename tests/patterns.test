@@ -166,6 +166,15 @@ class PatternsPrivilegesTestCase extends DrupalWebTestCase {
 abstract class PatternRunTestCase extends DrupalWebTestCase {
 
 	/**
+	 * Returns the path to the tests directory inside the 
+	 * Patterns module
+	 * 
+	 */
+	public function getPatternsTestDir() {
+		return realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/tests/';
+	}
+	
+	/**
 	 * Setups the testing environment.
 	 * 
 	 * Loads the patterns module plus all the those that are 
@@ -222,8 +231,8 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
    * 
    * @see quickRun()
    */
-  function runFile($filename, $name, $dir = 'patterns/', $format = NULL) {
-    $patterntext = self::loadPattern($filename, $dir);
+  function runFile($filename, $name, $dir, $format = NULL) {
+    $patterntext = $this->loadPattern($filename, $dir);
     if (is_null($format)) {
     	$path_parts = pathinfo($filename);
       $format = $path_parts['extension'];
@@ -344,13 +353,13 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
   
   
   /**
-   * Loads a pattern text file from a directory.
+   * Loads a pattern file into a string from a directory.
    *
    * @param mixed $filename The name of the pattern file
    * @param mixed $dir The directory where the pattern file 
    *   is located.
    */
-  public static function loadPattern($filename, $dir) {
+  function loadPattern($filename, $dir) {
     if (!file_exists($dir) || !is_readable($dir)) {
       $this->error(t('Directory not found or not readable: ' . $dir));
       return FALSE;
