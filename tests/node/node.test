@@ -15,7 +15,16 @@ class PatternsNodeTestCase extends PatternRunTestCase {
       'group' => 'Patterns',
     );
   }
-
+	
+  public function setUp() { 	
+    // Enable any modules required for the tests.
+  	$modules = array('patterns_components',
+  							     'patterns_yamlparser',
+		);
+  	 
+    parent::setUp($modules);
+  }
+  
   public function testCreateModifyDelete() {
     $this->testCreate();
     $this->testModify();

@@ -17,9 +17,13 @@ class PatternsImportTestCase extends PatternRunTestCase {
     );
   }
 
-  public function setUp() {
+   public function setUp() { 	
     // Enable any modules required for the tests.
-    parent::setUp();
+  	$modules = array('patterns_components',
+  							     'patterns_yamlparser',
+		);
+  	 
+    parent::setUp($modules);
   }
 
   public function testImportFileFromSource() {

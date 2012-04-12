@@ -17,8 +17,14 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
     );
   }
 
-  public function setUp() {
-    parent::setUp();
+   public function setUp() { 	
+    // Enable any modules required for the tests.
+  	$modules = array('patterns_components',
+  							     'patterns_yamlparser',
+		);
+  	 
+    parent::setUp($modules);
+
     // Create a role with the given permission set, if any.
     $rid = FALSE;
     $permissions=array('administer site configuration', 'access administration pages', 'administer patterns', 'administer shortcuts', 'switch shortcut sets', 'customize shortcut links');
