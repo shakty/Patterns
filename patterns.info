@@ -13,6 +13,7 @@ php = 5.2
 
 ; Core
 files[] = tests/patterns.test
+files[] = tests/general/general.test
 files[] = tests/parser/parser.test
 files[] = tests/importing/importing.test
 
