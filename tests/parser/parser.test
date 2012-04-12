@@ -31,7 +31,7 @@ class PatternsParserTestCase extends PatternRunTestCase {
   }
 
   public function testInvalidP() {
-    $dir = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/' . self::PARSER_TESTS_DIR . 'invalid/'
+    $dir = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/' . self::PARSER_TESTS_DIR . 'invalid/';
     $this->callbackOnDir($dir, array(&$this, 'check_invalid'));
   }
 
