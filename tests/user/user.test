@@ -7,7 +7,7 @@
 
 class PatternsUserTestCase extends PatternRunTestCase {
 
-  const USER_TESTS_DIR = 'tests/user/';
+  var $user_tests_dir;
 
   static function getInfo() {
     return array(
@@ -18,6 +18,9 @@ class PatternsUserTestCase extends PatternRunTestCase {
   }
 
   public function setUp() { 	
+  	
+  	$this->user_tests_dir = $this->getPatternsTestDir() . 'user/';
+  	
     // Enable any modules required for the tests.
   	$modules = array('patterns_components',
   							     'patterns_yamlparser',
@@ -41,7 +44,7 @@ class PatternsUserTestCase extends PatternRunTestCase {
     $this->assertIdentical($user_count, '0', t('The user should not exist at this point.'));
 
     // Run the pattern.
-    parent::runFile('user_create.yaml', 'Users (create)', PatternsUserTestCase::USER_TESTS_DIR);
+    parent::runFile('user_create.yaml', 'Users (create)', $this->user_tests_dir);
 
     // Expected messages.
     $this->assertUniqueText(t('Created a new user account for test_uid.'));
@@ -57,7 +60,7 @@ class PatternsUserTestCase extends PatternRunTestCase {
 
   private function testDelete() {
     // Run the pattern.
-    parent::runFile('user_delete.yaml', 'Users (delete)', PatternsUserTestCase::USER_TESTS_DIR);
+    parent::runFile('user_delete.yaml', 'Users (delete)', $this->user_tests_dir);
 
     // Expected messages.
     $this->assertUniqueText(t('')); // TODO

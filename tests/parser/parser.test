@@ -6,7 +6,7 @@
 
 class PatternsParserTestCase extends PatternRunTestCase {
 
-  const PARSER_TESTS_DIR = 'tests/parser/';
+  var $parser_tests_dir;
 
   public static function getInfo() {
     return array(
@@ -17,6 +17,8 @@ class PatternsParserTestCase extends PatternRunTestCase {
   }
 
    public function setUp() { 	
+   	
+   	$this->parser_tests_dir = $this->getPatternsTestDir() . 'parser/';
     // Enable any modules required for the tests.
   	$modules = array('patterns_components',
   							     'patterns_yamlparser',
@@ -26,12 +28,12 @@ class PatternsParserTestCase extends PatternRunTestCase {
   }
 
   public function testValidP() {
-    $dir = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/' . self::PARSER_TESTS_DIR . 'valid/';
+    $dir = $this->parser_tests_dir . 'valid/';
     $this->callbackOnDir($dir, array(&$this, 'check_valid'));
   }
 
   public function testInvalidP() {
-    $dir = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/' . self::PARSER_TESTS_DIR . 'invalid/';
+    $dir = $this->parser_tests_dir . 'invalid/';
     $this->callbackOnDir($dir, array(&$this, 'check_invalid'));
   }
 

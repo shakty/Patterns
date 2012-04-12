@@ -6,8 +6,9 @@
 
 class PatternsImportTestCase extends PatternRunTestCase {
 
-  const IMPORTING_TESTS_DIR     = 'tests/importing/';
   const REMOTE_URL_IMPORT       = 'http://www.shakty.org/patterns/importing.yaml';
+  
+  var $importing_tests_dir;
 
   public static function getInfo() {
     return array(
@@ -17,7 +18,9 @@ class PatternsImportTestCase extends PatternRunTestCase {
     );
   }
 
-   public function setUp() { 	
+   public function setUp() {
+
+   	$this->importing_tests_dir = $this->getPatternsTestDir() . 'importing/';
     // Enable any modules required for the tests.
   	$modules = array('patterns_components',
   							     'patterns_yamlparser',
@@ -29,15 +32,14 @@ class PatternsImportTestCase extends PatternRunTestCase {
   public function testImportFileFromSource() {
 
     $name = 'Test_Import_From_Source';
-    
-    // simpletest drupal_realpath('public://') . "/patterns/";
+
   	$destination = patterns_path_get_files_dir();
   	
     // Fill the form.
     $edit = array();
 
     $edit['name'] = $name;
-    $edit['content'] = $this->loadPattern('importing.yaml', self::IMPORTING_TESTS_DIR);
+    $edit['content'] = $this->loadPattern('importing.yaml', $this->importing_tests_dir);
     $edit['destination'] = $destination;
     $edit['format'] = PATTERNS_FORMAT_YAML;
 
@@ -56,7 +58,7 @@ class PatternsImportTestCase extends PatternRunTestCase {
     $edit = array();
 
     $edit['name'] = $name;
-    $edit['files[pattern_uri]'] = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/' . self::IMPORTING_TESTS_DIR . 'importing.yaml';
+    $edit['files[pattern_uri]'] = $this->importing_tests_dir . 'importing.yaml';
     $edit['destination'] = $destination;
 
     // Post the form.

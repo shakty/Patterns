@@ -7,7 +7,7 @@
 
 class PatternsPathautoTestCase extends PatternRunTestCase {
 
-  const PATHAUTO_TESTS_DIR = 'tests/pathauto/';
+  var $pathauto_tests_dir;
 
   static function getInfo() {
     return array(
@@ -18,6 +18,8 @@ class PatternsPathautoTestCase extends PatternRunTestCase {
   }
 
   public function setUp() {
+  	
+  	$this->pathauto_tests_dir = $this->getPatternsTestDir() . 'pathauto/';
   	
     // Enable any modules required for the tests.
   	$modules = array('patterns_components',
@@ -42,7 +44,7 @@ class PatternsPathautoTestCase extends PatternRunTestCase {
     $alias = "pathauto1";
     //module_enable(array('pathauto'));
     //create url aliase
-    parent::runFile('url_alias_created.yaml', 'URLs aliases create', PatternsPathautoTestCase::PATHAUTO_TESTS_DIR);
+    parent::runFile('url_alias_created.yaml', 'URLs aliases create', $this->pathauto_tests_dir);
     $result = db_select('url_alias', 'u')
       ->fields('u', array('pid'))
       ->condition('source', $source)
@@ -51,7 +53,7 @@ class PatternsPathautoTestCase extends PatternRunTestCase {
     $this->assertTrue($result, t('Created URL alias correctly.'));
 
     //modify url alias
-    parent::runFile('url_alias_modify.yaml', 'URLs aliases modify', PatternsPathautoTestCase::PATHAUTO_TESTS_DIR);
+    parent::runFile('url_alias_modify.yaml', 'URLs aliases modify', $this->pathauto_tests_dir);
     $sourceM = 'admin/patterns/quickrun';
     $aliasM = 'pathauto';
     // Confirm that the alias works.
@@ -63,7 +65,7 @@ class PatternsPathautoTestCase extends PatternRunTestCase {
     $this->assertEqual($result[0]->alias, $aliasM, t('Modified alias correctly.'));
 
     //delete url alias
-    parent::runFile('url_alias_delete.yaml', 'URLs aliases delete', PatternsPathautoTestCase::PATHAUTO_TESTS_DIR);
+    parent::runFile('url_alias_delete.yaml', 'URLs aliases delete', $this->pathauto_tests_dir);
     //break;
     // Confirm that the alias works.
     $result = db_select('url_alias', 'u')
@@ -82,7 +84,7 @@ class PatternsPathautoTestCase extends PatternRunTestCase {
   	}
     // Make sure that matches the theme in the pattern file
     //module_enable(array('pathauto'));
-    parent::runFile('path_auto.yaml', 'pathauto setting', PatternsPathautoTestCase::PATHAUTO_TESTS_DIR);
+    parent::runFile('path_auto.yaml', 'pathauto setting', $this->pathauto_tests_dir);
 
     //test pathauto setting
     $case = variable_get('pathauto_case');

@@ -293,6 +293,12 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
     }
 
     while (false !== ($file = readdir($handle))) {
+    	$path_parts = pathinfo($file);
+      $format = $path_parts['extension'];
+      if (!patterns_parser_exists($format)) {
+      	continue;
+      }
+    	
       $this->runFile($file, 'Running ' . $file, $dir);
     }
     closedir($handle);
@@ -340,9 +346,14 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
     while (false !== ($entry = readdir($handle))) {
       $path_parts = pathinfo($entry);
       $format = $path_parts['extension'];
-      $pattern = patterns_parsers_load($dir . $entry, $format);
+      
+      if (!patterns_parser_exists($format)) {
+      	continue;
+      }
+      
+      $pattern = patterns_parser_load($dir . $entry, $format);
       if (empty($pattern)) {
-        $this->fail(t('Error while loading ') . $path_parts['filename']);
+        $this->fail(t('Error while loading ') . $entry);
         continue;
       }
       call_user_func($callback, $pattern);

@@ -7,7 +7,7 @@
 
 class PatternsShortcutTestCase extends PatternRunTestCase {
 
-  const SHORTCUT_TESTS_DIR = 'tests/shortcut/';
+  var $shortcut_tests_dir;
 
   public static function getInfo() {
     return array(
@@ -17,7 +17,10 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
     );
   }
 
-   public function setUp() { 	
+   public function setUp() {
+
+   	$this->shortcut_tests_dir = $this->getPatternsTestDir() . 'shortcut/';
+   	
     // Enable any modules required for the tests.
   	$modules = array('patterns_components',
   							     'patterns_yamlparser',
@@ -74,7 +77,7 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
   public function test_shortcut() {
 
     //for add a new set 'new_set_fortest'
-    parent::runFile('shortcut_add_set.yaml', 'add new shortcut set (create)', PatternsShortcutTestCase::SHORTCUT_TESTS_DIR);
+    parent::runFile('shortcut_add_set.yaml', 'add new shortcut set (create)', $this->shortcut_tests_dir);
     $query_add_set = db_select('shortcut_set', 'ss')
             ->fields('ss', array('set_name', 'title'))
             ->condition('ss.title', 'new_set_fortest')
@@ -91,7 +94,7 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
     $this->assertRaw('<td>new_set_fortest</td>', t('new_set_fortest is built successful.'));
 
     //for add a new shortcut link to the new set which add before
-    parent::runFile('shortcut_add_link.yaml', 'add a link to a shortcut set (create)', PatternsShortcutTestCase::SHORTCUT_TESTS_DIR);
+    parent::runFile('shortcut_add_link.yaml', 'add a link to a shortcut set (create)', $this->shortcut_tests_dir);
     $query = db_select('menu_links', 'ml')
             ->fields('ml', array('menu_name', 'mlid', 'link_path', 'link_title'))
             ->condition('ml.menu_name', $query_add_set['set_name'])
@@ -111,7 +114,7 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
 
 
     //for edit the link, which add before
-    parent::runFile('shortcut_edit_link.yaml', 'edit a link of a shortcut set (modify)', PatternsShortcutTestCase::SHORTCUT_TESTS_DIR);
+    parent::runFile('shortcut_edit_link.yaml', 'edit a link of a shortcut set (modify)', $this->shortcut_tests_dir);
     $query = db_select('menu_links', 'ml')
             ->fields('ml', array('menu_name', 'mlid', 'link_path', 'link_title'))
             ->condition('ml.menu_name', $query_add_set['set_name'])
@@ -131,7 +134,7 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
     $this->assertRaw('node/add">link_nodadd</a></td>', t('the new link:link_nodadd(node/add) has been built successful.'));
 
     //for switch user's shortcut set
-    parent::runFile('shortcut_set_switch.yaml', 'switch shortcut set for users (modify)', PatternsShortcutTestCase::SHORTCUT_TESTS_DIR);
+    parent::runFile('shortcut_set_switch.yaml', 'switch shortcut set for users (modify)', $this->shortcut_tests_dir);
     $queryuser = db_select('users', 'u')
             ->fields('u', array('uid'))
             ->condition('u.name', 'someone')
@@ -156,7 +159,7 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
     //$this->assertRaw('node/add">link_nodadd</a></li>', t('user "someone"\'s shortcut_set has the link_nodadd now'));
 
     //for delete the link, which just edit
-    parent::runFile('shortcut_delete_link.yaml', 'delete a link from a shortcut set (modify)', PatternsShortcutTestCase::SHORTCUT_TESTS_DIR);
+    parent::runFile('shortcut_delete_link.yaml', 'delete a link from a shortcut set (modify)', $this->shortcut_tests_dir);
     $query = db_select('menu_links', 'ml')
             ->fields('ml', array('menu_name', 'mlid', 'link_path', 'link_title'))
             ->condition('ml.menu_name', $query_add_set['set_name'])
@@ -170,7 +173,7 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
     $this->assertNoRaw('node/add">link_nodadd</a></td>', t('the new link:link_nodadd(node/add) has been deleted.'));
 
     //for change the set "new_set_fortest" name to "newer_set_fortest"
-    parent::runFile('shortcut_edit_set.yaml', 'edit the shortcut set name(modify)', PatternsShortcutTestCase::SHORTCUT_TESTS_DIR);
+    parent::runFile('shortcut_edit_set.yaml', 'edit the shortcut set name(modify)', $this->shortcut_tests_dir);
     $query = db_select('shortcut_set', 'ss')
             ->fields('ss', array('set_name', 'title'))
             ->condition('ss.title', 'newer_set_fortest')
@@ -188,7 +191,7 @@ class PatternsShortcutTestCase extends PatternRunTestCase {
     $this->assertRaw('<td>newer_set_fortest</td>', t('new_set_fortest has been changed to newer_set_fortest.'));
 
     //for delete the set, which add before
-    parent::runFile('shortcut_delete_set.yaml', 'delete a shortcut set (delete)', PatternsShortcutTestCase::SHORTCUT_TESTS_DIR);
+    parent::runFile('shortcut_delete_set.yaml', 'delete a shortcut set (delete)', $this->shortcut_tests_dir);
     $query = db_select('shortcut_set', 'ss')
             ->fields('ss', array('set_name', 'title'))
             ->condition('ss.title', 'newer_set_fortest')

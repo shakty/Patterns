@@ -7,7 +7,7 @@
 
 class PatternsFieldTestCase extends PatternRunTestCase {
 
-  const FIELD_TESTS_DIR = 'tests/field/';
+  var $field_tests_dir;
 
   static function getInfo() {
     return array(
@@ -17,7 +17,10 @@ class PatternsFieldTestCase extends PatternRunTestCase {
     );
   }
 
-   public function setUp() { 	
+   public function setUp() {
+
+   	$this->field_tests_dir = $this->getPatternsTestDir() . 'field/';
+   	
     // Enable any modules required for the tests.
   	$modules = array('patterns_components',
   							     'patterns_yamlparser',
@@ -32,7 +35,7 @@ class PatternsFieldTestCase extends PatternRunTestCase {
     $name = 'field_first';
     $bundle_name = 'article';
     // create a new field
-    parent::runFile('field_instance_create.yaml', 'Add custom fields to User and Node', PatternsFieldTestCase::FIELD_TESTS_DIR);
+    parent::runFile('field_instance_create.yaml', 'Add custom fields to User and Node', $this->field_tests_dir);
     _field_info_collate_fields(true);
     $inst = field_info_instance($entity_type, $name, $bundle_name);
     //break;
@@ -40,7 +43,7 @@ class PatternsFieldTestCase extends PatternRunTestCase {
 
     $weight = $inst['widget']['weight'];
     // Run the pattern.
-    parent::runFile('field_weight_modify.yaml', 'Modify field weight', PatternsFieldTestCase::FIELD_TESTS_DIR);
+    parent::runFile('field_weight_modify.yaml', 'Modify field weight', $this->field_tests_dir);
     _field_info_collate_fields(true);
     $inst = field_info_instance($entity_type, $name, $bundle_name);
     $this->assertNotNull($inst, t('Instance created.'));
@@ -50,7 +53,7 @@ class PatternsFieldTestCase extends PatternRunTestCase {
     $field = field_info_field($name);
     $length = $field['settings']['max_length'];
     //modify the field
-    parent::runFile('field_field_modify.yaml', 'Modify field setting', PatternsFieldTestCase::FIELD_TESTS_DIR);
+    parent::runFile('field_field_modify.yaml', 'Modify field setting', $this->field_tests_dir);
     _field_info_collate_fields(true);
     $field = field_info_field($name);
     $this->assertNotNull($field, t('Field found.'));
@@ -62,7 +65,7 @@ class PatternsFieldTestCase extends PatternRunTestCase {
     $cardi = $field['cardinality'];
     $textp = $inst['settings']['text_processing'];
     // modify the instance
-    parent::runFile('field_instance_modify.yaml', 'Edit fields', PatternsFieldTestCase::FIELD_TESTS_DIR);
+    parent::runFile('field_instance_modify.yaml', 'Edit fields', $this->field_tests_dir);
     _field_info_collate_fields(true);
     $inst = field_info_instance($entity_type, $name, $bundle_name);
     $field = field_info_field($name);
@@ -75,7 +78,7 @@ class PatternsFieldTestCase extends PatternRunTestCase {
     $this->assertNotEqual( $inst['settings']['text_processing'], $textp, t('Modify Instance pattern changed text_processing correctly.'));
 
     //delete the instance
-    parent::runFile('field_instance_delete.yaml', 'Delete fields', PatternsFieldTestCase::FIELD_TESTS_DIR);
+    parent::runFile('field_instance_delete.yaml', 'Delete fields', $this->field_tests_dir);
     _field_info_collate_fields(true);
     $inst = field_info_instance($entity_type, $entity_type, $bundle_name);
     $this->assertNull($inst, t('Delete instance successfully.'));
@@ -97,7 +100,7 @@ class PatternsFieldTestCase extends PatternRunTestCase {
 
     module_enable(array('date'));
     // create a new date field
-    parent::runFile('date_field_create.yaml', 'Add date fields to NODE', PatternsFieldTestCase::FIELD_TESTS_DIR);
+    parent::runFile('date_field_create.yaml', 'Add date fields to NODE', $this->field_tests_dir);
     module_load_include('inc', 'date', 'date.field');
     _field_info_collate_fields(true);
     _field_info_collate_types(true);
@@ -107,7 +110,7 @@ class PatternsFieldTestCase extends PatternRunTestCase {
     $this->assertNotNull($inst, t('Date instance created.'));
 
     // modify the instance
-    parent::runFile('date_field_modify.yaml', 'Modify date fields', PatternsFieldTestCase::FIELD_TESTS_DIR);
+    parent::runFile('date_field_modify.yaml', 'Modify date fields', $this->field_tests_dir);
     //	break;
     _field_info_collate_fields(true);
     _field_info_collate_types(true);
@@ -134,7 +137,7 @@ class PatternsFieldTestCase extends PatternRunTestCase {
 
 
     // Delete the instance
-    parent::runFile('date_field_delete.yaml', 'Delete date fields', PatternsFieldTestCase::FIELD_TESTS_DIR);
+    parent::runFile('date_field_delete.yaml', 'Delete date fields', $this->field_tests_dir);
     _field_info_collate_fields(true);
     $inst = field_info_instance($entity_type, $entity_type, $bundle_name);
     $this->assertNull($inst, t('Delete date instance successfully.'));
