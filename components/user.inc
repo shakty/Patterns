@@ -184,10 +184,10 @@ function user_patterns_prepare($action, $tag, &$data) {
     }
   }
   elseif ($tag == 'role') {
-    /*if (isset($data['value'])) {
+    /* if (isset($data['value'])) {
       $data['name'] = $data['value'];
       unset($data['value']);
-    }*/
+    } */
   }
   elseif ($tag == 'permission') {
     if (isset($data['role']) && !isset($data['rid'])) {
@@ -206,11 +206,11 @@ function user_patterns_validate($action, $tag, &$data) {
   if ($tag == 'user') {
     // Make sure uid is valid.
     $count = db_select('users', 'u')
-               ->condition('u.uid', $data['uid'])
-               ->countQuery()
-               ->execute()
-               ->fetchField();
-    //$count = db_query("SELECT COUNT(*) FROM {users} WHERE uid = :uid", array('uid' => $data['uid']))->fetchField();
+      ->condition('u.uid', $data['uid'])
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    // $count = db_query("SELECT COUNT(*) FROM {users} WHERE uid = :uid", array('uid' => $data['uid']))->fetchField();
     if (!empty($data['uid']) && !$count) {
       $status = PATTERNS_ERR;
       $msg = t('Invalid user ID supplied: %uid', array('%uid' => $data['uid']));
@@ -352,11 +352,11 @@ function user_patterns_validate($action, $tag, &$data) {
         }
       }
     }
-
   }
   elseif ($tag == 'permission') {
-    // TODO: Allow to be set by a name as well.
+    $role_name = FALSE;
     if (isset($data['rid'])) {
+      // If rid is a string then we get the id.
       if (is_string($data['rid'])) {
         $rid = db_query('SELECT rid FROM {role} WHERE name = :name', array('name' => $data['rid']))->fetchField();
         if (!$rid) {
@@ -364,19 +364,119 @@ function user_patterns_validate($action, $tag, &$data) {
           $msg = t('Role name %name does not exist.', array('%name' => $data['rid']));
         }
         else {
+          $role_name = $data['rid'];
           $data['rid'] = $rid;
         }
       }
+      // If rid is a number then we check if role exists.
       elseif (is_numeric($data['rid'])) {
         $exist = db_query("SELECT COUNT(*) FROM {role} WHERE rid = :rid", array('rid' => $data['rid']))->fetchField();
         if (!$exist) {
           $status = PATTERNS_ERR;
           $msg = t('Role id %id does not exist.', array('%id' => $data['rid']));
         }
+        else {
+          $role_name = db_query('SELECT name FROM {role} WHERE rid = :rid', array('rid' => $data['rid']))->fetchField();
+        }
       }
+      // If role not does exist then throw error.
       else {
         $status = PATTERNS_ERR;
         $msg = t('Role id %id must be a number or a string.', array('%id' => $data['rid']));
+      }
+
+      // Getting the specified permission (value) list.
+      if ($role_name !== FALSE) {
+        $permissions = FALSE;
+        $valid_format = TRUE;
+
+        if (!empty($data['value'])) {
+          $permissions = $data['value'];
+        }
+        // Checking if format is valid.
+        if ($permissions !== FALSE) {
+          if (gettype($permissions) != 'array') {
+            $valid_format = FALSE;
+          }
+          else {
+            foreach ($permissions as $perm) {
+              if (gettype($perm) != 'string') {
+                $valid_format = FALSE;
+                break;
+              }
+            }
+          }
+        }
+        if (!$valid_format) {
+          $status = PATTERNS_ERR;
+          $msg = t('The value format is invalid, it must be a list if it is set.');
+        }
+        else {
+          // Getting all permissions of the system and to the given role.
+          $all_permission = user_permission_get_modules();
+          $role_permissions = user_role_permissions(array($data['rid'] => $role_name));
+          $role_permissions = $role_permissions[$data['rid']];
+
+          // At create or delete the value must be set.
+          if (($action == PATTERNS_CREATE || $action == PATTERNS_DELETE) && $permissions == FALSE) {
+            $status = PATTERNS_ERR;
+            $msg = t('Permission list cannot be empty.');
+          }
+          // If permissions are set we have to check if each of them are exists.
+          elseif ($permissions !== FALSE) {
+            $bad_permissions = array();
+            $good_permissions = array();
+            foreach ($permissions as $perm) {
+              if (!array_key_exists($perm, $all_permission)) {
+                $bad_permissions[] = $perm;
+              }
+              else {
+                $good_permissions[] = $perm;
+              }
+            }
+            if (count($bad_permissions) > 0) {
+              $list = '';
+              $i = 0;
+              foreach ($bad_permissions as $p) {
+                if ($i > 0) $list .= ', ';
+                $list .= $p;
+                $i++;
+              }
+              $status = PATTERNS_WARN;
+              $msg = t('The permissions listed here does not exist: %perms', array('%perms' => $list));
+            }
+            $good_perms_string = '';
+            $i = 0;
+            foreach ($good_permissions as $gp) {
+              if ($i > 0) $good_perms_string .= ', ';
+              $good_perms_string .= $gp;
+              $i++;
+            }
+          }
+          if ($action == PATTERNS_CREATE) {
+            $data['value'] = $good_perms_string;
+            foreach ($role_permissions as $rp => $in) {
+              $data['value'] .= ', ' . $rp;
+            }
+          }
+          elseif ($action == PATTERNS_MODIFY) {
+            $data['value'] = $good_perms_string;
+          }
+          elseif ($action == PATTERNS_DELETE) {
+            foreach ($good_permissions as $gp) {
+              if (array_key_exists($gp, $role_permissions)) {
+                unset($role_permissions[$gp]);
+              }
+            }
+            $data['value'] = '';
+            $i = 0;
+            foreach ($role_permissions as $rp => $in) {
+              if ($i > 0) $data['value'] .= ', ';
+              $data['value'] .= $rp;
+              $i++;
+            }
+          }
+        }
       }
     }
     else {
@@ -508,12 +608,12 @@ function user_patterns_build($action, $form_id, &$data = NULL, &$a) {
       foreach ($p as $key => $value) {
         $val = trim(trim($value), '\'"');
         if (in_array($val, $permissions)) {
-          if ($action === PATTERNS_DELETE) {
-            $perms[$val] = NULL;
-          }
-          else {
+          //if ($action === PATTERNS_DELETE) {
+            //$perms[$val] = NULL;
+          //}
+          //else {
             $perms[$val] = $val;
-          }
+          //}
         }
       }
       $data[$data['rid']] = $perms;
@@ -548,24 +648,24 @@ function user_patterns_build($action, $form_id, &$data = NULL, &$a) {
   }
 
   // TODO: check if these validations work
-  /* 
-  if ($id == 'user_admin_permissions') {
-    if (is_numeric($data['rid'])) {
-      $rid = $data['rid'];
-    }
-    elseif (is_string($data['rid'])) {
-      $rid = db_query('SELECT rid FROM {role} WHERE name = :name', array('name' => $data['rid']))->fetchField();
-    }
-
-    if (!db_query("SELECT COUNT(*) FROM {role} WHERE rid = :rid", array('rid' => $rid))->fetchField()) {
-      return t('Invalid role %role to set permissions for.', array('%role' => $data['role'] ? $data['role'] : $data['rid']));
-    }
-  }
-  */
+/*
+ * if ($id == 'user_admin_permissions') {
+ *   if (is_numeric($data['rid'])) {
+ *     $rid = $data['rid'];
+ *   }
+ *   elseif (is_string($data['rid'])) {
+ *     $rid = db_query('SELECT rid FROM {role} WHERE name = :name', array('name' => $data['rid']))->fetchField();
+ *   }
+ *
+ *   if (!db_query("SELECT COUNT(*) FROM {role} WHERE rid = :rid", array('rid' => $rid))->fetchField()) {
+ *     return t('Invalid role %role to set permissions for.', array('%role' => $data['role'] ? $data['role'] : $data['rid']));
+ *   }
+ * }
+ */
   $result = $data;
 
   return patterns_results($status, $msg, $result);
- 
+
 }
 
 // Build a patterns actions and parameters
