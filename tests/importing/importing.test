@@ -6,7 +6,7 @@
 
 class PatternsImportTestCase extends PatternRunTestCase {
 
-  const REMOTE_URL_IMPORT       = 'http://www.shakty.org/patterns/importing.yaml';
+  const REMOTE_URL_IMPORT = 'http://www.shakty.org/patterns/importing.yaml';
   
   var $importing_tests_dir;
 
@@ -18,7 +18,7 @@ class PatternsImportTestCase extends PatternRunTestCase {
     );
   }
 
-   public function setUp() {
+  public function setUp() {
 
    	$this->importing_tests_dir = $this->getPatternsTestDir() . 'importing/';
     // Enable any modules required for the tests.
