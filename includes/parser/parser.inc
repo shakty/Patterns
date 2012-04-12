@@ -202,7 +202,7 @@ function patterns_parser_dump($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
  *
  */
 function patterns_parser_load($path, $format = PATTERNS_FORMAT_UNKNOWN) {
-    if (empty($pattern)) return FALSE;
+    if (empty($path)) return FALSE;
 
     $load_function = patterns_parser_get_parser_function($format, PATTERNS_PARSER_LOAD);
     if (!$load_function) {
