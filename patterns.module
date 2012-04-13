@@ -61,8 +61,6 @@ module_load_include('inc', 'patterns', 'includes/forms/forms');
 module_load_include('inc', 'patterns', 'includes/parser/parser');
 module_load_include('inc', 'patterns', 'includes/io');
 
-module_load_include('inc', 'patterns', 'includes/components');
-
 module_load_include('inc', 'patterns', 'includes/api/api');
 module_load_include('inc', 'patterns', 'includes/api/drush');
 

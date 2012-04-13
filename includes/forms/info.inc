@@ -5,7 +5,11 @@
  * about the Patterns module as a whole.
  */
 
-
+/**
+ * Displays a summary of available parsers, components, 
+ * and patterns directories.
+ * 
+ */
 function patterns_info_page() {
 
   $form = array();
@@ -21,6 +25,14 @@ function patterns_info_page() {
   return drupal_render($form);
 }
 
+/**
+ * Displays a summary of available Patterns directories
+ * 
+ * @param array $form (optional) If specified, the form
+ *   will be appended here
+ * 
+ * @return array $form The form to be rendered
+ */
 function patterns_info_directories($form = array()) {
   $dirs = patterns_path_get_patterns_dirs();
 	$dirs = patterns_array_to_rows($dirs);
@@ -47,9 +59,17 @@ function patterns_info_directories($form = array()) {
   return $form;
 }
 
+/**
+ * Displays a summary of available Patterns components
+ * 
+ * @param array $form (optional) If specified, the form
+ *   will be appended here
+ * 
+ * @return array $form The form to be rendered
+ */
 function patterns_info_components($form = array()) {
 
-	$components = patterns_components_list();
+	$components = patterns_io_list_components();
 	
 	foreach ($components as $key => $value) {
 		$name = basename($value);	
@@ -81,6 +101,14 @@ function patterns_info_components($form = array()) {
   return $form;
 }
 
+/**
+ * Displays a summary of Patterns parsers
+ * 
+ * @param array $form (optional) If specified, the form
+ *   will be appended here
+ * 
+ * @return array $form The form to be rendered
+ */
 function patterns_info_parsers($form = array()) {
 	
 	$parsers = patterns_parser_build_formats_index();
