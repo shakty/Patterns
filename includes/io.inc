@@ -37,11 +37,14 @@ function patterns_io_get_pattern_service($pattern) {
  * 
  * @param bool $reset (optional) If TRUE, always forces reloading
  *   the components from the file system. Defaults FALSE
- *   
+ * @param bool $dryrun (optional) If TRUE, it does not actually load
+ *   the components, but just returns the paths to each of them.
+ *   Defaults FALSE
+ *     
  * @return Array $components Array containing the paths of the 
  *   components files.
  */
-function patterns_io_load_components($reset = FALSE) {
+function patterns_io_load_components($reset = FALSE, $dryrun = FALSE) {
   $components = &drupal_static(__FUNCTION__);
   
   if (isset($paths) && !$reset) {
@@ -55,8 +58,9 @@ function patterns_io_load_components($reset = FALSE) {
 
   foreach ($paths as $path) {
     foreach (file_scan_directory($path, '/\.inc$/') as $file) {
-      require_once $file->uri;
       $components[] = $file->uri;
+      if ($dryrun) continue;
+      require_once $file->uri;
     }
   }
 

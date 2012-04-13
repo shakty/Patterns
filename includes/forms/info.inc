@@ -23,10 +23,7 @@ function patterns_info_page() {
 
 function patterns_info_directories($form = array()) {
   $dirs = patterns_path_get_patterns_dirs();
-
-  foreach ($dirs as $key => $value) {
-    $dirs[$key] = array(($key+1), $value);
-  }
+	$dirs = patterns_array_to_rows($dirs);
 
   $form['pd'] = array(
     '#type' => 'fieldset',
@@ -44,15 +41,18 @@ function patterns_info_directories($form = array()) {
 
 function patterns_info_components($form = array()) {
 
+	$components = patterns_components_list();
+	$components = patterns_array_to_rows($components);
+	
   $form['cd'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Patterns Components Directories'),
+    '#title' => t('Patterns Components'),
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
 
-  $form['cd']['dirs'] = array(
-    '#markup' => 'TODO',
+  $form['cd']['components'] = array(
+    '#markup' => theme('table', array('rows' => $components, 'attributes' => array('class' => 'patterns-list'))),
   );
 
   return $form;

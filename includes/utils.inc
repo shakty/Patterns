@@ -211,4 +211,3 @@ function patterns_utils_is_public_page() {
 	}
 	return (request_path() == $p) ? TRUE : FALSE; 
 }
-

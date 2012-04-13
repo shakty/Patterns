@@ -109,3 +109,25 @@ function patterns_get_patterns_links($pattern = NULL, $options = NULL) {
 
   return $actions;
 }
+
+/**
+ * Helper function to transform an array of items, into an array
+ * of of arrays of items, so that the returned value can be themed
+ * with theme_table.
+ * 
+ * @param array $array An array of items
+ * @param mixed $empty (optional) A string that will be added in case 
+ *   the array is empty. Defaults 'No item found'
+ *   
+ * @return array $array The transformed array 
+ */
+function patterns_array_to_rows($array, $empty = 'No item found') {
+	if (empty($array)) {
+		return array(0 => array($empty));
+	}
+	
+	foreach ($array as $key => $value) {
+    $array[$key] = array(($key+1), $value);
+  }
+  return $array;
+}
