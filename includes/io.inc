@@ -34,24 +34,33 @@ function patterns_io_get_pattern_service($pattern) {
 /**
  * Loads the Patterns handlers (component) from the filesystem,
  * if they are not already loaded.
+ * 
+ * @param bool $reset (optional) If TRUE, always forces reloading
+ *   the components from the file system. Defaults FALSE
+ *   
+ * @return Array $components Array containing the paths of the 
+ *   components files.
  */
-function patterns_io_load_components() {
-  static $loaded = FALSE;
-
-  if ($loaded) {
-    return;
+function patterns_io_load_components($reset = FALSE) {
+  $components = &drupal_static(__FUNCTION__);
+  
+  if (isset($paths) && !$reset) {
+    return $components;
   }
 
+  $components = array();
+  
   // Get list of directories to scan for components.
   $paths = module_invoke_all('patterns_components');
 
   foreach ($paths as $path) {
     foreach (file_scan_directory($path, '/\.inc$/') as $file) {
       require_once $file->uri;
+      $components[] = $file->uri;
     }
   }
 
-  $loaded = TRUE;
+ 	return $components;
 }
 
 /**
