@@ -36,4 +36,3 @@ function patterns_components_dirs($reset = FALSE) {
 	// Get list of directories to scan for components.
   return module_invoke_all('patterns_components');
 }
-

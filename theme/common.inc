@@ -117,17 +117,26 @@ function patterns_get_patterns_links($pattern = NULL, $options = NULL) {
  * 
  * @param array $array An array of items
  * @param mixed $empty (optional) A string that will be added in case 
- *   the array is empty. Defaults 'No item found'
+ *   the array is empty. Defaults NULL
  *   
  * @return array $array The transformed array 
  */
-function patterns_array_to_rows($array, $empty = 'No item found') {
+function patterns_array_to_rows($array, $empty = NULL) {
 	if (empty($array)) {
-		return array(0 => array($empty));
+		$array = array(0 => array());
+		if (!is_null($empty)) {
+			$array[0][] = $empty;
+		} 
+		return $array;
 	}
 	
 	foreach ($array as $key => $value) {
-    $array[$key] = array(($key+1), $value);
+		if (empty($key) || is_numeric($key)) {
+			$array[$key] = array(($key+1), $value);	
+		}
+    else {
+    	$array[$key] = array(($key), $value);
+    }
   }
   return $array;
 }
