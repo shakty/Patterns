@@ -3,6 +3,8 @@
 		- General Test detached from patterns.test
 		- Added a README.md in the test directory
 		- Full path to patterns files must be specified when using runFile()
+		- Added help for testing (to move into Drupal.org doc)
+		- PatternRunTestCase -> PatternsTestCase
 
 7051:
 		- Major Update: Patterns_d2d submodule added: Patterns can be automatically
