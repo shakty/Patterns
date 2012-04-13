@@ -5,7 +5,7 @@
  * TODO: roles, permissions.
  */
 
-class PatternsUserTestCase extends PatternRunTestCase {
+class PatternsUserTestCase extends PatternsTestCase {
 
   var $user_tests_dir;
 

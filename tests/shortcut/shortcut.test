@@ -5,7 +5,7 @@
  *
  */
 
-class PatternsShortcutTestCase extends PatternRunTestCase {
+class PatternsShortcutTestCase extends PatternsTestCase {
 
   var $shortcut_tests_dir;
 

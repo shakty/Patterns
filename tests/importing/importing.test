@@ -4,7 +4,7 @@
  * Tests importing files.
  */
 
-class PatternsImportTestCase extends PatternRunTestCase {
+class PatternsImportTestCase extends PatternsTestCase {
 
   const REMOTE_URL_IMPORT = 'http://www.shakty.org/patterns/importing.yaml';
   
@@ -73,7 +73,7 @@ class PatternsImportTestCase extends PatternRunTestCase {
     $name = 'Test_Import_From_URL';
 		$destination = patterns_path_get_files_dir();
 
-    if (!$this->is_fopenurl_enabled()) {
+    if (!$this->isFopenurlEnabled()) {
       $this->pass(t('Import from URL test skipped because \'allow_url_fopen\' is disabled.'));
       return;
     }

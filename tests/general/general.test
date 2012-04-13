@@ -5,7 +5,7 @@
  * General SimpleTests for Patterns. Also, a Pattern running base class which uses QuickRun.
  */
 
-class PatternsGeneralTestCase extends PatternRunTestCase {
+class PatternsGeneralTestCase extends PatternsTestCase {
   public static function getInfo() {
     return array(
       'name' => 'General test',
@@ -31,6 +31,7 @@ class PatternsGeneralTestCase extends PatternRunTestCase {
     
   }
 
+  // TODO: move this inside a YAML Parser test
   function testSpyc() {
     // Login the site administrator.
     $this->drupalLogin($this->adm_user);

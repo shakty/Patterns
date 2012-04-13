@@ -5,7 +5,7 @@
  *
  */
 
-class PatternsFieldTestCase extends PatternRunTestCase {
+class PatternsFieldTestCase extends PatternsTestCase {
 
   var $field_tests_dir;
 

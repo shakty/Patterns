@@ -5,7 +5,7 @@
  *
  */
 
-class PatternsMenuTestCase extends PatternRunTestCase {
+class PatternsMenuTestCase extends PatternsTestCase {
 
   var $menu_tests_dir;
 

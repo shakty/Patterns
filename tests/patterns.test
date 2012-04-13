@@ -3,7 +3,7 @@
 /**
  * Abstract base class for testing pattern component behavior.
  */
-abstract class PatternRunTestCase extends DrupalWebTestCase {
+abstract class PatternsTestCase extends DrupalWebTestCase {
 
 	/**
 	 * Returns the path to the tests directory inside the 
@@ -117,7 +117,9 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Scans a directory for patterns files and executes them. 
+   * Scans a directory for patterns files, and executes them. 
+   * 
+   * @param mixed $dir The path to the directory to scan
    * 
    */
   function runDir($dir) {
@@ -146,7 +148,7 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
   
   /**
    * Loads all the pattern files from a directory
-   * and executes a callback on each of those.
+   * and executes a callback on each parsed pattern.
    * 
    * The parser is chosen based on the extension of the files 
    * in the folder.
@@ -222,10 +224,10 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
    * Checks if during the Web execution fopenurl is enabled.
    *
    * Notice: patterns_utils_is_fopenurl_enabled cannot be used
-   * because it returns the value for the cli.
+   * because it does not work with drush (returns the value of cli).
    *
    */
-  public function is_fopenurl_enabled() {
+  public function isFopenurlEnabled() {
     // View patterns list.
     $this->drupalGet('admin/patterns/import/url');
     $this->assertResponse(200);

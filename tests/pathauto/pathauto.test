@@ -5,7 +5,7 @@
  *
  */
 
-class PatternsPathautoTestCase extends PatternRunTestCase {
+class PatternsPathautoTestCase extends PatternsTestCase {
 
   var $pathauto_tests_dir;
 

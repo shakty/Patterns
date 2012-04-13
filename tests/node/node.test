@@ -4,7 +4,7 @@
  * SimpleTests for the Node component of Patterns (Node).
  */
 
-class PatternsNodeTestCase extends PatternRunTestCase {
+class PatternsNodeTestCase extends PatternsTestCase {
 
   var $node_tests_dir;
 

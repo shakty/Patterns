@@ -5,7 +5,7 @@
  *
  */
 
-class PatternsColorTestCase extends PatternRunTestCase {
+class PatternsColorTestCase extends PatternsTestCase {
 
   var $color_tests_dir;
 

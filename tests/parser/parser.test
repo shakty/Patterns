@@ -4,7 +4,7 @@
  * SimpleTests for the Taxonomy component of Patterns.
  */
 
-class PatternsParserTestCase extends PatternRunTestCase {
+class PatternsParserTestCase extends PatternsTestCase {
 
   var $parser_tests_dir;
 

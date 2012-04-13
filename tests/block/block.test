@@ -4,7 +4,7 @@
  * SimpleTests for the Block component of Patterns.
  */
 
-class PatternsBlockTestCase extends PatternRunTestCase {
+class PatternsBlockTestCase extends PatternsTestCase {
 
   var $block_tests_dir; 
 

@@ -4,7 +4,7 @@
  * SimpleTests for the System component of Patterns.
  */
 
-class PatternsSystemTestCase extends PatternRunTestCase {
+class PatternsSystemTestCase extends PatternsTestCase {
 
   var $system_tests_dir;
 

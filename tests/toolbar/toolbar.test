@@ -5,7 +5,7 @@
  *
  */
 
-class PatternsToolbarTestCase extends PatternRunTestCase {
+class PatternsToolbarTestCase extends PatternsTestCase {
 
   var $toolbar_tests_dir;
 
