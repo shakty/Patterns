@@ -54,6 +54,14 @@ function patterns_first_install($form, &$form_state) {
 		'#markup' => t($intro),
 	);
 	
+	$parsers = patterns_parser_build_formats_index();
+	if (empty($parsers)) {
+		$form['welcome']['parsers'] = array(
+			'#prefix' => '<strong>' . t('Warning: ') . '</strong>',
+	  	'#markup' => t('It seems that you have not yet enabled any Patterns parser. You will not be able to load or run any pattern. Please visit the !modules page to enable at least one parser.', array('!modules' => l('modules', 'admin/modules'))),
+		);
+	}
+	
 	$form['welcome']['drush_path'] = array(
 	  '#type' => 'textfield',
 	  '#title' => t('Drush Path'),
