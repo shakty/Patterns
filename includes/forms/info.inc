@@ -14,9 +14,9 @@ function patterns_info_page() {
 	$title = 'Patterns Info';
   patterns_forms_add_page_header($form, $title, $text);
   
-  $form = patterns_info_directories($form);
-  $form = patterns_info_components($form);
   $form = patterns_info_parsers($form);
+  $form = patterns_info_components($form);
+  $form = patterns_info_directories($form);
 
   return drupal_render($form);
 }
@@ -25,6 +25,11 @@ function patterns_info_directories($form = array()) {
   $dirs = patterns_path_get_patterns_dirs();
 	$dirs = patterns_array_to_rows($dirs);
 
+	$header = array (
+		t('N.'), 
+    t('Directory'),
+  );
+	
   $form['pd'] = array(
     '#type' => 'fieldset',
     '#title' => t('Patterns Directories'),
@@ -34,7 +39,9 @@ function patterns_info_directories($form = array()) {
   );
 
   $form['pd']['dirs'] = array(
-    '#markup' => theme('table', array('rows' => $dirs, 'attributes' => array('class' => 'patterns-list'))),
+    '#markup' => theme('table', array('header' => $header,
+    																	'rows' => $dirs,
+  															)),
   );
 
   return $form;
@@ -43,7 +50,17 @@ function patterns_info_directories($form = array()) {
 function patterns_info_components($form = array()) {
 
 	$components = patterns_components_list();
-	$components = patterns_array_to_rows($components);
+	
+	foreach ($components as $key => $value) {
+		$name = basename($value);	
+    $components[$key] = array($name, $value);
+  }
+  
+  $header = array (
+		t('Name'), 
+    t('Path'),
+  );
+	
 	
   $form['cd'] = array (
     '#type' => 'fieldset',
@@ -56,15 +73,15 @@ function patterns_info_components($form = array()) {
 
   
   $form['cd']['components'] = array (
-    '#markup' => theme('table', array('rows' => $components, 'attributes' => array('class' => 'patterns-list'))),
+    '#markup' => theme('table', array('header' => $header,
+    																	'rows' => $components, 
+    												)),
   );
 
   return $form;
 }
 
 function patterns_info_parsers($form = array()) {
-	
-	
 	
 	$parsers = patterns_parser_build_formats_index();
 	
