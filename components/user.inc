@@ -358,8 +358,14 @@ function user_patterns_validate($action, $tag, &$data) {
     if (isset($data['rid'])) {
       // If rid is a string then we get the id.
       if (is_string($data['rid'])) {
-        $rid = db_query('SELECT rid FROM {role} WHERE name = :name', array('name' => $data['rid']))->fetchField();
+        $rid = db_select('role', 'r')
+          ->fields('r', array('rid'))
+          ->condition('name', $data['rid'])
+          ->execute()->fetchField();
+        //print_r('rid: ' . ($rid ? $rid : 'false'));
+        //var_dump($rid);
         if (!$rid) {
+          //print_r('rid is FALSE');
           $status = PATTERNS_ERR;
           $msg = t('Role name %name does not exist.', array('%name' => $data['rid']));
         }
@@ -367,6 +373,7 @@ function user_patterns_validate($action, $tag, &$data) {
           $role_name = $data['rid'];
           $data['rid'] = $rid;
         }
+        //die;
       }
       // If rid is a number then we check if role exists.
       elseif (is_numeric($data['rid'])) {
@@ -443,7 +450,7 @@ function user_patterns_validate($action, $tag, &$data) {
                 $i++;
               }
               $status = PATTERNS_WARN;
-              $msg = t('The permissions listed here does not exist: %perms', array('%perms' => $list));
+              $msg = t('The permissions listed here do not exist: %perms', array('%perms' => $list));
             }
             $good_perms_string = '';
             $i = 0;
@@ -484,7 +491,6 @@ function user_patterns_validate($action, $tag, &$data) {
       $msg = t('You must specify a role id or role name to apply permissions to.');
     }
   }
-
   return patterns_results($status, $msg);
 }
 
@@ -596,12 +602,6 @@ function user_patterns_build($action, $form_id, &$data = NULL, &$a) {
       }
     }
 
-    if (!empty($data['overwrite'])) {
-      foreach ($permissions as $p) {
-        $perms[$p] = NULL;
-      }
-    }
-
     if (is_string($data['value'])) {
       $p = explode(',', $data['value']);
       unset($data['value']);
@@ -632,7 +632,6 @@ function user_patterns_build($action, $form_id, &$data = NULL, &$a) {
       }
       $data[$data['rid']] = $perms;
     }
-
     module_load_include('inc', 'user', 'user.admin'); // TODO: Isn't this already loaded?
     if (is_numeric($data['rid'])) {
       $rid = $data['rid'];

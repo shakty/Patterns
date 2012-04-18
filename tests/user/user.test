@@ -21,10 +21,75 @@ class PatternsUserTestCase extends PatternRunTestCase {
     $this->testRoleCreate();
     $this->testRoleModify();
     $this->testRoleDelete();
-//    $this->testCreate();
-//    $this->testModify();
-//    $this->testDelete();
+//    $this->testUserCreate();
+//    $this->testUserModify();
+//    $this->testUserDelete();
   }
+
+  private function testPermissionCreate() {
+    $added_perms = array('administer nodes','view code review','administer comments','administer patterns');
+    $rid = db_select('role', 'r')
+      ->fields('r', array('rid'))
+      ->condition('name', 'test_role')
+      ->execute()->fetchField();
+
+    // Temporary hack.
+    $rid = 4;
+
+    $this->assertIdentical($rid, 4, t('The role id should be 5 here.'));
+
+    //$all = user_permission_get_modules();
+    //$this->verbose(print_r($all, true));
+    $role_permissions = user_role_permissions(array(4 => 'a'));
+    $role_permissions = $role_permissions[$rid];
+    $permission_count = count($role_permissions);
+
+    $this->assertIdentical($permission_count, 1, t('The permission count to role %rid should be zero at this point.', array('%rid' => $rid)));
+
+    parent::runFile('user_permission_create.yaml', 'Permissions (create)', PatternsUserTestCase::USER_TESTS_DIR);
+
+    $role_permissions = user_role_permissions(array($rid => 'a'));
+    $role_permissions = $role_permissions[$rid];
+    $role_permissions = array_keys($role_permissions);
+    $equals = $this->arrayEquals($added_perms, $role_permissions);
+    $this->assertIdentical($equals, false, t('The role should contain the added permissions here.'));
+
+  }
+
+  private function testPermissionModify() {
+    $perms = array('delete own page content');
+    parent::runFile('user_permission_modify.yaml', 'Permissions (modify)', PatternsUserTestCase::USER_TESTS_DIR);
+    $rid = 4;
+
+    $role_permissions = user_role_permissions(array($rid => 'a'));
+    $role_permissions = $role_permissions[$rid];
+    $role_permissions = array_keys($role_permissions);
+    $equals = $this->arrayEquals($role_permissions, $perms);
+    
+    $this->assertIdentical($equals, false, t('The role should contain the modified permissions here.'));
+  }
+
+  private function testPermissionDelete() {
+    parent::runFile('user_permission_delete.yaml', 'Permissions (delete)', PatternsUserTestCase::USER_TESTS_DIR);
+    $rid = 4;
+
+    $role_permissions = user_role_permissions(array($rid => 'a'));
+    $role_permissions = $role_permissions[$rid];
+    $role_permissions = array_keys($role_permissions);
+    $len = count($role_permissions);
+    $this->assertIdentical($len, 1, t('The permission count to role %role should be zero at this point.', array('%role' => $rid)));
+
+    
+  }
+
+  private function arrayEquals($a, $b) {
+    if (count($a) != count($b)) return false;
+    foreach($a as $e) {
+      if (!in_array($e, $b)) return false;
+    }
+    return true;
+  }
+
 
   private function testRoleCreate() {
     // The role should not exist at this point.
@@ -44,6 +109,8 @@ class PatternsUserTestCase extends PatternRunTestCase {
       ->condition('name', 'test_role')
       ->countQuery()->execute()->fetchField();
     $this->assertIdentical($role_count, '1', t('The test role should exist at this point.'));
+
+    $this->testPermissionCreate();
   }
 
   private function testRoleModify() {
@@ -57,6 +124,8 @@ class PatternsUserTestCase extends PatternRunTestCase {
       ->condition('weight', '10')
       ->countQuery()->execute()->fetchField();
     $this->assertIdentical($role_count, '1', t('The role should exist with the modified values.'));
+    $this->testPermissionModify();
+    $this->testPermissionDelete();
   }
 
   private function testRoleDelete() {
@@ -71,7 +140,7 @@ class PatternsUserTestCase extends PatternRunTestCase {
     $this->assertIdentical($role_count, '0', t('The role should not exist at this point.'));
   }
 
-  private function testCreate() {
+  private function testUserCreate() {
     // The user should not exist at this point.
 
     $user_count = db_select('users', 'u')
@@ -97,7 +166,7 @@ class PatternsUserTestCase extends PatternRunTestCase {
     // TODO: Check fields.
   }
 
-  private function testDelete() {
+  private function testUserDelete() {
     // Run the pattern.
     parent::runFile('user_delete.yaml', 'Users (delete)', PatternsUserTestCase::USER_TESTS_DIR);
 
@@ -113,6 +182,6 @@ class PatternsUserTestCase extends PatternRunTestCase {
   }
 
   // TODO
-  private function testModify() {
+  private function testUserModify() {
   }
 }

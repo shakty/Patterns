@@ -1,0 +1,18 @@
+# YAML User Pattern
+# QScience
+
+info:
+  title: Permissions (delete)
+  description: Removes permissions
+  author: QScience
+  category: Users
+  version: 1.0
+  core: 7.x
+  author_website: http://qlectives.eu/
+
+actions:
+  - delete:
+      tag: permission
+      rid: 4
+      value:
+        - delete own page content
