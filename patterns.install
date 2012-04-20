@@ -121,6 +121,18 @@ function patterns_schema() {
 
   return $schema;
 }
+/**
+ * Add format field to {patterns} table.
+ */
+function patterns_update_7026() {
+  $spec = array(
+    'type' => 'varchar',
+    'length' => 10,
+    'default' => '',
+    'description' => 'Format of the patterns (XML, YAML, etc.).',
+  );
+  db_add_field('patterns', 'format', $spec);
+}
 
 /**
  * Implements hook_requirements().
