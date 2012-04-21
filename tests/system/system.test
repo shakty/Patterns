@@ -111,7 +111,7 @@ class PatternsSystemTestCase extends PatternsTestCase {
     // Check for variables after running the pattern.
     $this->assertIdentical(variable_get('cache', NULL), 1, t('cache variable should be 1.'));
     $this->assertIdentical(variable_get('anonymous', NULL), 'Anonymous2', t("Anonymous variable should be 'Anonymous2'."));
-
+    
   }
 
   public function testTheme() {

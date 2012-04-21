@@ -842,18 +842,27 @@ function patterns_get_tagmodules_index($tag_name = NULL, $data = NULL, $key = NU
       }
     }
   }
-
+  // We may need to rebuild the index just for the specific tag
+	else if (!empty($tag_name) && !empty($data)) {
+		$module = $tag_modules[$tag_name]['module'];
+		if (!empty($module)) {
+			$tag_modules[$tag_name] = module_invoke($module, 'patterns', $data);
+		}
+	}
+	
+	
+  
   // Part of tag
-  if (!is_null($tag_name) && !is_null($key)) {
+  if (!empty($tag_name) && !empty($key)) {
     return $tag_modules[$tag_name][$key];  
   }
   // Full tag
-  if (!is_null($tag_name)) {
+  if (!empty($tag_name)) {
     return $tag_modules[$tag_name];
   }
   
   // All the values of key=$key from all tags
-	if (!is_null($key)) {
+	if (!empty($key)) {
 		$out = array();
 		foreach ($tag_modules as $tag => $value) {
 			if (isset($value[$key])) {
