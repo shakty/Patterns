@@ -720,7 +720,7 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
  */
 function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = NULL) {
 
-  $tag_modules = patterns_get_tagmodules_index();
+  $tag_modules = patterns_get_tagmodules_index(NULL, $data); // TODO: check the parameters
 
   // Unsetting it while the module performs operations.
   $tag = $data['tag'];

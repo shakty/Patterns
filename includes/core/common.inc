@@ -28,7 +28,7 @@ function patterns_prepare_action(&$action, &$data, $actions_map) {
   }
 
   // Keep a list of which modules handle what tags.
-  $tag_modules = patterns_get_tagmodules_index();
+  $tag_modules = patterns_get_tagmodules_index(NULL, $data);
 
   $errors = array();
 

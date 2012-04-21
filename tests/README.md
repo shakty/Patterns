@@ -29,3 +29,4 @@ The following parts of the Patterns module still need a test. Feel free to contr
   - Export page
   - Public page
   - Patterns D2D
+	- How tagmodules and modulestag indexes are built
