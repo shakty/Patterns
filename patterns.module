@@ -720,7 +720,7 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
  */
 function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = NULL) {
 
-  $tag_modules = patterns_get_tagmodules_index(NULL, $data); // TODO: check the parameters
+  $tag_modules = patterns_get_tagmodules_index($data); // TODO: check the parameters
 
   // Unsetting it while the module performs operations.
   $tag = $data['tag'];
@@ -822,8 +822,90 @@ function patterns_get_tagmodules_index_old($tag_name = NULL, $data = NULL, $id =
   }
 }
 
-function patterns_get_tagmodules_index($tag_name = NULL, $data = NULL, $key = NULL) {
-  static $tag_modules;
+/**
+ * 
+ * @param $data
+ * @param $tag
+ * @param $key
+ */
+function patterns_get_tagmodules_index($data = NULL, $reset = FALSE) {
+  
+  $tagmodules = &drupal_static(__FUNCTION__);
+
+  // Index not yet built or forced rebuilt
+  if ($reset || empty($tagmodules)) {
+  
+    $tagmodules = array();
+    // Get a list of tags and their modules.
+    foreach (module_implements('patterns') as $module) {
+      _patterns_add_module_to_tagmodules($module, $tagmodules, $data);
+      //$tags = module_invoke($module, 'patterns', $data);
+      // _patterns_add_module_to_tags($module, $tags);
+      // $tagmodules = array_merge($tagmodules, $tags);
+      //foreach ($tags as $tagname => $value) {
+        // Add the reference to the module within the information which each
+        // module is already returning
+      //  $value['module'] = $module;
+      //  $tagmodules[$tagname] = $value;
+      //}
+    }
+  }
+  // We may need to rebuild the index just for the specific tag
+  else if (!empty($data)) {
+    $tag_name = $data['tag'];
+    $module = $tagmodules[$tag_name]['module'];
+    if (!empty($module)) {
+       _patterns_add_module_to_tagmodules($module, $tagmodules, $data);
+      //$update = module_invoke($module, 'patterns', $data);
+      //_patterns_add_module_to_tags($module, $update);
+      //$tagmodules = array_merge($tagmodules, $update);
+    }
+  }
+  
+  // All values from all tags
+  return $tagmodules;
+}
+
+function _patterns_add_module_to_tagmodules($module, &$tagmodules, $data = NULL) {
+   $tags = module_invoke($module, 'patterns', $data);
+   _patterns_add_module_to_tags($module, $tags);
+   $tagmodules = array_merge($tagmodules, $tags);
+}
+
+function _patterns_add_module_to_tags($module, &$tags) {
+  foreach ($tags as $tagname => $value) {
+    $tags[$tagname]['module'] = $module;
+  }
+}
+
+
+function patterns_tagmodules_filter($tagmodules, $tag, $key) {
+  if (empty($tagmodules)) return FALSE;
+  
+  // Part of tag
+  if (!empty($tag) && !empty($key)) {
+    return $tagmodules[$tag][$key];  
+  }
+  // Full tag
+  if (!empty($tag)) {
+    return $tagmodules[$tag];
+  }
+  
+  // All the values of key=$key from all tags
+  if (!empty($key)) {
+    $out = array();
+    foreach ($tagmodules as $tagname => $value) {
+      if (isset($value[$key])) {
+        $out[$value['module']][$tagname] = $value[$key];
+      } 
+    }
+    return $out;
+  }
+}
+
+function patterns_get_tagmodules_index_medium($tag_name = NULL, $data = NULL, $key = NULL) {
+  
+  $tag_modules = &drupal_static(__FUNCTION__);
 
   // Index not yet built
   if (empty($tag_modules)) {

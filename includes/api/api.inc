@@ -49,7 +49,7 @@ function patterns_api_is_reserved_word($word = NULL) {
  * 
  */
 function patterns_api_build_tagmodules_index($tag = NULL, $data = NULL, $key = NULL) {
-	return patterns_get_tagmodules_index($tag, NULL, $key);
+	return patterns_get_tagmodules_index(NULL, NULL, $tag, $key); // TODO adjust
 }
 /**
  * Builds up an associative array of modules and exposed tags.

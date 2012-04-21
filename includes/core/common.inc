@@ -28,7 +28,7 @@ function patterns_prepare_action(&$action, &$data, $actions_map) {
   }
 
   // Keep a list of which modules handle what tags.
-  $tag_modules = patterns_get_tagmodules_index(NULL, $data);
+  $tag_modules = patterns_get_tagmodules_index($data);
 
   $errors = array();
 
@@ -105,7 +105,8 @@ function patterns_implement_action($action, $data, &$identifiers, $place = 0, $a
   $msg = '';
 
   // Refresh the list of forms based on the data we have.
-  $tag_info = patterns_get_tagmodules_index($data['tag'], $data);
+  $tagmodules = patterns_get_tagmodules_index($data);
+  $tag_info = patterns_tagmodules_filter($tagmodules, $data['tag']);
   $form_ids = $tag_info[$action];
 
   /*
