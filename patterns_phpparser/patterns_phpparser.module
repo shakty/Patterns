@@ -33,35 +33,25 @@ function patterns_phpparser_load_new($path, $local = TRUE) {
 }
 
 /**
- * @depracated
+ * Loads a serialized PHP pattern array from file.
  *
+ * @param mixed $path The path of the pattern file.
+ * @param bool $local
+ *   (optional) TRUE if the pattern file is local. Defaults to TRUE.
+ *
+ * @return array|bool
+ *   The pattern structure, or FALSE.
  */
 function patterns_phpparser_load($path, $local = TRUE) {
   if ($local && !file_exists($path)) {
     return FALSE;
   }
   
-  // TODO: not working
-  return FALSE;
-  
-  // $pattern = array();
-  // include $path
-  // return $pattern;
-  
-  
-  
 	if (!$php = file_get_contents($path)) {
     return FALSE;
   }
-  
-  // That should have declared a 'pattern' into current scope.
 
-  //if (!patterns_validate_pattern($pattern)) {
-  //  // TODO: why not drupal_set_message?
-  //  trigger_error(t("Failed to evaluate a useful pattern from the input file %path. Pattern did not validate. May have been invalid syntax.", array('%path' => $path)), E_USER_WARNING);
-  //  return FALSE;
-  //}
-  return $php;
+  return patterns_phpparser_parse($php);
 }
 
 
@@ -77,9 +67,10 @@ function patterns_phpparser_parse($pattern = NULL) {
 	if (is_array($pattern)) return $pattern;
   if (!is_string($pattern)) return FALSE;
 
-  // TODO: at the moment string parsing does not work
+  return unserialize($pattern);
   
-  return FALSE;
+  // TODO: at the moment string parsing does not work
+  //return FALSE;
   
   //$outout = array();
   //parse_str($pattern, $output);
@@ -95,9 +86,11 @@ function patterns_phpparser_parse($pattern = NULL) {
 function patterns_phpparser_dump($pattern = NULL) {
 	if (is_null($pattern) || !is_array($pattern)) return FALSE;
 	
-  $string = '';
+	$string = serialize($pattern);
+	
+  //$string = '';
   //foreach ($subs as $key => $value) {
- 	  $string = "\$pattern = " . var_export($pattern, TRUE) . ";\n";       
+ 	//  $string = "\$pattern = " . var_export($pattern, TRUE) . ";\n";       
   //}
   return $string;
 }

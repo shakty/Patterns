@@ -21,12 +21,11 @@
 
 The following parts of the Patterns module still need a test. Feel free to contribute! 
 
-  - Lab page
+  - Check if all the pages are loaded without errors
+  - Add specific tests for Lab page, Export page, Public Page
   - YAML parser
   - XML parser
   - PHP parser
   - First Install screen
-  - Export page
-  - Public page
   - Patterns D2D
 	- How tagmodules and modulestag indexes are built
