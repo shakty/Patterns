@@ -477,7 +477,7 @@ function patterns_io_remove_pattern($pattern_orig, $verbose = TRUE) {
   
   if ($result) {
   	if ($verbose) {
-  		drupal_set_message(t('Pattern %pattern was removed succesfully.', array('%pattern' => $pattern_orig)), 'error');
+  		drupal_set_message(t('Pattern %pattern was removed succesfully.', array('%pattern' => $pattern_orig)));
   	}
   }
   
