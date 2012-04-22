@@ -47,7 +47,7 @@ class PatternsUserTestCase extends PatternsTestCase {
     $this->assertIdentical($role_count, '0', t('The role should not exist at this point.'));
 
     // Run the pattern.
-    parent::runFile('user_role_create.yaml', 'Role (create)', PatternsUserTestCase::USER_TESTS_DIR);
+    parent::runFile('user_role_create.yaml', 'Role (create)', $this->user_tests_dir);
 
     $this->assertUniqueText(t('The role has been added.'));
 
@@ -60,7 +60,7 @@ class PatternsUserTestCase extends PatternsTestCase {
 
   private function testRoleModify() {
     // Run the pattern.
-    parent::runFile('user_role_modify.yaml', 'Role (modify)', PatternsUserTestCase::USER_TESTS_DIR);
+    parent::runFile('user_role_modify.yaml', 'Role (modify)', $this->user_tests_dir);
 
     // The role should exist with the modified values.
     $role_count = db_select('role', 'r')
@@ -73,7 +73,7 @@ class PatternsUserTestCase extends PatternsTestCase {
 
   private function testRoleDelete() {
     // Run the pattern.
-    parent::runFile('user_role_delete.yaml', 'Role (delete)', PatternsUserTestCase::USER_TESTS_DIR);
+    parent::runFile('user_role_delete.yaml', 'Role (delete)', $this->user_tests_dir);
 
     // The role should not exist at this point.
     $role_count = db_select('role', 'r')
