@@ -171,13 +171,14 @@ function patterns_parser_parse($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
  * @param mixed $pattern A string representation of the pattern, or a pattern
  *  array. In the latter case, the array is returned as it is, and the @param
  *  $format is ignored.
- *
  * @param mixed $format The format against which parse the pattern string.
+ * @param mixed $append (optional) A string to which the dump will be 
+ *   appended. Defaults NULL
  *
  * @return bool|mixed The string representation of the pattern or FALSE.
  *
  */
-function patterns_parser_dump($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
+function patterns_parser_dump($pattern, $format = PATTERNS_FORMAT_UNKNOWN, $append = NULL) {
     if (empty($pattern)) return FALSE;
     if (is_string($pattern)) return $pattern;
     if (!is_array($pattern)) return FALSE;
@@ -187,7 +188,35 @@ function patterns_parser_dump($pattern, $format = PATTERNS_FORMAT_UNKNOWN) {
       return FALSE;
     }
 
-    return $dump_function($pattern);
+    return $dump_function($pattern, $append);
+}
+
+/**
+ * Tries to dump an array representing a pattern to a string, according to
+ * the specified format.
+ *
+ * If succesfull returns the array representation of the pattern, if not
+ * returns FALSE;
+ *
+ * @param mixed $pattern A string representation of the pattern, or a pattern
+ *  array. In the latter case, the array is returned as it is, and the @param
+ *  $format is ignored.
+ * @param mixed $format The format against which parse the pattern string.
+ * @param mixed $append (optional) A string to which the dump will be 
+ *   appended. Defaults NULL
+ *
+ * @return bool|mixed The string representation of the pattern or FALSE.
+ *
+ */
+function patterns_parser_dump_comment($text, $format = PATTERNS_FORMAT_UNKNOWN, $append = NULL) {
+    if (empty($text)) return FALSE;
+    
+    $dump_function = patterns_parser_get_parser_function($format, PATTERNS_PARSER_DUMP_COMMENT);
+    if (!$dump_function) {
+      return FALSE;
+    }
+
+    return $dump_function($text, $append);
 }
 
 /**

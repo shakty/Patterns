@@ -64,8 +64,8 @@ function patterns_xmlparser_parse($xml) {
   return $pattern;
 }
 
-function patterns_xmlparser_dump($pattern = NULL) {
-	if (is_null($pattern) || empty($pattern)) return FALSE;
+function patterns_xmlparser_dump($pattern = NULL, $append = NULL) {
+	if (empty($pattern)) return FALSE;
 		
 	$xml = new SimpleXMLElement("<pattern/>");
 	
@@ -76,8 +76,18 @@ function patterns_xmlparser_dump($pattern = NULL) {
 	$doc = dom_import_simplexml($xml)->ownerDocument;
 	$doc->preserveWhiteSpace = false;
 	$doc->formatOutput = true;
-	return $doc->saveXML();
+	
+	$dump = $doc->saveXML();
+	
+	return (is_null($append)) ? $dump : $append . "\n" . $dump; 
 }
+
+function patterns_xmlparser_dump_comment($text = NULL, $append = NULL) {
+	$text = (!empty($text)) ? $text : ' ';
+	$dump = '<!-- ' . $text . ' -->';
+	return (empty($append)) ? $dump : $append . "\n" . $dump; 
+}
+
 
 // Helping Functions
 
@@ -160,11 +170,17 @@ function _patterns_xmlparser_process_action($action = NULL) {
   if ($_action == PATTERNS_INCLUDE) {
   	// If the pattern is included by reference add it
   	// immediately, otherwise reparse the whole included pattern
-  	$inclusion = $action[0]['value'];
-  	if (is_array($inclusion)) {
+  	
+  	//$inclusion = $action[0]['value'];
+  	//if (is_array($inclusion)) {
+  	if (!isset($action[0]['value'])) {
   		$inclusion =  patterns_xmlparser_rearrange_data($action[0]);
   	}
-    $_action_data = array('pattern' => $inclusion);
+  	else {
+  		$inclusion = $action[0]['value'];
+  	}
+  	$_action_data = array('pattern' => $inclusion);
+    
   }
   else {
   	$_action_data = _patterns_xmlparser_rearrange_data($action);

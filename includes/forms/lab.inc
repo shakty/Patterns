@@ -237,13 +237,11 @@ function patterns_lab_submit($form, &$form_state) {
     }
     return;
   }
-
-  // Removed for now
-  // Add an header to the exported pattern
-  // $file  = "# Patterns exported: " . $count . " \n";
-  // $file .= "# Date and time: " . date('r') . "\n\n";
-  //debug($export);
+ 	
   $file = patterns_parser_dump($export, $format);
+  // Add info to the exported pattern
+  $file = patterns_parser_dump_comment("Patterns exported: " . $count, $format, $file);
+  $file = patterns_parser_dump_comment("Date and time: " . date('r'), $format, $file);
 
   if ($form_state['values']['to'] === PATTERNS_EXPORT_TO_DB) {
     patterns_io_save_pattern($file, $filename, $format, $path);

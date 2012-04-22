@@ -16,6 +16,7 @@ define('PATTERNS_FIRST_INSTALL', 'patterns_first_install');
 
 define('PATTERNS_PARSER_PARSE', 'parse');
 define('PATTERNS_PARSER_DUMP', 'dump');
+define('PATTERNS_PARSER_DUMP_COMMENT', 'dump_comment');
 define('PATTERNS_PARSER_LOAD', 'load');
 
 define('PATTERNS_FORMAT_UNKNOWN', 'unknown');

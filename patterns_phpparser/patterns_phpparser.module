@@ -68,14 +68,6 @@ function patterns_phpparser_parse($pattern = NULL) {
   if (!is_string($pattern)) return FALSE;
 
   return unserialize($pattern);
-  
-  // TODO: at the moment string parsing does not work
-  //return FALSE;
-  
-  //$outout = array();
-  //parse_str($pattern, $output);
-  //$output = eval($pattern);
-  //return $output;
 }
 
 /**
@@ -83,14 +75,19 @@ function patterns_phpparser_parse($pattern = NULL) {
  *
  * @param array $pattern The pattern to convert into a YAML string
  */
-function patterns_phpparser_dump($pattern = NULL) {
+function patterns_phpparser_dump($pattern = NULL, $append = NULL) {
 	if (is_null($pattern) || !is_array($pattern)) return FALSE;
 	
-	$string = serialize($pattern);
-	
-  //$string = '';
-  //foreach ($subs as $key => $value) {
- 	//  $string = "\$pattern = " . var_export($pattern, TRUE) . ";\n";       
-  //}
-  return $string;
+	$dump = serialize($pattern);
+	return (empty($append)) ? $dump : $append . "\n" . $dump; 
+}
+
+/**
+ * Comments are not allowed in the PHP format (for now).
+ * 
+ * All the comments are removed.
+ * 
+ */
+function patterns_phpparser_dump_comment($text = NULL, $append = NULL) {
+	return (is_null($append)) ? '' : $append; 
 }

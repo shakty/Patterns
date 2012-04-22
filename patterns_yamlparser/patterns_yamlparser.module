@@ -49,11 +49,24 @@ function patterns_yamlparser_parse($pattern) {
  * Converts an array representing a pattern into a YAML string.
  *
  * @param array $pattern The pattern to convert into a YAML string
+ * @param mixed $append (optional) A string to which the dump 
+ *   will be appended. Defaults NULL
+ *   
+ * @return mixed $dump A string representation of the pattern.
  */
-function patterns_yamlparser_dump($pattern = NULL) {
-if (is_null($pattern) || !is_array($pattern)) return FALSE;
-
+function patterns_yamlparser_dump($pattern = NULL, $append = NULL) {
+	if (is_null($pattern) || !is_array($pattern)) return FALSE;
+	$dump = (empty($append)) ? '' : $append . "\n";
+		
   require_once libraries_get_path('spyc') . '/spyc.php';
-  $pattern = Spyc::YAMLDump($pattern);
-  return $pattern;
+  $dump.= Spyc::YAMLDump($pattern);
+  return $dump;
 }
+
+function patterns_yamlparser_dump_comment($text = NULL, $append = NULL) {
+	if (is_null($text)) return FALSE;
+	$dump = (empty($append)) ? '' : $append . "\n";
+	$dump.= "# " . $text;		
+  return $dump;
+}
+
