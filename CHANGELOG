@@ -1,3 +1,10 @@
+7056:
+
+		- PHP parser is working
+		- All parsers can dump comments (PHP parsers ignores them)
+		- All parsers can append to a previous dump
+		- Lab appends information to exported patterns
+
 7055:
 
 		- Tests are now restored
