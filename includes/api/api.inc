@@ -44,68 +44,6 @@ function patterns_api_is_reserved_word($word = NULL) {
 }
 
 /**
- * @see patterns_get_tagmodules_index
- * @see patterns_api_build_moduletags_index
- * 
- */
-function patterns_api_build_tagmodules_index($tag = NULL, $data = NULL, $key = NULL) {
-	return patterns_get_tagmodules_index(NULL, NULL, $tag, $key); // TODO adjust
-}
-/**
- * Builds up an associative array of modules and exposed tags.
- * 
- * @param mixed $module
- *   (optional) If set, only information about this specific module is returned.
- *   Defaults NULL.
- * @param mixed $key (optional) If set, only the values for that key 
- * 	 from all modules are returned. E.g. (PATTERNS_CREATE, PATTERNS_MODIFY, etc.)
- * 	 Defaults NULL. 
- *
- * @return array $moduletags The tagmodules index built according to the parameters.
- * 
- * @see patterns_api_build_tagmodules_index
- */
-function patterns_api_build_moduletags_index($module = NULL, $data = NULL, $key = NULL) {
-	 static $moduletags;
-
-  // Index not yet built
-  if (empty($moduletags)) {
-  
-    $moduletags = array();
-    foreach (module_implements('patterns') as $component) {
-      $tags = module_invoke($component, 'patterns', $data);
-      $moduletags[$component] = $tags;
-    }
-  }
-
-  //debug($moduletags);
-  
-  // Part of tag
-  if (!is_null($module) && !is_null($key)) {
-    return $moduletags[$module][$key];  
-  }
-  // Full tag
-  if (!is_null($module)) {
-    return $moduletags[$module];
-  }
-  
-  // All the values of key=$key from all tags
-	if (!is_null($key)) {
-		$out = array();
-		foreach ($moduletags as $module => $value) {
-			if (isset($value[$key])) {
-				$out[$module] = $value[$key];
-			} 
-		}
-    return $out;
-  }
-  
-  // All values from all tags
-  return $moduletags;
-}
-
-
-/**
  * Checks whether a string is a valid component name.
  * 
  * @param mixed $component 
@@ -118,10 +56,9 @@ function patterns_api_build_moduletags_index($module = NULL, $data = NULL, $key 
  */
 function patterns_api_is_valid_component_name($component = NULL) {
 	if (is_null($component)) return FALSE;
-	$idx = patterns_api_build_moduletags_index();
+	$idx = patterns_moduletags_get_index();
 	return (isset($idx[$component])) ? TRUE : FALSE;
 }
-
 
 /**
  * Adds / Replaces an Info section to a pattern. 
