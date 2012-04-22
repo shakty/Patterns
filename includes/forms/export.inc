@@ -1,8 +1,17 @@
 <?php
 /**
  * @file
- * Importing Patterns from a file or using an URL.
+ * Export the components configuration to a Pattern file.
+ * 
  */
+
+/**
+ * TODO: finish Export documentation
+ * TODO: code cleanup
+ * TODO: Export through the Batch API
+ */
+
+
 
 function _patterns_export_build_input_name($module, $tag){
   return 'ext['.$module.'][options][' . $tag . ']';
@@ -319,7 +328,8 @@ function patterns_export_submit($form, &$form_state) {
 		$pattern[$s] = $values;
 	} 
 	
-	drupal_set_message(print_r($pattern, true));
+	// Display the exported pattern
+	//drupal_set_message(print_r($pattern, true));
 		
 	$result = patterns_io_save_pattern($pattern, $filename, $format);
 	
