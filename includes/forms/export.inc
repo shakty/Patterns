@@ -24,7 +24,7 @@ function _patterns_export_goto($form, &$form_state, $step) {
   	return $form; 
   	
   	
-  	$tm_index = patterns_api_build_tagmodules_index();
+  	$tm_index = patterns_tagmodules_get_index();
   	$tag = $form_state['values']['options'];
   	$func_id = $form_state['values'][$tag];
   	
@@ -144,7 +144,8 @@ function patterns_export($form, &$form_state) {
 
 function patterns_export_page1($form, &$form_state) {
 	
-	$tm_index = patterns_api_build_tagmodules_index(null, null, PATTERNS_EXPORT);
+	$tm_index = patterns_tagmodules_get_index();
+	$tm_index = patterns_tagmodules_filter($tm_index, null, PATTERNS_EXPORT);
 	
 	if (count($tm_index) == 0) {
 		  drupal_set_message(t('The components currently installed do not allow automatic export of the configuration of the web site'), 'error');
@@ -156,11 +157,9 @@ function patterns_export_page1($form, &$form_state) {
 		return $form;
 	}
 	
-	$form['intro'] = array (
-		'#markup' => t('In this area you can export the current configuration of your web site to a new pattern file that will be inserted in the database.'),
-		'#prefix' => '<div id="intro_export"><strong>Export: </strong>',
-		'#suffix' => '<hr><br/></div>',
-	);
+	$text = 'In this area you can export the current configuration of your web site to a new pattern file that will be inserted in the database.';
+	$title = 'Export (experimental!)';
+  patterns_forms_add_page_header($form, $title, $text);
 	
 	 $form['all'] = array (
 		'#type' => 'fieldset',
@@ -248,7 +247,7 @@ function patterns_export_page1($form, &$form_state) {
 
 function patterns_export_submit($form, &$form_state) {
 	
-	$tm_index = patterns_api_build_tagmodules_index();
+	$tm_index = patterns_tagmodules_get_index();
 	$format 	= $form_state['values']['format'];
 	$filename = $form_state['values']['pattern_name'];
 	// TODO: Loop here and create a modules section

@@ -15,11 +15,10 @@ function patterns_import_source($form, &$form_state) {
 
   $def_dir = patterns_path_get_files_dir();
 
-  $form['intro'] = array (
-		'#markup' => t('Cut and paste the content of a pattern file in the text area below to import it in the database.'),
-		'#prefix' => '<div id="intro_export"><strong>Import from Source: </strong>',
-		'#suffix' => '<hr><br/></div>',
-	);
+	$text = 'Cut and paste the content of a pattern file in the text area below to import it in the database.';
+	$title = 'Import from Source';
+  patterns_forms_add_page_header($form, $title, $text);
+	
   
   $form['name'] = array(
     '#type' => 'textfield',
