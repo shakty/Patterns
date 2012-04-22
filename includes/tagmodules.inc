@@ -46,7 +46,7 @@ function patterns_tagmodules_get_index($data = NULL, $reset = FALSE) {
   }
   // We may need to rebuild the index just for the specific tag
   else if (!empty($data)) {
-		$module = patterns_tagmodules_find_module($data);
+		$module = patterns_tagmodules_find_module($data, $tagmodules);
     _patterns_tagmodules_add_module($module, $tagmodules, $data);
   }
   
@@ -239,14 +239,15 @@ function _patterns_moduletags_add_module($module, &$moduletags, $data = NULL) {
  * @return mixed|bool The name of the module responsible for the
  *   action or FALSE, it fails to match the action with a module.
  */
-function patterns_tagmodules_find_module($action) {
+function patterns_tagmodules_find_module($action, $tagmodules = NULL) {
 	if (isset($action['module']) && !empty($action['module'])) {
   	return $action['module'];
   }
   
-  if (isset($data['tag'])) {
-  	$tagmodules = patterns_tagmodules_get_index($action);
-  	$tag_name = $data['tag'];
+  if (isset($action['tag'])) {
+  	$tagmodules = (is_null($tagmodules)) ? patterns_tagmodules_get_index($action)
+  																			 : $tagmodules;
+  	$tag_name = $action['tag'];
     if (isset($tagmodules[$tag_name]['module'])) {
     	return $tagmodules[$tag_name]['module'];
     };
