@@ -2,10 +2,10 @@ window.onload = function() {
 	
 	(function () {
 		
-		function addCO2 (textarea) {
+		function addCO2 (textarea, format_selector) {
 			if (!textarea) return;
-				
-		    var editor = CodeMirror.fromTextArea(textarea, {
+			
+			var options = {
 		        lineNumbers: true,
 		        onKeyEvent: function(i, e) {
 		          // Hook into F11
@@ -18,8 +18,25 @@ window.onload = function() {
 			        editor.setLineClass(hlLine, null);
 			        hlLine = editor.setLineClass(editor.getCursor().line, "activeline");
 			    },
-			    tabMode: "shift"
-		    });
+			    tabMode: "indent"
+		    };
+			
+			if (format_selector) {
+				// Does not work: why?
+				
+//			    console.log(CodeMirror.listModes());
+//			    console.log(format_selector.value);
+//				if (format_selector.value !== 'unknown') {
+//					options['mode'] = format_selector.value;
+//				}
+//				format_selector.onchange = function() {
+//		    		if (format_selector.value) {
+//		    			editor.setOption('mode', 'javascript');
+//		    		}
+//		    	}
+			}
+				
+		    var editor = CodeMirror.fromTextArea(textarea, options);
 	
 		    var hlLine = editor.setLineClass(0, "activeline");
 		    
@@ -46,12 +63,12 @@ window.onload = function() {
 		    }
 		    
 		    window.CO2editor = editor;
-			
+
 		}
 		
-
-		addCO2(document.getElementById("edit-content-db"));
-		addCO2(document.getElementById("edit-content"));
+		
+		addCO2(document.getElementById('edit-content-db'), document.getElementById('edit-format-db'));
+		addCO2(document.getElementById('edit-content'), document.getElementById('edit-format'));
 		
 	})();
 	

@@ -1,0 +1,7 @@
+<?php
+
+// Implements <hook_patterns_director
+function patterns_examples_patterns_directory() {
+  return drupal_get_path('module', 'patterns_examples') . '/patterns/';
+}
+

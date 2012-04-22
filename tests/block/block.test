@@ -4,9 +4,9 @@
  * SimpleTests for the Block component of Patterns.
  */
 
-class PatternsBlockTestCase extends PatternRunTestCase {
+class PatternsBlockTestCase extends PatternsTestCase {
 
-  const BLOCK_TESTS_DIR = 'tests/block/';
+  var $block_tests_dir; 
 
   static function getInfo() {
     return array(
@@ -15,6 +15,19 @@ class PatternsBlockTestCase extends PatternRunTestCase {
       'group' => 'Patterns',
     );
   }
+  
+   public function setUp() {
+
+   	$this->block_tests_dir = $this->getPatternsTestDir() . 'block/';
+   	
+    // Enable any modules required for the tests.
+  	$modules = array('patterns_components',
+  							     'patterns_yamlparser',
+		);
+  	 
+    parent::setUp($modules);
+  }
+  
 
   public function testCreateModifyDelete() {
     $this->testCreate();
@@ -32,7 +45,7 @@ class PatternsBlockTestCase extends PatternRunTestCase {
     $this->assertIdentical($block_count, '0', t('The custom block should not exist at this point.'));
 
     // Run the pattern.
-    parent::runFile('block.yaml', 'Blocks (create)', PatternsBlockTestCase::BLOCK_TESTS_DIR);
+    parent::runFile('block.yaml', 'Blocks (create)', $this->block_tests_dir);
 
     // Expected messages.
     $this->assertUniqueText(t('The block has been created.'));
@@ -75,7 +88,7 @@ class PatternsBlockTestCase extends PatternRunTestCase {
 
   private function testDelete() {
     // Run the pattern.
-    parent::runFile('block_delete.yaml', 'Blocks (custom) delete', PatternsBlockTestCase::BLOCK_TESTS_DIR);
+    parent::runFile('block_delete.yaml', 'Blocks (custom) delete', $this->block_tests_dir);
 
     // Expected messages.
     $this->assertUniqueText(t('The block Test custom block2 has been removed.'));
@@ -91,7 +104,7 @@ class PatternsBlockTestCase extends PatternRunTestCase {
 
   private function testModify() {
     // Run the pattern.
-    parent::runFile('block_modify.yaml', 'Blocks (modify)', PatternsBlockTestCase::BLOCK_TESTS_DIR);
+    parent::runFile('block_modify.yaml', 'Blocks (modify)', $this->block_tests_dir);
 
     // Expected messages.
     // TODO: 2 times each.

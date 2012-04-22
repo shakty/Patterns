@@ -1,0 +1,41 @@
+<?php
+
+module_load_include('inc', 'patterns', 'includes/utils');
+
+/**
+ * @file
+ * Installation file for PYaml.
+ */
+
+/**
+ * Implements hook_requirements().
+ *
+ * @param string $phase The phase in which hook_requirements is run (install|runtime).
+ */
+function patterns_yamlparser_requirements($phase) {
+  $requirements = array();
+
+  $path = libraries_get_path('spyc') . '/spyc.php';
+
+  // Valid in installation and run-time
+
+  if (!file_exists($path)) {
+    $requirements['spyc'] = array(
+      'title'       => t('Spyc library (YAML parser)'),
+      'description' => t('Patterns module requires Spyc library for working with YAML patterns. To enable YAML support, download the !spyc package to obtain spyc.php. Create a directory for the library (e.g. sites/all/libraries/spyc/) and place spyc.php there.',
+                          array('!spyc' => l(t('spyc'), 'http://code.google.com/p/spyc/', array('absolute' => TRUE)))),
+      'severity'    => REQUIREMENT_WARNING,
+      'value'       => t('Missing'),
+    );
+  }
+  else {
+    require_once($path);
+    $requirements['spyc'] = array(
+      'title'       => t('Spyc library (YAML parser)'),
+      'severity'    => REQUIREMENT_OK,
+      'value'       => patterns_utils_get_phpdoc_version($path),
+    );
+  }
+
+  return $requirements;
+}

@@ -52,23 +52,29 @@
 
 module_load_include('inc', 'patterns', 'includes/variables');
 module_load_include('inc', 'patterns', 'includes/config');
+module_load_include('inc', 'patterns', 'includes/path');
 module_load_include('inc', 'patterns', 'includes/utils');
+
+module_load_include('inc', 'patterns', 'includes/tagmodules');
 module_load_include('inc', 'patterns', 'includes/db');
 module_load_include('inc', 'patterns', 'includes/error');
-module_load_include('inc', 'patterns', 'includes/export');
+module_load_include('inc', 'patterns', 'includes/forms/forms');
+module_load_include('inc', 'patterns', 'includes/parser/parser');
 module_load_include('inc', 'patterns', 'includes/io');
-module_load_include('inc', 'patterns', 'includes/parser');
-module_load_include('inc', 'patterns', 'includes/editor');
-module_load_include('inc', 'patterns', 'includes/import');
-module_load_include('inc', 'patterns', 'includes/theme');
+
+module_load_include('inc', 'patterns', 'includes/api/api');
+module_load_include('inc', 'patterns', 'includes/api/drush');
+
+module_load_include('inc', 'patterns', 'theme/theme');
 
 // TODO: Check
+module_load_include('inc', 'patterns', 'includes/feed');
 module_load_include('inc', 'patterns', 'includes/servers');
-// Add libraries for performing AJAX calls outside forms
 
-//drupal_add_js('misc/drupal.js');
-//drupal_add_library('system', 'drupal');
-//drupal_add_library('system', 'jquery.form');
+
+module_load_include('inc', 'patterns', 'includes/forms/first_install');
+
+
 
 
 /**
@@ -77,12 +83,12 @@ module_load_include('inc', 'patterns', 'includes/servers');
  * @ Allow module version restricting
  * @ Put in functionality to auto-download modules (and the correct version)
  * @ Enable backups before running patterns and reverting back to those backups
- * @ Implement a progress meter
  * @ Enable interactive actions by allowing patterns to resume from a saved position
  * @ Allow resuming failed patterns
  * @ Create a Pattern class (?) check performance
  */
 
+//variable_set(PATTERNS_FIRST_INSTALL, TRUE);
 
 /**
  * Implements hook_menu().
@@ -90,16 +96,53 @@ module_load_include('inc', 'patterns', 'includes/servers');
 function patterns_menu() {
   $items = array();
 
+  $first_install = variable_get(PATTERNS_FIRST_INSTALL, TRUE);
+  if ($first_install) {
+  	module_load_include('inc', 'patterns', 'includes/forms/first_install');
+
+  	$items['admin/patterns'] = array(
+	    'title' => 'Patterns',
+	    'description' => 'Patterns was just installed or important updates have been found',
+	    'page callback' => 'patterns_first_install_page',
+	    'access arguments' => array('administer patterns'),
+  	);
+  	
+  	return $items;
+  }
+  
+  
   $items['admin/patterns'] = array(
     'title' => 'Patterns',
     'description' => 'Administer patterns available for your site',
     'page callback' => 'patterns_list',
-    'access arguments' => array('administer patterns')
+    'access arguments' => array('administer patterns'),
   );
+  
   $items['admin/patterns/list'] = array(
     'title' => 'List',
     'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10
+    'weight' => -10,
+  );
+  
+  if (patterns_utils_is_public_page_enabled()) {
+    $items[variable_get('patterns_public_url', '')] = array(
+	    'title' => 'Public',
+	    'type' => MENU_LOCAL_TASK,
+    	'description' => 'Patterns',
+      'page callback' => 'patterns_list_public',
+    	'access arguments' => array('public patterns'),
+	    'weight' => -9,
+	  );
+  }
+
+  // MAIN ROUTES
+
+  $items['admin/patterns/enable'] = array(
+    'title' => 'Enable Pattern',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('patterns_enable_pattern'),
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK,
   );
 
   $items['admin/patterns/edit/%'] = array(
@@ -107,7 +150,7 @@ function patterns_menu() {
     'page callback' => 'patterns_edit_page',
     'page arguments' => array(3),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
 
   $items['admin/patterns/quickrun'] = array(
@@ -115,14 +158,15 @@ function patterns_menu() {
     'page callback' => 'patterns_editor',
     'page arguments' => array('patterns_quickrun'),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_LOCAL_TASK
+    'type' => MENU_CALLBACK,
   );
-  $items['admin/patterns/export'] = array(
-    'title' => 'Export',
+
+  $items['admin/patterns/lab'] = array(
+    'title' => 'Lab',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('patterns_export'),
+    'page arguments' => array('patterns_lab'),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_LOCAL_TASK
+    'type' => MENU_LOCAL_TASK,
   );
 
   $items['admin/patterns/create/%'] = array(
@@ -130,47 +174,10 @@ function patterns_menu() {
     'page callback' => 'patterns_editor_create_page',
     'page arguments' => array(3),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
 
-  $items['admin/patterns/enable'] = array(
-    'title' => 'Enable Pattern',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('patterns_enable_pattern'),
-    'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
-  );
-
-  $items['admin/patterns/trash'] = array(
-    'title' => 'Move Pattern to Recycle Bin',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('patterns_trash_pattern'),
-    'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
-  );
-
-//  $items['admin/patterns/trash/%'] = array(
-//    'title' => 'Move Pattern to Recycle Bin',
-//    'page callback' => 'patterns_db_trash_pattern',
-//    'page arguments' => array(3),
-//    'access arguments' => array('administer patterns'),
-//    'type' => MENU_CALLBACK
-//  );
-
-  $items['admin/patterns/remove'] = array(
-    'title' => 'Remove Pattern',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('patterns_remove_pattern'),
-    'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
-  );
-
-    $items['admin/patterns/refresh'] = array(
-    'title' => 'Refresh Patterns',
-    'page callback' => 'patterns_io_get_patterns_service',
-    'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
-  );
+  // SETTINGS
 
   $items['admin/patterns/settings'] = array(
     'title' => 'Settings',
@@ -178,59 +185,82 @@ function patterns_menu() {
     'page arguments' => array('patterns_config_settings'),
     'access arguments' => array('administer patterns'),
     'type' => MENU_LOCAL_TASK,
-    'weight' => 10
+    'weight' => 10,
+  );
+
+  // TRASH, RESTORE, REMOVE
+
+  $items['admin/patterns/trash'] = array(
+    'title' => 'Move Pattern to Recycle Bin',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('patterns_trash_pattern'),
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/patterns/restore'] = array(
+    'title' => 'Restore a pattern from the recycle bin',
+    'page callback' => 'patterns_restore_pattern',
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/patterns/remove'] = array(
+    'title' => 'Remove Pattern',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('patterns_remove_pattern'),
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK,
+  );
+
+  // UTILS
+
+  $items['admin/patterns/refresh'] = array(
+    'title' => 'Refresh Patterns',
+    'page callback' => 'patterns_io_get_patterns_service',
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK,
   );
 
   $items['admin/patterns/validate'] = array(
     'title' => 'Validate Pattern YAML Source',
     'page callback' => 'patterns_validate_service',
     'access arguments' => array('administer patterns'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
 
-  // TODO: Check admin/patterns/get
-  // TODO: permission
+  // SERVICES
 
-  $items['admin/patterns/get'] = array(
-    'title' => 'Download Pattern Source',
-    'page callback' => 'patterns_get_source',
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK
-  );
-
-  /*
-   * TODO: outdated, disabled for now.
-  $items['patterns.xml'] = array(
+  $items['patterns/patterns.xml'] = array(
     'title' => 'Published Patterns',
     'page callback' => 'patterns_feed',
+    'access arguments' => array('get patterns'),
     'access callback' => TRUE,
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
-  */
 
-  // TODO: Check import.
+  $items['patterns/get'] = array(
+    'title' => 'Download Pattern Source',
+    'page callback' => 'patterns_io_get_pattern_service',
+    'access arguments' => array('get patterns'),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  // IMPORT
 
   $items['admin/patterns/import'] = array(
     'title' => 'Import',
     'page callback' => 'patterns_editor',
     'page arguments' => array('patterns_import_source'),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_LOCAL_TASK
+    'type' => MENU_LOCAL_TASK,
   );
-
-  // old
-  //  $items['admin/patterns/import'] = array(
-  //    'title' => 'Import',
-  //    'page callback' => 'drupal_get_form',
-  //    'page arguments' => array('patterns_import_source'),
-  //    'access arguments' => array('administer patterns'),
-  //    'type' => MENU_LOCAL_TASK
-  //  );
 
   $items['admin/patterns/import/source'] = array(
     'title' => 'Import Source Code',
     'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10
+    'weight' => -10,
   );
 
   $items['admin/patterns/import/file'] = array(
@@ -238,38 +268,57 @@ function patterns_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('patterns_import_file'),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_LOCAL_TASK
+    'type' => MENU_LOCAL_TASK,
   );
   $items['admin/patterns/import/url'] = array(
     'title' => 'Import from URL',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('patterns_import_url'),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_LOCAL_TASK
+    'type' => MENU_LOCAL_TASK,
   );
-  $items['admin/patterns/import/module'] = array(
-    'title' => 'Import from module (experimental)',
+  $items['admin/patterns/export'] = array(
+    'title' => 'Export',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('patterns_import_module'),
+    'page arguments' => array('patterns_export'),
     'access arguments' => array('administer patterns'),
-    'type' => MENU_LOCAL_TASK
+    'type' => MENU_LOCAL_TASK,
   );
 
-  // Disable for Now.
-  // TODO Check publish/unpublish
+  // PUBLISH / UNPUBLISH
 
-  //  $items['admin/patterns/publish'] = array(
-  //    'title' => 'Publish Pattern',
-  //    'page callback' => 'patterns_publish_pattern',
-  //    'access arguments' => array('administer patterns'),
-  //    'type' => MENU_CALLBACK
-  //  );
-  //  $items['admin/patterns/unpublish'] = array(
-  //    'title' => 'Unpublish Pattern',
-  //    'page callback' => 'patterns_unpublish_pattern',
-  //    'access arguments' => array('administer patterns'),
-  //    'type' => MENU_CALLBACK
-  //  );
+  $items['admin/patterns/publish'] = array(
+    'title' => 'Publish Pattern',
+    'page callback' => 'patterns_publish_pattern',
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/patterns/unpublish'] = array(
+    'title' => 'Unpublish Pattern',
+    'page callback' => 'patterns_unpublish_pattern',
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK,
+  );
+
+  // UTILITY
+
+  $items['admin/patterns/info'] = array(
+    'title' => 'Info',
+    'page callback' => 'patterns_info_page',
+    'access arguments' => array('administer patterns'),
+  	'weight' => 15,
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/patterns/check'] = array(
+    'title' => 'Pattern Modules',
+    'page callback' => 'patterns_modules_page',
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_CALLBACK,
+  );
+
+  // Disable for now
 
   //  $items['admin/patterns/server'] = array(
   //    'title' => 'Patterns Server',
@@ -283,18 +332,8 @@ function patterns_menu() {
   // This items were already commented.
   /////////////////////////////////////////////////////
 
-  //     $items[] = array('path' => 'admin/patterns/configure',
-  //       'title' => t('Configure Pattern'),
-  //       'callback' => 'drupal_get_form',
-  //       'callback arguments' => array('patterns_configure_pattern'),
-  //       'type' => MENU_CALLBACK
-  //     );
 
-  //     $items[] = array('path' => 'admin/patterns/info',
-  //       'title' => t('Pattern Details'),
-  //       'callback' => 'patterns_info',
-  //       'type' => MENU_CALLBACK
-  //     );
+// Not ready
 
   //     $items[] = array('path' => 'admin/patterns/disable',
   //       'access' => user_access('administer patterns'),
@@ -303,13 +342,6 @@ function patterns_menu() {
   //       'callback arguments' => array('patterns_disable_pattern'),
   //       'type' => MENU_CALLBACK
   //     );
-
-  //  $items['admin/patterns/modules'] = array(
-  //    'title' => 'Pattern Modules',
-  //    'page callback' => 'patterns_modules_page',
-  //    'access arguments' => array('administer patterns'),
-  //    'type' => MENU_CALLBACK
-  //  );
 
   //     $items[] = array('path' => 'admin/patterns/revert',
   //       'access' => user_access('administer patterns'),
@@ -327,23 +359,15 @@ function patterns_menu() {
  */
 function patterns_list() {
 
+	drupal_add_js('misc/ajax.js');
+	  
   drupal_add_css(drupal_get_path('module', 'patterns') . '/css/patterns.css');
   drupal_add_js(drupal_get_path('module', 'patterns') . '/js/patterns.js');
-  
+
   $form['commands'] = array(
     '#type' => 'fieldset',
     '#title' => 'Commands'
     );
-
-//  $form['commands']['refresh'] = array(
-//    '#type' => 'button',
-//    '#value' => 'Refresh',
-//    '#attributes' => array('style' => 'float:right'),
-//    '#ajax' => array(
-//      'callback' => 'patterns_io_get_patterns_service',
-//      'wrapper' => 'all_patterns_div',
-//    ),
-//  );
 
   $form['commands']['refresh'] = array(
     '#type' => 'button',
@@ -361,11 +385,11 @@ function patterns_list() {
     '#suffix' => '</a>',
   );
 
-  $form['commands']['export'] = array(
+  $form['commands']['quickrun'] = array(
     '#type' => 'button',
-    '#value' => t('Export'),
+    '#value' => t('Quick Run'),
     '#attributes' => array('style' => 'float:right'),
-    '#prefix' => '<a href="' . url('admin/patterns/export') . '">',
+    '#prefix' => '<a href="' . url('admin/patterns/quickrun') . '">',
     '#suffix' => '</a>',
   );
 
@@ -374,14 +398,22 @@ function patterns_list() {
   // Load the the pattern handlers from compontents directory
   // or from modules which implement hook_patterns().
   if (variable_get('patterns_refresh_components', TRUE)) {
-    patterns_load_components();
+    patterns_io_load_components();
   }
-  
+
   // Load the patterns from database.
-  $patterns = patterns_get_patterns(variable_get('patterns_refresh_from_fs', TRUE));
+  $patterns = patterns_io_get_patterns(variable_get('patterns_refresh_from_fs', TRUE));
 
   $output .= theme('patterns_list', $patterns);
 
+  return $output;
+}
+
+function patterns_list_public() {
+  drupal_add_css(drupal_get_path('module', 'patterns') . '/css/patterns.css');
+  drupal_add_js(drupal_get_path('module', 'patterns') . '/js/patterns.js');
+  $patterns = patterns_io_get_public_patterns(variable_get('patterns_refresh_from_fs', TRUE), FALSE);
+  $output = theme('patterns_list', $patterns);
   return $output;
 }
 
@@ -415,56 +447,8 @@ function patterns_enable_pattern($form, &$form_state, $pid) {
     '#value' => $pid,
   );
 
-  $form['options'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Options'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-  );
-
-  $options_mode = array(
-    'extend' => t('Extend'),
-    'runover' => t('Run-Over'),
-  );
-
-  $form['options']['execution'] = array(
-    '#type' => 'radios',
-    '#title' => t('Execution mode:'),
-    '#description' => t('Extend mode can only add new feature to your web-site, Run-over can also delete. At the moment \'Extend\' is the only mode permitted.'),
-    '#options' => $options_mode,
-    '#default_value' => 'extend',
-    '#disabled' => 'true',
-  );
-
-  $options_run_mode = array(
-    'batch' => t('Batch'),
-    'php' => t('PHP'),
-  );
-
-  $form['options']['mode'] = array(
-    '#type' => 'radios',
-    '#title' => t('Running mode:'),
-    '#description' => t('Batch mode uses the Batch API provided by Drupal thus providing intermediate feedback about the progress. PHP will only return when every action has been processed (or there has been an error), which is easier to debug.'),
-    '#options' => $options_run_mode,
-    '#default_value' => variable_get('patterns_default_running_mode', 'batch'),
-    '#element_validate' => array('patterns_mode_validate'),
-  );
-
-  $options = array(PATTERNS_INCLUDE_NEVER => t('Never run'),
-                   PATTERNS_INCLUDE_FIRSTRUN => t('Only during the first run'),
-                   PATTERNS_INCLUDE_UPDATE => t('Only if pattern was updated'),
-                   PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE => t('If it is the first run or if the pattern was updated'),
-                   PATTERNS_INCLUDE_ATTACHED => t('Only if the pattern code is attached (no lookup to database)'),
-                   PATTERNS_INCLUDE_ALWAYS => t('Always'),
-  );
-
-  $form['options']['run-subpatterns'] = array(
-    '#type' => 'radios',
-    '#title' => t('Run sub-patterns:'),
-    '#description' => t("Decide when to run sub-patterns that are called by the currently run pattern. If unsure, stick to recommended setting. Note that your choice won't have any effect if your pattern doesn't contain sub-patterns or if this setting has been defined within the pattern file itself."),
-    '#options' => $options,
-    '#default_value' => patterns_get_include_mode(),
-  );
+  // Add the execution options
+  $form = patterns_forms_get_execution_options($form);
 
   $disclaimer = t('Please be sure to backup your site before running a pattern. Patterns are not guaranteed to be reversible in case they do not execute well or if unforeseen side effects occur.');
 
@@ -488,7 +472,7 @@ function patterns_mode_validate($element, &$form_state, $form) {
 function patterns_enable_pattern_submit($form, &$form_state) {
   $pid = $form_state['values']['pid'];
 
-  patterns_load_components();
+  patterns_io_load_components();
   $pattern = patterns_get_pattern($pid);
 
   patterns_start_engine($pattern, $form_state['values'], $form_state['values']['mode']);
@@ -496,6 +480,28 @@ function patterns_enable_pattern_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/patterns';
 }
 
+
+/**
+ * Restores a previously trashed pattern.
+ *
+ * Sets the pattern status in the database to PATTERNS_STATUS_OK
+ *
+ * @param mixed $pid The ID of the Pattern to enable.
+ *
+ */
+function patterns_restore_pattern($pid = NULL) {
+
+  $pattern = patterns_utils_if_invalid_go_back($pid);
+  $result = patterns_db_restore_pattern($pid);
+  $params = array('%name' => @$pattern->name);
+  if ($result) {
+    drupal_set_message(t('Pattern %name was correctly restored from the trash bin.', $params));
+  }
+  else {
+    drupal_set_message(t('An error occurred. Patterns was unable to restore pattern %name from the trash bin.', $params), 'error');
+  }
+  drupal_goto('admin/patterns');
+}
 
 /**
  * Form constructor for the Patterns removing form.
@@ -515,17 +521,14 @@ function patterns_trash_pattern($form, &$form_state, $pid = NULL) {
     '#type' => 'value',
     '#value' => $pid,
   );
-  
+
   $form['name'] = array(
     '#type' => 'value',
     '#value' => @$pattern->name,
   );
 
-
   $disclaimer = t('Trashed patterns can be restored later on.');
-
   return confirm_form($form, t('Proceed with moving pattern %pattern into the trash bin?', array('%pattern' => $pattern->title)), 'admin/patterns', $disclaimer);
-
 }
 
 /**
@@ -567,7 +570,7 @@ function patterns_remove_pattern($form, &$form_state, $pid = NULL) {
     '#type' => 'value',
     '#value' => $pid,
   );
-  
+
   $form['name'] = array(
     '#type' => 'value',
     '#value' => @$pattern->name,
@@ -587,16 +590,8 @@ function patterns_remove_pattern_submit($form, &$form_state) {
   $pid = $form_state['values']['pid'];
   $name = $form_state['values']['name'];
   $id = (!empty($name)) ? $name : $pid;
-  $result = patterns_db_remove_pattern($pid);
-
-  //@TODO: Remove the file as well.
-
-  if (!$result) {
-    drupal_set_message(t('Pattern %id could not be removed.', array('%id' => $id)), 'error');
-  }
-  else {
-    drupal_set_message(t('Pattern %id was removed successfully.', array('%id' => $id)), 'status');
-  }
+  // Prints output
+  $result = patterns_io_remove_pattern($pid, TRUE);
   $form_state['redirect'] = 'admin/patterns';
 }
 
@@ -626,7 +621,11 @@ function patterns_remove_pattern_submit($form, &$form_state) {
  * @see patterns_execute_pattern_php()
  */
 function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
-  module_load_include('inc', 'patterns', 'includes/core.' . $mode);
+  module_load_include('inc', 'patterns', 'includes/core/common');
+  module_load_include('inc', 'patterns', 'includes/core/modules');
+  module_load_include('inc', 'patterns', 'includes/core/token');
+  module_load_include('inc', 'patterns', 'includes/core/' . $mode);
+
   $fun = 'patterns_execute_pattern_' . $mode;
 
   drupal_set_time_limit(0);
@@ -666,9 +665,9 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
 
   $modules = $pattern_details['modules'];
 // Install modules, if necessary.
-  $results = patterns_install_modules($modules);
-  if (!$results['success']) { // TODO: handle properly.
-    drupal_set_message($results['error_message'], 'error');
+  $installed_modules = patterns_install_modules($modules);
+  if (!$installed_modules['success']) {
+    drupal_set_message($installed_modules['error_message'], 'error');
     return FALSE;
   }
 
@@ -686,14 +685,16 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
   $actions_map = array('patterns' => $infos, 'map' => NULL); // Fix this.
   ////////////////////////////////////////
 
-
-
   // Execute the Pattern using the selected mode.
-  return $fun($pattern, $params, $patterns_details, $actions_map);
-}
+  $fun($pattern, $params, $patterns_details, $actions_map);
 
-// @TODO: Take care patterns_invoke does not return any more the tagmodules index.
-// Use patterns_get_tagmodules_index() instead.
+  // Disable the modules enabled just for executing the pattern
+  if (!empty($installed_modules['installed'])) {
+  	patterns_disable_modules($installed_modules['installed']);
+  }
+
+  return TRUE;
+}
 
 /**
  * Execute hook_patterns with the given operation and return the results.
@@ -717,7 +718,7 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
  */
 function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = NULL) {
 
-  $tag_modules = patterns_get_tagmodules_index();
+  $tag_modules = patterns_tagmodules_get_index($data); // TODO: check the parameters
 
   // Unsetting it while the module performs operations.
   $tag = $data['tag'];
@@ -770,58 +771,6 @@ function patterns_invoke($hook, $action, &$data = NULL, $form_id = NULL, &$a = N
 }
 
 /**
- * Creates the list of modules implementing the pattern hook. Additional
- * information is provided such as the files or the forms needed by the tag. It
- * uses caching, unless a specific tag is being looked up.
- *
- * @param string $tag_name
- *   (optional) If set, only information about this specific tag is returned
- *   and the cache will be refreshed. Defaults to NULL.
- * @param array $data
- *   (optional) The data of the pattern. If $tag_name was set, $data must be
- *   set as well. Defaults to NULL.
- * @param integer $id
- *   (optional) If set, only this particular bit of information is returned. Defaults to NULL.
- *   Allowed values for $id are: 'descr', PATTERNS_CREATE, PATTERNS_MODIFY,
- *   PATTERNS_DELETE, and 'files'.
- *
- * @Note The return type has changed. It used to be an array of tag => module now
- * you get the info with $tag['module'].
- *
- * @return array $tag_modules The tag_modules index built according to the parameters.
- */
-function patterns_get_tagmodules_index($tag_name = NULL, $data = NULL, $id = NULL) {
-  static $tag_modules;
-
-  // Index not yet built or $tag_name is set.
-  if (!is_array($tag_modules) || $tag_name != NULL) {
-    $tag_modules = array();
-    // Get a list of tags and their modules.
-    // TODO: Optimize: if $tag_name is set, and $tag_modules is not empty, look
-    // for only the modules that we have seen before implement the tag.
-    foreach (module_implements('patterns') as $module) {
-      $tags = module_invoke($module, 'patterns', $data);
-      foreach ($tags as $tag => $value) {
-        // Add the reference to the module within the information which each
-        // module is already returning
-        $value['module'] = $module;
-        $tag_modules[$tag] = $value;
-      }
-    }
-  }
-
-  if (empty($tag_name)) {
-    return $tag_modules;
-  }
-  elseif (empty($id)) {
-    return $tag_modules[$tag_name];
-  }
-  else {
-    return $tag_modules[$tag_name][$id];
-  }
-}
-
-/**
  * Constructs a Pattern object with default standard values.
  *
  * @param array $pattern Input array structure of the pattern. Defaults to an empty array.
@@ -849,12 +798,6 @@ function patterns_get_pattern_obj($pattern = array()) {
   }
 
   return $pattern;
-}
-
-/**
- * @TODO patterns_refresh().
- */
-function patterns_refresh() {
 }
 
 /**

@@ -502,6 +502,241 @@ function _patterns_modify_value(&$form) {
 }
 
 
+/**
+ * @file
+ * Functions related to parsing pattern files.
+ */
+
+/**
+ * Finds parts of an array based on a semi-compatible Xpath syntax.
+ *
+ * Returns an array of constructs that includes the references 'item' and
+ * 'parent' from the matching values in the $data object along with extra keys
+ * 'key' for the key of the current match and 'trace' for a full list of keys
+ * until the root of the $data object.
+ *
+ * Loosely based off of Cake function Set::extract.
+ *
+ * @Note: Ensure this always only returns matches from a single level in the
+ * array. Changes made to matches in different levels can possibly mess up the
+ * above-level matches. To this end, you cannot change the keys of a current
+ * match because the other matches cannot change their keys as well to sync with
+ * the new parent array.
+ * @TODO: Think of a solution for the above note (BROKEN RIGHT NOW).
+ */
+function patterns_array_fetch($path, &$data, $context = NULL) {
+  if (!$context && (empty($data) || !is_array($data))) {
+    return array();
+  }
+  if ($path === '/') {
+    return $data;
+  }
+
+  // Construct our contexts object that allows us to traverse the array
+  if (!$context) {
+    $context = _patterns_array_context($data);
+  }
+
+  // Make our context actually a list of contexts
+  $context = array($context);
+
+  // Create a list of tokens based on the supplied path
+  $tokens = array_slice(preg_split('/(?<!=)\/(?![a-z]*\])/', $path), 1);
+
+  while (!empty($tokens)) {
+    $token = array_shift($tokens);
+
+    // TODO Implement better conditionals for each token
+    // Currently only supports element=value conditions
+    $conditions = array();
+    if (preg_match('/(=)(.*)/', $token, $m)) {
+      $conditions[$m[1]] = $m[2];
+      $token = substr($token, 0, strpos($token, $m[1]));
+    }
+
+    $matches = array();
+    foreach ($context as &$piece) {
+      if ($token === '..') {
+        $matches[] = &$piece['parent'];
+        continue;
+      }
+      $match = FALSE;
+      if (is_array($piece['item']) && ($token == '*' || array_key_exists($token, $piece['item']))) {
+        $i = 0;
+        while (isset($piece[$i])) {
+          if ($piece[$i]['key'] === $token) {
+            $matches[] = &$piece[$i];
+            break;
+          }
+          elseif ($token === '*') {
+            $matches[] = &$piece[$i];
+          }
+          $i++;
+        }
+      }
+      elseif ($token === '.') {
+        $matches[] = &$piece;
+      }
+    }
+
+    // Filter matches from the matches list based on our conditions
+    foreach ($conditions as $operator => $value) {
+      _patterns_array_filter($matches, $operator, $value);
+    }
+
+    // Update the context area to the next set of matches to dig into
+    $context = $matches;
+  }
+
+  // Return the list of matches containing references to their respective data objects
+  return $matches;
+}
+
+// Moved here recently
+//////////////////////
+
+
+/**
+ * Executes default configuration for module during the module installation.
+ *
+ * This function should be called by other modules from within their
+ * hook_enable() implementation.
+ * Module should also provide modulename.config file containing PHP array
+ * with the actions that need to be executed.
+ *
+ * @param string $module
+ *   Name of the module calling the function.
+ * @return
+ * @TODO Doc.
+ */
+function patterns_execute_config($module) {
+
+  // since this function is called from hook_enable(), we need to ensure that
+  // it's executed only at module installation (first time module is enabled)
+  if (drupal_get_installed_schema_version($module) == SCHEMA_INSTALLED) {
+    return;
+  }
+
+  $path = drupal_get_path('module', $module) . '/' . $module . '.config';
+
+  if (file_exists($path)) {
+    require_once $path;
+
+    if (empty($actions)) {
+      return;
+    }
+
+    $pattern = new stdClass();
+    $pattern->title = t('Default configuration for @module module', array('@module' => $module));
+    $pattern->status = FALSE;
+    $pattern->pattern['actions'] = $actions;
+
+    return patterns_start_engine($pattern);
+  }
+}
+
+
+/**
+ * Helper function to create a context array based on the supplied object.
+ *
+ * Supplying a parent object will set the parent for this context.
+ * @TODO Doc.
+ */
+function _patterns_array_context(&$obj, &$current = NULL) {
+  // If a current context is set, use it's parent and key values
+  if (!($trace = $current['trace'])) {
+    $trace = array();
+  }
+  if (!($key = $current['key'])) {
+    $key = NULL;
+  }
+  if (!($parent = &$current['parent'])) {
+    $parent = NULL;
+  }
+  $context = array('trace' => $trace, 'key' => $key, 'item' => &$obj, 'parent' => &$parent);
+  $refs = array(&$context);
+
+  while (!empty($refs)) {
+    $ref = &$refs[0];
+    $parent = &$ref['item'];
+    array_splice($refs, 0, 1);
+
+    if (is_array($parent) && !empty($parent)) {
+      $i = 0;
+      foreach ($parent as $index => &$child) {
+        // TODO possible optimizations can be done here (with the parent trace)
+        $ref[$i] = array('trace' => _patterns_array_trace($ref), 'key' => $index, 'item' => &$child, 'parent' => &$ref);
+        array_unshift($refs, '');
+        $refs[0] = &$ref[$i++];
+      }
+    }
+  }
+
+  return $context;
+}
+
+/**
+ * Helper function to filter values of the list of matches.
+ * @TODO Doc.
+ */
+function _patterns_array_filter(&$matches, $operator, $value = NULL) {
+  for ($i = count($matches) - 1; $i >= 0; $i--) {
+    $match = &$matches[$i];
+
+    switch ($operator) {
+      case '=':
+        if ($match['item'] != $value) {
+          array_splice($matches, $i, 1);
+        }
+        break;
+    }
+  }
+}
+
+/**
+ * Helper function to create a list of parent keys given a context item.
+ * @TODO Doc.
+ */
+function _patterns_array_trace($obj) {
+  // Loop back up through the parents to fill in the trace value.
+  $up = &$obj;
+  $trace = array();
+  while (isset($up['parent'])) {
+    array_unshift($trace, $up['key']);
+    $up = &$up['parent'];
+  }
+
+  return $trace;
+}
+
+
+/**
+ * Helper function to flatter options, but keep the title/names in.
+ * @TODO Doc.
+ */
+function patterns_options_flatten($array, $reset = TRUE) {
+  static $return;
+
+  if ($reset) {
+    $return = array();
+  }
+
+  foreach ($array as $key => $value) {
+    if (is_object($value)) {
+      patterns_options_flatten($value->option, FALSE);
+    }
+    elseif (is_array($value)) {
+      patterns_options_flatten($value, FALSE);
+    }
+    else {
+      $return[$key] = $value;
+    }
+  }
+
+  return $return;
+}
+
+
 // Function which were originally commented
 ////////////////////////////////////////////
 

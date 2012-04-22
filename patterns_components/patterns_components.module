@@ -1,0 +1,10 @@
+<?php
+
+/**
+ * Implements hook_patterns_components().
+ *
+ * Tell the Patterns engine where the components are.
+ */
+function patterns_patterns_components() {
+  return drupal_get_path('module', 'patterns_components') . '/components/';
+}

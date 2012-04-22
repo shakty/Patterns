@@ -4,9 +4,9 @@
  * SimpleTests for the System component of Patterns.
  */
 
-class PatternsSystemTestCase extends PatternRunTestCase {
+class PatternsSystemTestCase extends PatternsTestCase {
 
-  const SYSTEM_TESTS_DIR = 'tests/system/';
+  var $system_tests_dir;
 
   static function getInfo() {
     return array(
@@ -16,6 +16,18 @@ class PatternsSystemTestCase extends PatternRunTestCase {
     );
   }
 
+   public function setUp() {
+
+   	$this->system_tests_dir = $this->getPatternsTestDir() . 'system/';
+   	
+    // Enable any modules required for the tests.
+  	$modules = array('patterns_components',
+  							     'patterns_yamlparser',
+		);
+  	 
+    parent::setUp($modules);
+  }
+  
   /**
    * Check the database if a module is enabled/disabled.
    * @name Module name
@@ -39,7 +51,7 @@ class PatternsSystemTestCase extends PatternRunTestCase {
     $this->assertModule('number', TRUE);
 
     // Run the pattern.
-    parent::runFile('modules.yaml', 'Enable/disable modules', PatternsSystemTestCase::SYSTEM_TESTS_DIR);
+    parent::runFile('modules.yaml', 'Enable/disable modules', $this->system_tests_dir);
 
     // Expected messages.
     $this->assertUniqueText(t('Module(s) forum, number enabled. No modules have been disabled.'), t('The forum module should get enabled.'));
@@ -68,7 +80,7 @@ class PatternsSystemTestCase extends PatternRunTestCase {
     $this->assertIdentical(variable_get('fivestar_widget', NULL), NULL, t('fivestar_widget variable should not be set.'));
 
     // Run the pattern.
-    parent::runFile('variables.yaml', 'Create and delete variables', PatternsSystemTestCase::SYSTEM_TESTS_DIR);
+    parent::runFile('variables.yaml', 'Create and delete variables', $this->system_tests_dir);
 
     $this->assertUniqueText(t('Variable(s) votingapi_anonymous_window, fivestar_widget updated.'), t('The votingapi_anonymous_window, fivestar_widget variables should get updated.'));
     $this->assertUniqueText(t('Variable(s) user_pictures updated.'), t('The user_pitures variabcle should get updated.'));
@@ -91,7 +103,7 @@ class PatternsSystemTestCase extends PatternRunTestCase {
     $this->assertIdentical(variable_get('anonymous', NULL), NULL, t("anonymous variable should not be set."));
 
     // Run the pattern.
-    parent::runFile('fill_forms.yaml', 'Fill in values for forms', PatternsSystemTestCase::SYSTEM_TESTS_DIR);
+    parent::runFile('fill_forms.yaml', 'Fill in values for forms', $this->system_tests_dir);
 
     // Expected messages.
     $this->assertText(t('The configuration options have been saved.'), t('The forms have been submitted.'));
@@ -99,7 +111,7 @@ class PatternsSystemTestCase extends PatternRunTestCase {
     // Check for variables after running the pattern.
     $this->assertIdentical(variable_get('cache', NULL), 1, t('cache variable should be 1.'));
     $this->assertIdentical(variable_get('anonymous', NULL), 'Anonymous2', t("Anonymous variable should be 'Anonymous2'."));
-
+    
   }
 
   public function testTheme() {
@@ -109,7 +121,7 @@ class PatternsSystemTestCase extends PatternRunTestCase {
     $this->assertIdentical(variable_get('admin_theme', NULL), 'seven', t('The default admin theme is seven.'));
 
     // Run the pattern.
-    parent::runFile('theme.yaml', 'Set theme', PatternsSystemTestCase::SYSTEM_TESTS_DIR);
+    parent::runFile('theme.yaml', 'Set theme', $this->system_tests_dir);
 
     // Check for the current theme after running the pattern.
     $this->assertIdentical(variable_get('theme_default', NULL), 'garland', t('The default theme is garland.'));

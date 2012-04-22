@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * @file
+ * TBD
+ *
+ * A longer description will follow here.
+ */
+
+define('PATTERNS_D2D_SERVER', 'http://localhost/drupal_a/');
+require_once 'includes/patterns_d2d.form.inc';
+require_once 'includes/patterns_d2d.srpc.inc';
+
+/**
+ * Implements hook_menu_alter().
+ */
+function patterns_d2d_menu_alter(&$items) {
+  $items['admin/patterns/d2d'] = array(
+    'title' => 'Auto Upload',
+    'page callback' => 'patterns_d2d_share_patterns',
+    'access arguments' => array('administer patterns'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 9,
+  );
+  return $items;
+}
+function patterns_d2d_patterns_publish($pattern) {
+  if (variable_get('patterns_d2d_auto_publish', FALSE)) {
+    patterns_d2d_push_patterns_client(array($pattern));
+  }
+  else {
+    drupal_set_message(t('Automatic publishing of is patterns not enabled.'), 'warning');
+  }
+}

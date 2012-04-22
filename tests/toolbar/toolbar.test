@@ -5,9 +5,9 @@
  *
  */
 
-class PatternsToolbarTestCase extends PatternRunTestCase {
+class PatternsToolbarTestCase extends PatternsTestCase {
 
-  const TOOLBAR_TESTS_DIR = 'tests/toolbar/';
+  var $toolbar_tests_dir;
 
   public static function getInfo() {
     return array(
@@ -17,9 +17,16 @@ class PatternsToolbarTestCase extends PatternRunTestCase {
     );
   }
 
-  public function setUp() {
+   public function setUp() { 	
+   	
+   	$this->toolbar_tests_dir = $this->getPatternsTestDir() . 'toolbar/';
+   	
     // Enable any modules required for the tests.
-    parent::setUp();
+  	$modules = array('patterns_components',
+  							     'patterns_yamlparser',
+		);
+  	 
+    parent::setUp($modules);
     //$this->adm_user = $this->drupalCreateUser(array('administer site configuration'));
     //$this->drupalLogin($this->adm_user);
   }
@@ -33,7 +40,7 @@ class PatternsToolbarTestCase extends PatternRunTestCase {
   public function test_toolbar() {
 
     //for add 'access toolbar' permission to the 'anonymous user' role
-    parent::runFile('toolbar_add.yaml', 'Toolbarrole (add)', PatternsToolbarTestCase::TOOLBAR_TESTS_DIR);
+    parent::runFile('toolbar_add.yaml', 'Toolbarrole (add)', $this->toolbar_tests_dir);
     $query = db_select('role_permission', 'rp')
             ->fields('rp', array('rid', 'permission'))
             ->condition('rp.rid', 1)
@@ -43,7 +50,7 @@ class PatternsToolbarTestCase extends PatternRunTestCase {
     $this->assertTrue($query, t('Adding \'access toolbar\' works fine.'));
 
     //for delete 'access toolbar' permission from the 'anonymous user' role
-    parent::runFile('toolbar_delete.yaml', 'Toolbarrole (delete)', PatternsToolbarTestCase::TOOLBAR_TESTS_DIR);
+    parent::runFile('toolbar_delete.yaml', 'Toolbarrole (delete)', $this->toolbar_tests_dir);
     $query = db_select('role_permission', 'rp')
           ->fields('rp', array('rid', 'permission'))
           ->condition('rp.rid', 1)

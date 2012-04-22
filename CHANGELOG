@@ -1,3 +1,145 @@
+7055:
+
+		- Tests are now restored
+
+7054:
+
+		- Info page completed
+
+7053:
+
+		- patterns_io_load_components uses drupal_static now and returns an
+			array of paths to components
+
+7052:
+		- SimpleTests re-enabled.
+		- General Test detached from patterns.test
+		- Added a README.md in the test directory
+		- Full path to patterns files must be specified when using runFile()
+		- Added help for testing (to move into Drupal.org doc)
+		- PatternRunTestCase -> PatternsTestCase
+
+7051:
+		- Major Update: Patterns_d2d submodule added: Patterns can be automatically
+			pushed to a Patterns Server.
+	
+*********************************************************************************************
+
+7050:
+		- Beautified interface: changed some of the labels and added a small title
+			to all pages
+		- Patterns Export -> Patterns Lab
+		- Patterns Extract -> Patterns Export
+		- Patterns Quick-Run become a MENU_CALLBACK instead of MENU_LOCAL_TASK
+
+7049:
+
+		- Fixed module/tag/form selection in the extract page.
+		- Extraction automatically adds the modules which are required for
+			running the pattern
+
+7048:
+
+		- Publish/Unpublish pattern has a separate function to access the db.
+
+7047:
+		
+		- Page for public patterns created.
+		- Admin can set an url for the page from the settings page.
+
+7046:
+
+		- Automatic extraction seems to work, for ALL and for specific forms / components
+		- TODO: improve GUI
+
+7045:
+
+		- Added hook_patterns_publish and hook_patterns_unpublish
+
+7044:
+
+		- Added drush hooks to automatically download and enable modules
+
+7043:
+
+		- During saving operation, if failing in parsing a pattern file previously 
+		  copied in the files directory, the file is removed.
+
+7042:
+		- Created page for displaying information after first install of 
+		    patterns.
+
+7041:
+
+		- Patterns removal from the file systems works as well
+
+7040:		- Fixed bug drush installation of YAML Parser together with Patterns
+		- Parser scan detached from parser
+
+7039:
+
+		- Parser validates correctly all types of included patterns
+
+7038:
+		- XML Parser Dump works correctly
+
+7037:
+
+		- All necessary files are correctly included in the .install file
+
+7036:
+
+		- Added an Info page, which displays general information about
+				the status of the Patterns module as a whole.
+
+7035:
+
+		- Fixed bugs in importing new patterns.
+		- Extension is automatically added to saved files, if missing.
+
+7034:
+
+		- Theme directory moved outside includes.
+		- Modules page per pattern restored
+
+7033:
+
+		- XML Patterns feed restored
+
+7032:
+
+		- Fixed several bugs related to updated function names.
+		- TODO: check simple tests
+
+7031:
+
+		- Patterns Example sub-module created.
+
+7030:
+
+		- Dynamic Parsers allowed
+		- XML, PHP and YAML Parser moved into a separate sub-modules
+
+7029:
+
+		- Include directory refactoring
+		- The tag <modules> got a new semantic. It enables (if they are not) the modules 
+				just for the pattern execution, and then re-disables them (if they were so) 
+
+7028:
+
+		- XML support enabled. Dumping is not available
+
+7027:
+
+		- Publish link added again in the interface
+		- Patterns can be restored from the trash bin
+		- Format is displayed in the GUI
+
+7026:
+
+		- Patterns are correctly identified by the file name now. No more ambiguity with extensions
+
 7025:
 
 		- Fixed inconsistencies in the removal process in the GUI. Removed patterns are still not

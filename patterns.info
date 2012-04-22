@@ -1,18 +1,19 @@
 name = Patterns
-description = Enables extremely simple adding/removing features to your site with minimal to no configuration.
+description = Enables simple adding/removing features to your site with minimal to no configuration.
 dependencies[] = token
 dependencies[] = libraries
 
 core = 7.x
 version = 7.x-1.x-dev
-build = 7025
-package = Site Setup
+build = 7055
+package = Patterns
 php = 5.2
 
 ; Test Files
 
 ; Core
 files[] = tests/patterns.test
+files[] = tests/general/general.test
 files[] = tests/parser/parser.test
 files[] = tests/importing/importing.test
 

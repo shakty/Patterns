@@ -1,11 +1,14 @@
 <?php
+
 /**
  * @file
  * Installation file for Patterns.
  */
 
-require_once 'includes/config.inc';
-require_once 'includes/io.inc';
+module_load_include('inc', 'patterns', 'includes/variables');
+module_load_include('inc', 'patterns', 'includes/config');
+module_load_include('inc', 'patterns', 'includes/path');
+module_load_include('inc', 'patterns', 'includes/io');
 
 /**
  * Implements hook_install().
@@ -17,13 +20,16 @@ function patterns_install() {
  * Implements hook_uninstall().
  */
 function patterns_uninstall() {
-  // TODO: delete variables
+  $del = db_delete('variable')
+    ->condition('name', 'patterns_%', 'LIKE')
+    ->execute();
 }
 
 /**
  * Implements hook_schema().
  */
 function patterns_schema() {
+
   $schema['patterns'] = array(
     'description' => 'Stores patterns information.',
     'fields' => array(
@@ -39,7 +45,12 @@ function patterns_schema() {
         'default' => '',
         'description' => 'Machine readable name of this pattern.',
       ),
-
+      'format' => array(
+        'type' => 'varchar',
+        'length' => 10,
+        'default' => '',
+        'description' => 'Format of the patterns (XML, YAML, etc.).',
+      ),
       /*
        * STATUSES:
        *
@@ -110,6 +121,18 @@ function patterns_schema() {
 
   return $schema;
 }
+/**
+ * Add format field to {patterns} table.
+ */
+function patterns_update_7026() {
+  $spec = array(
+    'type' => 'varchar',
+    'length' => 10,
+    'default' => '',
+    'description' => 'Format of the patterns (XML, YAML, etc.).',
+  );
+  db_add_field('patterns', 'format', $spec);
+}
 
 /**
  * Implements hook_requirements().
@@ -124,51 +147,33 @@ function patterns_requirements($phase) {
   if (!_patterns_io_is_patterns_dir_ready()) {
       $requirements['pdir'] = array(
         'title'       => t('Patterns files dir writable'),
-        'description' => t("Patterns folder doesn't exist or is not writable: !path", array('!path' => patterns_config_get_files_dir())),
+        'description' => t("Patterns folder doesn't exist or is not writable: !path", array('!path' => patterns_path_get_files_dir())),
         'severity'    => REQUIREMENT_WARNING,
-        'value'       => 'Not writable',
+        'value'       => t('Not writable'),
       );
     }
     else {
       $requirements['pdir'] = array(
         'title'       => t('Patterns files dir'),
         'severity'    => REQUIREMENT_OK,
-        'value'       => 'Writable',
+        'value'       => t('Writable'),
       );
     }
 
   switch ($phase) {
     case 'runtime':
-      $path = libraries_get_path('spyc') . '/spyc.php';
 
-      if (!file_exists($path)) {
-        $requirements['spyc'] = array(
-          'title'       => t('Spyc library (YAML parser)'),
-          'description' => t('Patterns module requires Spyc library for working with YAML patterns. To enable YAML support, download the !spyc package to obtain spyc.php. Create a directory for the library (e.g. sites/all/libraries/spyc/) and place spyc.php there.',
-                              array('!spyc' => l(t('spyc'), 'http://code.google.com/p/spyc/', array('absolute' => TRUE)))),
-          'severity'    => REQUIREMENT_WARNING,
-          'value'       => t('Missing'),
-        );
-      }
-      else {
-        require_once($path);
-        $requirements['spyc'] = array(
-          'title'       => t('Spyc library (YAML parser)'),
-          'severity'    => REQUIREMENT_OK,
-          'value'       => _get_file_phpdoc_version($path),
-        );
-      }
-      
-     if (!ini_get('allow_url_fopen')) {
-       $requirements['allow_url_fopen'] = array(
+      if (!ini_get('allow_url_fopen')) {
+        $requirements['allow_url_fopen'] = array(
           'title'       => t('Patterns import files from remote URL'),
           'description' => t('To import patterns directly from remote URL \'allow_url_fopen\' must be enabled in your PHP configuration.'),
           'severity'    => REQUIREMENT_WARNING,
           'value'       => t('Disabled'),
         );
-     }
-     
+      }
+ 
     break;
   }
   return $requirements;
 }
+

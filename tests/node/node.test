@@ -4,9 +4,9 @@
  * SimpleTests for the Node component of Patterns (Node).
  */
 
-class PatternsNodeTestCase extends PatternRunTestCase {
+class PatternsNodeTestCase extends PatternsTestCase {
 
-  const NODE_TESTS_DIR = 'tests/node/';
+  var $node_tests_dir;
 
   static function getInfo() {
     return array(
@@ -15,7 +15,18 @@ class PatternsNodeTestCase extends PatternRunTestCase {
       'group' => 'Patterns',
     );
   }
-
+	
+  public function setUp() {
+  	$this->node_tests_dir = $this->getPatternsTestDir() . 'node/';
+  	
+    // Enable any modules required for the tests.
+  	$modules = array('patterns_components',
+  							     'patterns_yamlparser',
+		);
+  	 
+    parent::setUp($modules);
+  }
+  
   public function testCreateModifyDelete() {
     $this->testCreate();
     $this->testModify();
@@ -33,7 +44,7 @@ class PatternsNodeTestCase extends PatternRunTestCase {
     $this->assertIdentical($node_count, '0', t('The node should not exist at this point.'));
 
     // Run the pattern.
-    parent::runFile('node.yaml', 'Nodes (create)', PatternsNodeTestCase::NODE_TESTS_DIR);
+    parent::runFile('node.yaml', 'Nodes (create)', $this->node_tests_dir);
 
     // Expected messages.
     $this->assertUniqueText(t('Article Test Article has been created.'));
@@ -49,7 +60,7 @@ class PatternsNodeTestCase extends PatternRunTestCase {
 
   private function testDelete() {
     // Run the pattern.
-    parent::runFile('node_delete.yaml', 'Node (delete)', PatternsNodeTestCase::NODE_TESTS_DIR);
+    parent::runFile('node_delete.yaml', 'Node (delete)', $this->node_tests_dir);
 
     // Expected messages.
     $this->assertUniqueText(t('Article Test Article2 has been deleted.'));
@@ -65,7 +76,7 @@ class PatternsNodeTestCase extends PatternRunTestCase {
 
   private function testModify() {
     // Run the pattern.
-    parent::runFile('node_modify.yaml', 'Node (modify)', PatternsNodeTestCase::NODE_TESTS_DIR);
+    parent::runFile('node_modify.yaml', 'Node (modify)', $this->node_tests_dir);
 
     // Expected messages.
     $this->assertText(t('Article Test Article2 has been updated.'));
