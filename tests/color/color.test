@@ -17,7 +17,7 @@ class PatternsColorTestCase extends PatternsTestCase {
     );
   }
 
-  public function setUp() {
+  public function setUp($modules = array(), $first = FALSE) {
 
     $this->color_tests_dir = $this->getPatternsTestDir() . 'color/';
 

@@ -16,7 +16,7 @@ class PatternsBlockTestCase extends PatternsTestCase {
     );
   }
 
-  public function setUp() {
+  public function setUp($modules = array(), $first = FALSE) {
 
     $this->block_tests_dir = $this->getPatternsTestDir() . 'block/';
 

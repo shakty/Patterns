@@ -17,7 +17,7 @@ class PatternsPathautoTestCase extends PatternsTestCase {
     );
   }
 
-  public function setUp() {
+  public function setUp($modules = array(), $first = FALSE) {
 
     $this->pathauto_tests_dir = $this->getPatternsTestDir() . 'pathauto/';
 

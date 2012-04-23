@@ -17,7 +17,7 @@ class PatternsFieldTestCase extends PatternsTestCase {
     );
   }
 
-  public function setUp() {
+  public function setUp($modules = array(), $first = FALSE) {
 
     $this->field_tests_dir = $this->getPatternsTestDir() . 'field/';
 

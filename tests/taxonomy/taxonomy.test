@@ -16,7 +16,7 @@ class PatternsTaxonomyTestCase extends PatternsTestCase {
     );
   }
 
-  public function setUp() {
+  public function setUp($modules = array(), $first = FALSE) {
 
     $this->taxo_tests_dir = $this->getPatternsTestDir() . 'taxonomy/';
 

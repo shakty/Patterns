@@ -16,7 +16,7 @@ class PatternsParserTestCase extends PatternsTestCase {
     );
   }
 
-  public function setUp() {
+  public function setUp($modules = array(), $first = FALSE) {
 
     $this->parser_tests_dir = $this->getPatternsTestDir() . 'parser/';
     // Enable any modules required for the tests.

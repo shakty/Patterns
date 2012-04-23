@@ -17,7 +17,7 @@ class PatternsUserTestCase extends PatternsTestCase {
     );
   }
 
-  public function setUp() {
+  public function setUp($modules = array(), $first = FALSE) {
 
     $this->user_tests_dir = $this->getPatternsTestDir() . 'user/';
 
