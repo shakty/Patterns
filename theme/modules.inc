@@ -29,25 +29,25 @@ function patterns_modules_page($pid) {
     $module = is_array($module) ? $module['value'] : $module;
     $available = array_key_exists($module, $modules_info);
     $enabled = array_key_exists($module, $modules_list);
-    
+
     $row[] = $module;
     $row[] = $available ? t('Yes') : '<span class="alert">' . t('No') . '</span>';
     $row[] = $enabled ? t('Yes') : '<span class="alert">' . t('No') . '</span>';
-    
+
     if ($available && ! $enabled) {
-    	$row[] = l(t('Enable'), 'admin/patterns/drush/enable/' . $module);
-    	
+      $row[] = l(t('Enable'), 'admin/patterns/drush/enable/' . $module);
+
     }
     elseif (!$available) {
-    	$row[] = l(t('Download and Enable'), 'admin/patterns/drush/dlenable/' . $module);	
+      $row[] = l(t('Download and Enable'), 'admin/patterns/drush/dlenable/' . $module);
     }
     else {
-    	$row[] = '-';
+      $row[] = '-';
     }
-    
-    $row[] = '<span id="action_results"></span>'; 
-    
-    
+
+    $row[] = '<span id="action_results"></span>';
+
+
 
     $rows[] = array('data' => $row);
 
@@ -70,7 +70,10 @@ function patterns_modules_page($pid) {
           array(
             'data' => t('No extra modules are required to run this pattern.'),
             'colspan' => '5',
-     ))));
+          ),
+        ),
+      ),
+    );
 
   }
 

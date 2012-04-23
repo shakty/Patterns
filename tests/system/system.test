@@ -16,18 +16,18 @@ class PatternsSystemTestCase extends PatternsTestCase {
     );
   }
 
-   public function setUp() {
+  public function setUp() {
 
-   	$this->system_tests_dir = $this->getPatternsTestDir() . 'system/';
-   	
+    $this->system_tests_dir = $this->getPatternsTestDir() . 'system/';
+
     // Enable any modules required for the tests.
-  	$modules = array('patterns_components',
-  							     'patterns_yamlparser',
-		);
-  	 
+    $modules = array('patterns_components',
+                     'patterns_yamlparser',
+    );
+
     parent::setUp($modules);
   }
-  
+
   /**
    * Check the database if a module is enabled/disabled.
    * @name Module name
@@ -111,7 +111,7 @@ class PatternsSystemTestCase extends PatternsTestCase {
     // Check for variables after running the pattern.
     $this->assertIdentical(variable_get('cache', NULL), 1, t('cache variable should be 1.'));
     $this->assertIdentical(variable_get('anonymous', NULL), 'Anonymous2', t("Anonymous variable should be 'Anonymous2'."));
-    
+
   }
 
   public function testTheme() {

@@ -11,8 +11,8 @@ function field_patterns($data= NULL) {
     PATTERNS_MODIFY => array('field_ui_field_settings_form'),
     PATTERNS_FILES => $files,
     PATTERNS_EXPORT => array(
-    	PATTERNS_EXPORT_ALL => 'field_patterns_export_all_fields',
-	),
+      PATTERNS_EXPORT_ALL => 'field_patterns_export_all_fields',
+    ),
   );
   $actions['instance'] = array(
     PATTERNS_INFO => t('Create/Modify/Delete field'),
@@ -20,9 +20,9 @@ function field_patterns($data= NULL) {
     PATTERNS_MODIFY => array('field_ui_field_edit_form'),
     PATTERNS_DELETE => array('field_ui_field_delete_form'),
     PATTERNS_FILES => $files,
-   PATTERNS_EXPORT => array(
-    	PATTERNS_EXPORT_ALL => 'field_patterns_export_all_ins',
-	),
+    PATTERNS_EXPORT => array(
+      PATTERNS_EXPORT_ALL => 'field_patterns_export_all_ins',
+    ),
   );
   $actions['field_weight'] = array(
     PATTERNS_INFO => t('Order the fields'),
@@ -44,53 +44,54 @@ function field_patterns_actions($data) {
 }
 
 
-function field_patterns_export_all_ins($args = NULL, &$result = NULL){
-	//$info = field_patterns();
- 	_field_info_collate_fields(true);
- 	 _field_info_collate_types(true);
- 	// $form_id = current($info['instance'][PATTERNS_MODIFY]);
-    $instances = field_read_instances();
-    $result = array();
-    foreach ($instances as $voc) {
-    	$field=(array) field_info_instance($voc['entity_type'], $voc['field_name'], $voc['bundle']);
-	 $data = array('tag' => 'instance');
-   	 $data = array_merge($data, $field);
-	$action = array(PATTERNS_CREATE => $data);
-      array_push($result, $action);
-    }
-     return $result;
+function field_patterns_export_all_ins($args = NULL, &$result = NULL) {
+  //$info = field_patterns();
+  _field_info_collate_fields(true);
+  _field_info_collate_types(true);
+  // $form_id = current($info['instance'][PATTERNS_MODIFY]);
+  $instances = field_read_instances();
+  $result = array();
+  foreach ($instances as $voc) {
+    $field=(array) field_info_instance($voc['entity_type'], $voc['field_name'], $voc['bundle']);
+    $data = array('tag' => 'instance');
+    $data = array_merge($data, $field);
+    $action = array(PATTERNS_CREATE => $data);
+    array_push($result, $action);
+  }
+  return $result;
 
 }
 
-function field_patterns_export_all_fields($args = NULL, &$result = NULL){
-//	$info = field_patterns(NULL);
- 	_field_info_collate_fields(true);
- 	 _field_info_collate_types(true);
- //	 $form_id = current($info['field'][PATTERNS_MODIFY]);
-    $instances = field_read_instances();
-    $result = array();
-    foreach ($instances as $voc) {
-	$voc=(array) $voc;
-       $data = array('tag' => 'field');
-   	 $data = array_merge($data, $voc);
-	$action = array(PATTERNS_MODIFY => $data);
+function field_patterns_export_all_fields($args = NULL, &$result = NULL) {
+  //  $info = field_patterns(NULL);
+  _field_info_collate_fields(true);
+  _field_info_collate_types(true);
+  //  $form_id = current($info['field'][PATTERNS_MODIFY]);
+  $instances = field_read_instances();
+  $result = array();
+  foreach ($instances as $voc) {
+    $voc=(array) $voc;
+    $data = array('tag' => 'field');
+    $data = array_merge($data, $voc);
+    $action = array(PATTERNS_MODIFY => $data);
 
-      array_push($result, $action);
-    }
-     return $result;
+    array_push($result, $action);
+  }
+  return $result;
 
 }
 
-/*function field_patterns_export_all_weight($args = NULL, &$result = NULL){
-//	$info = field_patterns(NULL);
- 	_field_info_collate_fields(true);
- 	 _field_info_collate_types(true);
- //	 $form_id = current($info['field_weight'][PATTERNS_MODIFY]);
+/*
+function field_patterns_export_all_weight($args = NULL, &$result = NULL){
+//  $info = field_patterns(NULL);
+  _field_info_collate_fields(true);
+   _field_info_collate_types(true);
+ //  $form_id = current($info['field_weight'][PATTERNS_MODIFY]);
     $instances = field_read_instances();
     $result = array();
     $returns=array();
     foreach ($instances as $voc) {
-    	 $return = array(
+       $return = array(
         'entity_type' => $voc['entity_type'],
         'bundle' => $voc['bundle'],
       );
@@ -101,15 +102,15 @@ function field_patterns_export_all_fields($args = NULL, &$result = NULL){
           break;
         }
       }
-    	if($j==0){
-    		 array_push($returns, $return);
+      if($j==0){
+         array_push($returns, $return);
 
        $data = array('tag' => 'field_weight');
-   	 $data = array_merge($data, $return);
-	$action = array(PATTERNS_CREATE => $data);
+     $data = array_merge($data, $return);
+  $action = array(PATTERNS_CREATE => $data);
 
       array_push($result, $action);
-    	}
+      }
 
     }
      return $result;
@@ -217,7 +218,7 @@ function field_patterns_validate($action, $tag, &$data) {
     }
   }
   if ($tag == 'instance') {
-    $exist = db_query("SELECT COUNT(*) FROM {field_config_instance} WHERE field_name = :name and entity_type = :type and bundle = :bundle", array('bundle' => $data['bundle'], 'type' => $data['entity_type'], 'name' => $data['field_name']))->fetchField();
+    $exist = db_query("SELECT COUNT(*) FROM {field_config_instance} WHERE field_name = :name and entity_type = :type and bundle = :bundle", array('bundle' => $data['bundle'], 'type' => $data['entity_type'], 'name' => $data['field_name']))->fetchField(); // TODO: count()
     if (!isset($data['field_name'])) {
       $status = PATTERNS_ERR;
       $msg = t('FieldException: Field name is required.');
@@ -278,20 +279,20 @@ function field_patterns_params($action, $form_id, &$data) {
     /*
      * delete all the field instance with the field_name
      * $fname = $data['field_name'];
-     $instance = db_query("SELECT * FROM {field_config_instance} WHERE field_name = :fname", array('fname' => $fname))->fetchAssoc();
+    $instance = db_query("SELECT * FROM {field_config_instance} WHERE field_name = :fname", array('fname' => $fname))->fetchAssoc();
      */
     $result = array(array(
-        'bundle' => $data['bundle'],
-        'entity_type' => $data['entity_type'],
-        'field_name' => $data['field_name'],
-      ));
+      'bundle' => $data['bundle'],
+      'entity_type' => $data['entity_type'],
+      'field_name' => $data['field_name'],
+    ));
   }
   elseif ($form_id == 'field_ui_field_settings_form') {
     $result = array(array(
-        'bundle' => $data['bundle'],
-        'entity_type' => $data['entity_type'],
-        'field_name' => $data['field_name'],
-      ));
+      'bundle' => $data['bundle'],
+      'entity_type' => $data['entity_type'],
+      'field_name' => $data['field_name'],
+    ));
   }
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
@@ -348,7 +349,7 @@ function _field_patterns_prepare_instance($action, $data) {
      }
      else {
      $data['fields'][$EXISTING]['parent'] = $default_parent;
-     }*/
+    }*/
 
     // TYPE
     if (isset($data['type'])) {
@@ -371,14 +372,14 @@ function _field_patterns_prepare_instance($action, $data) {
 
       switch ($data['widget']) {
 
-        case 'autocomplete':
-          $w = 'taxonomy_autocomplete';
-          break;
-        case 'buttons':
-          $w = 'options_buttons';
-          break;
-        default:
-          $w = $data['widget'];
+      case 'autocomplete':
+        $w = 'taxonomy_autocomplete';
+        break;
+      case 'buttons':
+        $w = 'options_buttons';
+        break;
+      default:
+        $w = $data['widget'];
       }
       $data['fields'][$EXISTING]['widget_type'] = $w;
       unset($data['widget']);

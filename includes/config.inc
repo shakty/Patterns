@@ -30,11 +30,11 @@ function patterns_permission() {
  * @TODO proper doc.
  */
 function patterns_config_settings($form, &$form_state) {
-  
-	$text = 'Configure the behavior of Patterns.';
-	$title = 'Patterns settings';
+
+  $text = 'Configure the behavior of Patterns.';
+  $title = 'Patterns settings';
   patterns_forms_add_page_header($form, $title, $text);
-	
+
   $form['exec'] = array(
     '#type' => 'fieldset',
     '#title' => t('File system options'),
@@ -55,11 +55,11 @@ function patterns_config_settings($form, &$form_state) {
     '#title' => t('Included patterns'),
     '#description' => t('Default behavior with included patterns. This option can be overwritten inside the pattern code.'),
     '#options' => array(PATTERNS_INCLUDE_NEVER => t('Never run'),
-                   PATTERNS_INCLUDE_FIRSTRUN => t('Only during the first run'),
-                   PATTERNS_INCLUDE_UPDATE => t('Only if pattern was updated'),
-                   PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE => t('If it is the first run or if the pattern was updated'),
-                   PATTERNS_INCLUDE_ATTACHED => t('Only if the pattern code is attached (no lookup to database)'),
-                   PATTERNS_INCLUDE_ALWAYS => t('Always'),
+                        PATTERNS_INCLUDE_FIRSTRUN => t('Only during the first run'),
+                        PATTERNS_INCLUDE_UPDATE => t('Only if pattern was updated'),
+                        PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE => t('If it is the first run or if the pattern was updated'),
+                        PATTERNS_INCLUDE_ATTACHED => t('Only if the pattern code is attached (no lookup to database)'),
+                        PATTERNS_INCLUDE_ALWAYS => t('Always'),
     ),
     '#default_value' => patterns_get_include_mode(),
   );
@@ -105,14 +105,14 @@ function patterns_config_settings($form, &$form_state) {
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
-  
+
   $form['sharing']['patterns_allow_publish'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable sharing of patterns'),
     '#description' => t('If selected, patterns can be shared with others web sites.'),
     '#default_value' => variable_get('patterns_allow_publish', PATTERNS_ALLOW_PUBLISH_DEFAULT),
   );
-  
+
   $form['sharing']['patterns_public_url'] = array(
     '#type' => 'textfield',
     '#title' => t('Enable patterns public page'),
@@ -127,14 +127,14 @@ function patterns_config_settings($form, &$form_state) {
     '#collapsed' => FALSE,
 
   );
-  
+
   $form['drush']['patterns_drush_path'] = array(
-	  '#type' => 'textfield',
-	  '#title' => t('Drush Path'),
-	  '#description' => t('If you have drush installed, please specify the path. Otherwise leave it empty'),
-	  '#required' => FALSE,
-	);
-  
+    '#type' => 'textfield',
+    '#title' => t('Drush Path'),
+    '#description' => t('If you have drush installed, please specify the path. Otherwise leave it empty'),
+    '#required' => FALSE,
+  );
+
   $form['other'] = array(
     '#type' => 'fieldset',
     '#title' => t('Other'),

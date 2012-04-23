@@ -98,41 +98,41 @@ function patterns_menu() {
 
   $first_install = variable_get(PATTERNS_FIRST_INSTALL, TRUE);
   if ($first_install) {
-  	module_load_include('inc', 'patterns', 'includes/forms/first_install');
+    module_load_include('inc', 'patterns', 'includes/forms/first_install');
 
-  	$items['admin/patterns'] = array(
-	    'title' => 'Patterns',
-	    'description' => 'Patterns was just installed or important updates have been found',
-	    'page callback' => 'patterns_first_install_page',
-	    'access arguments' => array('administer patterns'),
-  	);
-  	
-  	return $items;
+    $items['admin/patterns'] = array(
+      'title' => 'Patterns',
+      'description' => 'Patterns was just installed or important updates have been found',
+      'page callback' => 'patterns_first_install_page',
+      'access arguments' => array('administer patterns'),
+    );
+
+    return $items;
   }
-  
-  
+
+
   $items['admin/patterns'] = array(
     'title' => 'Patterns',
     'description' => 'Administer patterns available for your site',
     'page callback' => 'patterns_list',
     'access arguments' => array('administer patterns'),
   );
-  
+
   $items['admin/patterns/list'] = array(
     'title' => 'List',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
   );
-  
+
   if (patterns_utils_is_public_page_enabled()) {
     $items[variable_get('patterns_public_url', '')] = array(
-	    'title' => 'Public',
-	    'type' => MENU_LOCAL_TASK,
-    	'description' => 'Patterns',
+      'title' => 'Public',
+      'type' => MENU_LOCAL_TASK,
+      'description' => 'Patterns',
       'page callback' => 'patterns_list_public',
-    	'access arguments' => array('public patterns'),
-	    'weight' => -9,
-	  );
+      'access arguments' => array('public patterns'),
+      'weight' => -9,
+    );
   }
 
   // MAIN ROUTES
@@ -307,7 +307,7 @@ function patterns_menu() {
     'title' => 'Info',
     'page callback' => 'patterns_info_page',
     'access arguments' => array('administer patterns'),
-  	'weight' => 15,
+    'weight' => 15,
     'type' => MENU_LOCAL_TASK,
   );
 
@@ -359,8 +359,8 @@ function patterns_menu() {
  */
 function patterns_list() {
 
-	drupal_add_js('misc/ajax.js');
-	  
+  drupal_add_js('misc/ajax.js');
+
   drupal_add_css(drupal_get_path('module', 'patterns') . '/css/patterns.css');
   drupal_add_js(drupal_get_path('module', 'patterns') . '/js/patterns.js');
 
@@ -373,8 +373,8 @@ function patterns_list() {
     '#type' => 'button',
     '#value' => t('Refresh All'),
     '#attributes' => array('style' => 'float:right',
-                           'id' => 'refresh-all',
-                           ),
+                            'id' => 'refresh-all',
+                          ),
   );
 
   $form['commands']['create'] = array(
@@ -690,7 +690,7 @@ function patterns_start_engine($pattern, $params = array(), $mode = 'batch') {
 
   // Disable the modules enabled just for executing the pattern
   if (!empty($installed_modules['installed'])) {
-  	patterns_disable_modules($installed_modules['installed']);
+    patterns_disable_modules($installed_modules['installed']);
   }
 
   return TRUE;

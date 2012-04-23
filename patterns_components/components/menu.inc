@@ -13,20 +13,18 @@ function menu_patterns($data) {
     PATTERNS_MODIFY => array('menu_edit_menu'),
     PATTERNS_DELETE => array('menu_delete_menu_confirm'),
     PATTERNS_FILES => $files,
-    PATTERNS_EXPORT => array(
-                              PATTERNS_EXPORT_ALL => 'menu_patterns_export_all_menu',
-                             ), 
+    PATTERNS_EXPORT => array(PATTERNS_EXPORT_ALL => 'menu_patterns_export_all_menu',
+                          ),
   );
-  
+
   $actions['menu_item'] = array(
     PATTERNS_INFO => t('Create/Modify/Delete menu item'),
     PATTERNS_CREATE => array('menu_edit_item'),
     PATTERNS_MODIFY => array('menu_edit_item'),
     PATTERNS_DELETE => array('menu_item_delete_form'),
     PATTERNS_FILES => $files,
-    PATTERNS_EXPORT => array(
-                             PATTERNS_EXPORT_ALL => 'menu_patterns_export_all_menu_item',
-                       ),
+    PATTERNS_EXPORT => array(PATTERNS_EXPORT_ALL => 'menu_patterns_export_all_menu_item',
+                          ),
   );
 
   return $actions;
@@ -106,49 +104,50 @@ function menu_patterns_prepare($action, $tag, &$data) {
   }
   return patterns_results();
 }
-/*menu export from api extract function */
-
+/*
+ * Menu export from API extract function.
+ */
 function menu_patterns_export_all_menu($args = NULL, &$result = NULL) {
- //	$info = menu_patterns($data=NULL);
- //	$form_id = current($info['menu'][PATTERNS_MODIFY]);
-	$menus = db_query("SELECT * FROM {menu_custom} ORDER BY title", array(), array('fetch' => PDO::FETCH_ASSOC));
-	$result = array();
-	foreach ($menus as $menu) {
-		$menu = (array) $menu;
-		$data = array('tag' => 'menu');
-		$data = array_merge($data, $menu);
-		$action = array(PATTERNS_CREATE => $menu);
-		array_push($result, $action);
-		// It is important to user array merge. Pushing is not enough
-		//$result = array_merge($result, patterns_api_extract_actions($form_id, $menu, 'menu', PATTERNS_MODIFY));
-	}
-	return $result;
+ // $info = menu_patterns($data=NULL);
+ // $form_id = current($info['menu'][PATTERNS_MODIFY]);
+  $menus = db_query("SELECT * FROM {menu_custom} ORDER BY title", array(), array('fetch' => PDO::FETCH_ASSOC));
+  $result = array();
+  foreach ($menus as $menu) {
+    $menu = (array) $menu;
+    $data = array('tag' => 'menu');
+    $data = array_merge($data, $menu);
+    $action = array(PATTERNS_CREATE => $menu);
+    array_push($result, $action);
+    // It is important to user array merge. Pushing is not enough
+    //$result = array_merge($result, patterns_api_extract_actions($form_id, $menu, 'menu', PATTERNS_MODIFY));
+  }
+  return $result;
 }
 
 function menu_patterns_export_all_menu_item($args = NULL, &$result = NULL) {
-	//$info = menu_patterns($data=NULL);
-	//$form_id = current($info['menu_item'][PATTERNS_MODIFY]);
-	$menu_items = db_query("SELECT * FROM {menu_links} ORDER BY link_title", array(), array('fetch' => PDO::FETCH_ASSOC));
-	$result = array();
-	$i = 0;
-	foreach ($menu_items as $menu_item) {
-		$i ++;
-		$menu_item = (array) $menu_item;
-		if ($menu_item['link_title'] == '') {
-			$menu_item['link_title'] = 'null';
-		}
-		$menu_item['options'] = unserialize($menu_item['options']);
-		$menu_item['href'] = "";
-		
-		
-		$data = array('tag' => 'menu_item');
-		$data = array_merge($data, $menu_item);
-		$action = array(PATTERNS_CREATE => $menu_item);
-		array_push($result, $action);
-		// It is important to user array merge. Pushing is not enough
-		//$result = array_merge($result, patterns_api_extract_actions($form_id, $menu_item, 'menu_item', PATTERNS_MODIFY));
-	}
-	return $result;
+  //$info = menu_patterns($data=NULL);
+  //$form_id = current($info['menu_item'][PATTERNS_MODIFY]);
+  $menu_items = db_query("SELECT * FROM {menu_links} ORDER BY link_title", array(), array('fetch' => PDO::FETCH_ASSOC));
+  $result = array();
+  $i = 0;
+  foreach ($menu_items as $menu_item) {
+    $i ++;
+    $menu_item = (array) $menu_item;
+    if ($menu_item['link_title'] == '') {
+      $menu_item['link_title'] = 'null';
+    }
+    $menu_item['options'] = unserialize($menu_item['options']);
+    $menu_item['href'] = "";
+
+
+    $data = array('tag' => 'menu_item');
+    $data = array_merge($data, $menu_item);
+    $action = array(PATTERNS_CREATE => $menu_item);
+    array_push($result, $action);
+    // It is important to user array merge. Pushing is not enough
+    //$result = array_merge($result, patterns_api_extract_actions($form_id, $menu_item, 'menu_item', PATTERNS_MODIFY));
+  }
+  return $result;
 }
 
 function menu_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE) {
@@ -202,7 +201,7 @@ function menu_patterns_validate($action, $tag, &$data) {
       $msg = t('The menu name may only consist of lowercase letters, numbers, and hyphens: %menu', array('%menu' => $data['menu_name']));
     }
     else {
-      $count = db_query("SELECT COUNT(*) FROM {menu_custom} WHERE menu_name = :menu", array('menu' => $data['menu_name']))->fetchField();
+      $count = db_query("SELECT COUNT(*) FROM {menu_custom} WHERE menu_name = :menu", array('menu' => $data['menu_name']))->fetchField(); // TODO: count()
       if ($action == PATTERNS_DELETE && !$count) {
         $status = PATTERNS_ERR;
         $msg = t('Attempt to delete a nonexistent menu');
@@ -212,7 +211,7 @@ function menu_patterns_validate($action, $tag, &$data) {
         $msg = t('Attempt to update a nonexistent menu');
       }
       elseif ($action == PATTERNS_CREATE ) {
-        $count = db_query("SELECT COUNT(*) FROM {menu_custom} WHERE menu_name = :menu", array('menu' => 'menu-' . $data['menu_name']))->fetchField();
+        $count = db_query("SELECT COUNT(*) FROM {menu_custom} WHERE menu_name = :menu", array('menu' => 'menu-' . $data['menu_name']))->fetchField(); // TODO: count()
         if ($count) {
           $status = PATTERNS_ERR;
           $msg = t('The machine-readable menu name is already in use. It must be unique.');
@@ -252,7 +251,7 @@ function menu_patterns_validate($action, $tag, &$data) {
     }
     if (!empty($data['parent']) && $action !== PATTERNS_DELETE) {
       list($menu_name, $mlid) = explode(':', $data['parent']);
-      if ($mlid != 0 && !db_query("SELECT count(*) FROM {menu_links} WHERE menu_name = :menu AND mlid = :mlid", array('menu' => $menu_name, 'mlid' => $mlid))->fetchField()) {
+      if ($mlid != 0 && !db_query("SELECT count(*) FROM {menu_links} WHERE menu_name = :menu AND mlid = :mlid", array('menu' => $menu_name, 'mlid' => $mlid))->fetchField()) { // TODO: count()
         $status = PATTERNS_ERR;
         $msg = t('"parent" is not valid.');
       }
@@ -315,7 +314,8 @@ function menu_patterns_callbacks($action, $tag, &$data) {
   return patterns_results(PATTERNS_SUCCESS, t('Execution successful'), $result);
 }
 
-/*function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
+/*
+ function menu_patterns($op, $id = NULL, &$data = NULL, &$a = NULL) {
  switch ($op) {
  // Return the valid tags that this component can prepare and process
  case 'tags':

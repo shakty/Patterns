@@ -17,16 +17,16 @@ class PatternsFieldTestCase extends PatternsTestCase {
     );
   }
 
-   public function setUp() {
+  public function setUp() {
 
-   	$this->field_tests_dir = $this->getPatternsTestDir() . 'field/';
-   	
+    $this->field_tests_dir = $this->getPatternsTestDir() . 'field/';
+
     // Enable any modules required for the tests.
-  	$modules = array('patterns_components',
-  							     'patterns_yamlparser',
-  									 'date',
-		);
-  	 
+    $modules = array('patterns_components',
+                     'patterns_yamlparser',
+                     'date',
+    );
+
     parent::setUp($modules);
   }
 
@@ -89,12 +89,12 @@ class PatternsFieldTestCase extends PatternsTestCase {
   public function testDate() {
     // make sure the date module has been downloaded.
     // Make sure that matches the name in the pattern file
-    
-  	if (!patterns_utils_is_module_enabled('date')) {
-  		$this->fail('Date module not found. Skipping all related tests');
-  		return;
-  	}
-  	
+
+    if (!patterns_utils_is_module_enabled('date')) {
+      $this->fail('Date module not found. Skipping all related tests');
+      return;
+    }
+
     $entity_type = 'node';
     $name = 'field_date';
     $bundle_name = 'article';
@@ -112,7 +112,7 @@ class PatternsFieldTestCase extends PatternsTestCase {
 
     // modify the instance
     parent::runFile('date_field_modify.yaml', 'Modify date fields', $this->field_tests_dir);
-    //	break;
+    //  break;
     _field_info_collate_fields(true);
     _field_info_collate_types(true);
     $inst = field_info_instance($entity_type, $name, $bundle_name);

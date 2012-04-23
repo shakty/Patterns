@@ -61,7 +61,7 @@ function patterns_d2d_push_patterns_client($patterns) {
     */
     $content = file_get_contents($pattern->file);
     if ($content === FALSE) {
-      drupal_set_message(t('Pattern') . ' ' . check_plain($name) . ' ' . t('could not be processed'), 'error');
+      drupal_set_message(t('Pattern') . ' ' . check_plain($name) . ' ' . t('could not be processed'), 'error'); // TODO: proper t()
       continue;
     }
     $imploded_pattern = drupaltodrupal_implode(
@@ -88,6 +88,6 @@ function patterns_d2d_push_patterns_client($patterns) {
     drupal_set_message(check_plain($url) . ' - ' . check_plain($error_string), 'error');
   }
   else {
-    drupal_set_message('Upload to server successful.<br/>' . check_plain($url) . ' - ' . check_plain($res));
+    drupal_set_message('Upload to server successful.<br/>' . check_plain($url) . ' - ' . check_plain($res)); // TODO: proper t()
   }
 }

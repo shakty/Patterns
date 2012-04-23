@@ -165,7 +165,7 @@ function patterns_import_server_submit($form, &$form_state) {
       }
       $patterns = theme('item_list', array('items' => $patterns)); // TODO: ???
     }
-    drupal_set_message(t('Import failed for the following patterns:') . '<br/>' . $patterns, 'error');
+    drupal_set_message(t('Import failed for the following patterns:') . '<br/>' . $patterns, 'error'); // TODO: proper t()
     return;
   }
 
@@ -176,16 +176,16 @@ function patterns_import_server_submit($form, &$form_state) {
 
 /**
  * Callback function for route /admin/patterns/publish/
- * 
- * Sets the flag public to TRUE in the database and invokes the 
+ *
+ * Sets the flag public to TRUE in the database and invokes the
  * hook_patterns_publish in all the modules implementing it.
- * 
+ *
  * Redirects the user to the patterns home.
- * 
+ *
  * @param mixed $pattern the id or the name of the pattern.
  */
 function patterns_publish_pattern($pattern) {
-	
+
   $pattern = patterns_utils_if_invalid_go_back($pattern);
   $result = patterns_db_publish_pattern($pattern);
 
@@ -195,22 +195,22 @@ function patterns_publish_pattern($pattern) {
   else {
     drupal_set_message(t('An error occurred. Unable to mark pattern %pattern as public.', array('%pattern' => @$pattern->name)), 'error');
   }
-  
+
   // Patterns API
   // Invoke all the modules who wants to do something with the published pattern
   module_invoke_all('patterns_publish', $pattern);
-  
+
   drupal_goto('admin/patterns');
 }
 
 /**
  * Callback function for route /admin/patterns/unpublish/
- * 
- * Sets the flag public to FALSE in the database and invokes the 
+ *
+ * Sets the flag public to FALSE in the database and invokes the
  * hook_patterns_unpublish in all the modules implementing it.
- * 
+ *
  * Redirects the user to the patterns home.
- * 
+ *
  * @param mixed $pattern the id or the name of the pattern.
  */
 function patterns_unpublish_pattern($pattern) {
@@ -226,6 +226,6 @@ function patterns_unpublish_pattern($pattern) {
   // Patterns API
   // Invoke all the modules who wants to do something with the unpublished pattern
   module_invoke_all('patterns_unpublish', $pattern);
-  
+
   drupal_goto('admin/patterns');
 }

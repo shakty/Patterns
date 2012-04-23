@@ -14,11 +14,11 @@ module_load_include('inc', 'patterns', 'includes/forms/info');
 
 
 function patterns_forms_add_page_header(&$form, $title, $text = '') {
-	  $form['header'] = array (
-		'#markup' => t($text),
-		'#prefix' => '<div id="intro_export"><strong>' . t($title) . ': </strong>',
-		'#suffix' => '<hr><br/></div>',
-	);
+    $form['header'] = array(
+    '#markup' => t($text),
+    '#prefix' => '<div id="intro_export"><strong>' . t($title) . ': </strong>',
+    '#suffix' => '<hr><br/></div>',
+  );
 }
 
 /**
@@ -34,11 +34,11 @@ function patterns_forms_add_page_header(&$form, $title, $text = '') {
 function patterns_forms_get_execution_options($form = array()) {
 
   $form['options'] = array(
-	    '#type' => 'fieldset',
-	    '#title' => t('Options'),
-	    '#collapsible' => TRUE,
-	    '#collapsed' => TRUE,
-	);
+      '#type' => 'fieldset',
+      '#title' => t('Options'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+  );
 
   $options_mode = array(
     'extend' => t('Extend'),
@@ -68,13 +68,13 @@ function patterns_forms_get_execution_options($form = array()) {
     '#element_validate' => array('patterns_mode_validate'),
   );
 
-  $options = array(PATTERNS_INCLUDE_NEVER => t('Never run'),
-                   PATTERNS_INCLUDE_FIRSTRUN => t('Only during the first run'),
-                   PATTERNS_INCLUDE_UPDATE => t('Only if pattern was updated'),
-                   PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE => t('If it is the first run or if the pattern was updated'),
-                   PATTERNS_INCLUDE_ATTACHED => t('Only if the pattern code is attached (no lookup to database)'),
-                   PATTERNS_INCLUDE_ALWAYS => t('Always'),
-  );
+  $options = array( PATTERNS_INCLUDE_NEVER => t('Never run'),
+                    PATTERNS_INCLUDE_FIRSTRUN => t('Only during the first run'),
+                    PATTERNS_INCLUDE_UPDATE => t('Only if pattern was updated'),
+                    PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE => t('If it is the first run or if the pattern was updated'),
+                    PATTERNS_INCLUDE_ATTACHED => t('Only if the pattern code is attached (no lookup to database)'),
+                    PATTERNS_INCLUDE_ALWAYS => t('Always'),
+                  );
 
   $form['options']['run-subpatterns'] = array(
     '#type' => 'radios',
@@ -96,8 +96,8 @@ function patterns_forms_get_execution_options($form = array()) {
  * @param mixed $default (optional) The default value for the selector.
  *   Default PATTERNS_FORMAT_UNKNOWN.
  * @param bool $unknown (optional) If TRUE PATTERNS_FORMAT_UNKNOWN is added
- *   to the 'available' formats. Default TRUE. 
- *   
+ *   to the 'available' formats. Default TRUE.
+ *
  * @return array $form The form containing the select element.
  *
  */
@@ -105,7 +105,7 @@ function patterns_forms_get_formats_selector(&$form = array(), $default = PATTER
 
   $descr = (is_null($descr)) ? t('Pattern will be validated and run against this format.') : t($descr);
   $formats = ($unknown) ? array(PATTERNS_FORMAT_UNKNOWN => PATTERNS_FORMAT_UNKNOWN)
-  											: array();
+                        : array();
   $available_formats = patterns_parser_get_formats();
   if (!empty($available_formats)) {
     $formats = array_merge($formats, array_combine($available_formats, $available_formats));
@@ -116,75 +116,75 @@ function patterns_forms_get_formats_selector(&$form = array(), $default = PATTER
     '#title' => t('Pattern syntax'),
     '#options' => $formats,
     '#default_value' => $default,
-	  '#description' => $descr,
+    '#description' => $descr,
   );
 
   return $form;
 }
 
 /**
- * Returns a default format, according to the 
+ * Returns a default format, according to the
  * available parsers. In the following order returns:
- * YAML, XML, PHP, ''.  
- * 
+ * YAML, XML, PHP, ''.
+ *
  * @return mixed String A default value for a form selector
  */
 function patterns_forms_get_default_format() {
-	
-	if (defined('PATTERNS_FORMAT_YAML')) { 
-		return PATTERNS_FORMAT_YAML; 
-	}
-	if (defined('PATTERNS_FORMAT_XML')) {
-		return PATTERNS_FORMAT_XML;
-	}
-	if (defined('PATTERNS_FORMAT_PHP')) { 
-		return PATTERNS_FORMAT_PHP; 
-	}
-	
-	return '';
+
+  if (defined('PATTERNS_FORMAT_YAML')) {
+    return PATTERNS_FORMAT_YAML;
+  }
+  if (defined('PATTERNS_FORMAT_XML')) {
+    return PATTERNS_FORMAT_XML;
+  }
+  if (defined('PATTERNS_FORMAT_PHP')) {
+    return PATTERNS_FORMAT_PHP;
+  }
+
+  return '';
 }
 
 function patterns_forms_parser_ready($form = array(), $parser = NULL) {
-	if (!patterns_parser_ready()) {
-		$forms['noparser'] = array (
-			'#markup' => t('Warning: no valid parser found. Please enable some of the from the interface'),
-		);
-	}
+  if (!patterns_parser_ready()) {
+    $forms['noparser'] = array(
+      '#markup' => t('Warning: no valid parser found. Please enable some of the from the interface'),
+    );
+  }
 }
 
 
 function patterns_forms_get_info_section(&$form = array(), $info = array(), $options = array()) {
-	$info = array_merge($info, patterns_api_add_info_section($info));
-	$collapsed = (isset($options['collapsed']) && $options['collapsed'] == TRUE) ? TRUE : FALSE; 
-	$form['info'] = array(
-		'#type' => 'fieldset',
-	  '#title' => 'Info Section',
-  	'#collapsible' => TRUE,
-    '#collapsed' => $collapsed, 
-		'#tree' => TRUE, 
-	);
-	
-	foreach ($info['info'] as $i => $value) {
-		$form['info'][$i] = array(
-	  	'#type' => 'textfield',
-	  	'#title' => t($i),
-	  	'#required' => TRUE,
-			'#default_value' => $value, 
-		);
-	}
-	
-	return $form;
+  $info = array_merge($info, patterns_api_add_info_section($info));
+  $collapsed = (isset($options['collapsed']) && $options['collapsed'] == TRUE) ? TRUE : FALSE;
+  $form['info'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Info Section',
+    '#collapsible' => TRUE,
+    '#collapsed' => $collapsed,
+    '#tree' => TRUE,
+  );
+
+  foreach ($info['info'] as $i => $value) {
+    $form['info'][$i] = array(
+      '#type' => 'textfield',
+      '#title' => t($i),
+      '#required' => TRUE,
+      '#default_value' => $value,
+    );
+  }
+
+  return $form;
 }
 
 
 function patterns_forms_get_name_selector(&$form = array(), $default = NULL, $options = array()) {
-	 
-	$form['pattern_name'] = array(
+
+  $form['pattern_name'] = array(
     '#type' => 'textfield',
     '#title' => t('Name of the pattern file'),
     '#default_value' => t('pattern') . '_' . strval(time()),
   );
-  
+
   return $form;
 }
 

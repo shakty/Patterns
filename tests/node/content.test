@@ -15,15 +15,15 @@ class PatternsContentTypeTestCase extends PatternsTestCase {
       'group' => 'Patterns',
     );
   }
-  
-	public function setUp() {
 
-   	$this->node_tests_dir = $this->getPatternsTestDir() . 'node/';
+  public function setUp() {
+
+    $this->node_tests_dir = $this->getPatternsTestDir() . 'node/';
     // Enable any modules required for the tests.
-  	$modules = array('patterns_components',
-  							     'patterns_yamlparser',
-		);
-  	 
+    $modules = array('patterns_components',
+                     'patterns_yamlparser',
+    );
+
     parent::setUp($modules);
   }
 

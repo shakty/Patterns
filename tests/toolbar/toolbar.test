@@ -17,15 +17,15 @@ class PatternsToolbarTestCase extends PatternsTestCase {
     );
   }
 
-   public function setUp() { 	
-   	
-   	$this->toolbar_tests_dir = $this->getPatternsTestDir() . 'toolbar/';
-   	
+  public function setUp() {
+
+    $this->toolbar_tests_dir = $this->getPatternsTestDir() . 'toolbar/';
+
     // Enable any modules required for the tests.
-  	$modules = array('patterns_components',
-  							     'patterns_yamlparser',
-		);
-  	 
+    $modules = array('patterns_components',
+                     'patterns_yamlparser',
+    );
+
     parent::setUp($modules);
     //$this->adm_user = $this->drupalCreateUser(array('administer site configuration'));
     //$this->drupalLogin($this->adm_user);

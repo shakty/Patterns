@@ -15,20 +15,20 @@ class PatternsGeneralTestCase extends PatternsTestCase {
   }
 
   public function setUp($user_modules = array(), $first = FALSE) {
-  	
+
     $modules = array('patterns_yamlparser');
-  	
+
     // Enable any modules required for the tests.
     parent::setUp($modules);
-  	
+
     // TODO: how to ensure that Spyc is installed?
 
     // Create users.
     $this->adm_user = $this->drupalCreateUser(array('administer site configuration'));
     $this->pat_user = $this->drupalCreateUser(array('administer patterns'));
     $this->std_user = $this->drupalCreateUser(array());
-    
-    
+
+
   }
 
   // TODO: move this inside a YAML Parser test
@@ -58,7 +58,7 @@ class PatternsGeneralTestCase extends PatternsTestCase {
     $this->drupalLogin($this->std_user);
     $this->verifyAccess(403);
   }
-  
+
   /**
    * Verify the logged in user has the desired access to the various menu nodes.
    *
@@ -72,11 +72,11 @@ class PatternsGeneralTestCase extends PatternsTestCase {
       $this->checkPage();
       //$this->assertTitle('Patterns | Drupal');
       $this->assertUniqueText(t('Commands'), t('Patterns commands loaded'));
-      $this->assertUniqueText(t('No patterns available.'), t('No patterns found (correctly!)')); 
+      $this->assertUniqueText(t('No patterns available.'), t('No patterns found (correctly!)'));
       $this->assertUniqueText(t('Removed Patterns'), t('Patterns trash bin loaded'));
     }
   }
-  
+
   private function checkPage() {
     // TODO: regexp?
     // TODO: do this better?
@@ -84,7 +84,7 @@ class PatternsGeneralTestCase extends PatternsTestCase {
     $this->assertNoText(t('Warning'), t('There should be no warnings.'));
     $this->assertNoText(t('Notice'), t('There should be no notices.'));
   }
-  
+
   private function spycAvailable() {
     $path = libraries_get_path('spyc') . '/spyc.php';
     if (!file_exists($path)) {
@@ -92,9 +92,9 @@ class PatternsGeneralTestCase extends PatternsTestCase {
     }
     return TRUE;
   }
-  
+
 }
-  
+
 /*
    // TODO: Temporarily disabled until we find a better way of doing this.
 

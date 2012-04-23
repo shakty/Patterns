@@ -22,7 +22,7 @@ function patterns_theme() {
       'variables' => array(
                      'patterns' => array(),
                      'invalid' => array(),
-                     ),
+                    ),
     ),
     'patterns_patterns_fieldset' => array(
       'render element' => 'form',
@@ -92,11 +92,11 @@ function theme_patterns_list($args) {
   $patterns_title = '<div id="all_patterns_div">';
 
   if (!patterns_utils_is_public_page_enabled()) {
-  	if (!patterns_parser_ready()) {
-  		$patterns_title.= t('No available patterns parser was found. Please enable one from the Modules page.');	
-  	}  
+    if (!patterns_parser_ready()) {
+      $patterns_title .= t('No available patterns parser was found. Please enable one from the Modules page.');
+    }
   }
-  
+
   $form['patterns'] = array(
     '#prefix' => $patterns_title,
     '#suffix' => ' </div>',
@@ -110,47 +110,47 @@ function theme_patterns_list($args) {
   else {
 
     foreach ($patterns as $pid => $pattern) {
-	
-    	if (patterns_utils_is_public_page()) {
-    		if (!$pattern->public) {
-    			continue;
-    		}
-    	}
-    	
+
+      if (patterns_utils_is_public_page()) {
+        if (!$pattern->public) {
+          continue;
+        }
+      }
+
       $category = $pattern->info['category'] ? $pattern->info['category'] : t('Other');
-      
-	    $form['patterns'][$category][] = _patterns_pattern_build_row($pid, $pattern);
-	      $form['patterns'][$category] += array(
-	        '#type' => 'fieldset',
-	        '#title' => $category,
-	        '#collapsible' => TRUE,
-	        '#collapsed' => TRUE,
-	        '#theme' => 'patterns_patterns_fieldset',
-	        '#header' => array(
-	          array('data' => t('Enabled'), 'class' => array('checkbox')),
-	            t('Format'),
-	            t('Name'),
-	            t('Title'),
-	            t('Version'),
-	            t('Description'),
-	          array('data' => t('Operations'), 'colspan' => 7),
-	        ),
-	      );
+
+      $form['patterns'][$category][] = _patterns_pattern_build_row($pid, $pattern);
+        $form['patterns'][$category] += array(
+          '#type' => 'fieldset',
+          '#title' => $category,
+          '#collapsible' => TRUE,
+          '#collapsed' => TRUE,
+          '#theme' => 'patterns_patterns_fieldset',
+          '#header' => array(
+            array('data' => t('Enabled'), 'class' => array('checkbox')),
+              t('Format'),
+              t('Name'),
+              t('Title'),
+              t('Version'),
+              t('Description'),
+            array('data' => t('Operations'), 'colspan' => 7),
+          ),
+        );
     }
   }
 
 
   // Page finishes here if this is the public
   if (patterns_utils_is_public_page()) {
-  	return drupal_render($form);
+    return drupal_render($form);
   }
-  
+
   $form['removed'] = array(
     '#prefix' => '<div id="removed_patterns_div"><h3>' . t('Removed Patterns') . '</h3>',
     '#suffix' => ' </div>',
     '#tree' => TRUE,
   );
-  
+
   if (empty($removed)) {
     $form['removed']['#markup'] = t('No patterns in the recycle bin.');
   }
@@ -290,10 +290,10 @@ function _patterns_pattern_build_row($pid, $pattern, $options = array()) {
   $form['version'] = array(
     '#markup' =>  @$pattern->info['version'],
   );
-  
-  
-  
-  
+
+
+
+
   #$form['#requires'] = $extra['requires'];
   #$form['#required_by'] = $extra['required_by'];
 
@@ -326,18 +326,18 @@ function _patterns_pattern_build_row($pid, $pattern, $options = array()) {
     );
     $form['description']['#markup'] .= theme('system_modules_incompatible', array('message' => $status_long));
   }
-	
-  
- 	$actions = patterns_get_patterns_links($pattern);
+
+
+  $actions = patterns_get_patterns_links($pattern);
   $form['links'] = $actions;
-  
+
   return $form;
 }
 
 
 function theme_patterns_category_table($patterns) {
-	
-	$form['patterns'][$category][] = _patterns_pattern_build_row($pid, $pattern);
+
+  $form['patterns'][$category][] = _patterns_pattern_build_row($pid, $pattern);
       $form['patterns'][$category] += array(
         '#type' => 'fieldset',
         '#title' => $category,
@@ -351,10 +351,10 @@ function theme_patterns_category_table($patterns) {
             t('Title'),
             t('Version'),
             t('Description'),
-          	t('Uri'),
+            t('Uri'),
         ),
       );
-    
-    
+
+
   return $form;
 }

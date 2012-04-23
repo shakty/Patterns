@@ -259,7 +259,7 @@ function patterns_load_co2($format = PATTERNS_FORMAT_YAML) {
     drupal_add_css($co2_css_theme);
     drupal_add_js($co2_js);
 
-    // TODO: enable PHP mode for codemirror as well. 
+    // TODO: enable PHP mode for codemirror as well.
     // At the moment it does not work
     if ($format !== PATTERNS_FORMAT_UNKNOWN && $format !== 'php') {
       $co2_mode = $co2_path . '/mode/' . $format . '/' . $format . '.js';

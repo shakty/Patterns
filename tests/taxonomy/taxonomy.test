@@ -6,7 +6,7 @@
 
 class PatternsTaxonomyTestCase extends PatternsTestCase {
 
-	var $taxo_tests_dir;
+  var $taxo_tests_dir;
 
   public static function getInfo() {
     return array(
@@ -16,15 +16,15 @@ class PatternsTaxonomyTestCase extends PatternsTestCase {
     );
   }
 
-   public function setUp() {
+  public function setUp() {
 
-   	$this->taxo_tests_dir = $this->getPatternsTestDir() . 'taxonomy/';
-   	
+    $this->taxo_tests_dir = $this->getPatternsTestDir() . 'taxonomy/';
+
     // Enable any modules required for the tests.
-  	$modules = array('patterns_components',
-  							     'patterns_yamlparser',
-		);
-  	 
+    $modules = array('patterns_components',
+      'patterns_yamlparser',
+    );
+
     parent::setUp($modules);
   }
 
@@ -70,10 +70,10 @@ class PatternsTaxonomyTestCase extends PatternsTestCase {
     // $taxo = taxonomy_vocabulary_machine_name_load($voc);
 
     $taxos = db_select('taxonomy_vocabulary', 'tv')
-                    ->fields('tv', array('vid', 'name', 'description'))
-                    ->condition('tv.machine_name', $voc)
-                    ->execute()
-                    ->fetchAll(); // return array of Std objs
+      ->fields('tv', array('vid', 'name', 'description'))
+      ->condition('tv.machine_name', $voc)
+      ->execute()
+      ->fetchAll(); // return array of Std objs
 
     $this->assertEqual(count($taxos), 1, t('One vocabulary found'));
     $taxo = $taxos[0];

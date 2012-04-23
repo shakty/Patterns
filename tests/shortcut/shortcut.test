@@ -17,15 +17,15 @@ class PatternsShortcutTestCase extends PatternsTestCase {
     );
   }
 
-   public function setUp() {
+  public function setUp() {
 
-   	$this->shortcut_tests_dir = $this->getPatternsTestDir() . 'shortcut/';
-   	
+    $this->shortcut_tests_dir = $this->getPatternsTestDir() . 'shortcut/';
+
     // Enable any modules required for the tests.
-  	$modules = array('patterns_components',
-  							     'patterns_yamlparser',
-		);
-  	 
+    $modules = array('patterns_components',
+      'patterns_yamlparser',
+    );
+
     parent::setUp($modules);
 
     // Create a role with the given permission set, if any.
@@ -58,36 +58,36 @@ class PatternsShortcutTestCase extends PatternsTestCase {
     // Add the raw password so that we can log in as this user.
     $account->pass_raw = $edit['pass'];
     $this->admin_user = $account;
-    // "someone" login 
+    // "someone" login
     $this->drupalLogin($this->admin_user);
   }
 
   /**
-  * Test the:
-  *
-  *    * add a new set 'new_set_fortest'
-  *    * add a new shortcut link to the new set 'new_set_fortest'  which add before
-  *    * edit the link, which add before
-  *    * switch set for user
-  *    * delete the link, which just edit
-  *    * change the set "new_set_fortest" name to "newer_set_fortest"
-  *    * delete the set "newer_set_fortest"
-  */
+   * Test the:
+   *
+   *    * add a new set 'new_set_fortest'
+   *    * add a new shortcut link to the new set 'new_set_fortest'  which add before
+   *    * edit the link, which add before
+   *    * switch set for user
+   *    * delete the link, which just edit
+   *    * change the set "new_set_fortest" name to "newer_set_fortest"
+   *    * delete the set "newer_set_fortest"
+   */
 
   public function test_shortcut() {
 
     //for add a new set 'new_set_fortest'
     parent::runFile('shortcut_add_set.yaml', 'add new shortcut set (create)', $this->shortcut_tests_dir);
     $query_add_set = db_select('shortcut_set', 'ss')
-            ->fields('ss', array('set_name', 'title'))
-            ->condition('ss.title', 'new_set_fortest')
-            ->execute()
-            ->fetchAssoc();
+      ->fields('ss', array('set_name', 'title'))
+      ->condition('ss.title', 'new_set_fortest')
+      ->execute()
+      ->fetchAssoc();
     $this->assertTrue($query_add_set, t('Adding a new set \'new_set_fortest\' works fine.'));
     $num = count($query_add_set);
-    $this->assert('pass', 'the num of query db is '.$num);
+    $this->assert('pass', 'the num of query db is ' . $num);
     foreach ($query_add_set as $key => $value) {
-      $this->assert('pass', $key.' is '.$value);
+      $this->assert('pass', $key . ' is ' . $value);
     }
     $this->drupalGet('admin/config/user-interface/shortcut');
     $this->assertResponse(200);
@@ -96,19 +96,19 @@ class PatternsShortcutTestCase extends PatternsTestCase {
     //for add a new shortcut link to the new set which add before
     parent::runFile('shortcut_add_link.yaml', 'add a link to a shortcut set (create)', $this->shortcut_tests_dir);
     $query = db_select('menu_links', 'ml')
-            ->fields('ml', array('menu_name', 'mlid', 'link_path', 'link_title'))
-            ->condition('ml.menu_name', $query_add_set['set_name'])
-            ->condition('ml.link_title', 'link_admcont')
-            ->condition('ml.link_path', 'admin/content')
-            ->execute()
-            ->fetchAssoc();
+      ->fields('ml', array('menu_name', 'mlid', 'link_path', 'link_title'))
+      ->condition('ml.menu_name', $query_add_set['set_name'])
+      ->condition('ml.link_title', 'link_admcont')
+      ->condition('ml.link_path', 'admin/content')
+      ->execute()
+      ->fetchAssoc();
     $this->assertTrue($query, t('Adding shortcut link works fine.'));
     $num = count($query);
-    $this->assert('pass', 'the num of query db is '.$num);
+    $this->assert('pass', 'the num of query db is ' . $num);
     foreach ( $query as $key => $value) {
-      $this->assert('pass', $key.' is '.$value);
+      $this->assert('pass', $key . ' is ' . $value);
     }
-    $this->drupalGet('admin/config/user-interface/shortcut/'.$query_add_set['set_name']);
+    $this->drupalGet('admin/config/user-interface/shortcut/' . $query_add_set['set_name']);
     $this->assertResponse(200);
     $this->assertRaw('admin/content">link_admcont</a></td>', t('the new link:link_admcont(admin/content) is built successful.'));
 
@@ -116,19 +116,19 @@ class PatternsShortcutTestCase extends PatternsTestCase {
     //for edit the link, which add before
     parent::runFile('shortcut_edit_link.yaml', 'edit a link of a shortcut set (modify)', $this->shortcut_tests_dir);
     $query = db_select('menu_links', 'ml')
-            ->fields('ml', array('menu_name', 'mlid', 'link_path', 'link_title'))
-            ->condition('ml.menu_name', $query_add_set['set_name'])
-            ->condition('ml.link_title', 'link_nodadd')
-            ->condition('ml.link_path', 'node/add')
-            ->execute()
-            ->fetchAssoc();
+      ->fields('ml', array('menu_name', 'mlid', 'link_path', 'link_title'))
+      ->condition('ml.menu_name', $query_add_set['set_name'])
+      ->condition('ml.link_title', 'link_nodadd')
+      ->condition('ml.link_path', 'node/add')
+      ->execute()
+      ->fetchAssoc();
     $this->assertTrue($query, t('Edit shortcut link works fine.'));
     $num = count($query);
-    $this->assert('pass', 'the num of query db is '.$num);
+    $this->assert('pass', 'the num of query db is ' . $num);
     foreach ( $query as $key => $value) {
-      $this->assert('pass', $key.' is '.$value);
+      $this->assert('pass', $key . ' is ' . $value);
     }
-    $this->drupalGet('admin/config/user-interface/shortcut/'.$query_add_set['set_name']);
+    $this->drupalGet('admin/config/user-interface/shortcut/' . $query_add_set['set_name']);
     $this->assertResponse(200);
     $this->assertNoRaw('admin/content">link_admcont</a></td>', t('the old link:link_adncont(admin/content) has changed.'));
     $this->assertRaw('node/add">link_nodadd</a></td>', t('the new link:link_nodadd(node/add) has been built successful.'));
@@ -136,55 +136,55 @@ class PatternsShortcutTestCase extends PatternsTestCase {
     //for switch user's shortcut set
     parent::runFile('shortcut_set_switch.yaml', 'switch shortcut set for users (modify)', $this->shortcut_tests_dir);
     $queryuser = db_select('users', 'u')
-            ->fields('u', array('uid'))
-            ->condition('u.name', 'someone')
-            ->execute()
-            ->fetchField();
+      ->fields('u', array('uid'))
+      ->condition('u.name', 'someone')
+      ->execute()
+      ->fetchField();
     $query = db_select('shortcut_set_users', 'ssu')
-            ->fields('ssu', array('set_name', 'uid'))
-            ->condition('ssu.uid', $queryuser)
-            ->condition('ssu.set_name', $query_add_set['set_name'])
-            ->execute()
-            ->fetchAssoc();
+      ->fields('ssu', array('set_name', 'uid'))
+      ->condition('ssu.uid', $queryuser)
+      ->condition('ssu.set_name', $query_add_set['set_name'])
+      ->execute()
+      ->fetchAssoc();
     $this->assertTrue($query, t('Switching user\'s shortcut set works fine.'));
     $num = count($query);
-    $this->assert('pass', 'the num of query db is '.$num);
+    $this->assert('pass', 'the num of query db is ' . $num);
     foreach ( $query as $key => $value) {
-      $this->assert('pass', $key.' is '.$value);
+      $this->assert('pass', $key . ' is ' . $value);
     }
-    $this->drupalGet('user/'.$queryuser.'/shortcuts');
+    $this->drupalGet('user/' . $queryuser . '/shortcuts');
     $this->assertResponse(200);
-    $this->assertRaw('value="'.$query_add_set['set_name'].'" checked="checked"', t('user "someone"\'s shortcut_set is '.$query_add_set['title'].' now'));
+    $this->assertRaw('value="' . $query_add_set['set_name'] . '" checked="checked"', t('user "someone"\'s shortcut_set is ' . $query_add_set['title'] . ' now'));
     //TODO it seems the toolbar and shortcut can not be enabled in the simpletest, why?
     //$this->assertRaw('node/add">link_nodadd</a></li>', t('user "someone"\'s shortcut_set has the link_nodadd now'));
 
     //for delete the link, which just edit
     parent::runFile('shortcut_delete_link.yaml', 'delete a link from a shortcut set (modify)', $this->shortcut_tests_dir);
     $query = db_select('menu_links', 'ml')
-            ->fields('ml', array('menu_name', 'mlid', 'link_path', 'link_title'))
-            ->condition('ml.menu_name', $query_add_set['set_name'])
-            ->condition('ml.link_title', 'link_nodadd')
-            ->condition('ml.link_path', 'node/add')
-            ->execute()
-            ->fetchAssoc();
+      ->fields('ml', array('menu_name', 'mlid', 'link_path', 'link_title'))
+      ->condition('ml.menu_name', $query_add_set['set_name'])
+      ->condition('ml.link_title', 'link_nodadd')
+      ->condition('ml.link_path', 'node/add')
+      ->execute()
+      ->fetchAssoc();
     $this->assertFalse($query, t('Delete shortcut link works fine.'));
-    $this->drupalGet('admin/config/user-interface/shortcut/'.$query_add_set['set_name']);
+    $this->drupalGet('admin/config/user-interface/shortcut/' . $query_add_set['set_name']);
     $this->assertResponse(200);
     $this->assertNoRaw('node/add">link_nodadd</a></td>', t('the new link:link_nodadd(node/add) has been deleted.'));
 
     //for change the set "new_set_fortest" name to "newer_set_fortest"
     parent::runFile('shortcut_edit_set.yaml', 'edit the shortcut set name(modify)', $this->shortcut_tests_dir);
     $query = db_select('shortcut_set', 'ss')
-            ->fields('ss', array('set_name', 'title'))
-            ->condition('ss.title', 'newer_set_fortest')
-            ->condition('ss.set_name', $query_add_set['set_name'])
-            ->execute()
-            ->fetchAssoc();
+      ->fields('ss', array('set_name', 'title'))
+      ->condition('ss.title', 'newer_set_fortest')
+      ->condition('ss.set_name', $query_add_set['set_name'])
+      ->execute()
+      ->fetchAssoc();
     $this->assertTrue($query, t('Editing set works fine.'));
     $num = count($query);
-    $this->assert('pass', 'the num of query db is '.$num);
+    $this->assert('pass', 'the num of query db is ' . $num);
     foreach ( $query as $key => $value) {
-      $this->assert('pass', $key.' is '.$value);
+      $this->assert('pass', $key . ' is ' . $value);
     }
     $this->drupalGet('admin/config/user-interface/shortcut');
     $this->assertResponse(200);
@@ -193,16 +193,16 @@ class PatternsShortcutTestCase extends PatternsTestCase {
     //for delete the set, which add before
     parent::runFile('shortcut_delete_set.yaml', 'delete a shortcut set (delete)', $this->shortcut_tests_dir);
     $query = db_select('shortcut_set', 'ss')
-            ->fields('ss', array('set_name', 'title'))
-            ->condition('ss.title', 'newer_set_fortest')
-            ->condition('ss.set_name', $query_add_set['set_name'])
-            ->execute()
-            ->fetchAssoc();
+      ->fields('ss', array('set_name', 'title'))
+      ->condition('ss.title', 'newer_set_fortest')
+      ->condition('ss.set_name', $query_add_set['set_name'])
+      ->execute()
+      ->fetchAssoc();
     $this->assertFalse($query, t('Deleting set works fine.'));
     $this->drupalGet('admin/config/user-interface/shortcut');
     $this->assertResponse(200);
     $this->assertNoRaw('<td>newer_set_fortest</td>', t('newer_set_fortest has been deleted.'));
-    $this->drupalGet('user/'.$queryuser.'/shortcuts');
+    $this->drupalGet('user/' . $queryuser . '/shortcuts');
     $this->assertResponse(200);
   }
 }

@@ -2,11 +2,11 @@
 
 /**
  * @file
- * 
+ *
  * Helping functions for the parser.
- * 
+ *
  * Functions related to parsing the abstract array structure
- * 
+ *
  */
 
 
@@ -16,14 +16,14 @@
  * @param array $pattern Pattern array obtained by parsing pattern file.
  * @param bool $include (optional) If TRUE, actions can be found outside
  *   of sections. Default FALSE.
- * 
+ *
  * @return array $result Summary of the pattern.
  *
  * @TODO Expand this function to include much more detailed validation.
  * @TODO Rewrite in an object oriented fashion
- * 
- * @see _patterns_scan_action
- * @see _patterns_scan_analyze_patternscan
+ *
+ * @see _patterns_scan_action()
+ * @see _patterns_scan_analyze_patternscan()
  *
  */
 function patterns_scan_pattern($pattern, $include = FALSE) {
@@ -58,7 +58,7 @@ function patterns_scan_pattern($pattern, $include = FALSE) {
   // and we apply patterns_scan_pattern recursively.
 
   foreach ($pattern as $section_name => $section) {
-	
+
     // INFO
     if ($section_name === 'info') {
       $result['info']++;
@@ -73,25 +73,25 @@ function patterns_scan_pattern($pattern, $include = FALSE) {
 
     // SECTIONS or ACTIONS (if it is an include)
     if (!_patterns_scan_is_section($section)) {
-    	if (!$include) {
-    		$result['generic_errors'][] = $section_name ;
-    		continue;
-    	}
-    	
-    	$result = _patterns_scan_action($section, $result);
-    	continue;
+      if (!$include) {
+        $result['generic_errors'][] = $section_name ;
+        continue;
+      }
+
+      $result = _patterns_scan_action($section, $result);
+      continue;
     }
-    
+
     // SECTIONS: invalid
-    // included patterns can be just the name or the id 
+    // included patterns can be just the name or the id
     // of the pattern
     if (!is_array($section) && !$include) {
       // If the YAML is not loaded correctly you get 0.
-      $result['empties'][] = ($section_name === 0) ? $generic_error 
-      																						 : $section_name;
+      $result['empties'][] = ($section_name === 0) ? $generic_error
+                                                   : $section_name;
       continue;
     }
-		
+
     // SECTIONS: valid
     //$resultactions = array();
     //$newactions = array();
@@ -104,21 +104,21 @@ function patterns_scan_pattern($pattern, $include = FALSE) {
     $section_info[PATTERNS_INCLUDE] = 0;
 
     foreach ($section as $key => &$action) {
-    	$action_name = key($action);
-    	if (isset($section_info[$action_name])) {
-    		// Incremente the count of valid actions
-				$section_info[$action_name] = $section_info[$action_name]+1;
-    	}
-			$result = _patterns_scan_action($action, $result);    
+      $action_name = key($action);
+      if (isset($section_info[$action_name])) {
+        // Incremente the count of valid actions
+        $section_info[$action_name] = $section_info[$action_name]+1;
+      }
+      $result = _patterns_scan_action($action, $result);
     }
 
     $section_info_str = '(' . PATTERNS_CREATE . ':' . $section_info[PATTERNS_CREATE] . ', ' .
                               PATTERNS_MODIFY . ':' . $section_info[PATTERNS_MODIFY] . ', ' .
                               PATTERNS_DELETE . ':' . $section_info[PATTERNS_DELETE] . ', ' .
                               PATTERNS_INCLUDE . ':' . $section_info[PATTERNS_INCLUDE] . ')';
-                              
+
     $result['other_sections'][$section_name] =  $section_info_str;
-    
+
   }
 
   return $result;
@@ -129,11 +129,11 @@ function patterns_scan_pattern($pattern, $include = FALSE) {
  * the pattern was valid.
  *
  * @param array $analysis Obtained from  patterns_scan_pattern.
- * @param bool $include (optional) If TRUE, it means that the pattern 
- *   to scan is an include, and a laxer scan is performed. E.g. 
+ * @param bool $include (optional) If TRUE, it means that the pattern
+ *   to scan is an include, and a laxer scan is performed. E.g.
  *   Info section can be missing, actions can be outside of a section.
  *   Default FALSE.
- *   
+ *
  * @return TRUE if valid, FALSE otherwise
  */
 function _patterns_scan_analyze_patternscan($patternscan, $include = FALSE) {
@@ -221,116 +221,116 @@ function _patterns_scan_validate_patternscan($patternscan, $display_errors = FAL
 
 /**
  * Determines whether an array is actually a section.
- * 
+ *
  * A section is an array, whose first element is a valid
  * action.
- * 
+ *
  * @param array $section The array to check
- * 
+ *
  * @return Boolean TRUE if the array is a section
- * 
- * @see _patterns_scan_is_action
+ *
+ * @see _patterns_scan_is_action()
  */
 function _patterns_scan_is_section($section = NULL) {
-	if (is_null($section)) return FALSE;
-	if (!is_array($section)) return FALSE;
-	$action = array_pop($section);
-	return _patterns_scan_is_action($action);
+  if (is_null($section)) return FALSE;
+  if (!is_array($section)) return FALSE;
+  $action = array_pop($section);
+  return _patterns_scan_is_action($action);
 }
 
 /**
  * Determines whether an array is actually an action.
- * 
+ *
  * An action is an array, whose key name is a valid
  * action name.
- * 
+ *
  * @param array $action The array to check
- * 
+ *
  * @return Boolean TRUE if the array is an action
- * 
- * @see _patterns_scan_is_section
+ *
+ * @see _patterns_scan_is_section()
  */
 function _patterns_scan_is_action($action = NULL) {
-	if (is_null($action)) return FALSE;
-	if (!is_array($action)) return FALSE;
-	return patterns_parser_is_valid_action_name(key($action));
+  if (is_null($action)) return FALSE;
+  if (!is_array($action)) return FALSE;
+  return patterns_parser_is_valid_action_name(key($action));
 }
 
 /**
- * Helper function for scanning patterns. 
- * 
+ * Helper function for scanning patterns.
+ *
  * Scans an action and add the result of the scan to the $result
  * array.
- * 
+ *
  * @param mixed $key The type of action (e.g. create, modify, delete,
- * 	 include).
+ *   include).
  * @param array $action The action to scan
- * @param array $result (optional) The array in which inserting 
+ * @param array $result (optional) The array in which inserting
  *   the scan results.
- *   
+ *
  * @return array $result The results of the scan.
- * 
- * @see patterns_scan_pattern
- * @see _patterns_scan_analyze_patternscan
- * 
+ *
+ * @see patterns_scan_pattern()
+ * @see _patterns_scan_analyze_patternscan()
+ *
  */
 function _patterns_scan_action($action, $result = array()) {
-	
-	$key = key($action);
-	$action = current($action);
-	$valid_actions = patterns_actions();
-	if (!array_key_exists($key, $valid_actions)) {
-	  $result['invalid_actions'][] = array('actionid' => $action, 'key' => $key, 'value' => $action);
-	  return $result;
-	}
-	
-	if (empty($action)) {
-  	$result['empties'][] = $key;
-  	return $result;
-  }
 
-	if (!is_array($action)) {
-  	$result['generic_errors'][] = $key . ': ' . $action;
+  $key = key($action);
+  $action = current($action);
+  $valid_actions = patterns_actions();
+  if (!array_key_exists($key, $valid_actions)) {
+    $result['invalid_actions'][] = array('actionid' => $action, 'key' => $key, 'value' => $action);
     return $result;
   }
-	
-	// Make sure there is only one valid action in each array element.
+
+  if (empty($action)) {
+    $result['empties'][] = $key;
+    return $result;
+  }
+
+  if (!is_array($action)) {
+    $result['generic_errors'][] = $key . ': ' . $action;
+    return $result;
+  }
+
+  // Make sure there is only one valid action in each array element.
   // NOTE: Having additional valid actions will work, but is discouraged,
   // and therefore undocumented.
   $found = FALSE;
-	
-	// Report additional valid actions.
-	if ($found) {
-	  $result['extra_actions'][] = array('actionid' => $action, 'key' => $key, 'value' => $action);
-	}
-	
-	// Do action specific checkings
-	////////////////////////////////
-	
-	if ($key === PATTERNS_INCLUDE) {
-	  $result['contain_includes'] = TRUE;
-	
-	  if (!isset($action['pattern'])) {
-	    $result['missing_tag'][] = array('actionid' => $action, 'key' => $key, 'value' => $action);
-	    return $result;
-	  }
-	
-	  // only if the pattern is hard-coded, then scan it
-	  if (is_array($action['pattern'])) {
-	    $result['include_scans'][] = patterns_scan_pattern($action['pattern'], TRUE);
-	  }
-	  return $result;
-	}
-	
-	// Check if 'tag' is present.
-	if (!isset($action['tag']) || !is_string($action['tag'])) {
-	  $result['missing_tag'][] = array('actionid' => $action, 'key' => $key, 'value' => $action);
-	}
-	
-	//else {
-	//  $newactions[] = array('action' => $key, 'data' => $action);
-	//}
-	$found = TRUE;
-	
-	return $result;
+
+  // Report additional valid actions.
+  if ($found) {
+    $result['extra_actions'][] = array('actionid' => $action, 'key' => $key, 'value' => $action);
+  }
+
+  // Do action specific checkings
+  ////////////////////////////////
+
+  if ($key === PATTERNS_INCLUDE) {
+    $result['contain_includes'] = TRUE;
+
+    if (!isset($action['pattern'])) {
+      $result['missing_tag'][] = array('actionid' => $action, 'key' => $key, 'value' => $action);
+      return $result;
+    }
+
+    // only if the pattern is hard-coded, then scan it
+    if (is_array($action['pattern'])) {
+      $result['include_scans'][] = patterns_scan_pattern($action['pattern'], TRUE);
+    }
+    return $result;
+  }
+
+  // Check if 'tag' is present.
+  if (!isset($action['tag']) || !is_string($action['tag'])) {
+    $result['missing_tag'][] = array('actionid' => $action, 'key' => $key, 'value' => $action);
+  }
+
+  //else {
+  //  $newactions[] = array('action' => $key, 'data' => $action);
+  //}
+  $found = TRUE;
+
+  return $result;
 }

@@ -27,7 +27,7 @@ function user_patterns($data) {
     PATTERNS_MODIFY => array('user_admin_role'),
     PATTERNS_DELETE => array('user_admin_role_delete_confirm'),
     PATTERNS_FILES => $files,
-    PATTERNS_EXPORT => array(PATTERNS_EXPORT_ALL => 'user_patterns_export_all_roles',),
+    PATTERNS_EXPORT => array(PATTERNS_EXPORT_ALL => 'user_patterns_export_all_roles', ),
   );
 
   $actions['permission'] = array(
@@ -36,7 +36,7 @@ function user_patterns($data) {
     PATTERNS_MODIFY => array('user_admin_permissions'),
     PATTERNS_DELETE => array('user_admin_permissions'),
     PATTERNS_FILES => $files,
-    PATTERNS_EXPORT => array(PATTERNS_EXPORT_ALL => 'user_patterns_export_all_permissions',),
+    PATTERNS_EXPORT => array(PATTERNS_EXPORT_ALL => 'user_patterns_export_all_permissions', ),
   );
 
   return $actions;
@@ -56,7 +56,7 @@ function user_patterns_actions($data) {
 }
 
 
-function user_patterns_export_all_roles($args = NULL, &$result = NULL){
+function user_patterns_export_all_roles($args = NULL, &$result = NULL) {
   $roles = user_roles(TRUE);
   $result = array();
   foreach ($roles as $role) {
@@ -68,7 +68,7 @@ function user_patterns_export_all_roles($args = NULL, &$result = NULL){
   return $result;
 }
 
-function user_patterns_export_all_permissions($args = NULL, &$result = NULL){
+function user_patterns_export_all_permissions($args = NULL, &$result = NULL) {
   $info = user_patterns();
   $form_id = current($info['permission'][PATTERNS_MODIFY]);
   $form_data = patterns_api_extract_actions($form_id, array(), 'permission', PATTERNS_MODIFY);
@@ -79,8 +79,8 @@ function user_patterns_export_all_permissions($args = NULL, &$result = NULL){
   foreach ($roles as $id => $role) {
     $perms = $form_data[$id-1]; // TODO: this might not be right if the IDs are not contiguous.
     $perms2 = array(); // Permissions that are set.
-    foreach ($perms as $perm){
-      if($perm !== 0){
+    foreach ($perms as $perm) {
+      if ($perm !== 0) {
         array_push($perms2, $perm);
       }
     }
@@ -184,7 +184,7 @@ function user_patterns_prepare($action, $tag, &$data) {
     }
   }
   elseif ($tag == 'role') {
-    /*if (isset($data['value'])) {
+    /* if (isset($data['value'])) {
       $data['name'] = $data['value'];
       unset($data['value']);
     }*/
@@ -206,10 +206,10 @@ function user_patterns_validate($action, $tag, &$data) {
   if ($tag == 'user') {
     // Make sure uid is valid.
     $count = db_select('users', 'u')
-               ->condition('u.uid', $data['uid'])
-               ->countQuery()
-               ->execute()
-               ->fetchField();
+              ->condition('u.uid', $data['uid'])
+              ->countQuery()
+              ->execute()
+              ->fetchField();
     //$count = db_query("SELECT COUNT(*) FROM {users} WHERE uid = :uid", array('uid' => $data['uid']))->fetchField();
     if (!empty($data['uid']) && !$count) {
       $status = PATTERNS_ERR;
@@ -276,7 +276,7 @@ function user_patterns_validate($action, $tag, &$data) {
         }
       }
       elseif (is_numeric($data['rid'])) {
-        $cnt = db_query("SELECT COUNT(*) FROM {role} WHERE rid = :id", array('id' => $data['rid']))->fetchField();
+        $cnt = db_query("SELECT COUNT(*) FROM {role} WHERE rid = :id", array('id' => $data['rid']))->fetchField(); // TODO: count()
         if ($cnt) {
           $rid_exist = TRUE;
         }
@@ -368,7 +368,7 @@ function user_patterns_validate($action, $tag, &$data) {
         }
       }
       elseif (is_numeric($data['rid'])) {
-        $exist = db_query("SELECT COUNT(*) FROM {role} WHERE rid = :rid", array('rid' => $data['rid']))->fetchField();
+        $exist = db_query("SELECT COUNT(*) FROM {role} WHERE rid = :rid", array('rid' => $data['rid']))->fetchField(); // TODO: count()
         if (!$exist) {
           $status = PATTERNS_ERR;
           $msg = t('Role id %id does not exist.', array('%id' => $data['rid']));
@@ -548,7 +548,7 @@ function user_patterns_build($action, $form_id, &$data = NULL, &$a) {
   }
 
   // TODO: check if these validations work
-  /* 
+  /*
   if ($id == 'user_admin_permissions') {
     if (is_numeric($data['rid'])) {
       $rid = $data['rid'];
@@ -565,7 +565,7 @@ function user_patterns_build($action, $form_id, &$data = NULL, &$a) {
   $result = $data;
 
   return patterns_results($status, $msg, $result);
- 
+
 }
 
 // Build a patterns actions and parameters

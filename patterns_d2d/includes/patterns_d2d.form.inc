@@ -31,7 +31,7 @@ function patterns_d2d_form_outgoing_configure() {
     '#description' => t('If checked, patterns are automatically published whenever the \'publish\'-button is hit.'),
   );
   $form['submit'] = array(
-    '#type' => 'submit', 
+    '#type' => 'submit',
     '#value' => t('Save'),
   );
   return $form;
@@ -45,7 +45,7 @@ function patterns_d2d_form_incoming_configure() {
     '#description' => t('If checked, friends with the required permissions can publish patterns on this server, see D2D\'s groups/permissions.'),
   );
   $form['submit'] = array(
-    '#type' => 'submit', 
+    '#type' => 'submit',
     '#value' => t('Save'),
   );
   return $form;
@@ -80,7 +80,7 @@ function patterns_d2d_share_patterns() {
       drupal_set_message(t('Server not listed as friend instance.'), 'error');
     }
     else {
-      drupal_set_message(t('Server is listed as friend instance. Click !link to show details about the instance patterns are published to.', array('!link' => l('here', 'admin/drupaltodrupal/instances/' . $friend['id'] . '/details'))));
+      drupal_set_message(t('Server is listed as friend instance. Click !link to show details about the instance patterns are published to.', array('!link' => l(t('here'), 'admin/drupaltodrupal/instances/' . $friend['id'] . '/details')))); // TODO: proper t()
     }
   }
   return $build;

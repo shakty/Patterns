@@ -1,54 +1,58 @@
 <?php
+/**
+ * @file
+ * The base of the Patterns Component tests.
+ */
 
 /**
  * Abstract base class for testing pattern component behavior.
  */
 abstract class PatternsTestCase extends DrupalWebTestCase {
 
-	/**
-	 * Returns the path to the tests directory inside the 
-	 * Patterns module
-	 * 
-	 */
-	public function getPatternsTestDir() {
-		return realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/tests/';
-	}
-	
-	/**
-	 * Setups the testing environment.
-	 * 
-	 * Loads the patterns and libraries modules plus all those that are 
-	 * passed as parameters; skips the Patterns splash screen.
-	 * 
-	 * @param array $user_modules The array of modules to enable
-	 * @param bool $first (optional) If TRUE, the Patterns splash 
-	 *   screen is not skipped.
-	 *   
-	 */
+  /**
+   * Returns the path to the tests directory inside the
+   * Patterns module
+   *
+   */
+  public function getPatternsTestDir() {
+    return realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/tests/';
+  }
+
+  /**
+   * Setups the testing environment.
+   *
+   * Loads the patterns and libraries modules plus all those that are
+   * passed as parameters; skips the Patterns splash screen.
+   *
+   * @param array $user_modules The array of modules to enable
+   * @param bool $first (optional) If TRUE, the Patterns splash
+   *   screen is not skipped.
+   *
+   */
   public function setUp($user_modules = array(), $first = FALSE) {
-  	
-  	$modules = array('patterns', 'libraries');
-  	if (!empty($user_modules)) {
-  		if (!is_array($user_modules)) {
-  			$user_modules = array($user_modules);
-  		}
-  		$modules = array_merge($modules, $user_modules);
-  		$modules = array_unique($modules);
-  	}  	
-  	
+
+    $modules = array('patterns', 'libraries');
+    if (!empty($user_modules)) {
+      if (!is_array($user_modules)) {
+        $user_modules = array($user_modules);
+      }
+      $modules = array_merge($modules, $user_modules);
+      $modules = array_unique($modules);
+    }
+
     // Enable any modules required for the tests.
     parent::setUp($modules);
-  	
+
     if (!$first) {
-	  	// 'patterns_first_install' => PATTERNS_FIRST_INSTALL in 
-	  	// includes/variables.inc (may be not yet loaded)
-	  	variable_set('patterns_first_install', FALSE);
-	  	// TODO: Can we set the flag FIRST_INSTALL to FALSE before enabling patterns
-	  	// so that we don't need to rebuild the menu
-	    menu_rebuild();
+      // 'patterns_first_install' => PATTERNS_FIRST_INSTALL in
+      // includes/variables.inc (may be not yet loaded)
+      variable_set('patterns_first_install', FALSE);
+      // TODO: Can we set the flag FIRST_INSTALL to FALSE before enabling patterns
+      // so that we don't need to rebuild the menu
+      menu_rebuild();
     }
-    
-    
+
+
     // TODO: how to ensure that Spyc is installed?
 
     // Create users.
@@ -59,41 +63,41 @@ abstract class PatternsTestCase extends DrupalWebTestCase {
 
   /**
    * Loads a pattern file and runs it.
-   * 
-   * @param mixed $filename The full name (name + extension) of 
-   *   the file to run 
+   *
+   * @param mixed $filename The full name (name + extension) of
+   *   the file to run
    * @param mixed $name An alphanumeric name or short sentence
-   * 	 to be displayed next to the test results
+   *   to be displayed next to the test results
    * @param mixed $dir The path of the directory containing the
    *   pattern file
-   * @param mixed $format (optional) If set, forces the use of 
-   *   a specific format  
-   * 
+   * @param mixed $format (optional) If set, forces the use of
+   *   a specific format
+   *
    * @see quickRun()
    */
   function runFile($filename, $name, $dir, $format = NULL) {
     $patterntext = $this->loadPattern($filename, $dir);
     if (is_null($format)) {
-    	$path_parts = pathinfo($filename);
+      $path_parts = pathinfo($filename);
       $format = $path_parts['extension'];
     }
     $this->quickRun($patterntext, $name);
   }
 
- 	/**
+  /**
    * Runs a pattern through the Quick Run interface and
    * checks the output screen for errors messages.
-   * 
- 	 * @param mixed $pattern A string representation of a pattern
+   *
+   * @param mixed $pattern A string representation of a pattern
    * @param mixed $name An alphanumeric name or short sentence
-   * 	 to be displayed next to the test results
- 	 * @param mixed $format (optional) The format of the pattern
- 	 *   to be executed. Defaults 'yaml' for historical reasons
- 	 * @param bool $valid (optional) If TRUE, it assumed that the executed 
- 	 *   pattern should not raise errors. Defaults TRUE
- 	 * @param mixed $mode (optional) The execution mode of the pattern
- 	 *   Defaults 'php'
- 	 */
+   *   to be displayed next to the test results
+   * @param mixed $format (optional) The format of the pattern
+   *   to be executed. Defaults 'yaml' for historical reasons
+   * @param bool $valid (optional) If TRUE, it assumed that the executed
+   *   pattern should not raise errors. Defaults TRUE
+   * @param mixed $mode (optional) The execution mode of the pattern
+   *   Defaults 'php'
+   */
   function quickRun($pattern, $name, $format = 'yaml', $valid = TRUE, $mode = 'php') {
     // Fill the form.
     $edit = array();
@@ -117,47 +121,47 @@ abstract class PatternsTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Scans a directory for patterns files, and executes them. 
-   * 
+   * Scans a directory for patterns files, and executes them.
+   *
    * @param mixed $dir The path to the directory to scan
-   * 
+   *
    */
   function runDir($dir) {
 
-  	if (!file_exists($dir) || !is_readable($dir)) {
+    if (!file_exists($dir) || !is_readable($dir)) {
       $this->error(t('Directory not found or not readable: ' . $dir));
       return FALSE;
     }
 
     if (!$handle = opendir($dir)) {
-    	$this->error(t('Error opening directory ') . $dir);
-    	return FALSE;
+      $this->error(t('Error opening directory') . ' ' . $dir);
+      return FALSE;
     }
 
     while (false !== ($file = readdir($handle))) {
-    	$path_parts = pathinfo($file);
+      $path_parts = pathinfo($file);
       $format = $path_parts['extension'];
       if (!patterns_parser_exists($format)) {
-      	continue;
+        continue;
       }
-    	
-      $this->runFile($file, 'Running ' . $file, $dir);
+
+      $this->runFile($file, 'Running' . ' ' . $file, $dir);
     }
     closedir($handle);
   }
-  
+
   /**
    * Loads all the pattern files from a directory
    * and executes a callback on each parsed pattern.
-   * 
-   * The parser is chosen based on the extension of the files 
+   *
+   * The parser is chosen based on the extension of the files
    * in the folder.
-   * 
+   *
    * The directory must be readable.
    *
    * @param $mixed $dir The directory in which looking for
    *   patterns files
-   * @param $mixed $callback The callback function to be 
+   * @param $mixed $callback The callback function to be
    *   passed to call_user_func. The argument of the callback
    *   is the array representation of a pattern, as loaded by
    *   patterns_parser_load()
@@ -169,33 +173,33 @@ abstract class PatternsTestCase extends DrupalWebTestCase {
       $this->error(t('No callback passed to runPatternsFromDir.'));
       return FALSE;
     }
-    
+
     if (!is_callable($callback, TRUE)) {
       $this->error(t('Callback to runPatternsFromDir is not callable.'));
       return FALSE;
     }
-    
+
     if (!file_exists($dir) || !is_readable($dir)) {
       $this->error(t('Directory not found or not readable: ' . $dir));
       return FALSE;
     }
 
     if (!$handle = opendir($dir)) {
-    	$this->error(t('Error opening directory ') . $dir);
-    	return FALSE;
+      $this->error(t('Error opening directory') . ' ' . $dir);
+      return FALSE;
     }
 
     while (false !== ($entry = readdir($handle))) {
       $path_parts = pathinfo($entry);
       $format = $path_parts['extension'];
-      
+
       if (!patterns_parser_exists($format)) {
-      	continue;
+        continue;
       }
-      
+
       $pattern = patterns_parser_load($dir . $entry, $format);
       if (empty($pattern)) {
-        $this->fail(t('Error while loading ') . $entry);
+        $this->fail(t('Error while loading') . ' ' . $entry);
         continue;
       }
       call_user_func($callback, $pattern);
@@ -203,13 +207,13 @@ abstract class PatternsTestCase extends DrupalWebTestCase {
     closedir($handle);
 
   }
-  
-  
+
+
   /**
    * Loads a pattern file into a string from a directory.
    *
    * @param mixed $filename The name of the pattern file
-   * @param mixed $dir The directory where the pattern file 
+   * @param mixed $dir The directory where the pattern file
    *   is located.
    */
   function loadPattern($filename, $dir) {
@@ -234,5 +238,5 @@ abstract class PatternsTestCase extends DrupalWebTestCase {
     // TODO: this text should not appear if and only if fopen is enabled for URLs.
     return $this->assertNoText(t('Feature disabled:'), t('fopenurl is enabled.'));
   }
-  
+
 }

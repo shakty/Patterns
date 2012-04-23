@@ -235,7 +235,7 @@ function patterns_get_pattern($id) {
   $pattern = FALSE;
 
   $query = db_select('patterns', 'p')
-             ->fields('p');
+            ->fields('p');
 
   if (is_numeric($id)) {
     $query = $query->condition('p.pid', $id);
@@ -456,35 +456,35 @@ function patterns_db_analyze_patterns_status($pattern) {
 /**
  * Sets the flag public to FALSE in the database for
  * the pattern with the specified pattern id.
- * 
+ *
  * @param mixed $pattern A pattern object, an array representing
  *  the pattern object, a numeric id or alphanumeric name of
  *  the pattern as it is in the database
- * 
+ *
  * @return Bool TRUE, if successful
- * 
+ *
  */
 function patterns_db_publish_pattern($pattern) {
   $pattern = _patterns_db_get_pattern($pattern);
   if (!$pattern) return FALSE;
   $pid = $pattern->pid;
   return db_query("UPDATE {patterns} SET public = 1 WHERE pid = :pid", array('pid' => $pid));
-}  
+}
 
 /**
  * Sets the flag public to FALSE in the database for
  * the pattern with the specified pattern id.
- * 
+ *
  * @param mixed $pattern A pattern object, an array representing
  *  the pattern object, a numeric id or alphanumeric name of
  *  the pattern as it is in the database
- * 
+ *
  * @return Bool TRUE, if successful
- * 
+ *
  */
 function patterns_db_unpublish_pattern($pattern) {
   $pattern = _patterns_db_get_pattern($pattern);
   if (!$pattern) return FALSE;
   $pid = $pattern->pid;
   return db_query("UPDATE {patterns} SET public = 0 WHERE pid = :pid", array('pid' => $pid));
-}  
+}

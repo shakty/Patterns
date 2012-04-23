@@ -25,7 +25,7 @@ function pathauto_patterns() {
     PATTERNS_INFO => t('setting patterns for auto URLs aliases'),
     PATTERNS_MODIFY => array('pathauto_patterns_form', 'pathauto_bulk_update_form'),
     PATTERNS_FILES => $files,
-   
+
   );
 
   return $actions;
@@ -105,7 +105,7 @@ function pathauto_patterns_validate($action, $tag, &$data = NULL) {
       $msg = t('Attempt to %update a nonexistent url alias.', array('%update' => $action));
     }
     else {
-      $exist = db_query("SELECT COUNT(*) FROM {url_alias} WHERE pid = :pid", array('pid' => $data['pid']))->fetchField();
+      $exist = db_query("SELECT COUNT(*) FROM {url_alias} WHERE pid = :pid", array('pid' => $data['pid']))->fetchField(); // TODO: count()
       if (!$exist) {
         $status = PATTERNS_ERR;
         $msg = t('Attempt to %update a nonexistent url alias.', array('%update' => $action));
@@ -114,7 +114,7 @@ function pathauto_patterns_validate($action, $tag, &$data = NULL) {
   }
   elseif ($tag == 'url_alias' && $action == PATTERNS_CREATE) {
     $lan = isset($data['language']) ? $data['language'] : 'und';
-    $exist = db_query("SELECT COUNT(*) FROM {url_alias} WHERE alias = :name and language = :lan", array('name' => $data['alias'], 'lan' => $lan))->fetchField();
+    $exist = db_query("SELECT COUNT(*) FROM {url_alias} WHERE alias = :name and language = :lan", array('name' => $data['alias'], 'lan' => $lan))->fetchField(); // TODO: count()
     if ($exist) {
       $status = PATTERNS_ERR;
       $msg = t('The alias %path is already in use in this language.', array('%path' => $data['alias']));
@@ -141,24 +141,24 @@ function pathauto_patterns_build($action, $tag, &$data = NULL, $form_id) {
 
 
 function pathauto_patterns_export_all_url_alias($args = NULL, &$result = NULL) {
-	//$info = pathauto_patterns();
-	//$form_id = current($info['url_alias'][PATTERNS_MODIFY]);
-	//$loop = TRUE;
-	$paths = db_query("SELECT * FROM {url_alias}", array(), array('fetch' => PDO::FETCH_ASSOC))->fetchAll();
-	$result = array();
-	foreach ($paths as $path) {
-		$path = (array) $path;
-		$data = array('tag' => 'path');
-		$data = array_merge($data, $path);
-		$action = array(PATTERNS_CREATE => $data);
-		array_push($result, $action);
-	//	$action = array(PATTERNS_PATTERNS_CREATE => $data);
-	//	array_push($result, $action);
-		
-		// It is important to user array merge. Pushing is not enough
-		//$result = array_merge($result, patterns_api_extract_actions($form_id, $path, 'url_alias', PATTERNS_MODIFY));
-	}
-	return $result;
+  //$info = pathauto_patterns();
+  //$form_id = current($info['url_alias'][PATTERNS_MODIFY]);
+  //$loop = TRUE;
+  $paths = db_query("SELECT * FROM {url_alias}", array(), array('fetch' => PDO::FETCH_ASSOC))->fetchAll();
+  $result = array();
+  foreach ($paths as $path) {
+    $path = (array) $path;
+    $data = array('tag' => 'path');
+    $data = array_merge($data, $path);
+    $action = array(PATTERNS_CREATE => $data);
+    array_push($result, $action);
+  //  $action = array(PATTERNS_PATTERNS_CREATE => $data);
+  //  array_push($result, $action);
+
+    // It is important to user array merge. Pushing is not enough
+    //$result = array_merge($result, patterns_api_extract_actions($form_id, $path, 'url_alias', PATTERNS_MODIFY));
+  }
+  return $result;
 }
 
 
@@ -176,14 +176,15 @@ function pathauto_patterns_get_arguments($action, $tag, $form_id, &$loop = FALSE
     return $return;
   }
   elseif ($form_id == "path_admin_form") {
-   $result = array(array(
-     'source' => '',
-     'alias' => '',
-     'language' => 'und',
-     'pid' => NULL,
-   ));
-   return $result;
- }
+    $result = array(array(
+      'source' => '',
+      'alias' => '',
+      'language' => 'und',
+      'pid' => NULL,
+      )
+    );
+  return $result;
+  }
 }
 
 // Build a patterns actions and parameters

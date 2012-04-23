@@ -7,7 +7,7 @@
 class PatternsImportTestCase extends PatternsTestCase {
 
   const REMOTE_URL_IMPORT = 'http://www.shakty.org/patterns/importing.yaml';
-  
+
   var $importing_tests_dir;
 
   public static function getInfo() {
@@ -20,12 +20,12 @@ class PatternsImportTestCase extends PatternsTestCase {
 
   public function setUp() {
 
-   	$this->importing_tests_dir = $this->getPatternsTestDir() . 'importing/';
+    $this->importing_tests_dir = $this->getPatternsTestDir() . 'importing/';
     // Enable any modules required for the tests.
-  	$modules = array('patterns_components',
-  							     'patterns_yamlparser',
-		);
-  	 
+    $modules = array('patterns_components',
+                     'patterns_yamlparser',
+    );
+
     parent::setUp($modules);
   }
 
@@ -33,8 +33,8 @@ class PatternsImportTestCase extends PatternsTestCase {
 
     $name = 'Test_Import_From_Source';
 
-  	$destination = patterns_path_get_files_dir();
-  	
+    $destination = patterns_path_get_files_dir();
+
     // Fill the form.
     $edit = array();
 
@@ -65,13 +65,13 @@ class PatternsImportTestCase extends PatternsTestCase {
     $this->drupalPost('admin/patterns/import/file', $edit, t('Import'));
 
 
-     $this->checkImportedFile($name, PATTERNS_FORMAT_YAML, $destination);
+    $this->checkImportedFile($name, PATTERNS_FORMAT_YAML, $destination);
   }
 
   public function testImportFileFromURL() {
 
     $name = 'Test_Import_From_URL';
-		$destination = patterns_path_get_files_dir();
+    $destination = patterns_path_get_files_dir();
 
     if (!$this->isFopenurlEnabled()) {
       $this->pass(t('Import from URL test skipped because \'allow_url_fopen\' is disabled.'));

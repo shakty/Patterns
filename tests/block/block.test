@@ -6,7 +6,7 @@
 
 class PatternsBlockTestCase extends PatternsTestCase {
 
-  var $block_tests_dir; 
+  var $block_tests_dir;
 
   static function getInfo() {
     return array(
@@ -15,19 +15,19 @@ class PatternsBlockTestCase extends PatternsTestCase {
       'group' => 'Patterns',
     );
   }
-  
-   public function setUp() {
 
-   	$this->block_tests_dir = $this->getPatternsTestDir() . 'block/';
-   	
+  public function setUp() {
+
+    $this->block_tests_dir = $this->getPatternsTestDir() . 'block/';
+
     // Enable any modules required for the tests.
-  	$modules = array('patterns_components',
-  							     'patterns_yamlparser',
-		);
-  	 
+    $modules = array('patterns_components',
+                     'patterns_yamlparser',
+    );
+
     parent::setUp($modules);
   }
-  
+
 
   public function testCreateModifyDelete() {
     $this->testCreate();

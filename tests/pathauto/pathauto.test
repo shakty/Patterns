@@ -18,15 +18,15 @@ class PatternsPathautoTestCase extends PatternsTestCase {
   }
 
   public function setUp() {
-  	
-  	$this->pathauto_tests_dir = $this->getPatternsTestDir() . 'pathauto/';
-  	
+
+    $this->pathauto_tests_dir = $this->getPatternsTestDir() . 'pathauto/';
+
     // Enable any modules required for the tests.
-  	$modules = array('patterns_components',
-  									 'patterns_yamlparser',
-  									 'pathauto',
-  	);
-  	 
+    $modules = array('patterns_components',
+                     'patterns_yamlparser',
+                     'pathauto',
+    );
+
     parent::setUp($modules);
     $this->pat_user = $this->drupalCreateUser(array('administer patterns', 'administer url aliases'));
     // Login the patterns administrator.
@@ -36,9 +36,9 @@ class PatternsPathautoTestCase extends PatternsTestCase {
 
   public function testUrlalias() {
     if (!patterns_utils_is_module_enabled('pathauto')) {
-  		$this->fail('Pathauto module not found. Skipping all related tests');
-  		return;
-  	}
+      $this->fail('Pathauto module not found. Skipping all related tests');
+      return;
+    }
     // Make sure that matches the info in the pattern file
     $source = "admin/patterns/quickrun";
     $alias = "pathauto1";
@@ -79,9 +79,9 @@ class PatternsPathautoTestCase extends PatternsTestCase {
 
   public function testPathauto() {
     if (!patterns_utils_is_module_enabled('pathauto')) {
-  		$this->fail('Pathauto module not found. Skipping all related tests');
-  		return;
-  	}
+      $this->fail('Pathauto module not found. Skipping all related tests');
+      return;
+    }
     // Make sure that matches the theme in the pattern file
     //module_enable(array('pathauto'));
     parent::runFile('path_auto.yaml', 'pathauto setting', $this->pathauto_tests_dir);

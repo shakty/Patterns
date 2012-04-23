@@ -171,7 +171,7 @@ function patterns_requirements($phase) {
           'value'       => t('Disabled'),
         );
       }
- 
+
     break;
   }
   return $requirements;

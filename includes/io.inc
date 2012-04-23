@@ -34,25 +34,25 @@ function patterns_io_get_pattern_service($pattern) {
 /**
  * Loads the Patterns handlers (component) from the filesystem,
  * if they are not already loaded.
- * 
+ *
  * @param bool $reset (optional) If TRUE, always forces reloading
  *   the components from the file system. Defaults FALSE
  * @param bool $dryrun (optional) If TRUE, it does not actually load
  *   the components, but just returns the paths to each of them.
  *   Defaults FALSE
- *     
- * @return Array $components Array containing the paths of the 
+ *
+ * @return Array $components Array containing the paths of the
  *   components files.
  */
 function patterns_io_load_components($reset = FALSE, $dryrun = FALSE) {
   $components = &drupal_static(__FUNCTION__);
-  
+
   if (isset($paths) && !$reset) {
     return $components;
   }
 
   $components = array();
-  
+
   // Get list of directories to scan for components.
   $paths = module_invoke_all('patterns_components');
 
@@ -64,7 +64,7 @@ function patterns_io_load_components($reset = FALSE, $dryrun = FALSE) {
     }
   }
 
- 	return $components;
+  return $components;
 }
 
 /**
@@ -193,28 +193,28 @@ function _patterns_io_analyze_scandir_messages($messages = NULL) {
 
   // TODO: fix these to be proper t().
   if (!empty($messages['found'])) {
-    drupal_set_message(t('New patterns were found and added to the database: ') . '<br/>' . implode('<br/>', $messages['found']) . '<br/><br/>');
+    drupal_set_message(t('New patterns were found and added to the database:') . ' <br/>' . implode('<br/>', $messages['found']) . '<br/><br/>');
   }
   if (!empty($messages['updated'])) {
-    drupal_set_message(t('The following patterns were updated to the newest version found in the file system: ') . '<br/>' . implode('<br/>', $messages['updated']) . '<br/><br/>');
+    drupal_set_message(t('The following patterns were updated to the newest version found in the file system:') . ' <br/>' . implode('<br/>', $messages['updated']) . '<br/><br/>');
   }
   if (!empty($messages['errors'])) {
-    drupal_set_message(t('A generic error occurred while trying to load the following files: ') . '<br/>' . implode('<br/>', $messages['errors']) . '<br/><br/>', 'warning');
+    drupal_set_message(t('A generic error occurred while trying to load the following files:') . ' <br/>' . implode('<br/>', $messages['errors']) . '<br/><br/>', 'warning');
   }
   if (!empty($messages['invalid'])) {
-    drupal_set_message(t('Some invalid patterns were found: ') . '<br/>' . implode('<br/>', $messages['invalid']) . '<br/><br/>', 'warning');
+    drupal_set_message(t('Some invalid patterns were found:') . ' <br/>' . implode('<br/>', $messages['invalid']) . '<br/><br/>', 'warning');
   }
   if (!empty($messages['skipped'])) {
-    drupal_set_message(t('Patterns that are already enabled are not updated against changes in the file system. Please verify the following ones: ') . '<br/>' . implode('<br/>', $messages['skipped']) . '<br/><br/>', 'warning');
+    drupal_set_message(t('Patterns that are already enabled are not updated against changes in the file system. Please verify the following ones:') . ' <br/>' . implode('<br/>', $messages['skipped']) . '<br/><br/>', 'warning');
   }
   if (!empty($messages['permission'])) {
-    drupal_set_message(t('Some pattern files could not be open for reading. Please verify the permission of: ') . '<br/>' . implode('<br/>', $messages['permission']) . '<br/><br/>', 'warning');
+    drupal_set_message(t('Some pattern files could not be open for reading. Please verify the permission of:') . ' <br/>' . implode('<br/>', $messages['permission']) . '<br/><br/>', 'warning');
   }
   if (!empty($messages['error_found'])) {
-    drupal_set_message(t('New patterns were found, but could not be saved in the database: ') . '<br/>' . implode('<br/>', $messages['error_found']) . '<br/><br/>', 'warning');
+    drupal_set_message(t('New patterns were found, but could not be saved in the database:') . ' <br/>' . implode('<br/>', $messages['error_found']) . '<br/><br/>', 'warning');
   }
   if (!empty($messages['error_updated'])) {
-    drupal_set_message(t('A newer version of the following pattern was found, but could not be saved in the database: ') . '<br/>' . implode('<br/>', $messages['error_found']) . '<br/><br/>', 'warning');
+    drupal_set_message(t('A newer version of the following pattern was found, but could not be saved in the database:') . ' <br/>' . implode('<br/>', $messages['error_found']) . '<br/><br/>', 'warning');
   }
 
 }
@@ -228,9 +228,9 @@ function _patterns_io_analyze_scandir_messages($messages = NULL) {
  *
  * @param $reset if TRUE, it always updates the patterns in
  *  the database with the file system.
- * @param bool $verbose If TRUE, only public patterns 
- * 	 are returned
- * @param bool $verbose If TRUE, verbose output is 
+ * @param bool $verbose If TRUE, only public patterns
+ *   are returned
+ * @param bool $verbose If TRUE, verbose output is
  *   printed to screen
  *
  * @return array The array of available patterns.
@@ -257,11 +257,11 @@ function _patterns_io_get_patterns($reset = TRUE, $verbose = TRUE, $public = FAL
     if (!isset($pattern->name)) {
       continue;
     }
-		
+
     if ($public && !$pattern->public) {
-    	continue;
+      continue;
     }
-    
+
     // Skip pattern if its file is missing.
     if (!is_file($pattern->file)) {
       $messages[] = patterns_utils_toString($pattern);
@@ -291,8 +291,8 @@ function _patterns_io_get_patterns($reset = TRUE, $verbose = TRUE, $public = FAL
 
 /**
  * Wrapper function for _patterns_io_get_patterns.
- * @see _patterns_io_get_patterns.
- * 
+ * @see _patterns_io_get_patterns()
+ *
  * @return Array Associative array of public patterns.
  */
 function patterns_io_get_public_patterns($reset = TRUE, $verbose = TRUE) {
@@ -301,8 +301,8 @@ function patterns_io_get_public_patterns($reset = TRUE, $verbose = TRUE) {
 
 /**
  * Wrapper function for _patterns_io_get_patterns.
- * @see _patterns_io_get_patterns.
- * 
+ * @see _patterns_io_get_patterns()
+ *
  * @return array The array of available patterns.
  */
 function patterns_io_get_patterns($reset = TRUE, $verbose = TRUE) {
@@ -410,7 +410,7 @@ function patterns_io_save_pattern($content = NULL, $name = NULL, $format = PATTE
 
   if (is_null($original)) {
     if (is_array($content)) {
-       $original = patterns_parser_dump($content, $format); 
+      $original = patterns_parser_dump($content, $format);
     }
     else {
       $original = $content;
@@ -426,7 +426,7 @@ function patterns_io_save_pattern($content = NULL, $name = NULL, $format = PATTE
   // Load and save pattern.
   $load_function = patterns_parser_get_parser_function($format, PATTERNS_PARSER_LOAD);
   if (!$load_function) {
-    drupal_set_message(t("Could not find a parser for ", array('%name' => $name)), 'error');
+    drupal_set_message(t('Could not find a parser for ', array('%name' => $name)), 'error'); // TODO: proper t()
     return FALSE;
   }
 
@@ -439,72 +439,70 @@ function patterns_io_save_pattern($content = NULL, $name = NULL, $format = PATTE
 
   patterns_db_save_pattern($pattern, $path, $name, $format);
   $link = l($name, 'admin/patterns/edit/' . $name);
-  drupal_set_message(t('Pattern !name was saved in %path.', array('!name' => $link,
-                                                                  '%path' => $path,
-  )));
+  drupal_set_message(t('Pattern !name was saved in %path.', array('!name' => $link, '%path' => $path, )));
 
   return TRUE;
 }
 
 /**
  * Removes a pattern both from the file system and the database.
- * 
+ *
  * @param mixed $pattern_orig A pattern object, an array representing
  *  the pattern object, a numeric id or alphanumeric name of
- *  the pattern as it is in the database 
+ *  the pattern as it is in the database
  * @param bool $verbose (optional) If TRUE notify the users a failure.
  *   Default FALSE.
- *  
- * @return Boolean TRUE, if removal from the file system and the 
- *   database is successful 
+ *
+ * @return Boolean TRUE, if removal from the file system and the
+ *   database is successful
  */
 function patterns_io_remove_pattern($pattern_orig, $verbose = TRUE) {
-  
-	// Retrieve
-	$pattern = _patterns_db_get_pattern($pattern_orig);
-	
-	if (!$pattern) {
-		if ($verbose) {
-			drupal_set_message(t('Impossible to retrieve specified pattern: %pattern.', array('%pattern' => $pattern_orig)), 'error');
-		}
-		return FALSE;
-	}
 
-	if (!patterns_io_remove_pattern_from_fs($pattern->file, $verbose)) {
-		return FALSE;
-	}
-	
-  $result = patterns_db_remove_pattern($pattern->pid);
-  
-  if ($result) {
-  	if ($verbose) {
-  		drupal_set_message(t('Pattern %pattern was removed succesfully.', array('%pattern' => $pattern_orig)));
-  	}
+  // Retrieve
+  $pattern = _patterns_db_get_pattern($pattern_orig);
+
+  if (!$pattern) {
+    if ($verbose) {
+      drupal_set_message(t('Impossible to retrieve specified pattern: %pattern.', array('%pattern' => $pattern_orig)), 'error');
+    }
+    return FALSE;
   }
-  
+
+  if (!patterns_io_remove_pattern_from_fs($pattern->file, $verbose)) {
+    return FALSE;
+  }
+
+  $result = patterns_db_remove_pattern($pattern->pid);
+
+  if ($result) {
+    if ($verbose) {
+      drupal_set_message(t('Pattern %pattern was removed succesfully.', array('%pattern' => $pattern_orig)));
+    }
+  }
+
   return $result;
 }
 
 function patterns_io_remove_pattern_from_fs($path, $verbose = TRUE) {
-	
-	// Check permissions
-	if (!is_writable($path)) {
-		if ($verbose) {
-			drupal_set_message(t('Do not have permission to delete file %pattern. Aborting.', array('%pattern' => $path)), 'error');
-		}
-		return FALSE;
-	}
-	
-	// Delete from FS
-	$result = unlink($path);	
-	if (!$result) {
-		if ($verbose) {
-			drupal_set_message(t('An error occurred while deleting  %pattern.', array('%pattern' => $path)), 'error');
-		}
-		return FALSE;
-	}
-	
-	return TRUE;
+
+  // Check permissions
+  if (!is_writable($path)) {
+    if ($verbose) {
+      drupal_set_message(t('Do not have permission to delete file %pattern. Aborting.', array('%pattern' => $path)), 'error');
+    }
+    return FALSE;
+  }
+
+  // Delete from FS
+  $result = unlink($path);
+  if (!$result) {
+    if ($verbose) {
+      drupal_set_message(t('An error occurred while deleting  %pattern.', array('%pattern' => $path)), 'error');
+    }
+    return FALSE;
+  }
+
+  return TRUE;
 }
 
 
@@ -534,34 +532,34 @@ function _patterns_io_file_has_valid_extension($file = NULL, $formats = NULL) {
 
 
 /**
- * Returns a list of uris to components files. 
- * 
+ * Returns a list of uris to components files.
+ *
  * Wrapper method for patterns_io_load_components($reset, TRUE);
- * 
+ *
  * @param bool $reset (optional) If TRUE, always forces reloading
  *   the components from the file system. Defaults FALSE
- *   
- * @see patterns_io_load_components
+ *
+ * @see patterns_io_load_components()
  */
 function patterns_io_list_components($reset = FALSE) {
-	return patterns_io_load_components($reset, TRUE);
+  return patterns_io_load_components($reset, TRUE);
 }
 
 /**
- * Returns a list of all the directories containing 
+ * Returns a list of all the directories containing
  * Patterns components.
- * 
- * @param bool $reset (optional) If TRUE, forces to 
+ *
+ * @param bool $reset (optional) If TRUE, forces to
  *   reload the directory index.
  */
 function patterns_io_list_components_dirs($reset = FALSE) {
-	$components_dirs = &drupal_static(__FUNCTION__);
-  
+  $components_dirs = &drupal_static(__FUNCTION__);
+
   if (isset($components_dirs) && !$reset) {
     return $components_dirs;
   }
 
-	// Get list of directories to scan for components.
+  // Get list of directories to scan for components.
   return module_invoke_all('patterns_components');
 }
 

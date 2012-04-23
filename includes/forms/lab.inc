@@ -6,18 +6,18 @@
 
 function patterns_lab($form, &$form_state) {
 
-	$form = array();
-	
-	if (!patterns_parser_ready()) {
-		$form['noparser'] = array (
-			'#markup' => t('No Patterns parser found. Impossible to continue. Please enable at least one valid Patterns parser first.'),
-			'#prefix' => '<strong>',
-			'#suffix' => '</strong',
-		);			
-		
-		return $form;
-	}
-	
+  $form = array();
+
+  if (!patterns_parser_ready()) {
+    $form['noparser'] = array(
+      '#markup' => t('No Patterns parser found. Impossible to continue. Please enable at least one valid Patterns parser first.'),
+      '#prefix' => '<strong>',
+      '#suffix' => '</strong',
+    );
+
+    return $form;
+  }
+
   $header = array(
     'category' => array('data' => t('category'), 'field' => 'n.category', 'sort' => 'asc'),
     'name' => array('data' => 'name', 'field' => 'n.name'),
@@ -53,9 +53,9 @@ function patterns_lab($form, &$form_state) {
     );
     $rows[$pid+1] = $row; // somehow we get (pid -1) in the submit handler
   }
-  
+
   $text = 'In this area you can experiment by mixing several patterns together into a new one. The resulting pattern file can be imported into the database or downloaded as a file.';
-	$title = 'Patterns Lab';
+  $title = 'Patterns Lab';
   patterns_forms_add_page_header($form, $title, $text);
 
   $form['patterns'] = array(
@@ -90,7 +90,7 @@ function patterns_lab($form, &$form_state) {
     '#title' => t('Action'),
     '#default_value' => PATTERNS_EXPORT_TO_FILE,
   );
-  
+
   patterns_forms_get_info_section($form, array(), array('collapsed' => TRUE));
 
   $form['export_name'] = array(
@@ -99,13 +99,13 @@ function patterns_lab($form, &$form_state) {
     '#description' => t('Extension will be automatically added'),
     '#default_value' => t('pattern') . '_' . strval(time()),
   );
-																																					 
-  $form = patterns_forms_get_formats_selector($form, 
-  																						patterns_forms_get_default_format(),
-  																						'Include all selected patterns in this format.',
-  																						FALSE
+
+  $form = patterns_forms_get_formats_selector($form,
+                                              patterns_forms_get_default_format(),
+                                              'Include all selected patterns in this format.',
+                                              FALSE
   );
-  
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Go')
@@ -141,16 +141,16 @@ function patterns_lab_validate($form, &$form_state) {
   }
 
   if (!patterns_parser_exists($form_state['values']['format'])) {
-  	form_set_error('format', t('The pattern format seems to be invalid.'));
+    form_set_error('format', t('The pattern format seems to be invalid.'));
   }
-  
+
   if ($form_state['values']['to'] === PATTERNS_EXPORT_TO_DB) {
     _patterns_import_check_name($form_state['values']['export_name']);
   }
   elseif (empty($form_state['values']['export_name'])) {
     $form_state['values']['export_name'] = 'pattern';
   }
-  
+
   return TRUE;
 }
 
@@ -162,9 +162,9 @@ function patterns_lab_validate($form, &$form_state) {
 function patterns_lab_submit($form, &$form_state) {
   // Load the patterns from database.
   @$patterns = patterns_db_get_patterns();
-	$path = patterns_path_get_files_dir();
-  
-  $format 	= $form_state['values']['format'];
+  $path = patterns_path_get_files_dir();
+
+  $format   = $form_state['values']['format'];
   $filename = $form_state['values']['export_name'];
   $zip_flag = ($form_state['values']['to'] === PATTERNS_EXPORT_TO_ZIP) ? TRUE : FALSE;
 
@@ -237,7 +237,7 @@ function patterns_lab_submit($form, &$form_state) {
     }
     return;
   }
- 	
+
   $file = patterns_parser_dump($export, $format);
   // Add info to the exported pattern
   $file = patterns_parser_dump_comment("Patterns exported: " . $count, $format, $file);

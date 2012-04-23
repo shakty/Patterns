@@ -16,14 +16,14 @@ class PatternsParserTestCase extends PatternsTestCase {
     );
   }
 
-   public function setUp() { 	
-   	
-   	$this->parser_tests_dir = $this->getPatternsTestDir() . 'parser/';
+  public function setUp() {
+
+    $this->parser_tests_dir = $this->getPatternsTestDir() . 'parser/';
     // Enable any modules required for the tests.
-  	$modules = array('patterns_components',
-  							     'patterns_yamlparser',
-		);
-  	 
+    $modules = array('patterns_components',
+                     'patterns_yamlparser',
+    );
+
     parent::setUp($modules);
   }
 
