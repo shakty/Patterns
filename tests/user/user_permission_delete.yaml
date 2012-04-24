@@ -13,6 +13,6 @@ info:
 actions:
   - delete:
       tag: permission
-      rid: 4
+      rid: 5
       value:
         - delete own page content

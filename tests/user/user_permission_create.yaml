@@ -13,7 +13,7 @@ info:
 actions:
   - create:
       tag: permission
-      rid: 4
+      rid: 5
       value:
         - administer nodes
         - administer comments
