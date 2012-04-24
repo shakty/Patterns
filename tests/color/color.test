@@ -5,9 +5,9 @@
  *
  */
 
-class PatternsColorTestCase extends PatternRunTestCase {
+class PatternsColorTestCase extends PatternsTestCase {
 
-  const COLOR_TESTS_DIR = 'tests/color/';
+  var $color_tests_dir;
 
   static function getInfo() {
     return array(
@@ -17,17 +17,27 @@ class PatternsColorTestCase extends PatternRunTestCase {
     );
   }
 
-  public function setUp() {
+  public function setUp($modules = array(), $first = FALSE) {
+
+    $this->color_tests_dir = $this->getPatternsTestDir() . 'color/';
+
     // Enable any modules required for the tests.
-    parent::setUp();
+    $modules = array('patterns_components',
+                     'patterns_yamlparser',
+                     'color',
+    );
+
+    parent::setUp($modules);
   }
 
 
   public function testColor() {
+
+
+
     // Make sure that matches the theme in the pattern file
     $theme = 'bartik';
-    module_enable(array('color'));
-    parent::runFile('color.yaml', 'Set theme color', PatternsCOLORTestCase::COLOR_TESTS_DIR);
+    parent::runFile('color.yaml', 'Set theme color', $this->color_tests_dir);
     $palette = variable_get('color_' . $theme . '_palette');
 
     $this->assertEqual($palette['bottom'], '#494949', t('Modify Color pattern changed palette bottom correctly.'));

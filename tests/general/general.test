@@ -1,0 +1,150 @@
+<?php
+
+/**
+ * @file
+ * General SimpleTests for Patterns. Also, a Pattern running base class which uses QuickRun.
+ */
+
+class PatternsGeneralTestCase extends PatternsTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'General test',
+      'description' => 'Tests privileges, enabling a pattern, the editor.',
+      'group' => 'Patterns',
+    );
+  }
+
+  public function setUp($user_modules = array(), $first = FALSE) {
+
+    $modules = array('patterns_yamlparser');
+
+    // Enable any modules required for the tests.
+    parent::setUp($modules);
+
+    // TODO: how to ensure that Spyc is installed?
+
+    // Create users.
+    $this->adm_user = $this->drupalCreateUser(array('administer site configuration'));
+    $this->pat_user = $this->drupalCreateUser(array('administer patterns'));
+    $this->std_user = $this->drupalCreateUser(array());
+
+
+  }
+
+  // TODO: move this inside a YAML Parser test
+  function testSpyc() {
+    // Login the site administrator.
+    $this->drupalLogin($this->adm_user);
+
+    $this->drupalGet('admin/reports/status');
+    $this->assertResponse(200);
+    if ($this->spycAvailable()) {
+      $this->assertRaw('Spyc library (YAML parser)</td><td class="status-value">0.5', t('Spyc 0.5 is installed and detected.'));
+    }
+    else {
+      $this->assertRaw('Spyc library (YAML parser)</td><td class="status-value">' . t('Missing'), t('Spyc 0.5 is not detected and the proper error message is shown.'));
+    }
+  }
+
+  /**
+   * Login users, load the Patterns list page.
+   */
+  function testPatterns() {
+    // Login the patterns administrator.
+    $this->drupalLogin($this->pat_user);
+    $this->verifyAccess(200);
+
+    // Login a regular user.
+    $this->drupalLogin($this->std_user);
+    $this->verifyAccess(403);
+  }
+
+  /**
+   * Verify the logged in user has the desired access to the various menu nodes.
+   *
+   * @param integer $response HTTP response code.
+   */
+  private function verifyAccess($response = 200) {
+    // View patterns list.
+    $this->drupalGet('admin/patterns');
+    $this->assertResponse($response);
+    if ($response == 200) {
+      $this->checkPage();
+      //$this->assertTitle('Patterns | Drupal');
+      $this->assertUniqueText(t('Commands'), t('Patterns commands loaded'));
+      $this->assertUniqueText(t('No patterns available.'), t('No patterns found (correctly!)'));
+      $this->assertUniqueText(t('Removed Patterns'), t('Patterns trash bin loaded'));
+    }
+  }
+
+  private function checkPage() {
+    // TODO: regexp?
+    // TODO: do this better?
+    $this->assertNoText(t('Error'), t('There should be no errors.'));
+    $this->assertNoText(t('Warning'), t('There should be no warnings.'));
+    $this->assertNoText(t('Notice'), t('There should be no notices.'));
+  }
+
+  private function spycAvailable() {
+    $path = libraries_get_path('spyc') . '/spyc.php';
+    if (!file_exists($path)) {
+      return FALSE;
+    }
+    return TRUE;
+  }
+
+}
+
+/*
+   // TODO: Temporarily disabled until we find a better way of doing this.
+
+
+
+    // Enabling form for the first pattern.
+    $this->drupalGet('admin/patterns/enable/1');
+    $this->assertResponse($response);
+    if ($response == 200) {
+      $this->checkPage();
+
+      // Some assertions.
+      $name = "Enable/disable modules";
+      $this->assertRaw(t('Proceed with running pattern %pattern?', array('%pattern' => $name)));
+
+      // Fill the form.
+      $edit = array();
+      $edit['mode'] = 'php';
+
+      // Post the form.
+      $this->drupalPost('admin/patterns/enable/1', $edit, t('Confirm'));
+      $this->assertResponse($response);
+
+      // Some assertions.
+      // TODO: make this more general.
+      $this->assertUniqueText(t('Pattern "@pattern" ran successfully.', array('@pattern' => $name)), t('Valid pattern runs without errors.'));
+      $this->assertNoText(t('Error(s) while processing pattern:'), t('Valid pattern does not produce errors.'));
+      $this->assertRaw('Enabled</td><td><label><strong>' . $name);
+    }
+
+    // Use the editor.
+    // $this->assertTitle('Patterns');
+    $this->drupalGet('admin/patterns/edit/2');
+    $this->assertResponse($response);
+    if ($response == 200) {
+      //$this->assertTitle('Edit Pattern');
+      // TODO: Get path.
+      // $filepath =
+      // $this->assertRaw(t('Path') . ':</td><td>' . $filepath);
+      $this->assertRaw('<td>' . t('Enabled') . ':</td><td>' . t('No') . t('</td>'));
+      // TODO: Why can't I use PatternRunTestCase::loadPattern('variables.yaml') ? Maybe because the class is abstract?
+      $filename = 'block_delete.yaml';
+      $patternfile = file_get_contents(drupal_get_path('module', 'patterns') . '/patterns/' . $filename);
+      $this->assertRaw('class="form-textarea">' . $patternfile);
+
+      // TODO
+      //// Try validating.
+      //$values = array('pattern' => $patternfile);
+      //$this->drupalPost('patterns/validate', $values, array('path' => 'patterns/validate', ));
+
+
+    }
+    */

@@ -1,0 +1,93 @@
+<?php
+
+define('PATTERNS_FORMAT_PHP', 'php');
+
+// Implements hook patterns_parser_add
+function patterns_phpparser_patterns_parser() {
+	$parser = array();
+	$parser['format'] = PATTERNS_FORMAT_PHP;
+	$parser['parser'] = 'patterns_phpparser';
+	//$parser['overwrite'] = TRUE; // default is TRUE
+	return $parser;
+}
+
+/**
+ * Loads and parases a YAML pattern from file.
+ *
+ * @param string $path The path to the pattern file.
+ * @param bool $local (optional) TRUE if the pattern
+ *   file is local. Defaults to TRUE.
+ *
+ * @return array|bool The pattern structure, or FALSE.
+ */
+function patterns_phpparser_load_new($path, $local = TRUE) {
+  if ($local && !file_exists($path)) {
+    return FALSE;
+  }
+
+  if (!$php = file_get_contents($path)) {
+    return FALSE;
+  }
+
+  return patterns_phpparser_parse($php);
+}
+
+/**
+ * Loads a serialized PHP pattern array from file.
+ *
+ * @param mixed $path The path of the pattern file.
+ * @param bool $local
+ *   (optional) TRUE if the pattern file is local. Defaults to TRUE.
+ *
+ * @return array|bool
+ *   The pattern structure, or FALSE.
+ */
+function patterns_phpparser_load($path, $local = TRUE) {
+  if ($local && !file_exists($path)) {
+    return FALSE;
+  }
+  
+	if (!$php = file_get_contents($path)) {
+    return FALSE;
+  }
+
+  return patterns_phpparser_parse($php);
+}
+
+
+/**
+ * Parses a string containing a PHP array and returns
+ * the array.
+ *
+ * @param array $pattern The pattern string to convert array.
+ *
+ */
+function patterns_phpparser_parse($pattern = NULL) {
+	if (is_null($pattern)) return FALSE;
+	if (is_array($pattern)) return $pattern;
+  if (!is_string($pattern)) return FALSE;
+
+  return unserialize($pattern);
+}
+
+/**
+ * Converts an array representing a pattern into a YAML string.
+ *
+ * @param array $pattern The pattern to convert into a YAML string
+ */
+function patterns_phpparser_dump($pattern = NULL, $append = NULL) {
+	if (is_null($pattern) || !is_array($pattern)) return FALSE;
+	
+	$dump = serialize($pattern);
+	return (empty($append)) ? $dump : $append . "\n" . $dump; 
+}
+
+/**
+ * Comments are not allowed in the PHP format (for now).
+ * 
+ * All the comments are removed.
+ * 
+ */
+function patterns_phpparser_dump_comment($text = NULL, $append = NULL) {
+	return (is_null($append)) ? '' : $append; 
+}

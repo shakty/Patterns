@@ -1,151 +1,58 @@
 <?php
 /**
  * @file
- * General SimpleTests for Patterns. Also, a Pattern running base class which uses QuickRun.
+ * The base of the Patterns Component tests.
  */
-
-class PatternsPrivilegesTestCase extends DrupalWebTestCase {
-  public static function getInfo() {
-    return array(
-      'name' => 'General test',
-      'description' => 'Tests privileges, enabling a pattern, the editor.',
-      'group' => 'Patterns',
-    );
-  }
-
-  public function setUp() {
-    // Enable any modules required for the tests.
-    parent::setUp('patterns');
-    // TODO: how to ensure that Spyc is installed?
-
-    // Create users.
-    $this->adm_user = $this->drupalCreateUser(array('administer site configuration'));
-    $this->pat_user = $this->drupalCreateUser(array('administer patterns'));
-    $this->std_user = $this->drupalCreateUser(array());
-  }
-
-  function testSpyc() {
-    // Login the site administrator.
-    $this->drupalLogin($this->adm_user);
-
-    $this->drupalGet('admin/reports/status');
-    $this->assertResponse(200);
-    if ($this->spycAvailable()) {
-      $this->assertRaw('Spyc library (YAML parser)</td><td class="status-value">0.5', t('Spyc 0.5 is installed and detected.'));
-    }
-    else {
-      $this->assertRaw('Spyc library (YAML parser)</td><td class="status-value">' . t('Missing'), t('Spyc 0.5 is not detected and the proper error message is shown.'));
-    }
-  }
-
-  private function spycAvailable() {
-    $path = libraries_get_path('spyc') . '/spyc.php';
-    if (!file_exists($path)) {
-      return FALSE;
-    }
-    return TRUE;
-  }
-
-  /**
-   * Login users, load the Patterns list page.
-   */
-  function testPatterns() {
-    // Login the patterns administrator.
-    $this->drupalLogin($this->pat_user);
-    $this->verifyAccess(200);
-
-    // Login a regular user.
-    $this->drupalLogin($this->std_user);
-    $this->verifyAccess(403);
-  }
-
-  /**
-   * Verify the logged in user has the desired access to the various menu nodes.
-   *
-   * @param integer $response HTTP response code.
-   */
-  private function verifyAccess($response = 200) {
-    // View patterns list.
-    $this->drupalGet('admin/patterns');
-    $this->assertResponse($response);
-    if ($response == 200) {
-      $this->checkPage();
-
-      $this->assertUniqueText(t('Looking for patterns files under the following locations:'), t('Patterns list was displayed'));
-      //$this->assertTitle('Patterns');
-    }
-/*
-   // TODO: Temporarily disabled until we find a better way of doing this.
-
-
-
-    // Enabling form for the first pattern.
-    $this->drupalGet('admin/patterns/enable/1');
-    $this->assertResponse($response);
-    if ($response == 200) {
-      $this->checkPage();
-
-      // Some assertions.
-      $name = "Enable/disable modules";
-      $this->assertRaw(t('Proceed with running pattern %pattern?', array('%pattern' => $name)));
-
-      // Fill the form.
-      $edit = array();
-      $edit['mode'] = 'php';
-
-      // Post the form.
-      $this->drupalPost('admin/patterns/enable/1', $edit, t('Confirm'));
-      $this->assertResponse($response);
-
-      // Some assertions.
-      // TODO: make this more general.
-      $this->assertUniqueText(t('Pattern "@pattern" ran successfully.', array('@pattern' => $name)), t('Valid pattern runs without errors.'));
-      $this->assertNoText(t('Error(s) while processing pattern:'), t('Valid pattern does not produce errors.'));
-      $this->assertRaw('Enabled</td><td><label><strong>' . $name);
-    }
-
-    // Use the editor.
-    // $this->assertTitle('Patterns');
-    $this->drupalGet('admin/patterns/edit/2');
-    $this->assertResponse($response);
-    if ($response == 200) {
-      //$this->assertTitle('Edit Pattern');
-      // TODO: Get path.
-      // $filepath =
-      // $this->assertRaw(t('Path') . ':</td><td>' . $filepath);
-      $this->assertRaw('<td>' . t('Enabled') . ':</td><td>' . t('No') . t('</td>'));
-      // TODO: Why can't I use PatternRunTestCase::loadPattern('variables.yaml') ? Maybe because the class is abstract?
-      $filename = 'block_delete.yaml';
-      $patternfile = file_get_contents(drupal_get_path('module', 'patterns') . '/patterns/' . $filename);
-      $this->assertRaw('class="form-textarea">' . $patternfile);
-
-      // TODO
-      //// Try validating.
-      //$values = array('pattern' => $patternfile);
-      //$this->drupalPost('patterns/validate', $values, array('path' => 'patterns/validate', ));
-
-
-    }
-    */
-  }
-
-  private function checkPage() {
-    // TODO: regexp?
-    // TODO: do this better?
-    $this->assertNoText(t('Error'), t('There should be no errors.'));
-    $this->assertNoText(t('Warning'), t('There should be no warnings.'));
-    $this->assertNoText(t('Notice'), t('There should be no notices.'));
-  }
-}
 
 /**
  * Abstract base class for testing pattern component behavior.
  */
-abstract class PatternRunTestCase extends DrupalWebTestCase {
+abstract class PatternsTestCase extends DrupalWebTestCase {
 
-  public function setUp() {
+  /**
+   * Returns the path to the tests directory inside the
+   * Patterns module
+   *
+   */
+  public function getPatternsTestDir() {
+    return realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/tests/';
+  }
+
+  /**
+   * Setups the testing environment.
+   *
+   * Loads the patterns and libraries modules plus all those that are
+   * passed as parameters; skips the Patterns splash screen.
+   *
+   * @param array $user_modules The array of modules to enable
+   * @param bool $first (optional) If TRUE, the Patterns splash
+   *   screen is not skipped.
+   *
+   */
+  public function setUp($user_modules = array(), $first = FALSE) {
+
+    $modules = array('patterns', 'libraries');
+    if (!empty($user_modules)) {
+      if (!is_array($user_modules)) {
+        $user_modules = array($user_modules);
+      }
+      $modules = array_merge($modules, $user_modules);
+      $modules = array_unique($modules);
+    }
+
     // Enable any modules required for the tests.
-    parent::setUp('patterns');
+    parent::setUp($modules);
+
+    if (!$first) {
+      // 'patterns_first_install' => PATTERNS_FIRST_INSTALL in
+      // includes/variables.inc (may be not yet loaded)
+      variable_set('patterns_first_install', FALSE);
+      // TODO: Can we set the flag FIRST_INSTALL to FALSE before enabling patterns
+      // so that we don't need to rebuild the menu
+      menu_rebuild();
+    }
+
+
     // TODO: how to ensure that Spyc is installed?
 
     // Create users.
@@ -154,24 +61,47 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
     $this->drupalLogin($this->pat_user);
   }
 
-  function runFile($filename, $name, $dir = 'patterns/') {
-    $patterntext = self::loadPattern($filename, $dir);
-    $this->runTest($patterntext, $name);
-  }
-
-  function runTest($pattern, $name) {
-    $this->quickRun($pattern, $name, 'php');
-    // TODO: Only run one mode in order to avoid duplicates, for now.
-    //$this->quickRun($pattern, $name, 'batch');
+  /**
+   * Loads a pattern file and runs it.
+   *
+   * @param mixed $filename The full name (name + extension) of
+   *   the file to run
+   * @param mixed $name An alphanumeric name or short sentence
+   *   to be displayed next to the test results
+   * @param mixed $dir The path of the directory containing the
+   *   pattern file
+   * @param mixed $format (optional) If set, forces the use of
+   *   a specific format
+   *
+   * @see quickRun()
+   */
+  function runFile($filename, $name, $dir, $format = NULL) {
+    $patterntext = $this->loadPattern($filename, $dir);
+    if (is_null($format)) {
+      $path_parts = pathinfo($filename);
+      $format = $path_parts['extension'];
+    }
+    $this->quickRun($patterntext, $name);
   }
 
   /**
-   * Runs a pattern through the Quick Run interface.
+   * Runs a pattern through the Quick Run interface and
+   * checks the output screen for errors messages.
+   *
+   * @param mixed $pattern A string representation of a pattern
+   * @param mixed $name An alphanumeric name or short sentence
+   *   to be displayed next to the test results
+   * @param mixed $format (optional) The format of the pattern
+   *   to be executed. Defaults 'yaml' for historical reasons
+   * @param bool $valid (optional) If TRUE, it assumed that the executed
+   *   pattern should not raise errors. Defaults TRUE
+   * @param mixed $mode (optional) The execution mode of the pattern
+   *   Defaults 'php'
    */
-  function quickRun($pattern, $name, $mode = 'php', $valid = TRUE) {
+  function quickRun($pattern, $name, $format = 'yaml', $valid = TRUE, $mode = 'php') {
     // Fill the form.
     $edit = array();
-    $edit['format'] = 'yaml'; // TODO
+    $edit['format'] = $format;
     $edit['mode'] = $mode;
     $edit['content'] = $pattern;
 
@@ -191,72 +121,122 @@ abstract class PatternRunTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Load all pattern files (only YAML for now) from a directory
-   * and execute the callback on each of those.
-   * The directory must be inside the pattern module root.
+   * Scans a directory for patterns files, and executes them.
+   *
+   * @param mixed $dir The path to the directory to scan
    *
    */
-  function runPatternsFromDir($dir, $callback) {
+  function runDir($dir) {
+
+    if (!file_exists($dir) || !is_readable($dir)) {
+      $this->error(t('Directory not found or not readable: ' . $dir));
+      return FALSE;
+    }
+
+    if (!$handle = opendir($dir)) {
+      $this->error(t('Error opening directory') . ' ' . $dir);
+      return FALSE;
+    }
+
+    while (false !== ($file = readdir($handle))) {
+      $path_parts = pathinfo($file);
+      $format = $path_parts['extension'];
+      if (!patterns_parser_exists($format)) {
+        continue;
+      }
+
+      $this->runFile($file, 'Running' . ' ' . $file, $dir);
+    }
+    closedir($handle);
+  }
+
+  /**
+   * Loads all the pattern files from a directory
+   * and executes a callback on each parsed pattern.
+   *
+   * The parser is chosen based on the extension of the files
+   * in the folder.
+   *
+   * The directory must be readable.
+   *
+   * @param $mixed $dir The directory in which looking for
+   *   patterns files
+   * @param $mixed $callback The callback function to be
+   *   passed to call_user_func. The argument of the callback
+   *   is the array representation of a pattern, as loaded by
+   *   patterns_parser_load()
+   *
+   */
+  function callbackOnDir($dir, $callback) {
 
     if (empty($callback)) {
       $this->error(t('No callback passed to runPatternsFromDir.'));
       return FALSE;
     }
+
     if (!is_callable($callback, TRUE)) {
       $this->error(t('Callback to runPatternsFromDir is not callable.'));
       return FALSE;
     }
-    $dir = realpath('./') . '/' . drupal_get_path('module', 'patterns') . '/' . $dir;
-    if (!file_exists($dir)) {
-      $this->error(t('Directory not found: ' . $dir)); // TODO: proper t().
+
+    if (!file_exists($dir) || !is_readable($dir)) {
+      $this->error(t('Directory not found or not readable: ' . $dir));
       return FALSE;
     }
 
+    if (!$handle = opendir($dir)) {
+      $this->error(t('Error opening directory') . ' ' . $dir);
+      return FALSE;
+    }
 
-    if ($handle = opendir($dir)) {
-      while (false !== ($entry = readdir($handle))) {
-        $path_parts = pathinfo($entry);
-        if ($path_parts['extension'] === 'yaml') {
-          $file = file_get_contents($dir . $entry);
-          if (empty($file)) {
-            $this->fail(t('Error while loading ') . $path_parts['filename']); // TODO: proper t()
-            continue;
-          }
-          call_user_func($callback, $file);
-        }
+    while (false !== ($entry = readdir($handle))) {
+      $path_parts = pathinfo($entry);
+      $format = $path_parts['extension'];
+
+      if (!patterns_parser_exists($format)) {
+        continue;
       }
-      closedir($handle);
+
+      $pattern = patterns_parser_load($dir . $entry, $format);
+      if (empty($pattern)) {
+        $this->fail(t('Error while loading') . ' ' . $entry);
+        continue;
+      }
+      call_user_func($callback, $pattern);
     }
-    else {
-      $this->error(t('Error opening directory ') . $dir); // TODO: proper t()
-    }
+    closedir($handle);
+
   }
+
+
   /**
-   * Loads a pattern text file from a directory contained in the Patterns module.
+   * Loads a pattern file into a string from a directory.
    *
-   * @param string $filename The name of the pattern file.
-   * @param string $dir The subdirectory of the patterns module where the
-   *   pattern is located.
+   * @param mixed $filename The name of the pattern file
+   * @param mixed $dir The directory where the pattern file
+   *   is located.
    */
-  public static function loadPattern($filename, $dir = 'patterns/') {
-    return file_get_contents(drupal_get_path('module', 'patterns') . '/' . $dir . $filename);
+  function loadPattern($filename, $dir) {
+    if (!file_exists($dir) || !is_readable($dir)) {
+      $this->error(t('Directory not found or not readable: ' . $dir));
+      return FALSE;
+    }
+    return file_get_contents( $dir . $filename);
   }
-  
+
   /**
    * Checks if during the Web execution fopenurl is enabled.
-   * 
+   *
    * Notice: patterns_utils_is_fopenurl_enabled cannot be used
-   * because it returns the value for the cli.
-   * 
+   * because it does not work with drush (returns the value of cli).
+   *
    */
-  public function is_fopenurl_enabled() {
+  public function isFopenurlEnabled() {
     // View patterns list.
     $this->drupalGet('admin/patterns/import/url');
     $this->assertResponse(200);
     // TODO: this text should not appear if and only if fopen is enabled for URLs.
     return $this->assertNoText(t('Feature disabled:'), t('fopenurl is enabled.'));
   }
-  
 
 }
-

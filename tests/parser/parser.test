@@ -4,9 +4,9 @@
  * SimpleTests for the Taxonomy component of Patterns.
  */
 
-class PatternsParserTestCase extends PatternRunTestCase {
+class PatternsParserTestCase extends PatternsTestCase {
 
-  const PARSER_TESTS_DIR = 'tests/parser/';
+  var $parser_tests_dir;
 
   public static function getInfo() {
     return array(
@@ -16,23 +16,31 @@ class PatternsParserTestCase extends PatternRunTestCase {
     );
   }
 
-  public function setUp() {
+  public function setUp($modules = array(), $first = FALSE) {
+
+    $this->parser_tests_dir = $this->getPatternsTestDir() . 'parser/';
     // Enable any modules required for the tests.
-    parent::setUp();
+    $modules = array('patterns_components',
+                     'patterns_yamlparser',
+    );
+
+    parent::setUp($modules);
   }
 
   public function testValidP() {
-    $this->runPatternsFromDir(self::PARSER_TESTS_DIR . 'valid/', array(&$this, 'check_valid'));
+    $dir = $this->parser_tests_dir . 'valid/';
+    $this->callbackOnDir($dir, array(&$this, 'check_valid'));
   }
 
   public function testInvalidP() {
-    $this->runPatternsFromDir(self::PARSER_TESTS_DIR . 'invalid/', array(&$this, 'check_invalid'));
+    $dir = $this->parser_tests_dir . 'invalid/';
+    $this->callbackOnDir($dir, array(&$this, 'check_invalid'));
   }
 
   private function basic_checks($pattern) {
-    $scan = _patterns_scan_pattern($pattern);
+    $scan = patterns_scan_pattern($pattern);
     $this->assertNotNull($scan, t('Pattern file loaded and scanned.'));
-    $analysis = _patterns_analyze_patternscan($scan);
+    $analysis = _patterns_scan_analyze_patternscan($scan);
     $this->assertNotNull($analysis, t('Pattern-scan was analyzed successfully.'));
     return $analysis;
   }

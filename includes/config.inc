@@ -13,24 +13,16 @@
 function patterns_permission() {
   return array(
     'administer patterns' => array(
-      'title' => t('administer patterns'),
+      'title' => t('Administer patterns'),
+    ),
+    'get patterns' => array(
+      'title' => t('Get a pattern or the XML feed through the REST web service'),
+    ),
+    'public patterns' => array(
+      'title' => t('See the public patterns page'),
     ),
     // TODO: More detailed set of permissions.
   );
-}
-
-
-/**
- * Implements hook_help().
- */
-function patterns_help($section, $arg = NULL) {
-  $output = '';
-  switch ($section) {
-    case 'admin/patterns':
-      $output = t('Looking for patterns files under the following locations:') . ' ' . theme('item_list', array('items' => patterns_config_get_paths()));
-      break;
-  }
-  return $output;
 }
 
 /**
@@ -39,6 +31,9 @@ function patterns_help($section, $arg = NULL) {
  */
 function patterns_config_settings($form, &$form_state) {
 
+  $text = 'Configure the behavior of Patterns.';
+  $title = 'Patterns settings';
+  patterns_forms_add_page_header($form, $title, $text);
 
   $form['exec'] = array(
     '#type' => 'fieldset',
@@ -60,11 +55,11 @@ function patterns_config_settings($form, &$form_state) {
     '#title' => t('Included patterns'),
     '#description' => t('Default behavior with included patterns. This option can be overwritten inside the pattern code.'),
     '#options' => array(PATTERNS_INCLUDE_NEVER => t('Never run'),
-                   PATTERNS_INCLUDE_FIRSTRUN => t('Only during the first run'),
-                   PATTERNS_INCLUDE_UPDATE => t('Only if pattern was updated'),
-                   PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE => t('If it is the first run or if the pattern was updated'),
-                   PATTERNS_INCLUDE_ATTACHED => t('Only if the pattern code is attached (no lookup to database)'),
-                   PATTERNS_INCLUDE_ALWAYS => t('Always'),
+                        PATTERNS_INCLUDE_FIRSTRUN => t('Only during the first run'),
+                        PATTERNS_INCLUDE_UPDATE => t('Only if pattern was updated'),
+                        PATTERNS_INCLUDE_FIRSTRUN_OR_UPDATE => t('If it is the first run or if the pattern was updated'),
+                        PATTERNS_INCLUDE_ATTACHED => t('Only if the pattern code is attached (no lookup to database)'),
+                        PATTERNS_INCLUDE_ALWAYS => t('Always'),
     ),
     '#default_value' => patterns_get_include_mode(),
   );
@@ -82,7 +77,7 @@ function patterns_config_settings($form, &$form_state) {
     '#description' => t('By default, patterns files will be saved and loaded from here.'),
     '#default_value' => variable_get('patterns_save_file', 'sites/all/patterns/'),
   );
-  
+
   $form['fs']['patterns_refresh_components'] = array(
     '#type' => 'checkbox',
     '#title' => t('Updates the patterns component at every page reload'),
@@ -104,6 +99,42 @@ function patterns_config_settings($form, &$form_state) {
     '#default_value' => variable_get('patterns_update_db_from_fs', TRUE),
   );
 
+  $form['sharing'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Sharing options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  $form['sharing']['patterns_allow_publish'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable sharing of patterns'),
+    '#description' => t('If selected, patterns can be shared with others web sites.'),
+    '#default_value' => variable_get('patterns_allow_publish', PATTERNS_ALLOW_PUBLISH_DEFAULT),
+  );
+
+  $form['sharing']['patterns_public_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Enable patterns public page'),
+    '#description' => t('If set, a public page of public patterns in the web site will be created under this url. Please review the permissions of your web site to make sure that anonymous users can see it.'),
+    '#default_value' => variable_get('patterns_public_url', ''),
+  );
+
+  $form['drush'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Drush Integration'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+
+  );
+
+  $form['drush']['patterns_drush_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Drush Path'),
+    '#description' => t('If you have drush installed, please specify the path. Otherwise leave it empty'),
+    '#required' => FALSE,
+  );
+
   $form['other'] = array(
     '#type' => 'fieldset',
     '#title' => t('Other'),
@@ -119,85 +150,5 @@ function patterns_config_settings($form, &$form_state) {
     '#default_value' => variable_get('patterns_form_helper', FALSE),
   );
 
-
-  /* TODO: Outdated, disabled for now.
-  $form['patterns_allow_publish'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Share your patterns'),
-    '#description' => t('When enabled, you will be able to "publish" selected patterns and make them available to other patterns users on the following URL: %url.', array('%url' => url(NULL, array('absolute' => TRUE)) . (variable_get('clean_url', 0) ? '' : '?q=') . 'patterns.xml')),
-    '#default_value' => variable_get('patterns_allow_publish', FALSE),
-  );
-   */
-
-  // Reload patterns while we are here and ensure the lists are up to date.
-  //patterns_get_patterns(TRUE);
-
   return system_settings_form($form);
-}
-
-
-/**
- * Implements hook_patterns_components().
- *
- * Tell the pattern engine where the components are.
- */
-function patterns_patterns_components() {
-  return drupal_get_path('module', 'patterns') . '/components/';
-}
-
-/**
- * Return the path to the directory containing the patterns files (imported  or
- * executed ones).
- *
- * We do not use directly variable_get because it had some issues with the batch
- *
- */
-function patterns_config_get_files_dir() {
-  return drupal_realpath('public://') . "/patterns/";
-}
-
-/**
- * Return a list of paths that will be scanned for pattern files.
- */
-function patterns_config_get_paths() {
-  // Why was this global?
-  // global $profile;
-  //$base_path = $_SERVER['DOCUMENT_ROOT'] . base_path();
-
-  $patterns_paths = array(
-    patterns_config_get_files_dir(), // must be first, in order not lose changes
-    variable_get('patterns_save_file', 'sites/all/patterns/'),
-    drupal_get_path('module', 'patterns') . '/patterns/',
-  );
-
-  $profile = variable_get('install_profile', 'default');
-  if (isset($profile)) {
-    $patterns_paths[] = 'profiles/' . $profile . '/patterns';
-  }
-
-  // Allow any module to include patterns too.
-  foreach (module_invoke_all('patterns_directory') as $path) {
-    if (is_dir($path)) {
-      $patterns_paths[] = $path . '/patterns';
-    }
-  }
-
-  return $patterns_paths;
-}
-
-
-/**
- * Return file extensions supported by the patterns module.
- *
- * @return array
- *   Array of supported file types.
- *
- * @todo Convert this into pluggable system.
- */
-function patterns_config_get_file_types() {
-  $result = array('xml', 'php');
-  if (file_exists(libraries_get_path('spyc') . '/spyc.php')) {
-    $result[] = 'yaml';
-  }
-  return $result;
 }

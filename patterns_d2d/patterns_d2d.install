@@ -1,0 +1,21 @@
+<?php
+/**
+ * @file
+ * Installation file for Patterns D2D
+ */
+
+/**
+ * Implements hook_install().
+ */
+function patterns_d2d_install() {
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function patterns_d2d_uninstall() {
+  variable_del('patterns_d2d_auto_publish');
+  variable_del('patterns_d2d_server');
+  variable_del('patterns_d2d_allow_publish');
+}
+

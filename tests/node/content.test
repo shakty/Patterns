@@ -4,9 +4,9 @@
  * SimpleTests for the Node component of Patterns (Content Types).
  */
 
-class PatternsContentTypeTestCase extends PatternRunTestCase {
+class PatternsContentTypeTestCase extends PatternsTestCase {
 
-  const NODE_TESTS_DIR = 'tests/node/';
+  var $node_tests_dir;
 
   static function getInfo() {
     return array(
@@ -14,6 +14,17 @@ class PatternsContentTypeTestCase extends PatternRunTestCase {
       'description' => 'Creates, modifies, and deletes Content Types.',
       'group' => 'Patterns',
     );
+  }
+
+  public function setUp($modules = array(), $first = FALSE) {
+
+    $this->node_tests_dir = $this->getPatternsTestDir() . 'node/';
+    // Enable any modules required for the tests.
+    $modules = array('patterns_components',
+                     'patterns_yamlparser',
+    );
+
+    parent::setUp($modules);
   }
 
   public function testCreateModifyDelete() {
@@ -32,7 +43,7 @@ class PatternsContentTypeTestCase extends PatternRunTestCase {
     $this->assertIdentical($node_type_count, '0', t('The content type should not exist at this point.'));
 
     // Run the pattern.
-    parent::runFile('content.yaml', 'Content Type (create)', PatternsContentTypeTestCase::NODE_TESTS_DIR);
+    parent::runFile('content.yaml', 'Content Type (create)', $this->node_tests_dir);
 
     // Expected messages.
     $this->assertUniqueText(t('The content type Test Content Type has been added.'));
@@ -54,7 +65,7 @@ class PatternsContentTypeTestCase extends PatternRunTestCase {
 
   private function testDelete() {
     // Run the pattern.
-    parent::runFile('content_delete.yaml', 'Content Type (delete)', PatternsContentTypeTestCase::NODE_TESTS_DIR);
+    parent::runFile('content_delete.yaml', 'Content Type (delete)', $this->node_tests_dir);
 
     // Expected messages.
     $this->assertUniqueText(t('The content type Test Content Type2 has been deleted.'));
@@ -70,7 +81,7 @@ class PatternsContentTypeTestCase extends PatternRunTestCase {
 
   private function testModify() {
     // Run the pattern.
-    parent::runFile('content_modify.yaml', 'Content Type (modify)', PatternsContentTypeTestCase::NODE_TESTS_DIR);
+    parent::runFile('content_modify.yaml', 'Content Type (modify)', $this->node_tests_dir);
 
     // Expected messages.
     $this->assertUniqueText(t('The content type Test Content Type2 has been updated.'));

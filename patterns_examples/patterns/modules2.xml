@@ -1,0 +1,21 @@
+<pattern>
+  <info>
+    <title>Enable/disable modules (XML)</title>
+    <description>Based on http://drupal.org/node/408960</description>
+    <author>QScience</author>
+    <category>System</category>
+    <version>1.0</version>
+    <core>7.x</core>
+  </info>
+  <actions>
+    <create tag="modules">
+      <value>forum</value>
+      <value>member</value>
+    </create>
+    <delete tag="modules">
+      <value>admin_menu</value>
+      <value>overlay</value>
+      <value>aggregator</value>
+    </delete>
+  </actions>
+</pattern>

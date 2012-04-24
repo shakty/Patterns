@@ -1,0 +1,8 @@
+;name = Patterns D2D
+;description = "TBD :)"
+;package = Patterns
+;core = 7.x
+;files[] = patterns_d2d.module
+;files[] = patterns_d2d.install
+;dependencies[] = drupaltodrupal
+;dependencies[] = patterns 

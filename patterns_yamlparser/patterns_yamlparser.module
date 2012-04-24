@@ -1,0 +1,72 @@
+<?php
+
+define('PATTERNS_FORMAT_YAML', 'yaml');
+
+// Implements hook patterns_parser
+function patterns_yamlparser_patterns_parser() {
+  $parser = array();
+  $parser['format'] = PATTERNS_FORMAT_YAML;
+  $parser['parser'] = 'patterns_yamlparser';
+  return $parser;
+}
+
+
+/**
+ * Loads and parases a YAML pattern from file.
+ *
+ * @param string $path The path to the pattern file.
+ * @param bool $local (optional) TRUE if the pattern
+ * file is local. Defaults to TRUE.
+ *
+ * @return array|bool The pattern structure, or FALSE.
+ */
+function patterns_yamlparser_load($path, $local = TRUE) {
+  if ($local && !file_exists($path)) {
+    return FALSE;
+  }
+
+  require_once libraries_get_path('spyc') . '/spyc.php';
+  return Spyc::YAMLLoad($path);
+}
+
+
+/**
+ * Parses a string representing a YAML pattern and return
+ * the array representation.
+ *
+ * @param array $pattern The pattern string to convert array.
+ *
+ */
+function patterns_yamlparser_parse($pattern) {
+  if (!is_array($pattern)) {
+    require_once libraries_get_path('spyc') . '/spyc.php';
+    $pattern = Spyc::YAMLLoad($pattern);
+  }
+  return $pattern;
+}
+
+/**
+ * Converts an array representing a pattern into a YAML string.
+ *
+ * @param array $pattern The pattern to convert into a YAML string
+ * @param mixed $append (optional) A string to which the dump 
+ *   will be appended. Defaults NULL
+ *   
+ * @return mixed $dump A string representation of the pattern.
+ */
+function patterns_yamlparser_dump($pattern = NULL, $append = NULL) {
+	if (is_null($pattern) || !is_array($pattern)) return FALSE;
+	$dump = (empty($append)) ? '' : $append . "\n";
+		
+  require_once libraries_get_path('spyc') . '/spyc.php';
+  $dump.= Spyc::YAMLDump($pattern);
+  return $dump;
+}
+
+function patterns_yamlparser_dump_comment($text = NULL, $append = NULL) {
+	if (is_null($text)) return FALSE;
+	$dump = (empty($append)) ? '' : $append . "\n";
+	$dump.= "# " . $text;		
+  return $dump;
+}
+
